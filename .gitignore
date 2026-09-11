@@ -1,0 +1,8 @@
+node_modules/
+__pycache__/
+*.pyc
+.env
+.venv/
+
+data/raw_papers/*
+!data/raw_papers/.gitkeep
