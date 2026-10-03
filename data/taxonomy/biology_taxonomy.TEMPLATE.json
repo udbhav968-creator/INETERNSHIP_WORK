@@ -1,0 +1,13 @@
+{
+  "subject": "Biology",
+  "topics": [
+    {
+      "topic_id": "BIO-07",
+      "name": "Genetics and Evolution",
+      "subtopics": [
+        {"subtopic_id": "BIO-07-01", "name": "Mendelian Inheritance"},
+        {"subtopic_id": "BIO-07-02", "name": "Molecular Basis of Inheritance"}
+      ]
+    }
+  ]
+}

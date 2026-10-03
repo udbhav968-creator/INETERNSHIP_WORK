@@ -1,15 +1,18 @@
 """
-Builds model/topic_importance.json directly from a tagged question bank's
-`years_asked` field — no separately maintained frequency dict needed.
+Builds model/topic_importance.json directly from a tagged question bank.
 
-This deliberately depends on real tagged data (data/tagged_questions/*.json)
-existing with accurate years_asked values. Do not run this against the
-TEMPLATE files — it will produce meaningless scores from 1 example question.
+Handles BOTH schema shapes:
+  - our original template schema (topic_id, years_asked: [list of years])
+  - the intern's real schema (chapter, paper_source: "NEET 2013" - one year per entry)
+
+This was only ever tested against the template schema before — fixed here
+after discovering the real data uses different field names entirely.
 
 Usage:
-    python model/build_topic_importance.py data/tagged_questions/biology_questions.json
+    python model/build_topic_importance.py data/tagged_questions/<real_file>.json
 """
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -17,15 +20,44 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "backend"))
 from app.paths import MODEL_DIR  # noqa: E402
 from importance_calculator import compute_importance  # noqa: E402
 
+GENERIC_CHAPTER_PREFIXES = ("General Biology", "General Chemistry", "General Physics")
+
+
+def _extract_year(paper_source: str) -> int | None:
+    match = re.search(r"(\d{4})", paper_source or "")
+    return int(match.group(1)) if match else None
+
 
 def build_frequency_from_questions(questions: list[dict]) -> dict:
-    """{"BIO-07-01": {2019: 2, 2021: 1, ...}, ...} derived from years_asked."""
+    """{"Chapter Name": {2019: 2, 2021: 1, ...}, ...} derived from whichever
+    schema the question bank actually uses."""
     freq: dict[str, dict[int, int]] = {}
+    skipped_generic = 0
+
     for q in questions:
-        topic_id = q["topic_id"]
+        topic_id = q.get("topic_id") or q.get("chapter")
+        if not topic_id or topic_id in GENERIC_CHAPTER_PREFIXES:
+            skipped_generic += 1
+            continue
+
         freq.setdefault(topic_id, {})
-        for year in q.get("years_asked", []):
+
+        years = q.get("years_asked")
+        if not years:
+            year = _extract_year(q.get("paper_source", ""))
+            years = [year] if year else []
+
+        for year in years:
             freq[topic_id][year] = freq[topic_id].get(year, 0) + 1
+
+    if skipped_generic:
+        print(
+            f"WARNING: skipped {skipped_generic} questions with missing/generic chapter tags "
+            f"(e.g. 'General Biology') — these won't contribute to any topic's importance score "
+            f"until they're re-tagged to a real chapter.",
+            file=sys.stderr,
+        )
+
     return freq
 
 
@@ -36,8 +68,7 @@ def main(questions_path: str, current_year: int = 2026):
     if len(questions) < 20:
         print(
             f"WARNING: only {len(questions)} questions found. Importance scores "
-            f"from this few questions won't be meaningful — wait for a larger "
-            f"tagged batch before trusting this output.",
+            f"from this few questions won't be meaningful.",
             file=sys.stderr,
         )
 
