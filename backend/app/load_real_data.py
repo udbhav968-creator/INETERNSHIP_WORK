@@ -23,7 +23,9 @@ from .db_models import Topic, Question
 # If a future batch introduces a new label, this will raise clearly rather
 # than silently dropping questions.
 DIFFICULTY_MAP = {
+    "basic": "basic",
     "base": "basic",
+    "medium": "medium",
     "intermediate": "medium",
     "advanced": "advanced",
 }

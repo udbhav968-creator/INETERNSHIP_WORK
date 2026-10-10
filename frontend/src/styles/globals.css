@@ -1,0 +1,24 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  @apply bg-surface text-midnight-900 antialiased;
+  font-feature-settings: "ss01" 1;
+}
+
+::selection {
+  @apply bg-accent/20;
+}
+
+.focus-ring {
+  @apply outline-none ring-2 ring-accent/50 ring-offset-2 ring-offset-surface;
+}

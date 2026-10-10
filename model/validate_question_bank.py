@@ -83,7 +83,9 @@ if __name__ == "__main__":
         print("Usage: python validate_question_bank.py <path-to-json>")
         sys.exit(1)
 
-    with open(sys.argv[1]) as f:
+    path = sys.argv[1]
+
+    with open(path, encoding="utf-8") as f:
         data = json.load(f)
 
     # handle both a flat list and the nested {"Curated_Sample_Papers": [...]} shape

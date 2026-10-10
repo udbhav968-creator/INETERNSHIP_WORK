@@ -62,7 +62,7 @@ def build_frequency_from_questions(questions: list[dict]) -> dict:
 
 
 def main(questions_path: str, current_year: int = 2026):
-    with open(questions_path) as f:
+    with open(questions_path, encoding="utf-8") as f:
         questions = json.load(f)
 
     if len(questions) < 20:
