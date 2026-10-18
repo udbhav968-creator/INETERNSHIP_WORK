@@ -39,3 +39,49 @@ export interface AttemptResult {
   new_level: Difficulty;
   pace_flag: PaceFlag;
 }
+
+// --- paper review (post-submission only) ---
+
+export interface QuestionReviewOut {
+  question_id: string;
+  topic_id: string;
+  text: string;
+  options: string[];
+  correct_answer: OptionLetter;
+  selected_option: OptionLetter;
+  is_correct: boolean;
+}
+
+export interface PaperReviewOut {
+  paper_number: number;
+  total_questions: number;
+  correct_count: number;
+  score_percent: number;
+  questions: QuestionReviewOut[];
+}
+
+// --- analytics ---
+
+export interface SubjectBreakdown {
+  subject: string;
+  attempts: number;
+  correct: number;
+  accuracy: number;
+}
+
+export interface RecentAttempt {
+  question_id: string;
+  topic_id: string;
+  is_correct: boolean;
+  time_taken_seconds: number;
+  timestamp: string;
+}
+
+export interface Analytics {
+  total_attempts: number;
+  correct_attempts: number;
+  accuracy: number;
+  topics_practiced: number;
+  subject_breakdown: SubjectBreakdown[];
+  recent_attempts: RecentAttempt[];
+}

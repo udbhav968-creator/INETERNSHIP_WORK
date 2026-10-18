@@ -1,4 +1,11 @@
-import type { AttemptPayload, AttemptResult, QuestionOut, TopicState } from "../types";
+import type {
+  Analytics,
+  AttemptPayload,
+  AttemptResult,
+  PaperReviewOut,
+  QuestionOut,
+  TopicState,
+} from "../types";
 
 // Configurable base URL — defaults to local dev backend. Set
 // VITE_API_BASE_URL in a .env file to point elsewhere.
@@ -51,4 +58,12 @@ export const api = {
       method: "POST",
       body: JSON.stringify(payload),
     }),
+
+  getPaperReview: (studentId: string, paperNumber: number) =>
+    request<PaperReviewOut>(
+      `/students/${encodeURIComponent(studentId)}/papers/${paperNumber}/review`
+    ),
+
+  getAnalytics: (studentId: string) =>
+    request<Analytics>(`/students/${encodeURIComponent(studentId)}/analytics`),
 };

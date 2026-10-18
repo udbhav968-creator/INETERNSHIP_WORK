@@ -15,6 +15,17 @@ class Student(Base):
     student_id = Column(String, primary_key=True)
     name = Column(String, nullable=False)
 
+    # --- auth ---
+    email = Column(String, unique=True, nullable=False)
+    password_hash = Column(String, nullable=False)
+
+    # --- onboarding ---
+    class_level = Column(String, nullable=True)          # "11" | "12" | "dropper"
+    target_neet_year = Column(Integer, nullable=True)
+    onboarded = Column(Boolean, default=False, nullable=False)
+
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
 
 class Topic(Base):
     __tablename__ = "topics"
