@@ -497,13 +497,21 @@ def get_mlops_health_and_drift(db: Session = Depends(get_db)):
     }
 
 
-# Serve production React SPA build when frontend/dist exists (Docker / Render / Railway / Unified Server)
+# Serve production React SPA build when frontend/dist exists (Vercel / Docker / Render / Railway)
 _FRONTEND_DIST = PROJECT_ROOT / "frontend" / "dist"
 if (_FRONTEND_DIST / "index.html").exists():
     if (_FRONTEND_DIST / "assets").exists():
         app.mount("/assets", StaticFiles(directory=str(_FRONTEND_DIST / "assets")), name="frontend_assets")
 
+    @app.get("/vite.svg", include_in_schema=False)
+    def serve_vite_svg():
+        svg_path = _FRONTEND_DIST / "vite.svg"
+        if svg_path.exists():
+            return FileResponse(str(svg_path), media_type="image/svg+xml")
+        raise HTTPException(status_code=404, detail="Not found")
+
     @app.get("/", include_in_schema=False)
     def serve_spa_root():
-        return FileResponse(str(_FRONTEND_DIST / "index.html"))
+        return FileResponse(str(_FRONTEND_DIST / "index.html"), media_type="text/html")
+
 

@@ -10,4 +10,3 @@ data/raw_papers/*
 *.db-shm
 *.db-wal
 .vercel/
-frontend/dist/

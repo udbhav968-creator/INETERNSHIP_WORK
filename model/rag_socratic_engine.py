@@ -7,13 +7,71 @@ in data/tagged_questions/neet_questions_clean.json to generate conceptual hints
 and misconception diagnostics on failure in under 40ms.
 """
 import json
+import math
+import re
 import time
+from collections import Counter
 from pathlib import Path
 import numpy as np
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
+
+try:
+    from sklearn.feature_extraction.text import TfidfVectorizer
+    from sklearn.metrics.pairwise import cosine_similarity
+    _HAS_SKLEARN = True
+except ImportError:
+    _HAS_SKLEARN = False
 
 from .knowledge_graph_dag import get_direct_prerequisites
+
+_STOP_WORDS = {
+    "the", "and", "for", "with", "that", "this", "from", "are", "was", "were",
+    "into", "which", "when", "where", "what", "how", "why", "who", "will", "can",
+    "not", "but", "have", "has", "had", "between", "under", "over", "their", "its",
+}
+
+
+class _NumpyTfidfVectorizer:
+    """Pure-NumPy unigram + bigram TF-IDF vectorizer with smoothed IDF and L2 normalization."""
+
+    def __init__(self) -> None:
+        self.vocab: dict[str, int] = {}
+        self.idf: np.ndarray = np.array([])
+
+    @staticmethod
+    def _tokenize(text: str) -> list[str]:
+        words = [w for w in re.findall(r"[a-z0-9]{2,}", text.lower()) if w not in _STOP_WORDS]
+        bigrams = [f"{words[i]}_{words[i + 1]}" for i in range(len(words) - 1)]
+        return words + bigrams
+
+    def fit_transform(self, corpus: list[str]) -> np.ndarray:
+        tokenized = [self._tokenize(doc) for doc in corpus]
+        df_counts: Counter[str] = Counter()
+        for tokens in tokenized:
+            for term in set(tokens):
+                df_counts[term] += 1
+        self.vocab = {term: idx for idx, term in enumerate(sorted(df_counts.keys()))}
+        n_docs = len(corpus)
+        self.idf = np.array(
+            [math.log((1.0 + n_docs) / (1.0 + df_counts[t])) + 1.0 for t in sorted(df_counts.keys())],
+            dtype=np.float64,
+        )
+        return self._encode(tokenized)
+
+    def transform(self, docs: list[str]) -> np.ndarray:
+        return self._encode([self._tokenize(d) for d in docs])
+
+    def _encode(self, tokenized_docs: list[list[str]]) -> np.ndarray:
+        mat = np.zeros((len(tokenized_docs), len(self.vocab)), dtype=np.float64)
+        for row_idx, tokens in enumerate(tokenized_docs):
+            counts = Counter(tokens)
+            for term, cnt in counts.items():
+                col_idx = self.vocab.get(term)
+                if col_idx is not None:
+                    mat[row_idx, col_idx] = cnt * self.idf[col_idx]
+            norm = np.linalg.norm(mat[row_idx])
+            if norm > 0.0:
+                mat[row_idx] /= norm
+        return mat
 
 MODEL_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = MODEL_DIR.parent
@@ -43,15 +101,22 @@ class NCERTVectorIndex:
             f"{c['subject']} {c['chapter']} {c['core_concept']} {' '.join(c.get('formulas', []))} {' '.join(c.get('common_misconceptions', []))}"
             for c in self.chunks
         ]
-        self.vectorizer = TfidfVectorizer(stop_words="english", ngram_range=(1, 2))
-        self.chunk_matrix = self.vectorizer.fit_transform(corpus)
+        if _HAS_SKLEARN:
+            self.vectorizer = TfidfVectorizer(stop_words="english", ngram_range=(1, 2))
+            self.chunk_matrix = self.vectorizer.fit_transform(corpus)
+        else:
+            self.vectorizer = _NumpyTfidfVectorizer()
+            self.chunk_matrix = self.vectorizer.fit_transform(corpus)
 
     def retrieve(self, query_text: str, chapter_hint: str | None = None, top_k: int = 2) -> list[tuple[dict, float]]:
         if not self.vectorizer or self.chunk_matrix is None:
             return []
 
         q_vec = self.vectorizer.transform([query_text])
-        sims = cosine_similarity(q_vec, self.chunk_matrix).flatten()
+        if _HAS_SKLEARN:
+            sims = cosine_similarity(q_vec, self.chunk_matrix).flatten()
+        else:
+            sims = (self.chunk_matrix @ q_vec.T).flatten()
 
         if chapter_hint:
             for idx, chunk in enumerate(self.chunks):
