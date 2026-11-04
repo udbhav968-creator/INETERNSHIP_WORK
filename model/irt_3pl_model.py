@@ -2,10 +2,12 @@
 Psychometric Item Response Theory (IRT — 3-Parameter Logistic Model) — Enterprise v2.
 
 Dynamically calibrates question difficulty (b_i), discrimination (a_i), and
-pseudo-guessing (c_i), and estimates student latent ability (theta) via
-Maximum A Posteriori (MAP) optimization.
+pseudo-guessing (c_i) from real question features (ideal_time_sec, question_type,
+has_diagram, chapter weightage, explanation step complexity, option length dispersion,
+and empirical attempt accuracy), and estimates student latent ability (theta) via
+Maximum A Posteriori (MAP) Newton-Raphson optimization.
 """
-import hashlib
+import csv
 import json
 import math
 from dataclasses import dataclass
@@ -14,6 +16,7 @@ from pathlib import Path
 MODEL_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = MODEL_DIR.parent
 QUESTIONS_PATH = PROJECT_ROOT / "data" / "tagged_questions" / "neet_questions_clean.json"
+ATTEMPTS_CSV_PATH = PROJECT_ROOT / "data" / "training" / "student_attempts.csv"
 IMPORTANCE_PATH = MODEL_DIR / "topic_importance.json"
 IRT_PARAMS_PATH = MODEL_DIR / "irt_item_parameters.json"
 
@@ -35,13 +38,43 @@ _DEFAULT_DIFFICULTY_B: dict[str, IRTItemParams] = {
     "advanced": IRTItemParams(a=1.68, b=1.30, c=0.18),
 }
 
+QUESTION_TYPE_MODIFIERS: dict[str, tuple[float, float]] = {
+    "Numerical": (0.18, 0.22),
+    "Statement-Based": (0.14, 0.16),
+    "Match-the-Column": (0.10, 0.08),
+    "Assertion-Reason": (0.16, 0.20),
+    "Diagram-Based": (0.15, 0.18),
+    "Conceptual": (0.04, 0.00),
+    "Direct Formula": (-0.05, -0.12),
+}
+
 CALIBRATED_ITEMS: dict[str, dict] = {}
 
 
-def _deterministic_micro_jitter(qid: str) -> float:
-    digest = hashlib.md5(qid.encode("utf-8")).hexdigest()
-    val = int(digest[:6], 16) / 0xFFFFFF
-    return (val - 0.5) * 0.36
+def _load_empirical_attempt_stats() -> dict[str, dict[str, float]]:
+    """Loads real empirical accuracy and response time ratios from student_attempts.csv if present."""
+    stats: dict[str, dict[str, float]] = {}
+    if not ATTEMPTS_CSV_PATH.exists():
+        return stats
+    try:
+        with open(ATTEMPTS_CSV_PATH, encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            counts: dict[str, list[tuple[int, float]]] = {}
+            for row in reader:
+                qid = row.get("question_id", "")
+                if not qid:
+                    continue
+                corr = 1 if str(row.get("is_correct", "")).lower() in ("1", "true") else 0
+                t_ratio = float(row.get("time_ratio") or 1.0)
+                counts.setdefault(qid, []).append((corr, t_ratio))
+            for qid, pairs in counts.items():
+                n = len(pairs)
+                acc = sum(c for c, _ in pairs) / n
+                avg_tr = sum(tr for _, tr in pairs) / n
+                stats[qid] = {"n": float(n), "accuracy": acc, "avg_time_ratio": avg_tr}
+    except Exception:
+        pass
+    return stats
 
 
 def calibrate_question_bank() -> dict[str, dict]:
@@ -57,6 +90,8 @@ def calibrate_question_bank() -> dict[str, dict]:
         with open(IMPORTANCE_PATH, encoding="utf-8") as f:
             importance = json.load(f)
 
+    empirical_stats = _load_empirical_attempt_stats()
+
     calibrated: dict[str, dict] = {}
     for q in questions:
         qid = q["question_id"]
@@ -66,17 +101,60 @@ def calibrate_question_bank() -> dict[str, dict]:
         ideal_time = float(q.get("ideal_time_sec", 85))
         has_diagram = bool(q.get("has_diagram", False))
         chapter = q.get("chapter", "")
-        text_len = len(q.get("question_text", ""))
+        q_type = str(q.get("question_type", "Conceptual"))
+        q_text = str(q.get("question_text", ""))
+        explanation = str(q.get("explanation", ""))
 
+        # Real structural & linguistic complexity features from question & explanation
         time_delta = (ideal_time - 85.0) / 55.0
-        length_delta = min(0.25, max(-0.15, (text_len - 140) / 400.0))
+        length_delta = min(0.25, max(-0.15, (len(q_text) - 140.0) / 400.0))
+        expl_steps = max(1, explanation.count(".") + explanation.count("="))
+        expl_delta = min(0.22, (expl_steps - 2.0) * 0.04)
         diagram_delta = 0.18 if has_diagram else 0.0
-        jitter = _deterministic_micro_jitter(qid)
+        a_type_mod, b_type_mod = QUESTION_TYPE_MODIFIERS.get(q_type, (0.05, 0.02))
 
-        b_i = max(-2.85, min(2.85, base.b + 0.45 * time_delta + length_delta + diagram_delta + jitter))
+        # Option length dispersion affects distractor plausibility (pseudo-guessing c_i)
+        opt_lengths = [
+            len(str(q.get(k, ""))) for k in ("option_a", "option_b", "option_c", "option_d")
+        ]
+        mean_opt_len = sum(opt_lengths) / 4.0 if opt_lengths else 10.0
+        opt_var = sum((ol - mean_opt_len) ** 2 for ol in opt_lengths) / 4.0
+        distractor_spread = min(0.04, math.sqrt(opt_var) / 250.0)
+
+        # Empirical adjustment from actual student attempts when available
+        emp_b_shift = 0.0
+        if qid in empirical_stats:
+            emp = empirical_stats[qid]
+            # Higher empirical error rate shifts b_i upward proportional to sample weight
+            weight = min(0.35, emp["n"] * 0.10)
+            emp_b_shift = weight * ((0.60 - emp["accuracy"]) * 1.5 + (emp["avg_time_ratio"] - 1.0) * 0.4)
+
+        b_i = max(
+            -2.85,
+            min(
+                2.85,
+                base.b + 0.45 * time_delta + length_delta + expl_delta + diagram_delta + b_type_mod + emp_b_shift,
+            ),
+        )
         imp_score = float(importance.get(chapter, 1.5))
-        a_i = max(0.65, min(2.40, base.a + 0.04 * min(imp_score, 5.0) + (0.10 if has_diagram else 0.0) + 0.3 * abs(jitter)))
-        c_i = max(0.12, min(0.28, base.c - (0.02 if ideal_time >= 100 else 0.0)))
+        a_i = max(
+            0.65,
+            min(
+                2.40,
+                base.a
+                + 0.04 * min(imp_score, 5.0)
+                + (0.10 if has_diagram else 0.0)
+                + a_type_mod
+                + 0.02 * min(expl_steps, 6),
+            ),
+        )
+        c_i = max(
+            0.12,
+            min(
+                0.28,
+                base.c - (0.02 if ideal_time >= 100 else 0.0) - distractor_spread,
+            ),
+        )
 
         calibrated[qid] = {
             "a": round(a_i, 4),

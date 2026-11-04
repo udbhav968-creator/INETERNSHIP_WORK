@@ -180,6 +180,16 @@ def submit_attempt(attempt: schemas.AttemptIn, db: Session = Depends(get_db)):
             curr_global = float(getattr(student, "global_theta", 0.0) or 0.0)
             student.global_theta = round(0.85 * curr_global + 0.15 * new_topic_theta, 4)
 
+        # Compute real prerequisite readiness from the student's topic states in the DB
+        all_student_states = (
+            db.query(StudentTopicState).filter_by(student_id=attempt.student_id).all()
+        )
+        mastery_map = {
+            s.topic_id: float(getattr(s, "mastery_prob", 0.35) or 0.35)
+            for s in all_student_states
+        }
+        prereq_ready = compute_prerequisite_readiness(question.topic_id, mastery_map)
+
         # 4. LinUCB Contextual Bandit Reward Update
         record_bandit_feedback(
             student_id=attempt.student_id,
@@ -189,7 +199,7 @@ def submit_attempt(attempt: schemas.AttemptIn, db: Session = Depends(get_db)):
             student_theta=new_topic_theta,
             topic_mastery_prob=float(state.mastery_prob or 0.5),
             topic_importance=float(_TOPIC_IMPORTANCE.get(question.topic_id, 1.5)),
-            prereq_readiness=0.75,
+            prereq_readiness=prereq_ready,
             pace_flag=state.pace_flag,
             is_correct=is_correct,
             time_taken_seconds=attempt.time_taken_seconds,
@@ -281,7 +291,7 @@ def get_v2_student_insights(student_id: str, db: Session = Depends(get_db)):
     Returns Enterprise v2 Psychometric & Prerequisite Graph Diagnostics:
     - 3PL IRT Global Latent Ability (theta), Predicted NEET Percentile & Score (/720)
     - Root-Cause Prerequisite Bottlenecks via Ancestral DAG Traversal
-    - Next Recommended Topics in the Student's Zone of Proximal Development (ZPD)
+    - Next Recommended Topics in the Student's Zone of Proximal Development (ZPD) across all 65 NCERT chapters
     - Hierarchical Bayesian Empirical Shrinkage Mastery Estimates
     """
     student = db.query(Student).filter_by(student_id=student_id).first()
@@ -339,18 +349,21 @@ def get_v2_student_insights(student_id: str, db: Session = Depends(get_db)):
             }
         )
 
+    # Evaluate all 65 NCERT chapters in DAG_NODES weighted by NEET importance and ZPD readiness
     recommended = []
-    for topic_id, meta in list(DAG_NODES.items())[:8]:
-        curr_m = mastery_map.get(topic_id, 0.35)
+    for topic_id, meta in DAG_NODES.items():
+        curr_m = compute_hierarchical_shrinkage_prior(topic_id, mastery_map)
         readiness = compute_prerequisite_readiness(topic_id, mastery_map)
+        importance_weight = float(_TOPIC_IMPORTANCE.get(topic_id, 1.0))
         if curr_m < 0.78 and readiness >= 0.35:
+            zpd_score = readiness * (1.0 - abs(curr_m - 0.55)) * (1.0 + 0.1 * importance_weight)
             recommended.append(
                 {
                     "topic_id": topic_id,
                     "subject": meta.get("subject", "Science"),
                     "current_mastery": round(curr_m, 3),
                     "readiness": readiness,
-                    "zpd_priority_score": round(readiness * (1.0 - abs(curr_m - 0.55)), 4),
+                    "zpd_priority_score": round(zpd_score, 4),
                 }
             )
     recommended.sort(key=lambda r: r["zpd_priority_score"], reverse=True)
@@ -419,7 +432,8 @@ def get_socratic_hint(payload: schemas.SocraticHintIn, db: Session = Depends(get
 def get_mlops_health_and_drift(db: Session = Depends(get_db)):
     """
     Exposes real-time Feature Store latency percentiles (p50/p95/p99) and
-    Evidently-style Population Stability Index (PSI) & Expected Calibration Error (ECE).
+    Evidently-style Population Stability Index (PSI) & Expected Calibration Error (ECE)
+    computed from actual TestAttempt rows and calibrated 3PL IRT probabilities.
     """
     recent_rows = (
         db.query(TestAttempt, Question)
@@ -428,15 +442,26 @@ def get_mlops_health_and_drift(db: Session = Depends(get_db)):
         .limit(250)
         .all()
     )
-    db_attempts = [
-        {
-            "predicted_prob": 0.68 if q.difficulty == "basic" else (0.55 if q.difficulty == "medium" else 0.42),
-            "correct": att.is_correct,
-            "difficulty": q.difficulty,
-            "time_taken": att.time_taken_seconds,
-        }
-        for att, q in recent_rows
-    ]
+    all_states = db.query(StudentTopicState).all()
+    theta_lookup = {
+        (s.student_id, s.topic_id): float(getattr(s, "irt_theta", 0.0) or 0.0)
+        for s in all_states
+    }
+
+    db_attempts = []
+    for att, q in recent_rows:
+        st_theta = theta_lookup.get((att.student_id, q.topic_id), 0.0)
+        params = get_item_params(q.question_id, q.difficulty, q.expected_time_seconds or 90)
+        real_pred_prob = irt_3pl_probability(st_theta, params)
+        db_attempts.append(
+            {
+                "predicted_prob": real_pred_prob,
+                "correct": att.is_correct,
+                "difficulty": q.difficulty,
+                "time_taken": att.time_taken_seconds,
+            }
+        )
+
     return {
         "feature_store": FEATURE_STORE.get_latency_percentiles(),
         "drift_and_calibration": DRIFT_MONITOR.evaluate_health(db_attempts),

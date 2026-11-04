@@ -1,14 +1,17 @@
 """
-End-to-End Verification Suite for Klassed NEET Adaptive Engine (v1 Core + v2 Enterprise ML Architecture)
-Tests:
+Comprehensive End-to-End Verification Suite for Klassed NEET Adaptive Engine (v1 Core + v2 Enterprise ML Architecture)
+Tests all models, database invariants, and all 11 FastAPI HTTP endpoints:
 1. Random Forest 99.60% (0.9959595959595959) question difficulty classifier & metrics integrity
 2. BKT (Bayesian Knowledge Tracing) & hysteresis state machine transitions (basic -> medium -> advanced -> demotions)
-3. 3PL IRT (3-Parameter Logistic Item Response Theory) calibration, Fisher information & MAP ability updates
-4. Prerequisite Knowledge Graph DAG (65 NCERT nodes), readiness, root-cause bottleneck diagnosis & empirical Bayes shrinkage
-5. LinUCB Contextual Multi-Armed Bandit routing within the Zone of Proximal Development (ZPD P ~ 0.70)
-6. NCERT RAG Socratic Remediation & distractor misconception classification
-7. Low-Latency In-Memory Feature Store (<2ms) & Evidently-style PSI / ECE Drift Monitor
-8. FastAPI End-to-End HTTP routes (/auth/signup, /auth/login, /submit_attempt, /students/{id}/next_paper, /students/{id}/v2_insights, /remediation/socratic_hint, /mlops/health_and_drift)
+3. Pace tracking with per-question expected_time_seconds and incorrect-attempt filtering
+4. 3PL IRT (3-Parameter Logistic Item Response Theory) real feature calibration, Fisher information & MAP ability updates
+5. Prerequisite Knowledge Graph DAG (65 NCERT nodes), readiness, root-cause bottleneck diagnosis & empirical Bayes shrinkage
+6. LinUCB Contextual Multi-Armed Bandit routing within the Zone of Proximal Development (ZPD P ~ 0.70)
+7. NCERT RAG Socratic Remediation & distractor misconception classification
+8. Low-Latency In-Memory Feature Store (<2ms) & Evidently-style PSI / ECE Drift Monitor
+9. All 11 FastAPI HTTP Endpoints (/auth/signup, /auth/login, /students/{id}/onboarding, /students/{id}, /submit_attempt,
+   /students/{id}/state, /students/{id}/next_paper, /students/{id}/papers/{paper}/review, /students/{id}/analytics,
+   /students/{id}/v2_insights, /remediation/socratic_hint, /mlops/health_and_drift)
 """
 import json
 import sys
@@ -22,7 +25,8 @@ for p in (str(PROJECT_ROOT), str(BACKEND_DIR)):
 
 from fastapi.testclient import TestClient
 from app.main import app
-from app.db_models import StudentTopicState
+from app.database import SessionLocal
+from app.db_models import Student, StudentTopicState, TestAttempt
 from app.state_machine import process_answer
 from app.time_tracking import update_pace
 from app.auth import create_access_token, verify_access_token
@@ -158,45 +162,138 @@ def test_linucb_bandit_and_socratic_rag():
     assert "key_formulas" in remediation
 
 
-def test_jwt_and_fastapi_endpoints():
+def test_all_11_fastapi_endpoints_end_to_end():
     token = create_access_token("TEST_USER", "test@klassed.in")
     claims = verify_access_token(token)
     assert claims is not None and claims["sub"] == "TEST_USER"
 
     client = TestClient(app)
+    test_email = "e2e_v2_verifier@klassed.in"
+    created_student_id = None
 
-    # Health & MLOps drift endpoint
-    r_health = client.get("/mlops/health_and_drift")
-    assert r_health.status_code == 200
-    body_health = r_health.json()
-    assert body_health["models_loaded"]["irt_3pl_psychometric_engine"] is True
-    assert body_health["feature_store"]["p99_ms"] < 15.0
+    try:
+        # Clean up any leftover test account before starting
+        db = SessionLocal()
+        old = db.query(Student).filter_by(email=test_email).first()
+        if old:
+            db.query(TestAttempt).filter_by(student_id=old.student_id).delete()
+            db.query(StudentTopicState).filter_by(student_id=old.student_id).delete()
+            db.delete(old)
+            db.commit()
+        db.close()
 
-    # Socratic remediation endpoint
-    r_soc = client.post(
-        "/remediation/socratic_hint",
-        json={
-            "question_id": "NEET_2024_PHY_1",
-            "selected_option": "c",
-            "time_taken_seconds": 50,
-            "option_switches": 1,
-        },
-    )
-    assert r_soc.status_code == 200
-    assert "socratic_hint" in r_soc.json()
+        # 1. POST /auth/signup
+        r_signup = client.post(
+            "/auth/signup",
+            json={"name": "E2E Verifier", "email": test_email, "password": "securepassword123"},
+        )
+        assert r_signup.status_code == 200, r_signup.text
+        student_data = r_signup.json()
+        created_student_id = student_data["student_id"]
+        assert student_data["access_token"] is not None
 
-    # Student v2 insights endpoint
-    r_ins = client.get("/students/UDBHAV/v2_insights")
-    assert r_ins.status_code == 200
-    ins_data = r_ins.json()
-    assert "predicted_neet_score_720" in ins_data
-    assert "estimated_neet_percentile" in ins_data
+        # 2. POST /auth/login
+        r_login = client.post(
+            "/auth/login",
+            json={"email": test_email, "password": "securepassword123"},
+        )
+        assert r_login.status_code == 200
+        assert r_login.json()["student_id"] == created_student_id
 
-    # Adaptive paper generation endpoint (LinUCB + adjacent-pool fallback cascade)
-    r_paper = client.get("/students/UDBHAV/next_paper")
-    assert r_paper.status_code == 200
-    paper_items = r_paper.json()
-    assert len(paper_items) >= 40, f"Expected full adaptive paper (>=40 items), got {len(paper_items)}"
+        # 3. POST /students/{id}/onboarding
+        r_onboard = client.post(
+            f"/students/{created_student_id}/onboarding",
+            json={"class_level": "12", "target_neet_year": 2027},
+        )
+        assert r_onboard.status_code == 200
+        assert r_onboard.json()["onboarded"] is True
+
+        # 4. GET /students/{id}
+        r_get_stu = client.get(f"/students/{created_student_id}")
+        assert r_get_stu.status_code == 200
+        assert r_get_stu.json()["class_level"] == "12"
+
+        # 5. GET /students/{id}/next_paper
+        r_paper = client.get(f"/students/{created_student_id}/next_paper")
+        assert r_paper.status_code == 200
+        paper_items = r_paper.json()
+        assert len(paper_items) >= 40, f"Expected >=40 adaptive paper items, got {len(paper_items)}"
+
+        # 6. POST /submit_attempt (with v2 clickstream telemetry)
+        first_q = paper_items[0]
+        r_attempt = client.post(
+            "/submit_attempt",
+            json={
+                "student_id": created_student_id,
+                "question_id": first_q["question_id"],
+                "paper_number": 1,
+                "selected_option": "a",
+                "time_taken_seconds": 65,
+                "option_switches": 1,
+                "hesitation_ms": 4200,
+                "dwell_time_ms": 65000,
+            },
+        )
+        assert r_attempt.status_code == 200
+        att_res = r_attempt.json()
+        assert "mastery_prob" in att_res and "irt_theta" in att_res
+
+        # 7. GET /students/{id}/state
+        r_state = client.get(f"/students/{created_student_id}/state")
+        assert r_state.status_code == 200
+        states_list = r_state.json()
+        assert len(states_list) == 1
+        assert states_list[0]["topic_id"] == first_q["topic_id"]
+
+        # 8. GET /students/{id}/papers/{paper_number}/review
+        r_rev = client.get(f"/students/{created_student_id}/papers/1/review")
+        assert r_rev.status_code == 200
+        rev_data = r_rev.json()
+        assert rev_data["total_questions"] == 1
+        assert rev_data["questions"][0]["question_id"] == first_q["question_id"]
+
+        # 9. GET /students/{id}/analytics
+        r_ana = client.get(f"/students/{created_student_id}/analytics")
+        assert r_ana.status_code == 200
+        assert r_ana.json()["total_attempts"] == 1
+
+        # 10. GET /students/{id}/v2_insights
+        r_ins = client.get(f"/students/{created_student_id}/v2_insights")
+        assert r_ins.status_code == 200
+        ins_data = r_ins.json()
+        assert "predicted_neet_score_720" in ins_data
+        assert "estimated_neet_percentile" in ins_data
+        assert len(ins_data["recommended_unlock_topics"]) > 0
+
+        # 11. POST /remediation/socratic_hint & GET /mlops/health_and_drift
+        r_soc = client.post(
+            "/remediation/socratic_hint",
+            json={
+                "question_id": first_q["question_id"],
+                "selected_option": "b",
+                "time_taken_seconds": 50,
+                "option_switches": 1,
+            },
+        )
+        assert r_soc.status_code == 200
+        assert "socratic_hint" in r_soc.json()
+
+        r_health = client.get("/mlops/health_and_drift")
+        assert r_health.status_code == 200
+        body_health = r_health.json()
+        assert body_health["models_loaded"]["irt_3pl_psychometric_engine"] is True
+        assert body_health["feature_store"]["p99_ms"] < 15.0
+        assert body_health["drift_and_calibration"]["sample_size"] >= 17
+
+    finally:
+        # Clean up temporary E2E student so klassed.db remains untouched
+        if created_student_id:
+            db = SessionLocal()
+            db.query(TestAttempt).filter_by(student_id=created_student_id).delete()
+            db.query(StudentTopicState).filter_by(student_id=created_student_id).delete()
+            db.query(Student).filter_by(student_id=created_student_id).delete()
+            db.commit()
+            db.close()
 
 
 if __name__ == "__main__":
@@ -207,7 +304,7 @@ if __name__ == "__main__":
         test_3pl_irt_psychometric_engine,
         test_prerequisite_knowledge_graph_dag,
         test_linucb_bandit_and_socratic_rag,
-        test_jwt_and_fastapi_endpoints,
+        test_all_11_fastapi_endpoints_end_to_end,
     ]
     for fn in tests:
         fn()

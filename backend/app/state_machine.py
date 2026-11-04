@@ -4,15 +4,15 @@ The per-topic mastery state machine — docs/spec.md Section 7 + Enterprise v2 B
 This is the ONE place promotion/demotion logic lives. Nothing else should
 reimplement these rules — import and call process_answer() everywhere.
 
-Rules (rolling-window + Bayesian Knowledge Tracing posterior):
-  basic    -> medium   : 2 correct out of last 3 (or BKT mastery >= 0.58 with hysteresis)
-  medium   -> advanced : 3 correct IN A ROW (a true streak, not just a window)
+Rules (rolling-window gated + Bayesian Knowledge Tracing posterior with hysteresis):
+  basic    -> medium   : 2 correct out of last 3 (with BKT hysteresis floor >= 0.58)
+  medium   -> advanced : 3 correct IN A ROW (a true streak, with BKT hysteresis floor >= 0.82)
   medium   -> basic    : 2 wrong out of last 3
   advanced -> medium   : last 2 answers both wrong
 """
 from .db_models import StudentTopicState
 from .paths import PROJECT_ROOT  # ensures PROJECT_ROOT is on sys.path
-from model.state_machine.bkt_model import compute_bkt_update
+from model.state_machine.bkt_model import compute_bkt_update, resolve_level_with_hysteresis
 
 WINDOW_SIZE = 3
 
@@ -55,7 +55,7 @@ def process_answer(
     if state.level == "basic":
         state.streak = (state.streak + 1) if is_correct else 0
         if sum(1 for r in results if r) >= 2:
-            state.level = "medium"
+            state.level = resolve_level_with_hysteresis(state.level, max(p_next, 0.58), ci_95)
             state.streak = 0
             state.last_3_results = []
             state.mastery_prob = max(state.mastery_prob, 0.58)
@@ -64,12 +64,12 @@ def process_answer(
         state.streak = (state.streak + 1) if is_correct else 0
         wrong_count = results.count(False)
         if state.streak >= 3:
-            state.level = "advanced"
+            state.level = resolve_level_with_hysteresis(state.level, max(p_next, 0.82), ci_95)
             state.streak = 0
             state.last_3_results = []
             state.mastery_prob = max(state.mastery_prob, 0.82)
         elif wrong_count >= 2:
-            state.level = "basic"
+            state.level = resolve_level_with_hysteresis(state.level, min(p_next, 0.34), ci_95)
             state.streak = 0
             state.last_3_results = []
             state.mastery_prob = min(state.mastery_prob, 0.42)
@@ -77,7 +77,7 @@ def process_answer(
     elif state.level == "advanced":
         state.streak = (state.streak + 1) if is_correct else 0
         if len(results) >= 2 and results[-2:] == [False, False]:
-            state.level = "medium"
+            state.level = resolve_level_with_hysteresis(state.level, min(p_next, 0.58), ci_95)
             state.streak = 0
             state.last_3_results = []
             state.mastery_prob = min(state.mastery_prob, 0.65)
