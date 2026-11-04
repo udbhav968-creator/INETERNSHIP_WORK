@@ -537,6 +537,7 @@ def test_14_all_11_endpoints_and_concurrent_stress():
         assert r_ins.status_code == 200
         ins_body = r_ins.json()
         assert 120 <= ins_body["predicted_neet_score_720"] <= 720
+        assert len(ins_body["recommended_unlock_topics"]) == 65
         assert "mirt_3d_profile" in ins_body and ins_body["mirt_3d_profile"] is not None
         assert "spaced_repetition_reviews" in ins_body
 

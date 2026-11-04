@@ -466,22 +466,28 @@ def get_v2_student_insights(student_id: str, db: Session = Depends(get_db)):
         )
 
     # Evaluate all 65 NCERT chapters in DAG_NODES weighted by NEET importance and ZPD readiness
+    state_lookup = {s.topic_id: s for s in states}
     recommended = []
     for topic_id, meta in DAG_NODES.items():
-        curr_m = compute_hierarchical_shrinkage_prior(topic_id, mastery_map)
+        st_obj = state_lookup.get(topic_id)
+        att_cnt = int(st_obj.attempts_counted or len(st_obj.last_3_results or []) or 1) if st_obj else 0
+        curr_m = compute_hierarchical_shrinkage_prior(topic_id, mastery_map, attempts_count=att_cnt)
         readiness = compute_prerequisite_readiness(topic_id, mastery_map)
         importance_weight = float(_TOPIC_IMPORTANCE.get(topic_id, 1.0))
-        if curr_m < 0.78 and readiness >= 0.35:
-            zpd_score = readiness * (1.0 - abs(curr_m - 0.55)) * (1.0 + 0.1 * importance_weight)
-            recommended.append(
-                {
-                    "topic_id": topic_id,
-                    "subject": meta.get("subject", "Science"),
-                    "current_mastery": round(curr_m, 3),
-                    "readiness": readiness,
-                    "zpd_priority_score": round(zpd_score, 4),
-                }
-            )
+        zpd_score = readiness * (1.0 - abs(curr_m - 0.55)) * (1.0 + 0.1 * importance_weight)
+        recommended.append(
+            {
+                "topic_id": topic_id,
+                "subject": meta.get("subject", "Science"),
+                "cluster": meta.get("cluster", "General"),
+                "level": st_obj.level if st_obj else "basic",
+                "current_mastery": round(curr_m, 3),
+                "readiness": readiness,
+                "neet_weightage": round(importance_weight, 2),
+                "prerequisites": meta.get("prerequisites", []),
+                "zpd_priority_score": round(zpd_score, 4),
+            }
+        )
     recommended.sort(key=lambda r: r["zpd_priority_score"], reverse=True)
 
     return schemas.V2StudentInsightsOut(
@@ -493,7 +499,7 @@ def get_v2_student_insights(student_id: str, db: Session = Depends(get_db)):
         mirt_3d_profile=mirt_3d,
         spaced_repetition_reviews=spaced_reviews[:5],
         root_cause_bottlenecks=formatted_bottlenecks,
-        recommended_unlock_topics=recommended[:5],
+        recommended_unlock_topics=recommended,
         topic_mastery_details=topic_details,
     )
 

@@ -136,8 +136,12 @@ export interface V2StudentInsights {
   recommended_unlock_topics: Array<{
     topic_id: string;
     subject: string;
+    cluster?: string;
+    level?: Difficulty;
     current_mastery: number;
     readiness: number;
+    neet_weightage?: number;
+    prerequisites?: string[];
     zpd_priority_score: number;
   }>;
   topic_mastery_details: Array<{

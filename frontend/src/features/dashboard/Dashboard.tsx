@@ -11,6 +11,7 @@ interface DashboardProps {
 }
 
 type LoadState = "loading" | "ready" | "error" | "empty";
+type SubjectFilter = "All" | "Physics" | "Chemistry" | "Biology";
 
 export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
   const [topics, setTopics] = useState<TopicState[]>([]);
@@ -18,6 +19,8 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
   const [v2Insights, setV2Insights] = useState<V2StudentInsights | null>(null);
   const [state, setState] = useState<LoadState>("loading");
   const [errorMessage, setErrorMessage] = useState("");
+  const [subjectFilter, setSubjectFilter] = useState<SubjectFilter>("All");
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -44,6 +47,23 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
     };
   }, [studentId]);
 
+  const allSyllabusChapters = v2Insights?.recommended_unlock_topics ?? [];
+  const filteredChapters = allSyllabusChapters.filter((ch) => {
+    const matchesSubject = subjectFilter === "All" || ch.subject === subjectFilter;
+    const matchesQuery =
+      !searchQuery.trim() ||
+      ch.topic_id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (ch.cluster ?? "").toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesSubject && matchesQuery;
+  });
+
+  const subjectCounts = {
+    All: allSyllabusChapters.length,
+    Physics: allSyllabusChapters.filter((c) => c.subject === "Physics").length,
+    Chemistry: allSyllabusChapters.filter((c) => c.subject === "Chemistry").length,
+    Biology: allSyllabusChapters.filter((c) => c.subject === "Biology").length,
+  };
+
   return (
     <div className="flex flex-col gap-8">
       <div className="flex flex-col gap-2">
@@ -51,7 +71,7 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
           Welcome back.
         </h1>
         <p className="text-midnight-700/70">
-          Here's where your preparation stands right now, powered by 3PL IRT, Bayesian Knowledge Tracing & LinUCB.
+          Here's where your preparation stands right now across all 65 NCERT chapters, powered by 3PL IRT, Bayesian Knowledge Tracing & LinUCB.
         </p>
       </div>
 
@@ -89,7 +109,7 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
       {state === "empty" && (
         <div className="flex flex-col gap-6">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <SummaryStat label="Questions attempted" value={0} />
+            <SummaryStat label="NCERT Chapters Mapped" value={allSyllabusChapters.length || 65} />
             <SummaryStat label="Initial BKT Prior" value="35%" />
             <SummaryStat
               label="Baseline NEET Projection"
@@ -108,20 +128,20 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
             </p>
           </Card>
 
-          {v2Insights && v2Insights.recommended_unlock_topics.length > 0 && (
+          {allSyllabusChapters.length > 0 && (
             <div>
               <h2 className="mb-3 font-display text-lg font-semibold text-midnight-950">
-                Recommended Foundational Chapters (Zone of Proximal Development)
+                Top Recommended Starting Chapters (Zone of Proximal Development)
               </h2>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {v2Insights.recommended_unlock_topics.map((rec) => (
+                {allSyllabusChapters.slice(0, 6).map((rec) => (
                   <Card key={rec.topic_id} className="flex flex-col gap-1.5 p-4">
                     <span className="text-xs font-semibold uppercase tracking-wide text-midnight-700/60">
-                      {rec.subject}
+                      {rec.subject} {rec.cluster ? `· ${rec.cluster}` : ""}
                     </span>
                     <p className="font-medium text-midnight-950">{rec.topic_id}</p>
                     <p className="text-xs text-midnight-700/70">
-                      Prerequisite Readiness: {Math.round(rec.readiness * 100)}% · ZPD Priority: {rec.zpd_priority_score.toFixed(2)}
+                      Readiness: {Math.round(rec.readiness * 100)}% · Weightage: {rec.neet_weightage ?? 1.5}% · ZPD: {rec.zpd_priority_score.toFixed(2)}
                     </p>
                   </Card>
                 ))}
@@ -238,30 +258,9 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
             </Card>
           )}
 
-          {v2Insights && v2Insights.recommended_unlock_topics.length > 0 && (
-            <div>
-              <h2 className="mb-3 font-display text-lg font-semibold text-midnight-950">
-                Next Recommended Unlock Topics (LinUCB & ZPD Priority)
-              </h2>
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {v2Insights.recommended_unlock_topics.map((rec) => (
-                  <Card key={rec.topic_id} className="flex flex-col gap-1.5 p-4">
-                    <span className="text-xs font-semibold uppercase tracking-wide text-midnight-700/60">
-                      {rec.subject}
-                    </span>
-                    <p className="font-medium text-midnight-950">{rec.topic_id}</p>
-                    <p className="text-xs text-midnight-700/70">
-                      Mastery: {Math.round(rec.current_mastery * 100)}% · Readiness: {Math.round(rec.readiness * 100)}%
-                    </p>
-                  </Card>
-                ))}
-              </div>
-            </div>
-          )}
-
           <div>
             <h2 className="mb-3 font-display text-lg font-semibold text-midnight-950">
-              Topics you're working on
+              Active Chapters Practiced ({topics.length})
             </h2>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               {topics.map((t) => (
@@ -293,6 +292,75 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
             </div>
           </div>
         </>
+      )}
+
+      {/* Complete 65-Chapter NCERT Syllabus & Mastery Explorer (Always visible in both empty and ready states) */}
+      {allSyllabusChapters.length > 0 && (
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+            <div>
+              <h2 className="font-display text-xl font-semibold text-midnight-950">
+                Complete NCERT NEET Syllabus & Mastery Graph ({allSyllabusChapters.length} Chapters)
+              </h2>
+              <p className="text-xs text-midnight-700/70">
+                All 65 canonical Physics, Chemistry, and Biology chapters ranked by LinUCB Zone of Proximal Development (ZPD) priority and 14-year NEET weightage.
+              </p>
+            </div>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search 65 chapters or clusters..."
+              className="w-full rounded-xl border border-midnight-900/10 bg-surface-raised px-3.5 py-2 text-sm text-midnight-900 placeholder-midnight-700/40 outline-none focus:border-accent sm:w-64"
+            />
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {(["All", "Biology", "Chemistry", "Physics"] as SubjectFilter[]).map((subj) => (
+              <button
+                key={subj}
+                type="button"
+                onClick={() => setSubjectFilter(subj)}
+                className={`rounded-xl px-3.5 py-1.5 text-xs font-semibold transition ${
+                  subjectFilter === subj
+                    ? "bg-midnight-950 text-white"
+                    : "bg-midnight-900/5 text-midnight-800 hover:bg-midnight-900/10"
+                }`}
+              >
+                {subj} ({subjectCounts[subj]})
+              </button>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {filteredChapters.map((ch) => (
+              <Card key={ch.topic_id} className="flex flex-col justify-between gap-2.5 p-4">
+                <div>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-[11px] font-semibold uppercase tracking-wide text-midnight-700/60">
+                      {ch.subject} {ch.cluster ? `· ${ch.cluster}` : ""}
+                    </span>
+                    <span className="rounded-full bg-midnight-900/5 px-2 py-0.5 text-[11px] font-medium capitalize text-midnight-800">
+                      {ch.level ?? "basic"}
+                    </span>
+                  </div>
+                  <p className="mt-1 font-medium text-midnight-950">{ch.topic_id}</p>
+                </div>
+
+                <div className="flex flex-col gap-1 border-t border-midnight-900/[0.06] pt-2 text-xs text-midnight-700/75">
+                  <div className="flex items-center justify-between">
+                    <span>BKT Mastery: <strong>{Math.round(ch.current_mastery * 100)}%</strong></span>
+                    <span>Readiness: <strong>{Math.round(ch.readiness * 100)}%</strong></span>
+                  </div>
+                  <div className="flex items-center justify-between text-[11px] text-midnight-700/60">
+                    <span>NEET Weightage: {ch.neet_weightage ?? 1.5}%</span>
+                    <span>ZPD Priority: {ch.zpd_priority_score.toFixed(2)}</span>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </div>
       )}
     </div>
   );

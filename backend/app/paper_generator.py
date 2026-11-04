@@ -91,9 +91,11 @@ def generate_paper(db: Session, student_id: str, total_length: int = 45) -> list
     state_by_topic = {s.topic_id: s for s in all_states}
     mastery_map = {s.topic_id: float(getattr(s, "mastery_prob", 0.35) or 0.35) for s in all_states}
 
+    fractional_topics: list[tuple[float, str]] = []
     for topic_id, importance in _TOPIC_IMPORTANCE.items():
         num_questions = round(importance / 100 * total_length)
         if num_questions == 0:
+            fractional_topics.append((float(importance), topic_id))
             continue
 
         state = state_by_topic.get(topic_id)
@@ -158,5 +160,37 @@ def generate_paper(db: Session, student_id: str, total_length: int = 45) -> list
             probe_candidates = [q for q in medium_pool if q not in paper]
             if probe_candidates and len(paper) < total_length + 5:
                 paper.append(probe_candidates[0])
+
+    # Stochastic Remainder Allocation: ensure the 31 fractional-quota NCERT chapters
+    # (where round(importance / 100 * total_length) == 0) are proportionally sampled
+    # to fill any remaining slots up to total_length.
+    if len(paper) < total_length and fractional_topics:
+        remaining_slots = total_length - len(paper)
+        weighted_candidates: list[tuple[float, str]] = []
+        for imp, t_id in fractional_topics:
+            readiness = compute_prerequisite_readiness(t_id, mastery_map)
+            score = imp * readiness * random.uniform(0.75, 1.25)
+            weighted_candidates.append((score, t_id))
+        weighted_candidates.sort(key=lambda pair: pair[0], reverse=True)
+
+        for _, t_id in weighted_candidates[:remaining_slots]:
+            state = state_by_topic.get(t_id)
+            level = state.level if state else "basic"
+            topic_theta = float(getattr(state, "irt_theta", global_theta) or global_theta) if state else global_theta
+            mastery_prob = float(getattr(state, "mastery_prob", 0.35) or 0.35) if state else 0.35
+            pace_flag = state.pace_flag if state else None
+            prereq_ready = compute_prerequisite_readiness(t_id, mastery_map)
+            imp_val = float(_TOPIC_IMPORTANCE.get(t_id, 0.5))
+
+            pool = pools.get((t_id, level), [])
+            if not pool:
+                for fb_diff in ADJACENT_FALLBACK_ORDER.get(level, ["medium", "basic"]):
+                    pool = pools.get((t_id, fb_diff), [])
+                    if pool:
+                        break
+            picked = _select_with_bandit(
+                pool, 1, student_id, topic_theta, mastery_prob, imp_val, prereq_ready, pace_flag
+            )
+            paper.extend(picked)
 
     return paper
