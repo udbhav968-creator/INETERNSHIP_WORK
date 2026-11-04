@@ -1,0 +1,70 @@
+{
+  "harness_status": "PASSED",
+  "execution_time_seconds": 0.039,
+  "persona_simulations": {
+    "strong_master": {
+      "final_level": "advanced",
+      "final_mastery_prob": 0.99,
+      "final_theta": 3.4431,
+      "estimated_percentile": 99.9,
+      "invariants_satisfied": true
+    },
+    "foundational_struggler": {
+      "final_level": "basic",
+      "final_mastery_prob": 0.2193,
+      "final_theta": -0.7757,
+      "detected_bottlenecks": 3,
+      "invariants_satisfied": true
+    },
+    "impulsive_guesser_telemetry_audit": {
+      "deliberate_posterior": 0.778,
+      "impulsive_guess_posterior": 0.6071,
+      "damping_delta": 0.1709,
+      "invariants_satisfied": true
+    },
+    "spaced_repetition_learner": {
+      "peak_mastery": 0.88,
+      "decayed_mastery_after_168h": 0.4813,
+      "retention_urgency": 1.0,
+      "invariants_satisfied": true
+    }
+  },
+  "linucb_vs_random_ablation": {
+    "n_rounds": 120,
+    "linucb_mean_zpd_alignment": 0.8636,
+    "random_mean_zpd_alignment": 0.5573,
+    "linucb_mean_fisher_info": 1.1374,
+    "random_mean_fisher_info": 0.3627,
+    "linucb_cumulative_regret": 0.0,
+    "random_cumulative_regret": 36.7544,
+    "linucb_outperforms_random": true
+  },
+  "latency_sla_benchmarks": {
+    "irt_3pl_map_update": {
+      "p50_ms": 0.0073,
+      "p95_ms": 0.0085,
+      "p99_ms": 0.0113
+    },
+    "bkt_saint_ebbinghaus_update": {
+      "p50_ms": 0.0078,
+      "p95_ms": 0.0091,
+      "p99_ms": 0.0128
+    },
+    "linucb_context_scoring": {
+      "p50_ms": 0.0095,
+      "p95_ms": 0.0105,
+      "p99_ms": 0.013
+    },
+    "rag_socratic_remediation": {
+      "p50_ms": 1.5263,
+      "p95_ms": 1.7146,
+      "p99_ms": 1.7146
+    },
+    "in_memory_feature_store": {
+      "p50_ms": 0.0028,
+      "p95_ms": 0.0037,
+      "p99_ms": 0.0061
+    },
+    "all_slas_met": true
+  }
+}

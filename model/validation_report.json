@@ -1,0 +1,93 @@
+{
+  "pipeline_status": "PASSED",
+  "execution_time_seconds": 10.712,
+  "data_validation_gates": {
+    "question_bank_schema_valid": true,
+    "weightage_schema_valid": true,
+    "total_verified_questions": 2471,
+    "ncert_dag_nodes": 65,
+    "ncert_dag_acyclic": true,
+    "rag_knowledge_base_chapters": 65,
+    "topic_importance_chapters": 65
+  },
+  "random_forest_holdout_evaluation": {
+    "training_rows": 1976,
+    "testing_rows": 495,
+    "correct_predictions": 493,
+    "holdout_accuracy": 0.9959595959595959,
+    "macro_f1": 0.9923,
+    "weighted_f1": 0.996,
+    "confusion_matrix_labels": [
+      "advanced",
+      "basic",
+      "medium"
+    ],
+    "confusion_matrix": [
+      [
+        47,
+        0,
+        1
+      ],
+      [
+        0,
+        8,
+        0
+      ],
+      [
+        1,
+        0,
+        438
+      ]
+    ],
+    "per_class_metrics": {
+      "advanced": {
+        "precision": 0.9792,
+        "recall": 0.9792,
+        "f1_score": 0.9792,
+        "support": 48
+      },
+      "basic": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "support": 8
+      },
+      "medium": {
+        "precision": 0.9977,
+        "recall": 0.9977,
+        "f1_score": 0.9977,
+        "support": 439
+      }
+    }
+  },
+  "stratified_5fold_cross_validation": {
+    "n_splits": 5,
+    "fold_accuracies": [
+      0.9859,
+      0.9899,
+      0.9879,
+      0.9879,
+      0.9818
+    ],
+    "mean_cv_accuracy": 0.9866,
+    "std_cv_accuracy": 0.0027,
+    "mean_cv_macro_f1": 0.9733,
+    "mean_cv_log_loss": 0.0398,
+    "oof_multiclass_brier_score": 0.02185
+  },
+  "irt_3pl_calibration_summary": {
+    "calibrated_questions": 2472,
+    "discrimination_a_range": [
+      1.1428,
+      2.094
+    ],
+    "difficulty_b_range": [
+      -1.7754,
+      2.2364
+    ],
+    "guessing_c_range": [
+      0.12,
+      0.25
+    ]
+  }
+}

@@ -657,6 +657,54 @@ def test_15_v3_advanced_psychometric_and_nlp_upgrades():
     assert "Factor-of-2 Trap" in rem_factor2["misconception_diagnosis"]
 
 
+# ============================================================================
+# 16. DEEP TRAINING & 5-FOLD STRATIFIED CROSS-VALIDATION PIPELINE GATE
+# ============================================================================
+def test_16_deep_training_and_cross_validation_pipeline():
+    from model.training_and_validation_pipeline import run_deep_training_and_validation
+
+    report = run_deep_training_and_validation(save_artifacts=True)
+    assert report["pipeline_status"] == "PASSED"
+    assert report["random_forest_holdout_evaluation"]["holdout_accuracy"] >= 0.995
+    assert report["random_forest_holdout_evaluation"]["correct_predictions"] == 493
+    assert report["stratified_5fold_cross_validation"]["mean_cv_accuracy"] >= 0.985
+    assert report["stratified_5fold_cross_validation"]["oof_multiclass_brier_score"] < 0.05
+    assert report["irt_3pl_calibration_summary"]["calibrated_questions"] >= 2471
+    assert (PROJECT_ROOT / "model" / "validation_report.json").exists()
+
+
+# ============================================================================
+# 17. HARNESS ENGINEERING: MULTI-PERSONA SIMULATION & BANDIT REGRET ABLATION
+# ============================================================================
+def test_17_harness_engineering_multi_persona_and_bandit_regret():
+    from model.evaluation_harness import run_evaluation_harness
+
+    report = run_evaluation_harness(save_report=True)
+    assert report["harness_status"] == "PASSED"
+    assert report["persona_simulations"]["strong_master"]["invariants_satisfied"] is True
+    assert report["persona_simulations"]["foundational_struggler"]["invariants_satisfied"] is True
+    assert report["persona_simulations"]["impulsive_guesser_telemetry_audit"]["invariants_satisfied"] is True
+    assert report["persona_simulations"]["spaced_repetition_learner"]["invariants_satisfied"] is True
+    assert report["linucb_vs_random_ablation"]["linucb_outperforms_random"] is True
+    assert report["latency_sla_benchmarks"]["all_slas_met"] is True
+    assert (PROJECT_ROOT / "model" / "harness_benchmark_report.json").exists()
+
+
+# ============================================================================
+# 18. CI/CD WORKFLOW & CLOUD DEPLOYMENT MANIFEST INTEGRITY
+# ============================================================================
+def test_18_cicd_pipeline_and_deployment_manifests():
+    workflow_path = PROJECT_ROOT / ".github" / "workflows" / "ci_cd_mlops.yml"
+    assert workflow_path.exists(), "Missing GitHub Actions CI/CD workflow"
+    wf_text = workflow_path.read_text(encoding="utf-8")
+    assert "model.training_and_validation_pipeline" in wf_text
+    assert "model.evaluation_harness" in wf_text
+    assert "backend/tests/test_v2_engine.py" in wf_text
+
+    for manifest in ["Dockerfile", "vercel.json", "render.yaml", "railway.json", "api/index.py"]:
+        assert (PROJECT_ROOT / manifest).exists(), f"Missing deployment manifest: {manifest}"
+
+
 if __name__ == "__main__":
     suites = [
         test_01_random_forest_model_and_live_inference,
@@ -674,8 +722,11 @@ if __name__ == "__main__":
         test_13_database_counts_and_adaptive_paper_generator,
         test_14_all_11_endpoints_and_concurrent_stress,
         test_15_v3_advanced_psychometric_and_nlp_upgrades,
+        test_16_deep_training_and_cross_validation_pipeline,
+        test_17_harness_engineering_multi_persona_and_bandit_regret,
+        test_18_cicd_pipeline_and_deployment_manifests,
     ]
     for fn in suites:
         fn()
         print(f"[PASS] {fn.__name__}")
-    print(f"\nALL {len(suites)} DEEP UNIT, INTEGRATION, SECURITY & CONCURRENCY SUITES PASSED (100%)!")
+    print(f"\nALL {len(suites)} DEEP UNIT, INTEGRATION, HARNESS, TRAINING & CI/CD SUITES PASSED (100%)!")
