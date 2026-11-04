@@ -319,9 +319,11 @@ def get_v2_student_insights(student_id: str, db: Session = Depends(get_db)):
     predicted_score = int(max(120, min(720, round(380 + global_theta * 110))))
 
     for st in states:
+        att_cnt = int(st.attempts_counted or len(st.last_3_results or []) or 1)
         shrunk_m = compute_hierarchical_shrinkage_prior(
             topic_id=st.topic_id,
             student_mastery_map=mastery_map,
+            attempts_count=att_cnt,
         )
         topic_details.append(
             {

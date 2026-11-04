@@ -339,5 +339,898 @@
       "What is the ploidy of the central cell versus the male gamete that fuses with it during triple fusion?",
       "Which hormone maintains the endometrium during the luteal phase, and what structure secretes it after ovulation?"
     ]
+  },
+  {
+    "chunk_id": "NCERT_PHY_19",
+    "subject": "Physics",
+    "chapter": "Gravitation",
+    "ncert_ref": "NCERT Class 11 Physics ? Gravitation",
+    "core_concept": "Gravitation (Mechanics Core): covers Escape Velocity, Orbital Velocity & Satellites, Gravitational Potential & Energy, Gravitational Potential & Potential Energy, Kepler's Laws & Planetary Motion, Kepler's Laws of Planetary Motion, Universal Gravitation & Acceleration Due to Gravity.",
+    "formulas": [
+      "Gravitational potential at the origin due to an infinite number of bodies each of mass 2 kg situated at x = 1, 2, 4, 8",
+      "Escape velocity on a black hole should be\nmore or equal to speed of light\n\nc ≤ ves\n\nc ≤\nR\nGM\n2\n\n3 × 108 ≤\nR\n10\n98"
+    ],
+    "common_misconceptions": [
+      "Confusing boundary conditions or sign conventions across Escape Velocity, Orbital Velocity & Satellites and Gravitational Potential & Energy.",
+      "Overlooking prerequisite concepts from Laws of Motion, Work, Energy & Power when solving Mastery of Escape Velocity, Orbital Velocity & Satellites in Gravitation problems."
+    ],
+    "socratic_questions": [
+      "In Gravitation, how does the principle of Escape Velocity, Orbital Velocity & Satellites govern the relationship between the given variables?",
+      "Which conserved quantity or NCERT boundary condition eliminates the distractor options in this Mastery of Escape Velocity, Orbital Velocity & Satellites in Gravitation problem?"
+    ]
+  },
+  {
+    "chunk_id": "NCERT_PHY_20",
+    "subject": "Physics",
+    "chapter": "Properties of Matter",
+    "ncert_ref": "NCERT Class 11 Physics ? Properties of Matter",
+    "core_concept": "Properties of Matter (Bulk Matter & Thermal): covers Elasticity: Stress, Strain & Moduli, Hydrodynamics: Viscosity & Bernoulli's Theorem, Surface Tension, Capillarity & Excess Pressure.",
+    "formulas": [
+      "For a wire under tension, elongation ΔL = (F * L) / (A * Y) = (4 * F * L) / (π * d^2 * Y)",
+      "(Surface Tension)\n\nThe wettability of a surface by a liquid depends on angle of contact between the surface and the liquid"
+    ],
+    "common_misconceptions": [
+      "Confusing boundary conditions or sign conventions across Elasticity: Stress, Strain & Moduli and Hydrodynamics: Viscosity & Bernoulli's Theorem.",
+      "Overlooking prerequisite concepts from Laws of Motion, Units & Dimensions when solving Mastery of Elasticity: Stress, Strain & Moduli in Properties of Matter problems."
+    ],
+    "socratic_questions": [
+      "In Properties of Matter, how does the principle of Elasticity: Stress, Strain & Moduli govern the relationship between the given variables?",
+      "Which conserved quantity or NCERT boundary condition eliminates the distractor options in this Mastery of Elasticity: Stress, Strain & Moduli in Properties of Matter problem?"
+    ]
+  },
+  {
+    "chunk_id": "NCERT_PHY_21",
+    "subject": "Physics",
+    "chapter": "Thermal Physics",
+    "ncert_ref": "NCERT Class 11 Physics ? Thermal Physics",
+    "core_concept": "Thermal Physics (Bulk Matter & Thermal): covers Heat Transfer & Conduction, Thermal Expansion & Calorimetry, Thermal Radiation & Cooling Laws.",
+    "formulas": [
+      "Cp – Cv = R\n\n⇒\nv\nv\nv\nv\np\nC\nR\nC\nC\nC\nC\n=\n−\n\nγ – 1 =\nv\nC\nR\n\n∴ Cv =\n1\nR\n−\nγ",
+      "Helium is a monoatomic gas having degrees of freedom f = 3"
+    ],
+    "common_misconceptions": [
+      "Confusing boundary conditions or sign conventions across Heat Transfer & Conduction and Thermal Expansion & Calorimetry.",
+      "Overlooking prerequisite concepts from Properties of Matter, Work, Energy & Power when solving Mastery of Heat Transfer & Conduction in Thermal Physics problems."
+    ],
+    "socratic_questions": [
+      "In Thermal Physics, how does the principle of Heat Transfer & Conduction govern the relationship between the given variables?",
+      "Which conserved quantity or NCERT boundary condition eliminates the distractor options in this Mastery of Heat Transfer & Conduction in Thermal Physics problem?"
+    ]
+  },
+  {
+    "chunk_id": "NCERT_PHY_22",
+    "subject": "Physics",
+    "chapter": "Oscillations & Waves",
+    "ncert_ref": "NCERT Class 11 Physics ? Oscillations & Waves",
+    "core_concept": "Oscillations & Waves (Waves & Optics): covers Doppler Effect & Sound Waves, Doppler Effect, Organ Pipes & Acoustics, Simple Harmonic Motion & Pendulums, Simple Harmonic Motion (SHM), Wave Motion, Standing Waves & Sound.",
+    "formulas": [
+      "y = a sin (ωt – kx)\n\n OR\n\ny = a sin (kx – ωt)\n\n∴ y = sin [x – 2t]\n…(1)\n\nk =\nπ\nπ\n=\nλ\nπ\n2\n2\n2\n\nω = 2π",
+      "When pipe is open at both ends then ratio of frequency\n\n(i) ν : 2 ν : 3 ν : 4 ν : 5 ν\n\nwhere ν = L\n2\nv\n\nodd and even both harmonics will present\n\nSo, option (1), (2) and (3) are correct"
+    ],
+    "common_misconceptions": [
+      "Confusing boundary conditions or sign conventions across Doppler Effect & Sound Waves and Doppler Effect, Organ Pipes & Acoustics.",
+      "Overlooking prerequisite concepts from Kinematics, Laws of Motion, Work, Energy & Power when solving Mastery of Doppler Effect & Sound Waves in Oscillations & Waves problems."
+    ],
+    "socratic_questions": [
+      "In Oscillations & Waves, how does the principle of Doppler Effect & Sound Waves govern the relationship between the given variables?",
+      "Which conserved quantity or NCERT boundary condition eliminates the distractor options in this Mastery of Doppler Effect & Sound Waves in Oscillations & Waves problem?"
+    ]
+  },
+  {
+    "chunk_id": "NCERT_PHY_23",
+    "subject": "Physics",
+    "chapter": "Magnetic Effects of Current",
+    "ncert_ref": "NCERT Class 12 Physics ? Magnetic Effects of Current",
+    "core_concept": "Magnetic Effects of Current (Electromagnetism): covers Ampere's Law, Solenoids & Toroids, Biot-Savart Law & Magnetic Fields, Magnetic Field & Biot-Savart Law, Magnetic Force on Currents & Ampere's Law.",
+    "formulas": [
+      "→\nL\nF =\n→\neF +\n→\nm\nF = q\n→\nE + q (\n→\nv ×\n→\nB )\n\nma0 = qE + 0\n\n…",
+      "P(0,0, d)\nI1\nI2\nx\ny\n\n1\nB\nr\n =\n) jˆ\n(\nd\n2\nI\nµ\n1\n0\n−\nπ\n\n2\nB\nr\n =\n) iˆ\n(\nd\n2\nI\nµ\n2\n0\n+\nπ\n\nB =\n2\n2\n2\n1\nB\nB +\n =\n2\n2\n2\n1\n0\nI\nI\nd\n2\nµ\n+\nπ"
+    ],
+    "common_misconceptions": [
+      "Confusing boundary conditions or sign conventions across Ampere's Law, Solenoids & Toroids and Biot-Savart Law & Magnetic Fields.",
+      "Overlooking prerequisite concepts from Current Electricity, Electrostatics when solving Mastery of Ampere's Law, Solenoids & Toroids in Magnetic Effects of Current problems."
+    ],
+    "socratic_questions": [
+      "In Magnetic Effects of Current, how does the principle of Ampere's Law, Solenoids & Toroids govern the relationship between the given variables?",
+      "Which conserved quantity or NCERT boundary condition eliminates the distractor options in this Mastery of Ampere's Law, Solenoids & Toroids in Magnetic Effects of Current problem?"
+    ]
+  },
+  {
+    "chunk_id": "NCERT_PHY_24",
+    "subject": "Physics",
+    "chapter": "Magnetism & Matter",
+    "ncert_ref": "NCERT Class 12 Physics ? Magnetism & Matter",
+    "core_concept": "Magnetism & Matter (Electromagnetism): covers Earth's Magnetism & Magnetic Elements, Magnetic Properties: Dia, Para, Ferro & Hysteresis.",
+    "formulas": [
+      "(1)\nMagnetic susceptibility 𝜒𝑚\nis negative for diamagnetic substance only",
+      "Step 1: Identify the given physical parameters in the problem relating to General Physics (Physics Core Concepts)"
+    ],
+    "common_misconceptions": [
+      "Confusing boundary conditions or sign conventions across Earth's Magnetism & Magnetic Elements and Magnetic Properties: Dia, Para, Ferro & Hysteresis.",
+      "Overlooking prerequisite concepts from Magnetic Effects of Current when solving Mastery of Earth's Magnetism & Magnetic Elements in Magnetism & Matter problems."
+    ],
+    "socratic_questions": [
+      "In Magnetism & Matter, how does the principle of Earth's Magnetism & Magnetic Elements govern the relationship between the given variables?",
+      "Which conserved quantity or NCERT boundary condition eliminates the distractor options in this Mastery of Earth's Magnetism & Magnetic Elements in Magnetism & Matter problem?"
+    ]
+  },
+  {
+    "chunk_id": "NCERT_PHY_25",
+    "subject": "Physics",
+    "chapter": "Electromagnetic Induction",
+    "ncert_ref": "NCERT Class 12 Physics ? Electromagnetic Induction",
+    "core_concept": "Electromagnetic Induction (Electromagnetism): covers Faraday's Laws, Lenz's Law & Motional EMF, Motional EMF & Faraday's Law, Self & Mutual Inductance.",
+    "formulas": [
+      "e = B v(li – lf)\n\nwhere (li – lf) is displacement between end of\nsemicircular ring\n\ne = B v(2R)",
+      "(4)\nWhen e− comes closer the induced current will be anticlockwise\nWhen e− comes farther induced current will be clockwise"
+    ],
+    "common_misconceptions": [
+      "Confusing boundary conditions or sign conventions across Faraday's Laws, Lenz's Law & Motional EMF and Motional EMF & Faraday's Law.",
+      "Overlooking prerequisite concepts from Magnetic Effects of Current, Current Electricity when solving Mastery of Faraday's Laws, Lenz's Law & Motional EMF in Electromagnetic Induction problems."
+    ],
+    "socratic_questions": [
+      "In Electromagnetic Induction, how does the principle of Faraday's Laws, Lenz's Law & Motional EMF govern the relationship between the given variables?",
+      "Which conserved quantity or NCERT boundary condition eliminates the distractor options in this Mastery of Faraday's Laws, Lenz's Law & Motional EMF in Electromagnetic Induction problem?"
+    ]
+  },
+  {
+    "chunk_id": "NCERT_PHY_26",
+    "subject": "Physics",
+    "chapter": "Alternating Current",
+    "ncert_ref": "NCERT Class 12 Physics ? Alternating Current",
+    "core_concept": "Alternating Current (Electromagnetism): covers Series LCR Circuits & AC Voltage, Transformers & Power Transmission.",
+    "formulas": [
+      "I\n~ E\nL=\nl\nA\nN2\nr\n0µ\nµ\n\n↓I =\n2\n2\n2\nR\nL\nE\n+\nω\n =\n2\n2\n2\nR\nL\nE\n+\n↑\nω\n\nL ∝ µr\n\nL is increased when iron rod inserted\n\nSo current decreased",
+      "When L is removed,\nC\nC\nX\nX\ntan\ntan\nR\n3\nR\nπ\nφ=\n⇒\n="
+    ],
+    "common_misconceptions": [
+      "Confusing boundary conditions or sign conventions across Series LCR Circuits & AC Voltage and Transformers & Power Transmission.",
+      "Overlooking prerequisite concepts from Electromagnetic Induction, Current Electricity, Oscillations & Waves when solving Mastery of Series LCR Circuits & AC Voltage in Alternating Current problems."
+    ],
+    "socratic_questions": [
+      "In Alternating Current, how does the principle of Series LCR Circuits & AC Voltage govern the relationship between the given variables?",
+      "Which conserved quantity or NCERT boundary condition eliminates the distractor options in this Mastery of Series LCR Circuits & AC Voltage in Alternating Current problem?"
+    ]
+  },
+  {
+    "chunk_id": "NCERT_PHY_27",
+    "subject": "Physics",
+    "chapter": "Electromagnetic Waves",
+    "ncert_ref": "NCERT Class 12 Physics ? Electromagnetic Waves",
+    "core_concept": "Electromagnetic Waves (Waves & Optics): covers Displacement Current & Wave Propagation, Electromagnetic Spectrum & Applications.",
+    "formulas": [
+      "(2)\nWavelength of the ray\nλ = hc\nE\n= 0",
+      "In an electromagnetic wave, half of the\nintensity is provided by the electric field and\nhalf by the magnetic field\nHence required ratio should be 1 : 1"
+    ],
+    "common_misconceptions": [
+      "Confusing boundary conditions or sign conventions across Displacement Current & Wave Propagation and Electromagnetic Spectrum & Applications.",
+      "Overlooking prerequisite concepts from Electrostatics, Magnetic Effects of Current, Oscillations & Waves when solving Mastery of Displacement Current & Wave Propagation in Electromagnetic Waves problems."
+    ],
+    "socratic_questions": [
+      "In Electromagnetic Waves, how does the principle of Displacement Current & Wave Propagation govern the relationship between the given variables?",
+      "Which conserved quantity or NCERT boundary condition eliminates the distractor options in this Mastery of Displacement Current & Wave Propagation in Electromagnetic Waves problem?"
+    ]
+  },
+  {
+    "chunk_id": "NCERT_PHY_28",
+    "subject": "Physics",
+    "chapter": "Ray Optics",
+    "ncert_ref": "NCERT Class 12 Physics ? Ray Optics",
+    "core_concept": "Ray Optics (Waves & Optics): covers Lenses & Combinations, Optical Instruments: Microscope & Telescope, Prisms: Dispersion & Deviation, Refraction, Total Internal Reflection & Mirrors.",
+    "formulas": [
+      "Lens maker's formula: 1/f = (μ - 1)*(1/R1 - 1/R2)",
+      "Magnifying power of an astronomical telescope is m = fo / fe; increasing fo increases the magnifying power"
+    ],
+    "common_misconceptions": [
+      "Confusing boundary conditions or sign conventions across Lenses & Combinations and Optical Instruments: Microscope & Telescope.",
+      "Overlooking prerequisite concepts from Kinematics when solving Mastery of Lenses & Combinations in Ray Optics problems."
+    ],
+    "socratic_questions": [
+      "In Ray Optics, how does the principle of Lenses & Combinations govern the relationship between the given variables?",
+      "Which conserved quantity or NCERT boundary condition eliminates the distractor options in this Mastery of Lenses & Combinations in Ray Optics problem?"
+    ]
+  },
+  {
+    "chunk_id": "NCERT_PHY_29",
+    "subject": "Physics",
+    "chapter": "Wave Optics",
+    "ncert_ref": "NCERT Class 12 Physics ? Wave Optics",
+    "core_concept": "Wave Optics (Waves & Optics): covers Diffraction at Single Slit, Interference & Young's Double Slit (YDSE), Polarization of Light & Brewster's Law.",
+    "formulas": [
+      "For electron diffraction at a narrow slit of width d, the angular half-width of the central diffraction maximum is given by sin θ ≈ λ / d, where λ = h / p is the de Broglie wavelength of the fast-moving electrons",
+      "In Young's double-slit experiment, resultant intensity is I = 4*I0 * cos^2(ϕ / 2), where ϕ = (2π / λ) * Δx"
+    ],
+    "common_misconceptions": [
+      "Confusing boundary conditions or sign conventions across Diffraction at Single Slit and Interference & Young's Double Slit (YDSE).",
+      "Overlooking prerequisite concepts from Oscillations & Waves, Ray Optics, Electromagnetic Waves when solving Mastery of Diffraction at Single Slit in Wave Optics problems."
+    ],
+    "socratic_questions": [
+      "In Wave Optics, how does the principle of Diffraction at Single Slit govern the relationship between the given variables?",
+      "Which conserved quantity or NCERT boundary condition eliminates the distractor options in this Mastery of Diffraction at Single Slit in Wave Optics problem?"
+    ]
+  },
+  {
+    "chunk_id": "NCERT_PHY_30",
+    "subject": "Physics",
+    "chapter": "Dual Nature of Matter",
+    "ncert_ref": "NCERT Class 12 Physics ? Dual Nature of Matter",
+    "core_concept": "Dual Nature of Matter (Modern Physics): covers Matter Waves & de Broglie Wavelength, Photoelectric Effect & Work Function.",
+    "formulas": [
+      "Step 1: Work function of the metal: φ = h * ν0",
+      "de-Broglie wavelength for an electron\n\nλe =\nmE\n2\nh\n or λe ∝\nE\n1\n\nor\n2\ne\nλ ∝ E\n1\n…"
+    ],
+    "common_misconceptions": [
+      "Confusing boundary conditions or sign conventions across Matter Waves & de Broglie Wavelength and Photoelectric Effect & Work Function.",
+      "Overlooking prerequisite concepts from Work, Energy & Power, Electrostatics, Wave Optics when solving Mastery of Matter Waves & de Broglie Wavelength in Dual Nature of Matter problems."
+    ],
+    "socratic_questions": [
+      "In Dual Nature of Matter, how does the principle of Matter Waves & de Broglie Wavelength govern the relationship between the given variables?",
+      "Which conserved quantity or NCERT boundary condition eliminates the distractor options in this Mastery of Matter Waves & de Broglie Wavelength in Dual Nature of Matter problem?"
+    ]
+  },
+  {
+    "chunk_id": "NCERT_PHY_31",
+    "subject": "Physics",
+    "chapter": "Atoms & Nuclei",
+    "ncert_ref": "NCERT Class 12 Physics ? Atoms & Nuclei",
+    "core_concept": "Atoms & Nuclei (Modern Physics): covers Bohr's Model & Hydrogen Line Spectrum, Nuclear Physics: Binding Energy, Fission & Fusion, Radioactivity: Decay Law & Half-Life.",
+    "formulas": [
+      "Rydberg formula for hydrogen line spectra: 1/λ = R*(1/n1^2 - 1/n2^2)",
+      "Half-life of X ⇒ TX = 20 years\n\nX\n1\nY\n7\nActive\nStable\n\n0\nN\nN =\n7\n1\n1\n+\n = 8\n1 =\nn\n2\n1 =\n3\n2\n1\n\nn = 3 =\nT\nt =\n20\nt\n\nt = 60 years"
+    ],
+    "common_misconceptions": [
+      "Confusing boundary conditions or sign conventions across Bohr's Model & Hydrogen Line Spectrum and Nuclear Physics: Binding Energy, Fission & Fusion.",
+      "Overlooking prerequisite concepts from Dual Nature of Matter, Electrostatics when solving Mastery of Bohr's Model & Hydrogen Line Spectrum in Atoms & Nuclei problems."
+    ],
+    "socratic_questions": [
+      "In Atoms & Nuclei, how does the principle of Bohr's Model & Hydrogen Line Spectrum govern the relationship between the given variables?",
+      "Which conserved quantity or NCERT boundary condition eliminates the distractor options in this Mastery of Bohr's Model & Hydrogen Line Spectrum in Atoms & Nuclei problem?"
+    ]
+  },
+  {
+    "chunk_id": "NCERT_PHY_32",
+    "subject": "Physics",
+    "chapter": "Semiconductor Electronics",
+    "ncert_ref": "NCERT Class 12 Physics ? Semiconductor Electronics",
+    "core_concept": "Semiconductor Electronics (Modern Physics): covers Diode Applications & Rectifiers, Logic Gates & Digital Circuits, P-N Junction & Semiconductors.",
+    "formulas": [
+      "A\nB\nB",
+      "For normal incidence on a perfectly reflecting surface, radiation pressure is P = 2*I / c"
+    ],
+    "common_misconceptions": [
+      "Confusing boundary conditions or sign conventions across Diode Applications & Rectifiers and Logic Gates & Digital Circuits.",
+      "Overlooking prerequisite concepts from Current Electricity, Atoms & Nuclei when solving Mastery of Diode Applications & Rectifiers in Semiconductor Electronics problems."
+    ],
+    "socratic_questions": [
+      "In Semiconductor Electronics, how does the principle of Diode Applications & Rectifiers govern the relationship between the given variables?",
+      "Which conserved quantity or NCERT boundary condition eliminates the distractor options in this Mastery of Diode Applications & Rectifiers in Semiconductor Electronics problem?"
+    ]
+  },
+  {
+    "chunk_id": "NCERT_CHE_33",
+    "subject": "Chemistry",
+    "chapter": "Periodic Table",
+    "ncert_ref": "NCERT Class 11 Chemistry ? Periodic Table",
+    "core_concept": "Periodic Table (Inorganic Chemistry): covers Ionization Enthalpy & Electron Gain Enthalpy, Periodic Trends & Atomic Radii.",
+    "formulas": [
+      "All option are incorrect order of ionic radius\n\nIonic radius H– > H+ > H\n\n Na+ > F– > O–2\n\n F– > O–2 > Na+\n\nAl+3 > Mg+2 > N–3\n\nCorrect order of ionic radius are\n\n(1) H– > H > H+\n\n(2) O–2 > F– > Na+\n\n(3) O–2 > F– > Na+\n\n(4) N–3 > Mg+2 > Al+3",
+      "(3) Strong reducing behaviour of H3PO2\nAll oxy-acid of phosphorus which contain P – H bond act as reductant"
+    ],
+    "common_misconceptions": [
+      "Confusing boundary conditions or sign conventions across Ionization Enthalpy & Electron Gain Enthalpy and Periodic Trends & Atomic Radii.",
+      "Overlooking prerequisite concepts from Structure of Atom when solving Mastery of Ionization Enthalpy & Electron Gain Enthalpy in Periodic Table problems."
+    ],
+    "socratic_questions": [
+      "In Periodic Table, how does the principle of Ionization Enthalpy & Electron Gain Enthalpy govern the relationship between the given variables?",
+      "Which conserved quantity or NCERT boundary condition eliminates the distractor options in this Mastery of Ionization Enthalpy & Electron Gain Enthalpy in Periodic Table problem?"
+    ]
+  },
+  {
+    "chunk_id": "NCERT_CHE_34",
+    "subject": "Chemistry",
+    "chapter": "States of Matter",
+    "ncert_ref": "NCERT Class 11 Chemistry ? States of Matter",
+    "core_concept": "States of Matter (Physical Chemistry): covers Gas Laws & Ideal Gas Equation, Real Gases & Critical Phenomena, Solid State & Unit Cells.",
+    "formulas": [
+      "Effective atoms\n\n= 8\n1 × 8 + 2\n1 × 6 + 4 = 8",
+      "BCC unit cell:\n\nH\nG\nE\nI\nF\nC\nB\nA\nD\n\nAccording to ∆ABC\n\nAC2 = AB2 + BC2\n\nAC2 = a2\n + a2\n\nAC =\na\n2\n\nAccording to ∆ACG AG2 = AC2 + CG2\n\nAG2 = 2a2 + a2\n\n ∴ AG =\na\n3\n\n∴ AI distance =\n2\na\n3\n2\nAG ="
+    ],
+    "common_misconceptions": [
+      "Confusing boundary conditions or sign conventions across Gas Laws & Ideal Gas Equation and Real Gases & Critical Phenomena.",
+      "Overlooking prerequisite concepts from Mole Concept / Stoichiometry, Chemical Bonding when solving Mastery of Gas Laws & Ideal Gas Equation in States of Matter problems."
+    ],
+    "socratic_questions": [
+      "In States of Matter, how does the principle of Gas Laws & Ideal Gas Equation govern the relationship between the given variables?",
+      "Which conserved quantity or NCERT boundary condition eliminates the distractor options in this Mastery of Gas Laws & Ideal Gas Equation in States of Matter problem?"
+    ]
+  },
+  {
+    "chunk_id": "NCERT_CHE_35",
+    "subject": "Chemistry",
+    "chapter": "Redox Reactions & Electrochemistry",
+    "ncert_ref": "NCERT Class 12 Chemistry ? Redox Reactions & Electrochemistry",
+    "core_concept": "Redox Reactions & Electrochemistry (Physical Chemistry): covers Conductance & Kohlrausch's Law, Electrolysis, Faraday's Laws & Batteries, Galvanic Cells, Nernst Equation & Cell EMF, Oxidation Numbers & Balancing Redox Reactions.",
+    "formulas": [
+      "For a hydrogen gas electrode: H+(aq) + e- -> 1/2 H2(g)",
+      "α =\n∞\nπ\nπ\nm\nm = 238\n54"
+    ],
+    "common_misconceptions": [
+      "Confusing boundary conditions or sign conventions across Conductance & Kohlrausch's Law and Electrolysis, Faraday's Laws & Batteries.",
+      "Overlooking prerequisite concepts from Mole Concept / Stoichiometry, Equilibrium when solving Mastery of Conductance & Kohlrausch's Law in Redox Reactions & Electrochemistry problems."
+    ],
+    "socratic_questions": [
+      "In Redox Reactions & Electrochemistry, how does the principle of Conductance & Kohlrausch's Law govern the relationship between the given variables?",
+      "Which conserved quantity or NCERT boundary condition eliminates the distractor options in this Mastery of Conductance & Kohlrausch's Law in Redox Reactions & Electrochemistry problem?"
+    ]
+  },
+  {
+    "chunk_id": "NCERT_CHE_36",
+    "subject": "Chemistry",
+    "chapter": "Solutions",
+    "ncert_ref": "NCERT Class 12 Chemistry ? Solutions",
+    "core_concept": "Solutions (Physical Chemistry): covers Colligative Properties: Freezing & Boiling Points, Colligative Properties: Osmotic Pressure & van 't Hoff, Concentration Terms: Molarity, Molality & Mole Fraction, Ideal/Non-Ideal Solutions & Raoult's Law.",
+    "formulas": [
+      "Colligative properties ∝ Net molality\n\n(1) for KCl Net molality = 0",
+      "(2) 1"
+    ],
+    "common_misconceptions": [
+      "Confusing boundary conditions or sign conventions across Colligative Properties: Freezing & Boiling Points and Colligative Properties: Osmotic Pressure & van 't Hoff.",
+      "Overlooking prerequisite concepts from Mole Concept / Stoichiometry, States of Matter when solving Mastery of Colligative Properties: Freezing & Boiling Points in Solutions problems."
+    ],
+    "socratic_questions": [
+      "In Solutions, how does the principle of Colligative Properties: Freezing & Boiling Points govern the relationship between the given variables?",
+      "Which conserved quantity or NCERT boundary condition eliminates the distractor options in this Mastery of Colligative Properties: Freezing & Boiling Points in Solutions problem?"
+    ]
+  },
+  {
+    "chunk_id": "NCERT_CHE_37",
+    "subject": "Chemistry",
+    "chapter": "Chemical Kinetics",
+    "ncert_ref": "NCERT Class 12 Chemistry ? Chemical Kinetics",
+    "core_concept": "Chemical Kinetics (Physical Chemistry): covers Integrated Rate Equations & Half-Life, Rate of Reaction, Rate Law & Order, Temperature Dependence, Arrhenius & Catalysis.",
+    "formulas": [
+      "According to the Arrhenius equation: log(k2/k1) = (Ea / (2",
+      "∆H = (Ea) f – (Ea) b\n\nGiven (Ea) f = (Ea) b\n\nso ∆H = 0"
+    ],
+    "common_misconceptions": [
+      "Confusing boundary conditions or sign conventions across Integrated Rate Equations & Half-Life and Rate of Reaction, Rate Law & Order.",
+      "Overlooking prerequisite concepts from Mole Concept / Stoichiometry, Equilibrium when solving Mastery of Integrated Rate Equations & Half-Life in Chemical Kinetics problems."
+    ],
+    "socratic_questions": [
+      "In Chemical Kinetics, how does the principle of Integrated Rate Equations & Half-Life govern the relationship between the given variables?",
+      "Which conserved quantity or NCERT boundary condition eliminates the distractor options in this Mastery of Integrated Rate Equations & Half-Life in Chemical Kinetics problem?"
+    ]
+  },
+  {
+    "chunk_id": "NCERT_CHE_38",
+    "subject": "Chemistry",
+    "chapter": "Surface Chemistry",
+    "ncert_ref": "NCERT Class 12 Chemistry ? Surface Chemistry",
+    "core_concept": "Surface Chemistry (Physical Chemistry): covers Adsorption & Catalysis, Colloids, Emulsions & Properties.",
+    "formulas": [
+      "Step 1: Analyze the chemical species and reaction conditions involved in Surface Chemistry (Colloid)",
+      "A(g) + X(s) → AX(s) ; ∆ng < 0\n\n∴As ∆ng < 0; then, ∆S < 0\n\nbut ∆H < 0 because process of adsorption is\nalways exothermic\n\n∴ ∆S < O & ∆H < 0\n\n& for spontaneous process\n\n∆G < 0\n\nThere fore : | T∆S | < | ∆H |"
+    ],
+    "common_misconceptions": [
+      "Confusing boundary conditions or sign conventions across Adsorption & Catalysis and Colloids, Emulsions & Properties.",
+      "Overlooking prerequisite concepts from States of Matter, Chemical Bonding when solving Mastery of Adsorption & Catalysis in Surface Chemistry problems."
+    ],
+    "socratic_questions": [
+      "In Surface Chemistry, how does the principle of Adsorption & Catalysis govern the relationship between the given variables?",
+      "Which conserved quantity or NCERT boundary condition eliminates the distractor options in this Mastery of Adsorption & Catalysis in Surface Chemistry problem?"
+    ]
+  },
+  {
+    "chunk_id": "NCERT_CHE_39",
+    "subject": "Chemistry",
+    "chapter": "s-Block Elements",
+    "ncert_ref": "NCERT Class 11 Chemistry ? s-Block Elements",
+    "core_concept": "s-Block Elements (Inorganic Chemistry): covers General Core Concepts, Group 1 & 2 Elements & Compounds.",
+    "formulas": [
+      "(3)\nMonovalent sodium and potassium ions and divalent magnesium and calcium ions are found in\nlarge properties in biological fluids",
+      "(Bonus)\nCaC2\n+\nN2\nCalcium\nNitrogen\nCarbide\nGas\n→\nCaCN2 + C\nCalcium Cyanamide\nCaCN2 is not given in the option so it should be bonus"
+    ],
+    "common_misconceptions": [
+      "Confusing boundary conditions or sign conventions across General Core Concepts and Group 1 & 2 Elements & Compounds.",
+      "Overlooking prerequisite concepts from Periodic Table, Chemical Bonding when solving Mastery of General Core Concepts in s-Block Elements problems."
+    ],
+    "socratic_questions": [
+      "In s-Block Elements, how does the principle of General Core Concepts govern the relationship between the given variables?",
+      "Which conserved quantity or NCERT boundary condition eliminates the distractor options in this Mastery of General Core Concepts in s-Block Elements problem?"
+    ]
+  },
+  {
+    "chunk_id": "NCERT_CHE_40",
+    "subject": "Chemistry",
+    "chapter": "p-Block Elements",
+    "ncert_ref": "NCERT Class 12 Chemistry ? p-Block Elements",
+    "core_concept": "p-Block Elements (Inorganic Chemistry): covers Group 13 & 14 (Boron & Carbon Families), Group 15 & 16 (Nitrogen & Oxygen Families), Group 17 & 18 (Halogens & Noble Gases).",
+    "formulas": [
+      "E\nw = NV\n\n63\nw = 2 × 1000\n250\n\nw = 2\n63 = 31",
+      "Basic unit of silicate is tetrahedral SiO4\n–4\n\nO–\nSi\nO–\nO–\nO–"
+    ],
+    "common_misconceptions": [
+      "Confusing boundary conditions or sign conventions across Group 13 & 14 (Boron & Carbon Families) and Group 15 & 16 (Nitrogen & Oxygen Families).",
+      "Overlooking prerequisite concepts from Periodic Table, Chemical Bonding when solving Mastery of Group 13 & 14 (Boron & Carbon Families) in p-Block Elements problems."
+    ],
+    "socratic_questions": [
+      "In p-Block Elements, how does the principle of Group 13 & 14 (Boron & Carbon Families) govern the relationship between the given variables?",
+      "Which conserved quantity or NCERT boundary condition eliminates the distractor options in this Mastery of Group 13 & 14 (Boron & Carbon Families) in p-Block Elements problem?"
+    ]
+  },
+  {
+    "chunk_id": "NCERT_CHE_41",
+    "subject": "Chemistry",
+    "chapter": "d- and f-Block Elements",
+    "ncert_ref": "NCERT Class 12 Chemistry ? d- and f-Block Elements",
+    "core_concept": "d- and f-Block Elements (Inorganic Chemistry): covers Compounds of Transition Metals: KMnO4 & K2Cr2O7, Lanthanoids & Actinoids (f-Block), Transition Elements: Properties & Electronic Config.",
+    "formulas": [
+      "70Yb = [Xe] 4f145d0 6s2\n\n Yb+2 = [Xe] 4f14\n\nn = 0 ∴ Diamagnetic",
+      "MnO4\n– oxidizes HCl and SO2 to Cl2 and SO3 respectively"
+    ],
+    "common_misconceptions": [
+      "Confusing boundary conditions or sign conventions across Compounds of Transition Metals: KMnO4 & K2Cr2O7 and Lanthanoids & Actinoids (f-Block).",
+      "Overlooking prerequisite concepts from Periodic Table, Structure of Atom, Chemical Bonding when solving Mastery of Compounds of Transition Metals: KMnO4 & K2Cr2O7 in d- and f-Block Elements problems."
+    ],
+    "socratic_questions": [
+      "In d- and f-Block Elements, how does the principle of Compounds of Transition Metals: KMnO4 & K2Cr2O7 govern the relationship between the given variables?",
+      "Which conserved quantity or NCERT boundary condition eliminates the distractor options in this Mastery of Compounds of Transition Metals: KMnO4 & K2Cr2O7 in d- and f-Block Elements problem?"
+    ]
+  },
+  {
+    "chunk_id": "NCERT_CHE_42",
+    "subject": "Chemistry",
+    "chapter": "Coordination Chemistry",
+    "ncert_ref": "NCERT Class 12 Chemistry ? Coordination Chemistry",
+    "core_concept": "Coordination Chemistry (Inorganic Chemistry): covers Crystal Field Theory & Magnetic Properties, Isomerism in Coordination Compounds, Nomenclature, Ligands & Werner's Theory.",
+    "formulas": [
+      "[Cu(NH3)4]2+\n\nCu+2 = [Ar] 3d9 n = 1\n\n µ =\n)\n2\nn\n(\nn\n+\n B",
+      "[Fe(H2O)6]+3\n\nFe+3 = [Ar] 3d5\n\nH2O\nWeak\nligand\n+"
+    ],
+    "common_misconceptions": [
+      "Confusing boundary conditions or sign conventions across Crystal Field Theory & Magnetic Properties and Isomerism in Coordination Compounds.",
+      "Overlooking prerequisite concepts from Chemical Bonding, d- and f-Block Elements when solving Mastery of Crystal Field Theory & Magnetic Properties in Coordination Chemistry problems."
+    ],
+    "socratic_questions": [
+      "In Coordination Chemistry, how does the principle of Crystal Field Theory & Magnetic Properties govern the relationship between the given variables?",
+      "Which conserved quantity or NCERT boundary condition eliminates the distractor options in this Mastery of Crystal Field Theory & Magnetic Properties in Coordination Chemistry problem?"
+    ]
+  },
+  {
+    "chunk_id": "NCERT_CHE_43",
+    "subject": "Chemistry",
+    "chapter": "General Principles & Metallurgy",
+    "ncert_ref": "NCERT Class 12 Chemistry ? General Principles & Metallurgy",
+    "core_concept": "General Principles & Metallurgy (Inorganic Chemistry): covers Extraction of Crude Metal & Ellingham Diagram, Ores, Minerals & Concentration Methods, Refining & Special Extraction Methods.",
+    "formulas": [
+      "As we move nearer to the nucleus e– are more strongly bonded",
+      "Roasting of sulphide ores produces sulphur dioxide (SO2) gas: 2ZnS + 3O2 -> 2ZnO + 2SO2"
+    ],
+    "common_misconceptions": [
+      "Confusing boundary conditions or sign conventions across Extraction of Crude Metal & Ellingham Diagram and Ores, Minerals & Concentration Methods.",
+      "Overlooking prerequisite concepts from Redox Reactions & Electrochemistry, p-Block Elements, d- and f-Block Elements when solving Mastery of Extraction of Crude Metal & Ellingham Diagram in General Principles & Metallurgy problems."
+    ],
+    "socratic_questions": [
+      "In General Principles & Metallurgy, how does the principle of Extraction of Crude Metal & Ellingham Diagram govern the relationship between the given variables?",
+      "Which conserved quantity or NCERT boundary condition eliminates the distractor options in this Mastery of Extraction of Crude Metal & Ellingham Diagram in General Principles & Metallurgy problem?"
+    ]
+  },
+  {
+    "chunk_id": "NCERT_CHE_44",
+    "subject": "Chemistry",
+    "chapter": "Hydrocarbons",
+    "ncert_ref": "NCERT Class 11 Chemistry ? Hydrocarbons",
+    "core_concept": "Hydrocarbons (Organic Chemistry): covers Alkanes: Halogenation & Conformations, Alkenes: Additions, Markovnikov & Ozonolysis, Aromatic Hydrocarbons & Electrophilic Substitution.",
+    "formulas": [
+      "NO2\nHNO3 + H2SO4\n100ºC\nNO2\nNO2\n\nQ –NO2 group is meta directing group",
+      "Step 1: Benzene diazonium chloride undergoes an electrophilic aromatic substitution (azo coupling) with aniline in mildly acidic/neutral medium (pH 4-5)"
+    ],
+    "common_misconceptions": [
+      "Confusing boundary conditions or sign conventions across Alkanes: Halogenation & Conformations and Alkenes: Additions, Markovnikov & Ozonolysis.",
+      "Overlooking prerequisite concepts from General Organic Chemistry when solving Mastery of Alkanes: Halogenation & Conformations in Hydrocarbons problems."
+    ],
+    "socratic_questions": [
+      "In Hydrocarbons, how does the principle of Alkanes: Halogenation & Conformations govern the relationship between the given variables?",
+      "Which conserved quantity or NCERT boundary condition eliminates the distractor options in this Mastery of Alkanes: Halogenation & Conformations in Hydrocarbons problem?"
+    ]
+  },
+  {
+    "chunk_id": "NCERT_CHE_45",
+    "subject": "Chemistry",
+    "chapter": "Haloalkanes & Haloarenes",
+    "ncert_ref": "NCERT Class 12 Chemistry ? Haloalkanes & Haloarenes",
+    "core_concept": "Haloalkanes & Haloarenes (Organic Chemistry): covers Elimination & Organometallics (Grignard), Haloarenes & Polyhalogen Compounds, Nucleophilic Substitution: SN1 & SN2 Mechanisms.",
+    "formulas": [
+      "(4) With Ammonia derivation carbonyl compounds give addition followed by elimination reaction",
+      "(3) EWG (Electron withdrawing group) increases reactivity towards nucleophilic substitution reaction"
+    ],
+    "common_misconceptions": [
+      "Confusing boundary conditions or sign conventions across Elimination & Organometallics (Grignard) and Haloarenes & Polyhalogen Compounds.",
+      "Overlooking prerequisite concepts from General Organic Chemistry, Hydrocarbons when solving Mastery of Elimination & Organometallics (Grignard) in Haloalkanes & Haloarenes problems."
+    ],
+    "socratic_questions": [
+      "In Haloalkanes & Haloarenes, how does the principle of Elimination & Organometallics (Grignard) govern the relationship between the given variables?",
+      "Which conserved quantity or NCERT boundary condition eliminates the distractor options in this Mastery of Elimination & Organometallics (Grignard) in Haloalkanes & Haloarenes problem?"
+    ]
+  },
+  {
+    "chunk_id": "NCERT_CHE_46",
+    "subject": "Chemistry",
+    "chapter": "Alcohols, Phenols & Ethers",
+    "ncert_ref": "NCERT Class 12 Chemistry ? Alcohols, Phenols & Ethers",
+    "core_concept": "Alcohols, Phenols & Ethers (Organic Chemistry): covers Alcohols: Preparation & Reactions, Ethers: Williamson Synthesis & Cleavage, Phenols: Properties & Named Reactions.",
+    "formulas": [
+      "Dipole - induced dipole interaction present in HCl & He atom",
+      "Step 1: Antiseptics and disinfectants are antimicrobial chemicals"
+    ],
+    "common_misconceptions": [
+      "Confusing boundary conditions or sign conventions across Alcohols: Preparation & Reactions and Ethers: Williamson Synthesis & Cleavage.",
+      "Overlooking prerequisite concepts from General Organic Chemistry, Haloalkanes & Haloarenes when solving Mastery of Alcohols: Preparation & Reactions in Alcohols, Phenols & Ethers problems."
+    ],
+    "socratic_questions": [
+      "In Alcohols, Phenols & Ethers, how does the principle of Alcohols: Preparation & Reactions govern the relationship between the given variables?",
+      "Which conserved quantity or NCERT boundary condition eliminates the distractor options in this Mastery of Alcohols: Preparation & Reactions in Alcohols, Phenols & Ethers problem?"
+    ]
+  },
+  {
+    "chunk_id": "NCERT_CHE_47",
+    "subject": "Chemistry",
+    "chapter": "Aldehydes, Ketones & Carboxylic Acids",
+    "ncert_ref": "NCERT Class 12 Chemistry ? Aldehydes, Ketones & Carboxylic Acids",
+    "core_concept": "Aldehydes, Ketones & Carboxylic Acids (Organic Chemistry): covers Carbonyl Group & Nucleophilic Additions, Carboxylic Acids & Derivatives, Named Condensations: Aldol & Cannizzaro.",
+    "formulas": [
+      "Zn-Hg/conc",
+      "Aldehydes are more reactive than ketones towards nucleophilic addition due to both electronic factors (alkyl groups donate electron density via +I effect, reducing the electrophilicity of carbonyl carbon) and steric hindrance"
+    ],
+    "common_misconceptions": [
+      "Confusing boundary conditions or sign conventions across Carbonyl Group & Nucleophilic Additions and Carboxylic Acids & Derivatives.",
+      "Overlooking prerequisite concepts from Alcohols, Phenols & Ethers, Hydrocarbons when solving Mastery of Carbonyl Group & Nucleophilic Additions in Aldehydes, Ketones & Carboxylic Acids problems."
+    ],
+    "socratic_questions": [
+      "In Aldehydes, Ketones & Carboxylic Acids, how does the principle of Carbonyl Group & Nucleophilic Additions govern the relationship between the given variables?",
+      "Which conserved quantity or NCERT boundary condition eliminates the distractor options in this Mastery of Carbonyl Group & Nucleophilic Additions in Aldehydes, Ketones & Carboxylic Acids problem?"
+    ]
+  },
+  {
+    "chunk_id": "NCERT_CHE_48",
+    "subject": "Chemistry",
+    "chapter": "Amines & Nitrogen Compounds",
+    "ncert_ref": "NCERT Class 12 Chemistry ? Amines & Nitrogen Compounds",
+    "core_concept": "Amines & Nitrogen Compounds (Organic Chemistry): covers Amines: Preparation & Basicity, Chemical Reactions & Tests of Amines, Diazonium Salts & Coupling Reactions.",
+    "formulas": [
+      "H – C – OH\n|\nHO – C – H\n|\nH – C – OH\n|\nH – C – OH\n|\nCH2OH\n|\nCH = O\nH2N–OH / H⊕\n(–H2O)\nH – C – OH\n|\n|\nH – C – OH\n|\nH – C – OH\n|\nCH2OH\n|\nCH = N – OH\nHO – C – H\nD(+) glucose\nD(+) glucoxime",
+      "(2) Benzoylation of aniline is an example of Schotten-Bauman reaction"
+    ],
+    "common_misconceptions": [
+      "Confusing boundary conditions or sign conventions across Amines: Preparation & Basicity and Chemical Reactions & Tests of Amines.",
+      "Overlooking prerequisite concepts from General Organic Chemistry, Aldehydes, Ketones & Carboxylic Acids when solving Mastery of Amines: Preparation & Basicity in Amines & Nitrogen Compounds problems."
+    ],
+    "socratic_questions": [
+      "In Amines & Nitrogen Compounds, how does the principle of Amines: Preparation & Basicity govern the relationship between the given variables?",
+      "Which conserved quantity or NCERT boundary condition eliminates the distractor options in this Mastery of Amines: Preparation & Basicity in Amines & Nitrogen Compounds problem?"
+    ]
+  },
+  {
+    "chunk_id": "NCERT_CHE_49",
+    "subject": "Chemistry",
+    "chapter": "Biomolecules & Polymers",
+    "ncert_ref": "NCERT Class 12 Chemistry ? Biomolecules & Polymers",
+    "core_concept": "Biomolecules & Polymers (Organic Chemistry): covers Biomolecules: Carbohydrates, Proteins & Nucleic Acids, Chemistry in Everyday Life, Polymers & Polymerisation Mechanisms.",
+    "formulas": [
+      "Step 1: Analyze the fundamental principles of Chemistry pertaining to Biomolecules & Polymers (Polymer)",
+      "CH2 = C – CH = CH2\nCl\nn\nchloroprene\n(monomer)\nPolymerisation\n–CH2 – C = CH – CH2–\nCl\nNeoprene\n(polymer)\nn"
+    ],
+    "common_misconceptions": [
+      "Confusing boundary conditions or sign conventions across Biomolecules: Carbohydrates, Proteins & Nucleic Acids and Chemistry in Everyday Life.",
+      "Overlooking prerequisite concepts from Aldehydes, Ketones & Carboxylic Acids, Amines & Nitrogen Compounds when solving Mastery of Biomolecules: Carbohydrates, Proteins & Nucleic Acids in Biomolecules & Polymers problems."
+    ],
+    "socratic_questions": [
+      "In Biomolecules & Polymers, how does the principle of Biomolecules: Carbohydrates, Proteins & Nucleic Acids govern the relationship between the given variables?",
+      "Which conserved quantity or NCERT boundary condition eliminates the distractor options in this Mastery of Biomolecules: Carbohydrates, Proteins & Nucleic Acids in Biomolecules & Polymers problem?"
+    ]
+  },
+  {
+    "chunk_id": "NCERT_CHE_50",
+    "subject": "Chemistry",
+    "chapter": "Environmental Chemistry",
+    "ncert_ref": "NCERT Class 11 Chemistry ? Environmental Chemistry",
+    "core_concept": "Environmental Chemistry (Inorganic Chemistry): covers Environmental Pollution & Control, General Core Concepts.",
+    "formulas": [
+      "Ozone, Acrolein & PAN are the common\ncomponents of photo chemical smog",
+      "Presence of particulate matter in polluted air catalyzes the oxidation of SO2 to SO3\n\ni"
+    ],
+    "common_misconceptions": [
+      "Confusing boundary conditions or sign conventions across Environmental Pollution & Control and General Core Concepts.",
+      "Overlooking prerequisite concepts from States of Matter, p-Block Elements when solving Mastery of Environmental Pollution & Control in Environmental Chemistry problems."
+    ],
+    "socratic_questions": [
+      "In Environmental Chemistry, how does the principle of Environmental Pollution & Control govern the relationship between the given variables?",
+      "Which conserved quantity or NCERT boundary condition eliminates the distractor options in this Mastery of Environmental Pollution & Control in Environmental Chemistry problem?"
+    ]
+  },
+  {
+    "chunk_id": "NCERT_BIO_51",
+    "subject": "Biology",
+    "chapter": "The Living World & Taxonomy",
+    "ncert_ref": "NCERT Class 11 Biology ? The Living World & Taxonomy",
+    "core_concept": "The Living World & Taxonomy (Diversity in Living World): covers Taxonomic Hierarchy & Nomenclature, Taxonomical Aids.",
+    "formulas": [
+      "Museum is the collection of dead and preserved specimen of animals generally",
+      "NCERT Bio 11th English page no"
+    ],
+    "common_misconceptions": [
+      "Confusing boundary conditions or sign conventions across Taxonomic Hierarchy & Nomenclature and Taxonomical Aids.",
+      "Overlooking prerequisite concepts from foundational NCERT definitions when solving Mastery of Taxonomic Hierarchy & Nomenclature in The Living World & Taxonomy problems."
+    ],
+    "socratic_questions": [
+      "In The Living World & Taxonomy, how does the principle of Taxonomic Hierarchy & Nomenclature govern the relationship between the given variables?",
+      "Which conserved quantity or NCERT boundary condition eliminates the distractor options in this Mastery of Taxonomic Hierarchy & Nomenclature in The Living World & Taxonomy problem?"
+    ]
+  },
+  {
+    "chunk_id": "NCERT_BIO_52",
+    "subject": "Biology",
+    "chapter": "Biological Classification",
+    "ncert_ref": "NCERT Class 11 Biology ? Biological Classification",
+    "core_concept": "Biological Classification (Diversity in Living World): covers Kingdom Fungi, Kingdom Monera & Five Kingdom System, Kingdom Protista, Viruses, Viroids, Prions & Lichens.",
+    "formulas": [
+      "Photosynthetic pigment are present in membranous extension chromatophore in cyanobacteria",
+      "In deep sea water no light is reach the archaebacteria like sulphur bacteria methanomonas are present and\ntheir nutritional category is chemoautotrophs or chemosynthetic bacteria"
+    ],
+    "common_misconceptions": [
+      "Confusing boundary conditions or sign conventions across Kingdom Fungi and Kingdom Monera & Five Kingdom System.",
+      "Overlooking prerequisite concepts from The Living World & Taxonomy when solving Mastery of Kingdom Fungi in Biological Classification problems."
+    ],
+    "socratic_questions": [
+      "In Biological Classification, how does the principle of Kingdom Fungi govern the relationship between the given variables?",
+      "Which conserved quantity or NCERT boundary condition eliminates the distractor options in this Mastery of Kingdom Fungi in Biological Classification problem?"
+    ]
+  },
+  {
+    "chunk_id": "NCERT_BIO_53",
+    "subject": "Biology",
+    "chapter": "Plant Kingdom",
+    "ncert_ref": "NCERT Class 11 Biology ? Plant Kingdom",
+    "core_concept": "Plant Kingdom (Diversity in Living World): covers Algae (Chlorophyceae, Phaeophyceae, Rhodophyceae), Angiosperms & Life Cycles, Gymnosperms, Pteridophytes & Bryophytes.",
+    "formulas": [
+      "In oomycetes sexual reproduction occur by Isogamy or Oogamy",
+      "Step 1: Analyze the fundamental principles of Biology pertaining to Plant Kingdom (Gymnosperm)"
+    ],
+    "common_misconceptions": [
+      "Confusing boundary conditions or sign conventions across Algae (Chlorophyceae, Phaeophyceae, Rhodophyceae) and Angiosperms & Life Cycles.",
+      "Overlooking prerequisite concepts from Biological Classification when solving Mastery of Algae (Chlorophyceae, Phaeophyceae, Rhodophyceae) in Plant Kingdom problems."
+    ],
+    "socratic_questions": [
+      "In Plant Kingdom, how does the principle of Algae (Chlorophyceae, Phaeophyceae, Rhodophyceae) govern the relationship between the given variables?",
+      "Which conserved quantity or NCERT boundary condition eliminates the distractor options in this Mastery of Algae (Chlorophyceae, Phaeophyceae, Rhodophyceae) in Plant Kingdom problem?"
+    ]
+  },
+  {
+    "chunk_id": "NCERT_BIO_54",
+    "subject": "Biology",
+    "chapter": "Animal Kingdom",
+    "ncert_ref": "NCERT Class 11 Biology ? Animal Kingdom",
+    "core_concept": "Animal Kingdom (Diversity in Living World): covers Non-Chordates: Higher Invertebrates, Non-Chordates: Lower Invertebrates & Classification Basis, Vertebrata: Fishes, Amphibia, Reptilia, Aves & Mammalia.",
+    "formulas": [
+      "Petromyzone is a vertebrate belonging to cyclostomata (cyclo = Rounded, Stoma = mouth) They remain as\nan ectoparasite on merine fishes & turtles",
+      "Nitrogen and potassium are mobile elements"
+    ],
+    "common_misconceptions": [
+      "Confusing boundary conditions or sign conventions across Non-Chordates: Higher Invertebrates and Non-Chordates: Lower Invertebrates & Classification Basis.",
+      "Overlooking prerequisite concepts from Biological Classification when solving Mastery of Non-Chordates: Higher Invertebrates in Animal Kingdom problems."
+    ],
+    "socratic_questions": [
+      "In Animal Kingdom, how does the principle of Non-Chordates: Higher Invertebrates govern the relationship between the given variables?",
+      "Which conserved quantity or NCERT boundary condition eliminates the distractor options in this Mastery of Non-Chordates: Higher Invertebrates in Animal Kingdom problem?"
+    ]
+  },
+  {
+    "chunk_id": "NCERT_BIO_55",
+    "subject": "Biology",
+    "chapter": "Morphology of Flowering Plants",
+    "ncert_ref": "NCERT Class 11 Biology ? Morphology of Flowering Plants",
+    "core_concept": "Morphology of Flowering Plants (Botany Structure & Physiology): covers Families of Angiosperms & Floral Formulas, Inflorescence, Flower Structure & Placentation, Root, Stem, Leaf & Modifications.",
+    "formulas": [
+      "Ovule is megasporangium and have sporogenous cells which produce megaspore by meiosis",
+      "140, 143"
+    ],
+    "common_misconceptions": [
+      "Confusing boundary conditions or sign conventions across Families of Angiosperms & Floral Formulas and Inflorescence, Flower Structure & Placentation.",
+      "Overlooking prerequisite concepts from Plant Kingdom when solving Mastery of Families of Angiosperms & Floral Formulas in Morphology of Flowering Plants problems."
+    ],
+    "socratic_questions": [
+      "In Morphology of Flowering Plants, how does the principle of Families of Angiosperms & Floral Formulas govern the relationship between the given variables?",
+      "Which conserved quantity or NCERT boundary condition eliminates the distractor options in this Mastery of Families of Angiosperms & Floral Formulas in Morphology of Flowering Plants problem?"
+    ]
+  },
+  {
+    "chunk_id": "NCERT_BIO_56",
+    "subject": "Biology",
+    "chapter": "Anatomy of Flowering Plants",
+    "ncert_ref": "NCERT Class 11 Biology ? Anatomy of Flowering Plants",
+    "core_concept": "Anatomy of Flowering Plants (Botany Structure & Physiology): covers Internal Anatomy of Root, Stem & Leaf, Secondary Growth: Cambium & Wood, Tissues & Tissue Systems (Xylem, Phloem).",
+    "formulas": [
+      "Interfascicular cambium is developed from the cells of medullary ray",
+      "Generally one annual ring is formed in one year due to secondary growth"
+    ],
+    "common_misconceptions": [
+      "Confusing boundary conditions or sign conventions across Internal Anatomy of Root, Stem & Leaf and Secondary Growth: Cambium & Wood.",
+      "Overlooking prerequisite concepts from Morphology of Flowering Plants, Cell: The Unit of Life when solving Mastery of Internal Anatomy of Root, Stem & Leaf in Anatomy of Flowering Plants problems."
+    ],
+    "socratic_questions": [
+      "In Anatomy of Flowering Plants, how does the principle of Internal Anatomy of Root, Stem & Leaf govern the relationship between the given variables?",
+      "Which conserved quantity or NCERT boundary condition eliminates the distractor options in this Mastery of Internal Anatomy of Root, Stem & Leaf in Anatomy of Flowering Plants problem?"
+    ]
+  },
+  {
+    "chunk_id": "NCERT_BIO_57",
+    "subject": "Biology",
+    "chapter": "Structural Organisation in Animals",
+    "ncert_ref": "NCERT Class 11 Biology ? Structural Organisation in Animals",
+    "core_concept": "Structural Organisation in Animals (Human & Animal Physiology): covers Anatomy of Cockroach & Frog, Connective, Muscular & Neural Tissues, Epithelial Tissues & Cell Junctions.",
+    "formulas": [
+      "Phosphorous cycle is sedimentary cycle whose reservoir lies in Rocks and Sediments",
+      "The next to last nymphal stage has wing pads but only adult cockroaches have wings"
+    ],
+    "common_misconceptions": [
+      "Confusing boundary conditions or sign conventions across Anatomy of Cockroach & Frog and Connective, Muscular & Neural Tissues.",
+      "Overlooking prerequisite concepts from Animal Kingdom, Cell: The Unit of Life when solving Mastery of Anatomy of Cockroach & Frog in Structural Organisation in Animals problems."
+    ],
+    "socratic_questions": [
+      "In Structural Organisation in Animals, how does the principle of Anatomy of Cockroach & Frog govern the relationship between the given variables?",
+      "Which conserved quantity or NCERT boundary condition eliminates the distractor options in this Mastery of Anatomy of Cockroach & Frog in Structural Organisation in Animals problem?"
+    ]
+  },
+  {
+    "chunk_id": "NCERT_BIO_58",
+    "subject": "Biology",
+    "chapter": "Plant Physiology",
+    "ncert_ref": "NCERT Class 11 Biology ? Plant Physiology",
+    "core_concept": "Plant Physiology (Botany Structure & Physiology): covers Cellular Respiration in Plants (Glycolysis, Krebs), Mineral Nutrition & Nitrogen Cycle, Photosynthesis: Light & Dark Reactions (C3, C4), Plant Growth Regulators & Photoperiodism, Transport in Plants & Water Relations.",
+    "formulas": [
+      "Lenticels are involved in gaseous exchange of tree trunk and environment",
+      "Pathway-A is glycolysis\n\nPathway-B is Krebs cycle\n\nPathway-C is Electron transport system\n\n1, 5 are respiratory substrates like protein and fats\n\n6,7,3,9,10 are NADH2, FADH2\n\n* 4, 8, 12 are ATP produced"
+    ],
+    "common_misconceptions": [
+      "Confusing boundary conditions or sign conventions across Cellular Respiration in Plants (Glycolysis, Krebs) and Mineral Nutrition & Nitrogen Cycle.",
+      "Overlooking prerequisite concepts from Cell: The Unit of Life, Biomolecules, Anatomy of Flowering Plants when solving Mastery of Cellular Respiration in Plants (Glycolysis, Krebs) in Plant Physiology problems."
+    ],
+    "socratic_questions": [
+      "In Plant Physiology, how does the principle of Cellular Respiration in Plants (Glycolysis, Krebs) govern the relationship between the given variables?",
+      "Which conserved quantity or NCERT boundary condition eliminates the distractor options in this Mastery of Cellular Respiration in Plants (Glycolysis, Krebs) in Plant Physiology problem?"
+    ]
+  },
+  {
+    "chunk_id": "NCERT_BIO_59",
+    "subject": "Biology",
+    "chapter": "Human Digestion & Respiration",
+    "ncert_ref": "NCERT Class 11 Biology ? Human Digestion & Respiration",
+    "core_concept": "Human Digestion & Respiration (Human & Animal Physiology): covers Digestive System: Anatomy & Enzymes, Respiratory System: Mechanics & Gas Transport.",
+    "formulas": [
+      "Alveoli in lungs are thin walled air sacs where gaseous exchange takes place",
+      "Initial step in the digestion of milk is carried\nout by rennin"
+    ],
+    "common_misconceptions": [
+      "Confusing boundary conditions or sign conventions across Digestive System: Anatomy & Enzymes and Respiratory System: Mechanics & Gas Transport.",
+      "Overlooking prerequisite concepts from Structural Organisation in Animals, Biomolecules when solving Mastery of Digestive System: Anatomy & Enzymes in Human Digestion & Respiration problems."
+    ],
+    "socratic_questions": [
+      "In Human Digestion & Respiration, how does the principle of Digestive System: Anatomy & Enzymes govern the relationship between the given variables?",
+      "Which conserved quantity or NCERT boundary condition eliminates the distractor options in this Mastery of Digestive System: Anatomy & Enzymes in Human Digestion & Respiration problem?"
+    ]
+  },
+  {
+    "chunk_id": "NCERT_BIO_60",
+    "subject": "Biology",
+    "chapter": "Circulation & Excretion",
+    "ncert_ref": "NCERT Class 11 Biology ? Circulation & Excretion",
+    "core_concept": "Circulation & Excretion (Human & Animal Physiology): covers Blood Composition & Blood Groups, Circulatory System: Heart, Cardiac Cycle & ECG, Excretory System: Nephron & Counter-Current.",
+    "formulas": [
+      "In the given answer function of adrenal gland is correctly given that it releases adrenaline & nor adrenaline\n(collectively known as catecholamine) that stimulates glycogen breakdown during emergencies",
+      "Parasympathetic nerve vagus reduces the\nheart rate, this in turn reduces the cardiac out\nput also"
+    ],
+    "common_misconceptions": [
+      "Confusing boundary conditions or sign conventions across Blood Composition & Blood Groups and Circulatory System: Heart, Cardiac Cycle & ECG.",
+      "Overlooking prerequisite concepts from Structural Organisation in Animals, Human Digestion & Respiration when solving Mastery of Blood Composition & Blood Groups in Circulation & Excretion problems."
+    ],
+    "socratic_questions": [
+      "In Circulation & Excretion, how does the principle of Blood Composition & Blood Groups govern the relationship between the given variables?",
+      "Which conserved quantity or NCERT boundary condition eliminates the distractor options in this Mastery of Blood Composition & Blood Groups in Circulation & Excretion problem?"
+    ]
+  },
+  {
+    "chunk_id": "NCERT_BIO_61",
+    "subject": "Biology",
+    "chapter": "Locomotion & Neuro-Endocrine Control",
+    "ncert_ref": "NCERT Class 11 Biology ? Locomotion & Neuro-Endocrine Control",
+    "core_concept": "Locomotion & Neuro-Endocrine Control (Human & Animal Physiology): covers Endocrine System & Hormones, Muscular System & Skeletal Framework, Neural System, Impulse & Sensory Organs.",
+    "formulas": [
+      "The edges of thin filament (Actin) on either side of thick filaments (myosin) partially overlap the free ends of\nthe thick filaments (myosin) leaving the centralpart of thick filament (myosin)",
+      "Hypothyroidism during pregnancy causes defective development and maturation of the growing baby leading\nto stunted growth, mental retardation low intelligence quotient abnormal skin"
+    ],
+    "common_misconceptions": [
+      "Confusing boundary conditions or sign conventions across Endocrine System & Hormones and Muscular System & Skeletal Framework.",
+      "Overlooking prerequisite concepts from Structural Organisation in Animals, Cell: The Unit of Life when solving Mastery of Endocrine System & Hormones in Locomotion & Neuro-Endocrine Control problems."
+    ],
+    "socratic_questions": [
+      "In Locomotion & Neuro-Endocrine Control, how does the principle of Endocrine System & Hormones govern the relationship between the given variables?",
+      "Which conserved quantity or NCERT boundary condition eliminates the distractor options in this Mastery of Endocrine System & Hormones in Locomotion & Neuro-Endocrine Control problem?"
+    ]
+  },
+  {
+    "chunk_id": "NCERT_BIO_62",
+    "subject": "Biology",
+    "chapter": "Evolution",
+    "ncert_ref": "NCERT Class 12 Biology ? Evolution",
+    "core_concept": "Evolution (Reproduction & Genetics): covers Human Evolution & Speciation, Mechanisms of Evolution & Natural Selection, Origin of Life & Evidences for Evolution.",
+    "formulas": [
+      "If gene migration due to gene flow happens multiple times this variation in gene frequency change occurs by\nchance is genetic drift",
+      "Due to common environmental changes different animals develop similar looking feature"
+    ],
+    "common_misconceptions": [
+      "Confusing boundary conditions or sign conventions across Human Evolution & Speciation and Mechanisms of Evolution & Natural Selection.",
+      "Overlooking prerequisite concepts from Genetics & Molecular Inheritance, Biological Classification when solving Mastery of Human Evolution & Speciation in Evolution problems."
+    ],
+    "socratic_questions": [
+      "In Evolution, how does the principle of Human Evolution & Speciation govern the relationship between the given variables?",
+      "Which conserved quantity or NCERT boundary condition eliminates the distractor options in this Mastery of Human Evolution & Speciation in Evolution problem?"
+    ]
+  },
+  {
+    "chunk_id": "NCERT_BIO_63",
+    "subject": "Biology",
+    "chapter": "Human Health, Disease & Microbes",
+    "ncert_ref": "NCERT Class 12 Biology ? Human Health, Disease & Microbes",
+    "core_concept": "Human Health, Disease & Microbes (Applied Biology & Ecology): covers Cancer, AIDS, Drugs & Alcohol Abuse, Immunity & Human Diseases, Microbes in Human Welfare.",
+    "formulas": [
+      "Contaminated water and soil (with eggs of Ascaris) is the source of infection with Ascasis",
+      "During sewage treatment in secondary treatment the biogas is produced in anaerotric sludge digestor have\nanaerobic bacteria which produce gases like CO2, H2S, CH4"
+    ],
+    "common_misconceptions": [
+      "Confusing boundary conditions or sign conventions across Cancer, AIDS, Drugs & Alcohol Abuse and Immunity & Human Diseases.",
+      "Overlooking prerequisite concepts from Biological Classification, Circulation & Excretion when solving Mastery of Cancer, AIDS, Drugs & Alcohol Abuse in Human Health, Disease & Microbes problems."
+    ],
+    "socratic_questions": [
+      "In Human Health, Disease & Microbes, how does the principle of Cancer, AIDS, Drugs & Alcohol Abuse govern the relationship between the given variables?",
+      "Which conserved quantity or NCERT boundary condition eliminates the distractor options in this Mastery of Cancer, AIDS, Drugs & Alcohol Abuse in Human Health, Disease & Microbes problem?"
+    ]
+  },
+  {
+    "chunk_id": "NCERT_BIO_64",
+    "subject": "Biology",
+    "chapter": "Biotechnology",
+    "ncert_ref": "NCERT Class 12 Biology ? Biotechnology",
+    "core_concept": "Biotechnology (Applied Biology & Ecology): covers Biotechnological Applications, Principles & Processes of Biotechnology.",
+    "formulas": [
+      "DNA fragment generated by restriction endonuclease is separated by Gel-electrophoresis",
+      "CP Students may find this concept in CP\nEx : Sheet: [Chapter : Genetics, Page No"
+    ],
+    "common_misconceptions": [
+      "Confusing boundary conditions or sign conventions across Biotechnological Applications and Principles & Processes of Biotechnology.",
+      "Overlooking prerequisite concepts from Genetics & Molecular Inheritance, Biomolecules when solving Mastery of Biotechnological Applications in Biotechnology problems."
+    ],
+    "socratic_questions": [
+      "In Biotechnology, how does the principle of Biotechnological Applications govern the relationship between the given variables?",
+      "Which conserved quantity or NCERT boundary condition eliminates the distractor options in this Mastery of Biotechnological Applications in Biotechnology problem?"
+    ]
+  },
+  {
+    "chunk_id": "NCERT_BIO_65",
+    "subject": "Biology",
+    "chapter": "Ecology & Environment",
+    "ncert_ref": "NCERT Class 12 Biology ? Ecology & Environment",
+    "core_concept": "Ecology & Environment (Applied Biology & Ecology): covers Ecosystem Dynamics & Pyramids, Environmental Issues & Conservation, Organisms and Populations.",
+    "formulas": [
+      "Natality = 250, Immigration = 20\n\nMortality = 240, Emigration = 30\n\nIncrease in Popolution size\n\nP",
+      "The association between sea anemone and hermit crab is symbiosis as both live together for very long\nduration"
+    ],
+    "common_misconceptions": [
+      "Confusing boundary conditions or sign conventions across Ecosystem Dynamics & Pyramids and Environmental Issues & Conservation.",
+      "Overlooking prerequisite concepts from The Living World & Taxonomy, Plant Physiology when solving Mastery of Ecosystem Dynamics & Pyramids in Ecology & Environment problems."
+    ],
+    "socratic_questions": [
+      "In Ecology & Environment, how does the principle of Ecosystem Dynamics & Pyramids govern the relationship between the given variables?",
+      "Which conserved quantity or NCERT boundary condition eliminates the distractor options in this Mastery of Ecosystem Dynamics & Pyramids in Ecology & Environment problem?"
+    ]
   }
 ]

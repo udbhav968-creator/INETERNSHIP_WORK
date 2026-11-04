@@ -39,10 +39,11 @@ from model.irt_3pl_model import (
 from model.knowledge_graph_dag import (
     DAG_NODES,
     get_all_ancestors,
+    compute_hierarchical_shrinkage_prior,
     diagnose_prerequisite_bottlenecks,
 )
 from model.linucb_bandit import build_context_vector, score_candidate_ucb
-from model.rag_socratic_engine import generate_socratic_remediation
+from model.rag_socratic_engine import generate_socratic_remediation, _INDEX as _RAG_INDEX
 
 
 def test_random_forest_9960_metrics():
@@ -119,20 +120,26 @@ def test_3pl_irt_psychometric_engine():
 
 
 def test_prerequisite_knowledge_graph_dag():
-    assert len(DAG_NODES) >= 60, "Expected >= 60 NCERT chapters in Prerequisite DAG"
+    assert len(DAG_NODES) == 65, f"Expected 65 NCERT chapters in Prerequisite DAG, got {len(DAG_NODES)}"
+    assert len(_RAG_INDEX.chunks) == 65, f"Expected 65 NCERT chapters in RAG KB, got {len(_RAG_INDEX.chunks)}"
     ancestors = get_all_ancestors("Electrostatics")
     assert "Laws of Motion" in ancestors
 
     mastery_map = {
-        "Units and Measurements": 0.30,
+        "Units & Dimensions": 0.30,
         "Kinematics": 0.35,
         "Laws of Motion": 0.32,
-        "Work, Energy and Power": 0.38,
+        "Work, Energy & Power": 0.38,
         "Electrostatics": 0.28,
     }
     bottlenecks = diagnose_prerequisite_bottlenecks(mastery_map)
     assert len(bottlenecks) > 0
     assert bottlenecks[0]["topic_id"] in mastery_map
+
+    # Verify Empirical Bayes shrinkage pulls 1-attempt outlier toward cluster mean, while 50-attempt converges
+    eb_1 = compute_hierarchical_shrinkage_prior("Electrostatics", mastery_map, attempts_count=1)
+    eb_50 = compute_hierarchical_shrinkage_prior("Electrostatics", mastery_map, attempts_count=50)
+    assert eb_1 > 0.28 and abs(eb_50 - 0.28) < abs(eb_1 - 0.28)
 
 
 def test_linucb_bandit_and_socratic_rag():

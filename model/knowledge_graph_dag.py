@@ -3,7 +3,7 @@ Knowledge-Graph Prerequisite DAG & Hierarchical Bayesian Shrinkage — Enterpris
 
 Maps prerequisite dependency trees between micro-topics and canonical NCERT
 chapters, providing prerequisite readiness scores, root-cause bottleneck
-diagnostics, and empirical Bayesian shrinkage pooling for rare topics.
+diagnostics, and Empirical Bayes shrinkage pooling for low-sample topics.
 """
 import json
 from collections import deque
@@ -67,12 +67,17 @@ def compute_prerequisite_readiness(
 def compute_hierarchical_shrinkage_prior(
     topic_id: str,
     student_mastery_map: dict[str, float],
+    attempts_count: int = 0,
     global_prior: float = 0.35,
     shrinkage_strength: float = 2.0,
 ) -> float:
-    if topic_id in student_mastery_map:
-        return student_mastery_map[topic_id]
-
+    """
+    Hierarchical Empirical Bayes Shrinkage:
+      theta_EB = (n_k * P_obs(L_k) + tau * mu_cluster) / (n_k + tau)
+    Pools information across prerequisite and sibling chapters in the same NCERT
+    cluster so low-sample topics (n_k = 0, 1, 2) are stabilized against noise,
+    while high-sample topics converge to the student's direct empirical mastery.
+    """
     node = DAG_NODES.get(topic_id, {})
     prereqs = node.get("prerequisites", [])
     cluster = node.get("cluster")
@@ -83,12 +88,19 @@ def compute_hierarchical_shrinkage_prior(
         for t in set(prereqs + siblings)
         if t in student_mastery_map and t != topic_id
     ]
-    n = len(related_scores)
-    if n == 0:
-        return global_prior
+    m = len(related_scores)
+    if m == 0:
+        cluster_prior = global_prior
+    else:
+        sample_mean = sum(related_scores) / m
+        cluster_prior = (m * sample_mean + shrinkage_strength * global_prior) / (m + shrinkage_strength)
 
-    sample_mean = sum(related_scores) / n
-    shrunk = (n * sample_mean + shrinkage_strength * global_prior) / (n + shrinkage_strength)
+    if topic_id not in student_mastery_map:
+        return round(max(0.05, min(0.95, cluster_prior)), 4)
+
+    observed = float(student_mastery_map[topic_id])
+    n_obs = max(1, int(attempts_count)) if attempts_count > 0 else 1
+    shrunk = (n_obs * observed + shrinkage_strength * cluster_prior) / (n_obs + shrinkage_strength)
     return round(max(0.05, min(0.95, shrunk)), 4)
 
 

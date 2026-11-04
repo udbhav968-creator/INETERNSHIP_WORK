@@ -3,9 +3,11 @@ Loads a VALIDATED real question bank into the database — topics and
 questions. Only run this after model/validate_question_bank.py comes back
 clean (or with issues you've consciously decided to accept).
 
-Includes Part I Section 7 Fix #1:
-Canonical string normalization (.strip()) on chapter and subject names so
-minor whitespace variations never fragment topic IDs.
+Includes:
+- Part I Section 7 Fix #1: Canonical string normalization (.strip()) on chapter and subject names.
+- Exact generic-chapter filter (matching build_topic_importance.py and filter_clean_questions.py)
+  so legitimate NCERT chapters starting with "General " ("General Organic Chemistry" and
+  "General Principles & Metallurgy") are loaded rather than dropped.
 """
 import json
 import re
@@ -22,6 +24,8 @@ DIFFICULTY_MAP = {
     "advanced": "advanced",
     "hard": "advanced",
 }
+
+GENERIC_CHAPTERS = {"General Biology", "General Chemistry", "General Physics"}
 
 
 def normalize_topic_name(raw_name: str) -> str:
@@ -57,11 +61,11 @@ def load(question_bank_path: str, wipe_existing: bool = False):
         difficulty_raw = str(q.get("difficulty_level", "")).strip().lower()
         difficulty = DIFFICULTY_MAP.get(difficulty_raw)
 
-        if not chapter or chapter.startswith("General ") or not difficulty:
+        if not chapter or chapter in GENERIC_CHAPTERS or not difficulty:
             skipped += 1
             reason = (
                 "missing/generic chapter"
-                if not chapter or chapter.startswith("General ")
+                if not chapter or chapter in GENERIC_CHAPTERS
                 else f"unmapped difficulty '{difficulty_raw}'"
             )
             skip_reasons[reason] = skip_reasons.get(reason, 0) + 1

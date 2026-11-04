@@ -1,8 +1,9 @@
 """
 RAG-Powered Socratic Remediation Engine — Enterprise v2.
 
-Integrates vector search over NCERT Physics, Chemistry, and Biology chapters
-and verified NEET solution explanations to generate dynamic conceptual hints
+Integrates TF-IDF vector search over all 65 NCERT Physics, Chemistry, and Biology
+chapters in data/ncert_knowledge_base.json and verified NEET solution explanations
+in data/tagged_questions/neet_questions_clean.json to generate conceptual hints
 and misconception diagnostics on failure in under 40ms.
 """
 import json
@@ -12,7 +13,7 @@ import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-from .knowledge_graph_dag import get_direct_prerequisites, DAG_NODES
+from .knowledge_graph_dag import get_direct_prerequisites
 
 MODEL_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = MODEL_DIR.parent
@@ -37,28 +38,6 @@ class NCERTVectorIndex:
             with open(_CLEAN_QUESTIONS_PATH, encoding="utf-8") as f:
                 for q in json.load(f):
                     self.question_lookup[q["question_id"]] = q
-
-        indexed_chapters = {c["chapter"] for c in self.chunks}
-        for chapter, meta in DAG_NODES.items():
-            if chapter not in indexed_chapters:
-                self.chunks.append({
-                    "chunk_id": f"NCERT_AUTO_{len(self.chunks) + 1:02d}",
-                    "subject": meta.get("subject", "Science"),
-                    "chapter": chapter,
-                    "ncert_ref": f"NCERT Class {meta.get('class_grade', 'XI/XII')} {meta.get('subject', '')} — {chapter}",
-                    "core_concept": f"Core NCERT principles, laws, and analytical applications in {chapter} ({meta.get('cluster', 'Core')}).",
-                    "formulas": [
-                        f"Verify standard NCERT SI units, sign conventions, and limiting conditions in {chapter}."
-                    ],
-                    "common_misconceptions": [
-                        f"Overlooking boundary conditions or prerequisite relationships in {chapter}.",
-                        "Confusing direct proportionality with inverse or quadratic scaling in standard relations."
-                    ],
-                    "socratic_questions": [
-                        f"What is the fundamental physical/chemical/biological law governing {chapter} in this scenario?",
-                        "Which given parameter acts as the limiting or controlling variable here?"
-                    ],
-                })
 
         corpus = [
             f"{c['subject']} {c['chapter']} {c['core_concept']} {' '.join(c.get('formulas', []))} {' '.join(c.get('common_misconceptions', []))}"
@@ -104,21 +83,7 @@ def generate_socratic_remediation(
     query = f"{topic_id} {topic_tag} {skill} {question_text} {explanation}"
     retrieved = _INDEX.retrieve(query, chapter_hint=topic_id, top_k=2)
 
-    primary_chunk, sim_score = (
-        retrieved[0]
-        if retrieved
-        else (
-            {
-                "chunk_id": "NCERT_DEFAULT",
-                "ncert_ref": f"NCERT — {topic_id}",
-                "core_concept": f"Foundational principles of {topic_id}",
-                "formulas": [],
-                "common_misconceptions": ["Sign or unit conversion oversight."],
-                "socratic_questions": ["What fundamental NCERT principle connects the given quantities?"],
-            },
-            0.85,
-        )
-    )
+    primary_chunk, sim_score = retrieved[0]
 
     letter_map = {"a": 0, "b": 1, "c": 2, "d": 3}
     sel_norm = (selected_option or "").strip().lower()
