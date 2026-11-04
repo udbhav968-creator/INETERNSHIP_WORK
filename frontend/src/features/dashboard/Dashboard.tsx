@@ -51,7 +51,7 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
           Welcome back.
         </h1>
         <p className="text-midnight-700/70">
-          Here's where your preparation stands right now, powered by 3PL IRT & Bayesian Knowledge Tracing.
+          Here's where your preparation stands right now, powered by 3PL IRT, Bayesian Knowledge Tracing & LinUCB.
         </p>
       </div>
 
@@ -59,7 +59,7 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
         <div>
           <p className="text-sm font-medium text-white/60">Ready for your next session?</p>
           <p className="mt-1 font-display text-xl font-semibold">
-            Your next paper adapts to your Zone of Proximal Development.
+            Your next paper adapts to your Zone of Proximal Development (target P ≈ 70%).
           </p>
         </div>
         <Button onClick={onStartPaper} className="shrink-0 bg-white text-midnight-950 hover:bg-white/90">
@@ -83,12 +83,35 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
       )}
 
       {state === "empty" && (
-        <Card className="text-center">
-          <p className="font-medium text-midnight-900">No study history yet.</p>
-          <p className="mt-1 text-sm text-midnight-700/70">
-            Start your first practice paper and your per-topic progress will show up here.
-          </p>
-        </Card>
+        <div className="flex flex-col gap-6">
+          <Card className="text-center">
+            <p className="font-medium text-midnight-900">No study history yet — Cold-Start Prior Initialized.</p>
+            <p className="mt-1 text-sm text-midnight-700/70">
+              Start your first adaptive practice paper and your 3PL IRT ability, BKT mastery, and prerequisite diagnostics will calibrate in real time.
+            </p>
+          </Card>
+
+          {v2Insights && v2Insights.recommended_unlock_topics.length > 0 && (
+            <div>
+              <h2 className="mb-3 font-display text-lg font-semibold text-midnight-950">
+                Recommended Foundational Chapters (Zone of Proximal Development)
+              </h2>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {v2Insights.recommended_unlock_topics.map((rec) => (
+                  <Card key={rec.topic_id} className="flex flex-col gap-1.5 p-4">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-midnight-700/60">
+                      {rec.subject}
+                    </span>
+                    <p className="font-medium text-midnight-950">{rec.topic_id}</p>
+                    <p className="text-xs text-midnight-700/70">
+                      Prerequisite Readiness: {Math.round(rec.readiness * 100)}% · ZPD Priority: {rec.zpd_priority_score.toFixed(2)}
+                    </p>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       )}
 
       {state === "ready" && (
@@ -109,6 +132,29 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
             />
           </div>
 
+          {analytics && analytics.subject_breakdown.length > 0 && (
+            <div>
+              <h2 className="mb-3 font-display text-lg font-semibold text-midnight-950">
+                Subject Performance Breakdown
+              </h2>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                {analytics.subject_breakdown.map((s) => (
+                  <Card key={s.subject} className="flex flex-col gap-1 p-4">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-midnight-700/60">
+                      {s.subject}
+                    </p>
+                    <p className="font-display text-2xl font-semibold text-midnight-950">
+                      {Math.round(s.accuracy * 100)}%
+                    </p>
+                    <p className="text-xs text-midnight-700/70">
+                      {s.correct} / {s.attempts} correct
+                    </p>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
+
           {v2Insights && v2Insights.root_cause_bottlenecks.length > 0 && (
             <Card className="border-amber-500/20 bg-amber-500/5 p-5">
               <h2 className="font-display text-base font-semibold text-midnight-950">
@@ -126,6 +172,27 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
             </Card>
           )}
 
+          {v2Insights && v2Insights.recommended_unlock_topics.length > 0 && (
+            <div>
+              <h2 className="mb-3 font-display text-lg font-semibold text-midnight-950">
+                Next Recommended Unlock Topics (LinUCB & ZPD Priority)
+              </h2>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {v2Insights.recommended_unlock_topics.map((rec) => (
+                  <Card key={rec.topic_id} className="flex flex-col gap-1.5 p-4">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-midnight-700/60">
+                      {rec.subject}
+                    </span>
+                    <p className="font-medium text-midnight-950">{rec.topic_id}</p>
+                    <p className="text-xs text-midnight-700/70">
+                      Mastery: {Math.round(rec.current_mastery * 100)}% · Readiness: {Math.round(rec.readiness * 100)}%
+                    </p>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div>
             <h2 className="mb-3 font-display text-lg font-semibold text-midnight-950">
               Topics you're working on
@@ -141,11 +208,19 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
                   </div>
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <PaceBadge pace={t.pace_flag} />
-                    {typeof t.mastery_prob === "number" && (
-                      <span className="text-xs font-medium text-midnight-700/70">
-                        BKT Mastery: {Math.round(t.mastery_prob * 100)}%
-                      </span>
-                    )}
+                    <div className="flex items-center gap-3 text-xs font-medium text-midnight-700/70">
+                      {typeof t.mastery_prob === "number" && (
+                        <span>
+                          BKT Mastery: {Math.round(t.mastery_prob * 100)}%
+                          {typeof t.confidence_interval === "number"
+                            ? ` (±${Math.round(t.confidence_interval * 100)}%)`
+                            : ""}
+                        </span>
+                      )}
+                      {typeof t.irt_theta === "number" && (
+                        <span>θ: {t.irt_theta >= 0 ? `+${t.irt_theta.toFixed(2)}` : t.irt_theta.toFixed(2)}</span>
+                      )}
+                    </div>
                   </div>
                 </Card>
               ))}
