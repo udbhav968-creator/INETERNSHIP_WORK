@@ -43,8 +43,16 @@ app = FastAPI(
     version="2.0.0",
 )
 
-# Transactional lock guarding per-student state read-modify-write against concurrent race conditions
-_STATE_LOCK = threading.RLock()
+# Per-student striped locks guarding per-student state read-modify-write without blocking other students
+_LOCK_REGISTRY_GUARD = threading.Lock()
+_STUDENT_LOCKS: dict[str, threading.RLock] = {}
+
+
+def _get_student_lock(student_id: str) -> threading.RLock:
+    with _LOCK_REGISTRY_GUARD:
+        if student_id not in _STUDENT_LOCKS:
+            _STUDENT_LOCKS[student_id] = threading.RLock()
+        return _STUDENT_LOCKS[student_id]
 
 app.add_middleware(
     CORSMiddleware,
@@ -92,7 +100,7 @@ def get_student(student_id: str, db: Session = Depends(get_db)):
 
 @app.post("/submit_attempt")
 def submit_attempt(attempt: schemas.AttemptIn, db: Session = Depends(get_db)):
-    with _STATE_LOCK:
+    with _get_student_lock(attempt.student_id):
         question = db.query(Question).filter_by(question_id=attempt.question_id).first()
         if not question:
             raise HTTPException(status_code=404, detail="Question not found")

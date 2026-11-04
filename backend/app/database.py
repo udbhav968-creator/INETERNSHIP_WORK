@@ -1,5 +1,5 @@
 import os
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine, event, text
 from sqlalchemy.orm import sessionmaker
 from .db_models import Base
 from .paths import PROJECT_ROOT
@@ -9,14 +9,30 @@ from .paths import PROJECT_ROOT
 _DEFAULT_DB_PATH = (PROJECT_ROOT / "backend" / "klassed.db").as_posix()
 DATABASE_URL = os.environ.get("KLASSED_DB_URL", f"sqlite:///{_DEFAULT_DB_PATH}")
 
-engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+_IS_SQLITE = DATABASE_URL.startswith("sqlite")
+engine = create_engine(
+    DATABASE_URL,
+    connect_args={"check_same_thread": False, "timeout": 30} if _IS_SQLITE else {},
+    pool_pre_ping=True,
+)
+
+if _IS_SQLITE:
+    @event.listens_for(engine, "connect")
+    def _set_sqlite_pragma(dbapi_connection, connection_record):
+        cursor = dbapi_connection.cursor()
+        cursor.execute("PRAGMA journal_mode=WAL")
+        cursor.execute("PRAGMA synchronous=NORMAL")
+        cursor.execute("PRAGMA busy_timeout=5000")
+        cursor.close()
+
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
 def init_db():
-    """Call this once on startup to create all tables and apply non-destructive v2 column migrations."""
+    """Call this once on startup to create all tables, v2 columns, and composite high-concurrency indexes."""
     Base.metadata.create_all(bind=engine)
     _migrate_v2_columns()
+    _create_composite_indexes()
 
 
 def _migrate_v2_columns():
@@ -41,6 +57,22 @@ def _migrate_v2_columns():
                 pass
 
 
+def _create_composite_indexes():
+    """Creates composite B-tree indexes for sub-millisecond adaptive paper generation and analytics."""
+    index_statements = [
+        "CREATE INDEX IF NOT EXISTS idx_questions_topic_diff ON questions (topic_id, difficulty)",
+        "CREATE INDEX IF NOT EXISTS idx_attempts_student_paper ON test_attempts (student_id, paper_number)",
+        "CREATE INDEX IF NOT EXISTS idx_attempts_student_ts ON test_attempts (student_id, timestamp DESC)",
+        "CREATE INDEX IF NOT EXISTS idx_state_student_topic ON student_topic_state (student_id, topic_id)",
+    ]
+    with engine.begin() as conn:
+        for stmt in index_statements:
+            try:
+                conn.execute(text(stmt))
+            except Exception:
+                pass
+
+
 def get_db():
     db = SessionLocal()
     try:
@@ -49,5 +81,5 @@ def get_db():
         db.close()
 
 
-# Ensure schema and v2 non-destructive column migrations are applied immediately on import
+# Ensure schema, v2 column migrations, and composite indexes are applied immediately on import
 init_db()

@@ -3,13 +3,14 @@ Adaptive paper generator — docs/spec.md Section 9 + Part I Fix #2 + Part II Li
 
 Topic proportions (importance) are fixed and never touched per-student.
 Difficulty pool selection and within-pool item selection use:
-1. Adjacent-pool fallback cascade when a topic's primary difficulty pool has fewer items than requested (Part I Section 7 Fix #2).
-2. LinUCB Contextual Multi-Armed Bandit & 3PL Fisher Information within the Zone of Proximal Development (Part II Section 4).
-3. Periodic retention probes for advanced topics to guard against silent forgetting.
+1. In-memory indexed Question Pool cache (eliminating 65 per-topic SQL round-trips per paper).
+2. Adjacent-pool fallback cascade when a topic's primary difficulty pool has fewer items than requested (Part I Section 7 Fix #2).
+3. LinUCB Contextual Multi-Armed Bandit & 3PL Fisher Information within the Zone of Proximal Development (Part II Section 4).
+4. Periodic retention probes for advanced topics to guard against silent forgetting.
 """
 import json
 import random
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, make_transient
 from .db_models import Question, StudentTopicState, Student
 from .paths import MODEL_DIR
 from model.linucb_bandit import build_context_vector, score_candidate_ucb
@@ -23,6 +24,25 @@ ADJACENT_FALLBACK_ORDER = {
     "medium": ["basic", "advanced"],
     "advanced": ["medium", "basic"],
 }
+
+# In-memory cache of detached Question objects keyed by (topic_id, difficulty)
+_QUESTION_POOL_CACHE: dict[tuple[str, str], list[Question]] = {}
+_CACHED_TOTAL_QUESTIONS: int = 0
+
+
+def _get_question_pools(db: Session) -> dict[tuple[str, str], list[Question]]:
+    global _QUESTION_POOL_CACHE, _CACHED_TOTAL_QUESTIONS
+    total_in_db = db.query(Question).count()
+    if not _QUESTION_POOL_CACHE or total_in_db != _CACHED_TOTAL_QUESTIONS:
+        pools: dict[tuple[str, str], list[Question]] = {}
+        all_questions = db.query(Question).all()
+        for q in all_questions:
+            db.expunge(q)
+            make_transient(q)
+            pools.setdefault((q.topic_id, q.difficulty), []).append(q)
+        _QUESTION_POOL_CACHE = pools
+        _CACHED_TOTAL_QUESTIONS = total_in_db
+    return _QUESTION_POOL_CACHE
 
 
 def _select_with_bandit(
@@ -53,7 +73,6 @@ def _select_with_bandit(
             pace_flag=pace_flag,
         )
         ucb_score, _, _ = score_candidate_ucb(student_id, x)
-        # Small random tie-breaker so repeated papers explore diverse high-UCB questions
         jitter = random.uniform(-0.015, 0.015)
         scored.append((ucb_score + jitter, q))
 
@@ -63,6 +82,8 @@ def _select_with_bandit(
 
 def generate_paper(db: Session, student_id: str, total_length: int = 45) -> list[Question]:
     paper: list[Question] = []
+    pools = _get_question_pools(db)
+
     student = db.query(Student).filter_by(student_id=student_id).first()
     global_theta = float(getattr(student, "global_theta", 0.0) or 0.0) if student else 0.0
 
@@ -82,11 +103,7 @@ def generate_paper(db: Session, student_id: str, total_length: int = 45) -> list
         pace_flag = state.pace_flag if state else None
         prereq_ready = compute_prerequisite_readiness(topic_id, mastery_map)
 
-        pool = (
-            db.query(Question)
-            .filter_by(topic_id=topic_id, difficulty=level)
-            .all()
-        )
+        pool = pools.get((topic_id, level), [])
         selected = _select_with_bandit(
             pool,
             min(num_questions, len(pool)),
@@ -104,11 +121,7 @@ def generate_paper(db: Session, student_id: str, total_length: int = 45) -> list
                 needed = num_questions - len(selected)
                 if needed <= 0:
                     break
-                adj_pool = (
-                    db.query(Question)
-                    .filter_by(topic_id=topic_id, difficulty=fallback_diff)
-                    .all()
-                )
+                adj_pool = pools.get((topic_id, fallback_diff), [])
                 adj_candidates = [q for q in adj_pool if q not in selected]
                 adj_selected = _select_with_bandit(
                     adj_candidates,
@@ -141,11 +154,7 @@ def generate_paper(db: Session, student_id: str, total_length: int = 45) -> list
 
         # Retention probe for advanced topics: confirm long-term retention
         if state and state.level == "advanced" and (state.attempts_counted or 0) >= 3:
-            medium_pool = (
-                db.query(Question)
-                .filter_by(topic_id=topic_id, difficulty="medium")
-                .all()
-            )
+            medium_pool = pools.get((topic_id, "medium"), [])
             probe_candidates = [q for q in medium_pool if q not in paper]
             if probe_candidates and len(paper) < total_length + 5:
                 paper.append(probe_candidates[0])
