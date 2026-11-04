@@ -30,8 +30,8 @@ jobs:
 
       - name: Stage 1 — Data & Taxonomy Schema Gate
         run: |
-          python -m model.validate_question_bank
-          python -m model.validate_weightage_file
+          python -m model.validate_question_bank data/tagged_questions/neet_questions_clean.json
+          python -m model.validate_weightage_file data/taxonomy/NEET_Unified_Weightage_And_Marks_2013_2026.json
 
       - name: Stage 2 — Deep Training, 5-Fold Stratified CV & Champion Accuracy Gate (>=99.0%)
         run: |
