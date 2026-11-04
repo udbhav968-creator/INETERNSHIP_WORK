@@ -20,6 +20,12 @@ class AttemptIn(BaseModel):
     dwell_time_ms: Optional[int] = 0
 
 
+class PaperSubmitIn(BaseModel):
+    student_id: str
+    paper_number: Optional[int] = None
+    attempts: list[AttemptIn]
+
+
 class TopicStateOut(BaseModel):
     topic_id: str
     level: str

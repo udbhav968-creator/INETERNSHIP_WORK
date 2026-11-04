@@ -15,15 +15,25 @@ export default function App() {
 
   const [view, setView] = useState<View>("dashboard");
   const [paperRunId, setPaperRunId] = useState(0);
+  const [selectedTopicId, setSelectedTopicId] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     setStudent(loadSession());
     setCheckingSession(false);
   }, []);
 
-  function handleStartPaper() {
+  function handleStartPaper(topicId?: string) {
+    setSelectedTopicId(topicId);
     setPaperRunId((n) => n + 1);
     setView("exam");
+  }
+
+  function handleNavigate(nextView: View) {
+    if (nextView === "exam") {
+      handleStartPaper(undefined);
+    } else {
+      setView("dashboard");
+    }
   }
 
   if (checkingSession) {
@@ -41,7 +51,7 @@ export default function App() {
   return (
     <AppShell
       activeView={view}
-      onNavigate={setView}
+      onNavigate={handleNavigate}
       studentId={student.student_id}
       onSwitchAccount={() => {
         clearSession();
@@ -53,11 +63,12 @@ export default function App() {
       )}
       {view === "exam" && (
         <ExamScreen
-          key={paperRunId}
+          key={`${paperRunId}-${selectedTopicId ?? "full"}`}
           studentId={student.student_id}
-          paperNumber={paperRunId + 1}
+          paperNumber={paperRunId || 1}
+          topicId={selectedTopicId}
           onExit={() => setView("dashboard")}
-          onStartNext={handleStartPaper}
+          onStartNext={() => handleStartPaper(selectedTopicId)}
         />
       )}
     </AppShell>

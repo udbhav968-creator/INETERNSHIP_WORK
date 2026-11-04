@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { api, ApiError } from "../../lib/api";
 import {
   OPTION_LETTERS,
+  type AttemptPayload,
   type OptionLetter,
   type PaperReviewOut,
   type QuestionOut,
@@ -13,13 +14,14 @@ import { Button } from "../../components/ui/Button";
 interface ExamScreenProps {
   studentId: string;
   paperNumber: number;
+  topicId?: string;
   onExit: () => void;
   onStartNext: () => void;
 }
 
 type LoadState = "loading" | "ready" | "error" | "empty" | "submitting" | "submit-error" | "results";
 
-export function ExamScreen({ studentId, paperNumber, onExit, onStartNext }: ExamScreenProps) {
+export function ExamScreen({ studentId, paperNumber, topicId, onExit, onStartNext }: ExamScreenProps) {
   const [questions, setQuestions] = useState<QuestionOut[]>([]);
   const [loadState, setLoadState] = useState<LoadState>("loading");
   const [errorMessage, setErrorMessage] = useState("");
@@ -36,7 +38,7 @@ export function ExamScreen({ studentId, paperNumber, onExit, onStartNext }: Exam
   useEffect(() => {
     let cancelled = false;
     api
-      .getNextPaper(studentId)
+      .getNextPaper(studentId, topicId)
       .then((data) => {
         if (cancelled) return;
         setQuestions(data);
@@ -50,7 +52,7 @@ export function ExamScreen({ studentId, paperNumber, onExit, onStartNext }: Exam
     return () => {
       cancelled = true;
     };
-  }, [studentId]);
+  }, [studentId, topicId]);
 
   useEffect(() => {
     if (loadState !== "ready") return;
@@ -83,6 +85,7 @@ export function ExamScreen({ studentId, paperNumber, onExit, onStartNext }: Exam
     setErrorMessage("");
 
     try {
+      const batchPayloads: AttemptPayload[] = [];
       for (const [qIndexStr, optionIndex] of Object.entries(answers)) {
         const qIndex = Number(qIndexStr);
         const question = questions[qIndex];
@@ -97,7 +100,7 @@ export function ExamScreen({ studentId, paperNumber, onExit, onStartNext }: Exam
         const timeTaken = Math.max(1, Math.round(dwellMs / 1000));
         const letter: OptionLetter = OPTION_LETTERS[optionIndex];
 
-        await api.submitAttempt({
+        batchPayloads.push({
           student_id: studentId,
           question_id: question.question_id,
           paper_number: paperNumber,
@@ -109,7 +112,7 @@ export function ExamScreen({ studentId, paperNumber, onExit, onStartNext }: Exam
         });
       }
 
-      const reviewData = await api.getPaperReview(studentId, paperNumber);
+      const reviewData = await api.submitPaper(studentId, paperNumber, batchPayloads);
       setReview(reviewData);
       setLoadState("results");
     } catch (err) {
@@ -157,7 +160,7 @@ export function ExamScreen({ studentId, paperNumber, onExit, onStartNext }: Exam
       <aside className="order-2 flex flex-col gap-3 lg:order-1 lg:w-56 lg:shrink-0">
         <Card className="p-4">
           <p className="mb-3 text-xs font-medium uppercase tracking-wide text-midnight-700/50">
-            Sample Paper {paperNumber}
+            {topicId ? `Chapter Drill · ${topicId}` : `Sample Paper ${paperNumber}`}
           </p>
           <div className="grid grid-cols-6 gap-2 lg:grid-cols-5">
             {questions.map((_, i) => {
@@ -385,6 +388,11 @@ function ResultsView({
                   ) : (
                     <div className="rounded-xl border border-midnight-900/10 bg-midnight-900/5 p-4 text-xs leading-relaxed text-midnight-900">
                       <p className="font-semibold text-midnight-950">{hint.ncert_reference}</p>
+                      {hint.concept_summary && (
+                        <p className="mt-1">
+                          <span className="font-semibold">NCERT Core Concept:</span> {hint.concept_summary}
+                        </p>
+                      )}
                       <p className="mt-1">
                         <span className="font-semibold">Diagnosed Misconception:</span>{" "}
                         {hint.diagnosed_misconception}
@@ -395,6 +403,12 @@ function ResultsView({
                       <p className="mt-1">
                         <span className="font-semibold">Key Formula:</span> {hint.key_formula}
                       </p>
+                      {hint.verified_step_by_step && (
+                        <p className="mt-1">
+                          <span className="font-semibold">Step-by-Step Derivation:</span>{" "}
+                          {hint.verified_step_by_step}
+                        </p>
+                      )}
                     </div>
                   )}
                 </div>

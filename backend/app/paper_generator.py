@@ -80,7 +80,12 @@ def _select_with_bandit(
     return [q for _, q in scored[:k]]
 
 
-def generate_paper(db: Session, student_id: str, total_length: int = 45) -> list[Question]:
+def generate_paper(
+    db: Session,
+    student_id: str,
+    total_length: int = 45,
+    topic_id: str | None = None,
+) -> list[Question]:
     paper: list[Question] = []
     pools = _get_question_pools(db)
 
@@ -90,6 +95,49 @@ def generate_paper(db: Session, student_id: str, total_length: int = 45) -> list
     all_states = db.query(StudentTopicState).filter_by(student_id=student_id).all()
     state_by_topic = {s.topic_id: s for s in all_states}
     mastery_map = {s.topic_id: float(getattr(s, "mastery_prob", 0.35) or 0.35) for s in all_states}
+
+    # Chapter-Focused Adaptive Drill (when a student clicks "Practice Chapter" on any of the 65 chapters)
+    if topic_id:
+        target_count = min(15, total_length)
+        state = state_by_topic.get(topic_id)
+        level = state.level if state else "basic"
+        topic_theta = float(getattr(state, "irt_theta", global_theta) or global_theta) if state else global_theta
+        mastery_prob = float(getattr(state, "mastery_prob", 0.35) or 0.35) if state else 0.35
+        pace_flag = state.pace_flag if state else None
+        prereq_ready = compute_prerequisite_readiness(topic_id, mastery_map)
+        imp_val = float(_TOPIC_IMPORTANCE.get(topic_id, 1.5))
+
+        pool = pools.get((topic_id, level), [])
+        selected = _select_with_bandit(
+            pool,
+            min(target_count, len(pool)),
+            student_id,
+            topic_theta,
+            mastery_prob,
+            imp_val,
+            prereq_ready,
+            pace_flag,
+        )
+        if len(selected) < target_count:
+            for fallback_diff in ADJACENT_FALLBACK_ORDER.get(level, ["medium", "basic"]):
+                needed = target_count - len(selected)
+                if needed <= 0:
+                    break
+                adj_pool = pools.get((topic_id, fallback_diff), [])
+                adj_candidates = [q for q in adj_pool if q not in selected]
+                selected.extend(
+                    _select_with_bandit(
+                        adj_candidates,
+                        min(needed, len(adj_candidates)),
+                        student_id,
+                        topic_theta,
+                        mastery_prob,
+                        imp_val,
+                        prereq_ready,
+                        pace_flag,
+                    )
+                )
+        return selected
 
     fractional_topics: list[tuple[float, str]] = []
     for topic_id, importance in _TOPIC_IMPORTANCE.items():

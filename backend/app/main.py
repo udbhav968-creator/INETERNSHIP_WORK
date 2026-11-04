@@ -104,7 +104,15 @@ def login(payload: schemas.LoginIn, db: Session = Depends(get_db)):
 def complete_onboarding(student_id: str, payload: schemas.OnboardingIn, db: Session = Depends(get_db)):
     student = db.query(Student).filter_by(student_id=student_id).first()
     if not student:
-        raise HTTPException(status_code=404, detail="Student not found")
+        # Auto-provision student row if request landed on a fresh serverless instance
+        student = Student(
+            student_id=student_id,
+            name=student_id.title(),
+            email=f"{student_id.lower()}@klassed.in",
+            onboarded=False,
+        )
+        db.add(student)
+        db.flush()
     return auth.complete_onboarding(db, student, payload.class_level, payload.target_neet_year)
 
 
@@ -118,174 +126,181 @@ def get_student(student_id: str, db: Session = Depends(get_db)):
 
 # --- adaptive engine (v1 Core + v2 BKT, 3PL IRT, LinUCB, Feature Store, Drift Monitor) ---
 
+def _process_single_attempt_no_commit(
+    attempt: schemas.AttemptIn,
+    db: Session,
+) -> tuple[bool, Question, StudentTopicState]:
+    question = db.query(Question).filter_by(question_id=attempt.question_id).first()
+    if not question:
+        raise HTTPException(status_code=404, detail="Question not found")
+
+    selected_clean = (attempt.selected_option or "").strip().lower()
+    correct_clean = (question.correct_answer or "").strip().lower()
+    is_correct = selected_clean == correct_clean
+
+    opt_switches = int(attempt.option_switches or 0)
+    hesitation = int(attempt.hesitation_ms or 0)
+    dwell = int(attempt.dwell_time_ms or (attempt.time_taken_seconds * 1000))
+
+    # Log the raw attempt with v2 telemetry
+    db.add(
+        TestAttempt(
+            student_id=attempt.student_id,
+            question_id=attempt.question_id,
+            paper_number=attempt.paper_number,
+            is_correct=is_correct,
+            time_taken_seconds=attempt.time_taken_seconds,
+            selected_option=attempt.selected_option,
+            option_switches=opt_switches,
+            hesitation_ms=hesitation,
+            dwell_time_ms=dwell,
+        )
+    )
+
+    # Fetch or create this student's state for this topic
+    state = (
+        db.query(StudentTopicState)
+        .filter_by(student_id=attempt.student_id, topic_id=question.topic_id)
+        .first()
+    )
+    if not state:
+        state = StudentTopicState(
+            student_id=attempt.student_id,
+            topic_id=question.topic_id,
+            level="basic",
+            streak=0,
+            last_3_results=[],
+            mastery_prob=0.35,
+            confidence_interval=0.45,
+            irt_theta=0.0,
+        )
+        db.add(state)
+
+    exp_sec = expected_time(question.difficulty, question.expected_time_seconds)
+    time_ratio = attempt.time_taken_seconds / max(1, exp_sec)
+
+    # Compute elapsed hours since last attempt in this topic for Ebbinghaus spaced repetition
+    prev_topic_attempt = (
+        db.query(TestAttempt)
+        .join(Question, TestAttempt.question_id == Question.question_id)
+        .filter(
+            TestAttempt.student_id == attempt.student_id,
+            Question.topic_id == question.topic_id,
+        )
+        .order_by(TestAttempt.attempt_id.desc())
+        .first()
+    )
+    elapsed_hours = 0.0
+    if prev_topic_attempt and getattr(prev_topic_attempt, "timestamp", None):
+        ts = prev_topic_attempt.timestamp
+        now_dt = datetime.now(timezone.utc) if ts.tzinfo else datetime.utcnow()
+        elapsed_hours = max(0.0, (now_dt - ts).total_seconds() / 3600.0)
+
+    # Prior probability and mastery before state update
+    prior_theta = float(getattr(state, "irt_theta", 0.0) or 0.0)
+    prior_mastery = float(getattr(state, "mastery_prob", 0.35) or 0.35)
+    irt_params = get_item_params(question.question_id, question.difficulty, exp_sec)
+    pred_prob = irt_3pl_probability(prior_theta, irt_params)
+    DRIFT_MONITOR.log_prediction(pred_prob, int(is_correct), question.difficulty, attempt.time_taken_seconds)
+
+    # 1. State Machine & BKT Posterior Update (with Ebbinghaus forgetting prior)
+    process_answer(
+        state,
+        is_correct,
+        difficulty=question.difficulty,
+        time_ratio=time_ratio,
+        option_switches=opt_switches,
+        hesitation_ms=hesitation,
+        elapsed_hours=elapsed_hours,
+    )
+
+    # 2. Pace Tracking Update (Part I Fix #3: uses question.expected_time_seconds)
+    update_pace(
+        state,
+        is_correct,
+        attempt.time_taken_seconds,
+        question.difficulty,
+        expected_time_seconds=question.expected_time_seconds,
+    )
+
+    # 3. 3PL IRT Latent Ability (theta) MAP Update + Online Item Recalibration
+    new_topic_theta = update_student_theta_map(
+        current_theta=prior_theta,
+        is_correct=is_correct,
+        params=irt_params,
+    )
+    state.irt_theta = new_topic_theta
+    recalibrate_item_parameters_online(
+        question_id=question.question_id,
+        student_theta=prior_theta,
+        is_correct=is_correct,
+        time_ratio=time_ratio,
+    )
+
+    student = db.query(Student).filter_by(student_id=attempt.student_id).first()
+    if student:
+        curr_global = float(getattr(student, "global_theta", 0.0) or 0.0)
+        student.global_theta = round(0.85 * curr_global + 0.15 * new_topic_theta, 4)
+
+    # Compute real prerequisite readiness from the student's topic states in the DB
+    all_student_states = (
+        db.query(StudentTopicState).filter_by(student_id=attempt.student_id).all()
+    )
+    state_by_topic = {s.topic_id: s for s in all_student_states}
+    mastery_map = {
+        s.topic_id: float(getattr(s, "mastery_prob", 0.35) or 0.35)
+        for s in all_student_states
+    }
+
+    # 3b. 1-Hop Bayesian Belief Propagation across Prerequisite DAG
+    dag_updates = propagate_dag_belief_update(
+        topic_id=question.topic_id,
+        is_correct=is_correct,
+        difficulty=question.difficulty,
+        student_mastery_map=mastery_map,
+    )
+    for neighbor_topic, new_neighbor_mastery in dag_updates.items():
+        mastery_map[neighbor_topic] = new_neighbor_mastery
+        if neighbor_topic in state_by_topic:
+            state_by_topic[neighbor_topic].mastery_prob = new_neighbor_mastery
+
+    prereq_ready = compute_prerequisite_readiness(question.topic_id, mastery_map)
+
+    # 4. LinUCB Contextual Bandit Reward Update (with delayed mastery gain Delta P(L_t))
+    record_bandit_feedback(
+        student_id=attempt.student_id,
+        question_id=question.question_id,
+        difficulty=question.difficulty,
+        expected_time_seconds=exp_sec,
+        student_theta=new_topic_theta,
+        topic_mastery_prob=float(state.mastery_prob or 0.5),
+        topic_importance=float(_TOPIC_IMPORTANCE.get(question.topic_id, 1.5)),
+        prereq_readiness=prereq_ready,
+        pace_flag=state.pace_flag,
+        is_correct=is_correct,
+        time_taken_seconds=attempt.time_taken_seconds,
+        prior_mastery_prob=prior_mastery,
+    )
+
+    # 5. Synchronize Low-Latency In-Memory Feature Store
+    FEATURE_STORE.put_student_features(
+        attempt.student_id,
+        {
+            "last_topic": question.topic_id,
+            "level": state.level,
+            "mastery_prob": state.mastery_prob,
+            "confidence_interval": state.confidence_interval,
+            "irt_theta": state.irt_theta,
+            "pace_flag": state.pace_flag,
+        },
+    )
+    return is_correct, question, state
+
+
 @app.post("/submit_attempt")
 def submit_attempt(attempt: schemas.AttemptIn, db: Session = Depends(get_db)):
     with _get_student_lock(attempt.student_id):
-        question = db.query(Question).filter_by(question_id=attempt.question_id).first()
-        if not question:
-            raise HTTPException(status_code=404, detail="Question not found")
-
-        selected_clean = (attempt.selected_option or "").strip().lower()
-        correct_clean = (question.correct_answer or "").strip().lower()
-        is_correct = selected_clean == correct_clean
-
-        opt_switches = int(attempt.option_switches or 0)
-        hesitation = int(attempt.hesitation_ms or 0)
-        dwell = int(attempt.dwell_time_ms or (attempt.time_taken_seconds * 1000))
-
-        # Log the raw attempt with v2 telemetry
-        db.add(
-            TestAttempt(
-                student_id=attempt.student_id,
-                question_id=attempt.question_id,
-                paper_number=attempt.paper_number,
-                is_correct=is_correct,
-                time_taken_seconds=attempt.time_taken_seconds,
-                selected_option=attempt.selected_option,
-                option_switches=opt_switches,
-                hesitation_ms=hesitation,
-                dwell_time_ms=dwell,
-            )
-        )
-
-        # Fetch or create this student's state for this topic
-        state = (
-            db.query(StudentTopicState)
-            .filter_by(student_id=attempt.student_id, topic_id=question.topic_id)
-            .first()
-        )
-        if not state:
-            state = StudentTopicState(
-                student_id=attempt.student_id,
-                topic_id=question.topic_id,
-                level="basic",
-                streak=0,
-                last_3_results=[],
-                mastery_prob=0.35,
-                confidence_interval=0.45,
-                irt_theta=0.0,
-            )
-            db.add(state)
-
-        exp_sec = expected_time(question.difficulty, question.expected_time_seconds)
-        time_ratio = attempt.time_taken_seconds / max(1, exp_sec)
-
-        # Compute elapsed hours since last attempt in this topic for Ebbinghaus spaced repetition
-        prev_topic_attempt = (
-            db.query(TestAttempt)
-            .join(Question, TestAttempt.question_id == Question.question_id)
-            .filter(
-                TestAttempt.student_id == attempt.student_id,
-                Question.topic_id == question.topic_id,
-            )
-            .order_by(TestAttempt.attempt_id.desc())
-            .first()
-        )
-        elapsed_hours = 0.0
-        if prev_topic_attempt and getattr(prev_topic_attempt, "timestamp", None):
-            ts = prev_topic_attempt.timestamp
-            now_dt = datetime.now(timezone.utc) if ts.tzinfo else datetime.utcnow()
-            elapsed_hours = max(0.0, (now_dt - ts).total_seconds() / 3600.0)
-
-        # Prior probability and mastery before state update
-        prior_theta = float(getattr(state, "irt_theta", 0.0) or 0.0)
-        prior_mastery = float(getattr(state, "mastery_prob", 0.35) or 0.35)
-        irt_params = get_item_params(question.question_id, question.difficulty, exp_sec)
-        pred_prob = irt_3pl_probability(prior_theta, irt_params)
-        DRIFT_MONITOR.log_prediction(pred_prob, int(is_correct), question.difficulty, attempt.time_taken_seconds)
-
-        # 1. State Machine & BKT Posterior Update (with Ebbinghaus forgetting prior)
-        process_answer(
-            state,
-            is_correct,
-            difficulty=question.difficulty,
-            time_ratio=time_ratio,
-            option_switches=opt_switches,
-            hesitation_ms=hesitation,
-            elapsed_hours=elapsed_hours,
-        )
-
-        # 2. Pace Tracking Update (Part I Fix #3: uses question.expected_time_seconds)
-        update_pace(
-            state,
-            is_correct,
-            attempt.time_taken_seconds,
-            question.difficulty,
-            expected_time_seconds=question.expected_time_seconds,
-        )
-
-        # 3. 3PL IRT Latent Ability (theta) MAP Update + Online Item Recalibration
-        new_topic_theta = update_student_theta_map(
-            current_theta=prior_theta,
-            is_correct=is_correct,
-            params=irt_params,
-        )
-        state.irt_theta = new_topic_theta
-        recalibrate_item_parameters_online(
-            question_id=question.question_id,
-            student_theta=prior_theta,
-            is_correct=is_correct,
-            time_ratio=time_ratio,
-        )
-
-        student = db.query(Student).filter_by(student_id=attempt.student_id).first()
-        if student:
-            curr_global = float(getattr(student, "global_theta", 0.0) or 0.0)
-            student.global_theta = round(0.85 * curr_global + 0.15 * new_topic_theta, 4)
-
-        # Compute real prerequisite readiness from the student's topic states in the DB
-        all_student_states = (
-            db.query(StudentTopicState).filter_by(student_id=attempt.student_id).all()
-        )
-        state_by_topic = {s.topic_id: s for s in all_student_states}
-        mastery_map = {
-            s.topic_id: float(getattr(s, "mastery_prob", 0.35) or 0.35)
-            for s in all_student_states
-        }
-
-        # 3b. 1-Hop Bayesian Belief Propagation across Prerequisite DAG
-        dag_updates = propagate_dag_belief_update(
-            topic_id=question.topic_id,
-            is_correct=is_correct,
-            difficulty=question.difficulty,
-            student_mastery_map=mastery_map,
-        )
-        for neighbor_topic, new_neighbor_mastery in dag_updates.items():
-            mastery_map[neighbor_topic] = new_neighbor_mastery
-            if neighbor_topic in state_by_topic:
-                state_by_topic[neighbor_topic].mastery_prob = new_neighbor_mastery
-
-        prereq_ready = compute_prerequisite_readiness(question.topic_id, mastery_map)
-
-        # 4. LinUCB Contextual Bandit Reward Update (with delayed mastery gain Delta P(L_t))
-        record_bandit_feedback(
-            student_id=attempt.student_id,
-            question_id=question.question_id,
-            difficulty=question.difficulty,
-            expected_time_seconds=exp_sec,
-            student_theta=new_topic_theta,
-            topic_mastery_prob=float(state.mastery_prob or 0.5),
-            topic_importance=float(_TOPIC_IMPORTANCE.get(question.topic_id, 1.5)),
-            prereq_readiness=prereq_ready,
-            pace_flag=state.pace_flag,
-            is_correct=is_correct,
-            time_taken_seconds=attempt.time_taken_seconds,
-            prior_mastery_prob=prior_mastery,
-        )
-
-        # 5. Synchronize Low-Latency In-Memory Feature Store
-        FEATURE_STORE.put_student_features(
-            attempt.student_id,
-            {
-                "last_topic": question.topic_id,
-                "level": state.level,
-                "mastery_prob": state.mastery_prob,
-                "confidence_interval": state.confidence_interval,
-                "irt_theta": state.irt_theta,
-                "pace_flag": state.pace_flag,
-            },
-        )
-
+        is_correct, _, state = _process_single_attempt_no_commit(attempt, db)
         db.commit()
         return {
             "is_correct": is_correct,
@@ -297,6 +312,69 @@ def submit_attempt(attempt: schemas.AttemptIn, db: Session = Depends(get_db)):
         }
 
 
+@app.post("/submit_paper", response_model=schemas.PaperReviewOut)
+def submit_paper(payload: schemas.PaperSubmitIn, db: Session = Depends(get_db)):
+    """
+    Atomic batch paper submission endpoint: processes all answered questions in a single
+    database transaction, prevents paper_number collisions across sessions, and directly
+    returns PaperReviewOut in one round-trip.
+    """
+    if not payload.attempts:
+        raise HTTPException(status_code=400, detail="No attempts provided in paper submission")
+
+    with _get_student_lock(payload.student_id):
+        existing_max_row = (
+            db.query(TestAttempt.paper_number)
+            .filter_by(student_id=payload.student_id)
+            .order_by(TestAttempt.paper_number.desc())
+            .first()
+        )
+        max_existing_paper = int(existing_max_row[0]) if existing_max_row and existing_max_row[0] else 0
+        requested_paper = int(payload.paper_number or 1)
+        clean_paper_number = (
+            max_existing_paper + 1 if requested_paper <= max_existing_paper else requested_paper
+        )
+
+        review_questions: list[schemas.QuestionReviewOut] = []
+        correct_count = 0
+
+        for att in payload.attempts:
+            att_copy = schemas.AttemptIn(
+                student_id=payload.student_id,
+                question_id=att.question_id,
+                paper_number=clean_paper_number,
+                selected_option=att.selected_option,
+                time_taken_seconds=att.time_taken_seconds,
+                option_switches=att.option_switches,
+                hesitation_ms=att.hesitation_ms,
+                dwell_time_ms=att.dwell_time_ms,
+            )
+            is_correct, question, _ = _process_single_attempt_no_commit(att_copy, db)
+            if is_correct:
+                correct_count += 1
+            review_questions.append(
+                schemas.QuestionReviewOut(
+                    question_id=question.question_id,
+                    topic_id=question.topic_id,
+                    text=question.text,
+                    options=question.options,
+                    correct_answer=question.correct_answer,
+                    selected_option=att.selected_option,
+                    is_correct=is_correct,
+                )
+            )
+
+        db.commit()
+        total = len(review_questions)
+        return schemas.PaperReviewOut(
+            paper_number=clean_paper_number,
+            total_questions=total,
+            correct_count=correct_count,
+            score_percent=round(100.0 * correct_count / total, 1) if total else 0.0,
+            questions=review_questions,
+        )
+
+
 @app.get("/students/{student_id}/state", response_model=list[schemas.TopicStateOut])
 def get_student_state(student_id: str, db: Session = Depends(get_db)):
     FEATURE_STORE.get_student_features(student_id)
@@ -304,8 +382,8 @@ def get_student_state(student_id: str, db: Session = Depends(get_db)):
 
 
 @app.get("/students/{student_id}/next_paper", response_model=list[schemas.QuestionOut])
-def next_paper(student_id: str, db: Session = Depends(get_db)):
-    return generate_paper(db, student_id)
+def next_paper(student_id: str, topic_id: str | None = None, db: Session = Depends(get_db)):
+    return generate_paper(db, student_id, topic_id=topic_id)
 
 
 @app.get("/students/{student_id}/papers/{paper_number}/review", response_model=schemas.PaperReviewOut)

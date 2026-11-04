@@ -55,13 +55,25 @@ export const api = {
   getStudentState: (studentId: string) =>
     request<TopicState[]>(`/students/${encodeURIComponent(studentId)}/state`),
 
-  getNextPaper: (studentId: string) =>
-    request<QuestionOut[]>(`/students/${encodeURIComponent(studentId)}/next_paper`),
+  getNextPaper: (studentId: string, topicId?: string) => {
+    const query = topicId ? `?topic_id=${encodeURIComponent(topicId)}` : "";
+    return request<QuestionOut[]>(`/students/${encodeURIComponent(studentId)}/next_paper${query}`);
+  },
 
   submitAttempt: (payload: AttemptPayload) =>
     request<AttemptResult>("/submit_attempt", {
       method: "POST",
       body: JSON.stringify(payload),
+    }),
+
+  submitPaper: (studentId: string, paperNumber: number, attempts: AttemptPayload[]) =>
+    request<PaperReviewOut>("/submit_paper", {
+      method: "POST",
+      body: JSON.stringify({
+        student_id: studentId,
+        paper_number: paperNumber,
+        attempts,
+      }),
     }),
 
   getPaperReview: (studentId: string, paperNumber: number) =>

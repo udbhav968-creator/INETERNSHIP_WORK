@@ -528,9 +528,48 @@ def test_14_all_11_endpoints_and_concurrent_stress():
         r_rev = client.get(f"/students/{created_student_id}/papers/1/review")
         assert r_rev.status_code == 200 and r_rev.json()["total_questions"] == 8
 
+        # 8b. Chapter-focused adaptive drill + atomic batch POST /submit_paper
+        r_chap = client.get(f"/students/{created_student_id}/next_paper?topic_id=Electrostatics")
+        assert r_chap.status_code == 200
+        chap_items = r_chap.json()
+        assert len(chap_items) >= 2 and all(q["topic_id"] == "Electrostatics" for q in chap_items)
+
+        r_batch = client.post(
+            "/submit_paper",
+            json={
+                "student_id": created_student_id,
+                "paper_number": 1,  # should auto-increment to 2 since paper 1 already exists
+                "attempts": [
+                    {
+                        "student_id": created_student_id,
+                        "question_id": chap_items[0]["question_id"],
+                        "paper_number": 1,
+                        "selected_option": "a",
+                        "time_taken_seconds": 45,
+                        "option_switches": 0,
+                        "hesitation_ms": 1500,
+                        "dwell_time_ms": 45000,
+                    },
+                    {
+                        "student_id": created_student_id,
+                        "question_id": chap_items[1]["question_id"],
+                        "paper_number": 1,
+                        "selected_option": "b",
+                        "time_taken_seconds": 55,
+                        "option_switches": 1,
+                        "hesitation_ms": 2200,
+                        "dwell_time_ms": 55000,
+                    },
+                ],
+            },
+        )
+        assert r_batch.status_code == 200
+        batch_body = r_batch.json()
+        assert batch_body["paper_number"] == 2 and batch_body["total_questions"] == 2
+
         # 9. Analytics
         r_ana = client.get(f"/students/{created_student_id}/analytics")
-        assert r_ana.status_code == 200 and r_ana.json()["total_attempts"] == 8
+        assert r_ana.status_code == 200 and r_ana.json()["total_attempts"] == 10
 
         # 10. v2 Insights (including MIRT 3D Profile & Spaced Repetition Reviews)
         r_ins = client.get(f"/students/{created_student_id}/v2_insights")

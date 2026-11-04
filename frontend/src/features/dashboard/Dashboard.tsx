@@ -7,7 +7,7 @@ import { PaceBadge } from "../../components/ui/Badge";
 
 interface DashboardProps {
   studentId: string;
-  onStartPaper: () => void;
+  onStartPaper: (topicId?: string) => void;
 }
 
 type LoadState = "loading" | "ready" | "error" | "empty";
@@ -84,7 +84,7 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
         </div>
         <Button
           variant="secondary"
-          onClick={onStartPaper}
+          onClick={() => onStartPaper(undefined)}
           className="shrink-0 font-semibold"
         >
           Start sample paper
@@ -135,14 +135,23 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
               </h2>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {allSyllabusChapters.slice(0, 6).map((rec) => (
-                  <Card key={rec.topic_id} className="flex flex-col gap-1.5 p-4">
-                    <span className="text-xs font-semibold uppercase tracking-wide text-midnight-700/60">
-                      {rec.subject} {rec.cluster ? `· ${rec.cluster}` : ""}
-                    </span>
-                    <p className="font-medium text-midnight-950">{rec.topic_id}</p>
-                    <p className="text-xs text-midnight-700/70">
-                      Readiness: {Math.round(rec.readiness * 100)}% · Weightage: {rec.neet_weightage ?? 1.5}% · ZPD: {rec.zpd_priority_score.toFixed(2)}
-                    </p>
+                  <Card key={rec.topic_id} className="flex flex-col justify-between gap-2 p-4">
+                    <div>
+                      <span className="text-xs font-semibold uppercase tracking-wide text-midnight-700/60">
+                        {rec.subject} {rec.cluster ? `· ${rec.cluster}` : ""}
+                      </span>
+                      <p className="mt-0.5 font-medium text-midnight-950">{rec.topic_id}</p>
+                      <p className="mt-1 text-xs text-midnight-700/70">
+                        Readiness: {Math.round(rec.readiness * 100)}% · Weightage: {rec.neet_weightage ?? 1.5}% · ZPD: {rec.zpd_priority_score.toFixed(2)}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => onStartPaper(rec.topic_id)}
+                      className="mt-1 self-start text-xs font-semibold text-accent hover:underline"
+                    >
+                      Practice chapter →
+                    </button>
                   </Card>
                 ))}
               </div>
@@ -258,6 +267,37 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
             </Card>
           )}
 
+          {v2Insights?.spaced_repetition_reviews && v2Insights.spaced_repetition_reviews.length > 0 && (
+            <div>
+              <h2 className="mb-3 font-display text-lg font-semibold text-midnight-950">
+                Ebbinghaus Spaced Repetition & Memory Retention Queue
+              </h2>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {v2Insights.spaced_repetition_reviews.map((rev) => (
+                  <Card key={rev.topic_id} className="flex flex-col justify-between gap-2 p-4">
+                    <div>
+                      <p className="font-medium text-midnight-950">{rev.topic_id}</p>
+                      <p className="mt-1 text-xs text-midnight-700/75">
+                        Peak Mastery: <strong>{Math.round(rev.peak_mastery * 100)}%</strong> → Decayed:{" "}
+                        <strong>{Math.round(rev.decayed_mastery * 100)}%</strong>
+                      </p>
+                      <p className="mt-0.5 text-[11px] text-midnight-700/60">
+                        Elapsed: {rev.elapsed_hours.toFixed(1)}h · Retention Urgency: {Math.round(rev.retention_urgency * 100)}%
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => onStartPaper(rev.topic_id)}
+                      className="self-start text-xs font-semibold text-accent hover:underline"
+                    >
+                      Review chapter →
+                    </button>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div>
             <h2 className="mb-3 font-display text-lg font-semibold text-midnight-950">
               Active Chapters Practiced ({topics.length})
@@ -287,6 +327,13 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
                       )}
                     </div>
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => onStartPaper(t.topic_id)}
+                    className="mt-1 self-start text-xs font-semibold text-accent hover:underline"
+                  >
+                    Practice chapter →
+                  </button>
                 </Card>
               ))}
             </div>
@@ -347,7 +394,7 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
                   <p className="mt-1 font-medium text-midnight-950">{ch.topic_id}</p>
                 </div>
 
-                <div className="flex flex-col gap-1 border-t border-midnight-900/[0.06] pt-2 text-xs text-midnight-700/75">
+                <div className="flex flex-col gap-1.5 border-t border-midnight-900/[0.06] pt-2 text-xs text-midnight-700/75">
                   <div className="flex items-center justify-between">
                     <span>BKT Mastery: <strong>{Math.round(ch.current_mastery * 100)}%</strong></span>
                     <span>Readiness: <strong>{Math.round(ch.readiness * 100)}%</strong></span>
@@ -356,6 +403,13 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
                     <span>NEET Weightage: {ch.neet_weightage ?? 1.5}%</span>
                     <span>ZPD Priority: {ch.zpd_priority_score.toFixed(2)}</span>
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => onStartPaper(ch.topic_id)}
+                    className="mt-1 self-start text-xs font-semibold text-accent hover:underline"
+                  >
+                    Practice chapter →
+                  </button>
                 </div>
               </Card>
             ))}
