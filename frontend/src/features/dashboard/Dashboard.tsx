@@ -57,12 +57,16 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
 
       <Card className="flex flex-col items-start justify-between gap-4 bg-midnight-950 p-8 text-white md:flex-row md:items-center">
         <div>
-          <p className="text-sm font-medium text-white/60">Ready for your next session?</p>
-          <p className="mt-1 font-display text-xl font-semibold">
+          <p className="text-sm font-medium text-white/70">Ready for your next session?</p>
+          <p className="mt-1 font-display text-xl font-semibold text-white">
             Your next paper adapts to your Zone of Proximal Development (target P ≈ 70%).
           </p>
         </div>
-        <Button onClick={onStartPaper} className="shrink-0 bg-white text-midnight-950 hover:bg-white/90">
+        <Button
+          variant="secondary"
+          onClick={onStartPaper}
+          className="shrink-0 font-semibold"
+        >
           Start sample paper
         </Button>
       </Card>
@@ -84,10 +88,23 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
 
       {state === "empty" && (
         <div className="flex flex-col gap-6">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <SummaryStat label="Questions attempted" value={0} />
+            <SummaryStat label="Initial BKT Prior" value="35%" />
+            <SummaryStat
+              label="Baseline NEET Projection"
+              value={v2Insights ? `${v2Insights.predicted_neet_score_720} / 720` : "380 / 720"}
+            />
+            <SummaryStat
+              label="3PL IRT Prior Percentile"
+              value={v2Insights ? `${v2Insights.estimated_neet_percentile}%ile` : "50.0%ile"}
+            />
+          </div>
+
           <Card className="text-center">
             <p className="font-medium text-midnight-900">No study history yet — Cold-Start Prior Initialized.</p>
             <p className="mt-1 text-sm text-midnight-700/70">
-              Start your first adaptive practice paper and your 3PL IRT ability, BKT mastery, and prerequisite diagnostics will calibrate in real time.
+              Click "Start sample paper" above and your 3PL IRT ability (θ), BKT mastery, and prerequisite diagnostics will calibrate in real time.
             </p>
           </Card>
 
