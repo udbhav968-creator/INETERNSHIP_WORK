@@ -209,7 +209,7 @@ def fisher_information(theta: float, params: IRTItemParams) -> float:
         return 0.001
     ratio = (p - params.c) / (1.0 - params.c)
     info = (D_SCALING ** 2) * (params.a ** 2) * (q / p) * (ratio ** 2)
-    return round(info, 5)
+    return round(info, 8)
 
 
 def update_student_theta_map(
