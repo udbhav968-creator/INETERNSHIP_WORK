@@ -1,5 +1,4 @@
-// Mirrors backend/app/schemas.py and db_models.py exactly. If the backend
-// schema changes, update here first — the API client depends on this.
+// Mirrors backend/app/schemas.py and db_models.py (v1 + Enterprise v2 Psychometric & Socratic RAG).
 
 export type Difficulty = "basic" | "medium" | "advanced";
 export type PaceFlag = "fast" | "slow" | null;
@@ -12,6 +11,9 @@ export interface TopicState {
   level: Difficulty;
   pace_flag: PaceFlag;
   avg_time_ratio: number | null;
+  mastery_prob?: number;
+  confidence_interval?: number;
+  irt_theta?: number;
 }
 
 export interface QuestionOut {
@@ -19,11 +21,8 @@ export interface QuestionOut {
   topic_id: string;
   difficulty: Difficulty;
   text: string;
-  // Options arrive as a plain ordered list — index 0 is option "a", 1 is
-  // "b", 2 is "c", 3 is "d". The backend's correct_answer field is a
-  // lowercase letter, not option text, so submission must send the letter
-  // corresponding to the clicked index, never the visible option text.
   options: string[];
+  expected_time_seconds?: number;
 }
 
 export interface AttemptPayload {
@@ -32,12 +31,18 @@ export interface AttemptPayload {
   paper_number: number;
   selected_option: OptionLetter;
   time_taken_seconds: number;
+  option_switches?: number;
+  hesitation_ms?: number;
+  dwell_time_ms?: number;
 }
 
 export interface AttemptResult {
   is_correct: boolean;
   new_level: Difficulty;
   pace_flag: PaceFlag;
+  mastery_prob?: number;
+  confidence_interval?: number;
+  irt_theta?: number;
 }
 
 // --- paper review (post-submission only) ---
@@ -84,4 +89,49 @@ export interface Analytics {
   topics_practiced: number;
   subject_breakdown: SubjectBreakdown[];
   recent_attempts: RecentAttempt[];
+}
+
+// --- v2 Psychometric Insights & Socratic RAG Remediation ---
+
+export interface SocraticHintOut {
+  question_id: string;
+  chapter: string;
+  ncert_reference: string;
+  concept_summary: string;
+  key_formula: string;
+  diagnosed_misconception: string;
+  socratic_hint: string;
+  verified_step_by_step: string;
+  retrieval_similarity: number;
+}
+
+export interface V2StudentInsights {
+  student_id: string;
+  global_theta: number;
+  estimated_neet_percentile: number;
+  predicted_neet_score_720: number;
+  zpd_target_success_prob: number;
+  root_cause_bottlenecks: Array<{
+    weak_topic: string;
+    weak_topic_mastery: number;
+    root_cause_prerequisite: string;
+    prerequisite_mastery: number;
+    recommendation: string;
+  }>;
+  recommended_unlock_topics: Array<{
+    topic_id: string;
+    subject: string;
+    current_mastery: number;
+    readiness: number;
+    zpd_priority_score: number;
+  }>;
+  topic_mastery_details: Array<{
+    topic_id: string;
+    level: Difficulty;
+    mastery_prob: number;
+    confidence_interval: number;
+    irt_theta: number;
+    readiness_score: number;
+    pace_flag: PaceFlag;
+  }>;
 }

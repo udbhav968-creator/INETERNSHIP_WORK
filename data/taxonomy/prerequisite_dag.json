@@ -1,0 +1,399 @@
+{
+  "metadata": {
+    "version": "2.0_ENTERPRISE_DAG",
+    "description": "Canonical NCERT Prerequisite Directed Acyclic Graph (DAG) across Physics, Chemistry, and Biology for Klassed NEET Adaptive Engine v2.",
+    "total_nodes": 65
+  },
+  "nodes": {
+    "Units & Dimensions": {
+      "subject": "Physics",
+      "class_grade": "11",
+      "cluster": "Mechanics Foundations",
+      "prerequisites": []
+    },
+    "Kinematics": {
+      "subject": "Physics",
+      "class_grade": "11",
+      "cluster": "Mechanics Foundations",
+      "prerequisites": ["Units & Dimensions"]
+    },
+    "Laws of Motion": {
+      "subject": "Physics",
+      "class_grade": "11",
+      "cluster": "Mechanics Foundations",
+      "prerequisites": ["Kinematics"]
+    },
+    "Work, Energy & Power": {
+      "subject": "Physics",
+      "class_grade": "11",
+      "cluster": "Mechanics Core",
+      "prerequisites": ["Laws of Motion", "Kinematics"]
+    },
+    "Rotational Motion": {
+      "subject": "Physics",
+      "class_grade": "11",
+      "cluster": "Mechanics Core",
+      "prerequisites": ["Laws of Motion", "Work, Energy & Power"]
+    },
+    "Gravitation": {
+      "subject": "Physics",
+      "class_grade": "11",
+      "cluster": "Mechanics Core",
+      "prerequisites": ["Laws of Motion", "Work, Energy & Power"]
+    },
+    "Properties of Matter": {
+      "subject": "Physics",
+      "class_grade": "11",
+      "cluster": "Bulk Matter & Thermal",
+      "prerequisites": ["Laws of Motion", "Units & Dimensions"]
+    },
+    "Thermal Physics": {
+      "subject": "Physics",
+      "class_grade": "11",
+      "cluster": "Bulk Matter & Thermal",
+      "prerequisites": ["Properties of Matter", "Work, Energy & Power"]
+    },
+    "Thermodynamics": {
+      "subject": "Physics",
+      "class_grade": "11",
+      "cluster": "Bulk Matter & Thermal",
+      "prerequisites": ["Thermal Physics", "Work, Energy & Power"]
+    },
+    "Oscillations & Waves": {
+      "subject": "Physics",
+      "class_grade": "11",
+      "cluster": "Waves & Optics",
+      "prerequisites": ["Kinematics", "Laws of Motion", "Work, Energy & Power"]
+    },
+    "Electrostatics": {
+      "subject": "Physics",
+      "class_grade": "12",
+      "cluster": "Electromagnetism",
+      "prerequisites": ["Laws of Motion", "Work, Energy & Power", "Gravitation"]
+    },
+    "Current Electricity": {
+      "subject": "Physics",
+      "class_grade": "12",
+      "cluster": "Electromagnetism",
+      "prerequisites": ["Electrostatics"]
+    },
+    "Magnetic Effects of Current": {
+      "subject": "Physics",
+      "class_grade": "12",
+      "cluster": "Electromagnetism",
+      "prerequisites": ["Current Electricity", "Electrostatics"]
+    },
+    "Magnetism & Matter": {
+      "subject": "Physics",
+      "class_grade": "12",
+      "cluster": "Electromagnetism",
+      "prerequisites": ["Magnetic Effects of Current"]
+    },
+    "Electromagnetic Induction": {
+      "subject": "Physics",
+      "class_grade": "12",
+      "cluster": "Electromagnetism",
+      "prerequisites": ["Magnetic Effects of Current", "Current Electricity"]
+    },
+    "Alternating Current": {
+      "subject": "Physics",
+      "class_grade": "12",
+      "cluster": "Electromagnetism",
+      "prerequisites": ["Electromagnetic Induction", "Current Electricity", "Oscillations & Waves"]
+    },
+    "Electromagnetic Waves": {
+      "subject": "Physics",
+      "class_grade": "12",
+      "cluster": "Waves & Optics",
+      "prerequisites": ["Electrostatics", "Magnetic Effects of Current", "Oscillations & Waves"]
+    },
+    "Ray Optics": {
+      "subject": "Physics",
+      "class_grade": "12",
+      "cluster": "Waves & Optics",
+      "prerequisites": ["Kinematics"]
+    },
+    "Wave Optics": {
+      "subject": "Physics",
+      "class_grade": "12",
+      "cluster": "Waves & Optics",
+      "prerequisites": ["Oscillations & Waves", "Ray Optics", "Electromagnetic Waves"]
+    },
+    "Dual Nature of Matter": {
+      "subject": "Physics",
+      "class_grade": "12",
+      "cluster": "Modern Physics",
+      "prerequisites": ["Work, Energy & Power", "Electrostatics", "Wave Optics"]
+    },
+    "Atoms & Nuclei": {
+      "subject": "Physics",
+      "class_grade": "12",
+      "cluster": "Modern Physics",
+      "prerequisites": ["Dual Nature of Matter", "Electrostatics"]
+    },
+    "Semiconductor Electronics": {
+      "subject": "Physics",
+      "class_grade": "12",
+      "cluster": "Modern Physics",
+      "prerequisites": ["Current Electricity", "Atoms & Nuclei"]
+    },
+    "Mole Concept / Stoichiometry": {
+      "subject": "Chemistry",
+      "class_grade": "11",
+      "cluster": "Physical Chemistry",
+      "prerequisites": []
+    },
+    "Structure of Atom": {
+      "subject": "Chemistry",
+      "class_grade": "11",
+      "cluster": "Physical Chemistry",
+      "prerequisites": ["Mole Concept / Stoichiometry"]
+    },
+    "Periodic Table": {
+      "subject": "Chemistry",
+      "class_grade": "11",
+      "cluster": "Inorganic Chemistry",
+      "prerequisites": ["Structure of Atom"]
+    },
+    "Chemical Bonding": {
+      "subject": "Chemistry",
+      "class_grade": "11",
+      "cluster": "Inorganic Chemistry",
+      "prerequisites": ["Structure of Atom", "Periodic Table"]
+    },
+    "States of Matter": {
+      "subject": "Chemistry",
+      "class_grade": "11",
+      "cluster": "Physical Chemistry",
+      "prerequisites": ["Mole Concept / Stoichiometry", "Chemical Bonding"]
+    },
+    "Equilibrium": {
+      "subject": "Chemistry",
+      "class_grade": "11",
+      "cluster": "Physical Chemistry",
+      "prerequisites": ["Mole Concept / Stoichiometry", "States of Matter"]
+    },
+    "Redox Reactions & Electrochemistry": {
+      "subject": "Chemistry",
+      "class_grade": "12",
+      "cluster": "Physical Chemistry",
+      "prerequisites": ["Mole Concept / Stoichiometry", "Equilibrium"]
+    },
+    "Solutions": {
+      "subject": "Chemistry",
+      "class_grade": "12",
+      "cluster": "Physical Chemistry",
+      "prerequisites": ["Mole Concept / Stoichiometry", "States of Matter"]
+    },
+    "Chemical Kinetics": {
+      "subject": "Chemistry",
+      "class_grade": "12",
+      "cluster": "Physical Chemistry",
+      "prerequisites": ["Mole Concept / Stoichiometry", "Equilibrium"]
+    },
+    "Surface Chemistry": {
+      "subject": "Chemistry",
+      "class_grade": "12",
+      "cluster": "Physical Chemistry",
+      "prerequisites": ["States of Matter", "Chemical Bonding"]
+    },
+    "s-Block Elements": {
+      "subject": "Chemistry",
+      "class_grade": "11",
+      "cluster": "Inorganic Chemistry",
+      "prerequisites": ["Periodic Table", "Chemical Bonding"]
+    },
+    "p-Block Elements": {
+      "subject": "Chemistry",
+      "class_grade": "12",
+      "cluster": "Inorganic Chemistry",
+      "prerequisites": ["Periodic Table", "Chemical Bonding"]
+    },
+    "d- and f-Block Elements": {
+      "subject": "Chemistry",
+      "class_grade": "12",
+      "cluster": "Inorganic Chemistry",
+      "prerequisites": ["Periodic Table", "Structure of Atom", "Chemical Bonding"]
+    },
+    "Coordination Chemistry": {
+      "subject": "Chemistry",
+      "class_grade": "12",
+      "cluster": "Inorganic Chemistry",
+      "prerequisites": ["Chemical Bonding", "d- and f-Block Elements"]
+    },
+    "General Principles & Metallurgy": {
+      "subject": "Chemistry",
+      "class_grade": "12",
+      "cluster": "Inorganic Chemistry",
+      "prerequisites": ["Redox Reactions & Electrochemistry", "p-Block Elements", "d- and f-Block Elements"]
+    },
+    "General Organic Chemistry": {
+      "subject": "Chemistry",
+      "class_grade": "11",
+      "cluster": "Organic Chemistry",
+      "prerequisites": ["Chemical Bonding"]
+    },
+    "Hydrocarbons": {
+      "subject": "Chemistry",
+      "class_grade": "11",
+      "cluster": "Organic Chemistry",
+      "prerequisites": ["General Organic Chemistry"]
+    },
+    "Haloalkanes & Haloarenes": {
+      "subject": "Chemistry",
+      "class_grade": "12",
+      "cluster": "Organic Chemistry",
+      "prerequisites": ["General Organic Chemistry", "Hydrocarbons"]
+    },
+    "Alcohols, Phenols & Ethers": {
+      "subject": "Chemistry",
+      "class_grade": "12",
+      "cluster": "Organic Chemistry",
+      "prerequisites": ["General Organic Chemistry", "Haloalkanes & Haloarenes"]
+    },
+    "Aldehydes, Ketones & Carboxylic Acids": {
+      "subject": "Chemistry",
+      "class_grade": "12",
+      "cluster": "Organic Chemistry",
+      "prerequisites": ["Alcohols, Phenols & Ethers", "Hydrocarbons"]
+    },
+    "Amines & Nitrogen Compounds": {
+      "subject": "Chemistry",
+      "class_grade": "12",
+      "cluster": "Organic Chemistry",
+      "prerequisites": ["General Organic Chemistry", "Aldehydes, Ketones & Carboxylic Acids"]
+    },
+    "Biomolecules & Polymers": {
+      "subject": "Chemistry",
+      "class_grade": "12",
+      "cluster": "Organic Chemistry",
+      "prerequisites": ["Aldehydes, Ketones & Carboxylic Acids", "Amines & Nitrogen Compounds"]
+    },
+    "Environmental Chemistry": {
+      "subject": "Chemistry",
+      "class_grade": "11",
+      "cluster": "Inorganic Chemistry",
+      "prerequisites": ["States of Matter", "p-Block Elements"]
+    },
+    "The Living World & Taxonomy": {
+      "subject": "Biology",
+      "class_grade": "11",
+      "cluster": "Diversity in Living World",
+      "prerequisites": []
+    },
+    "Biological Classification": {
+      "subject": "Biology",
+      "class_grade": "11",
+      "cluster": "Diversity in Living World",
+      "prerequisites": ["The Living World & Taxonomy"]
+    },
+    "Plant Kingdom": {
+      "subject": "Biology",
+      "class_grade": "11",
+      "cluster": "Diversity in Living World",
+      "prerequisites": ["Biological Classification"]
+    },
+    "Animal Kingdom": {
+      "subject": "Biology",
+      "class_grade": "11",
+      "cluster": "Diversity in Living World",
+      "prerequisites": ["Biological Classification"]
+    },
+    "Morphology of Flowering Plants": {
+      "subject": "Biology",
+      "class_grade": "11",
+      "cluster": "Botany Structure & Physiology",
+      "prerequisites": ["Plant Kingdom"]
+    },
+    "Anatomy of Flowering Plants": {
+      "subject": "Biology",
+      "class_grade": "11",
+      "cluster": "Botany Structure & Physiology",
+      "prerequisites": ["Morphology of Flowering Plants", "Cell: The Unit of Life"]
+    },
+    "Structural Organisation in Animals": {
+      "subject": "Biology",
+      "class_grade": "11",
+      "cluster": "Human & Animal Physiology",
+      "prerequisites": ["Animal Kingdom", "Cell: The Unit of Life"]
+    },
+    "Cell: The Unit of Life": {
+      "subject": "Biology",
+      "class_grade": "11",
+      "cluster": "Cell Biology & Biomolecules",
+      "prerequisites": []
+    },
+    "Biomolecules": {
+      "subject": "Biology",
+      "class_grade": "11",
+      "cluster": "Cell Biology & Biomolecules",
+      "prerequisites": ["Cell: The Unit of Life"]
+    },
+    "Cell Cycle & Cell Division": {
+      "subject": "Biology",
+      "class_grade": "11",
+      "cluster": "Cell Biology & Biomolecules",
+      "prerequisites": ["Cell: The Unit of Life", "Biomolecules"]
+    },
+    "Plant Physiology": {
+      "subject": "Biology",
+      "class_grade": "11",
+      "cluster": "Botany Structure & Physiology",
+      "prerequisites": ["Cell: The Unit of Life", "Biomolecules", "Anatomy of Flowering Plants"]
+    },
+    "Human Digestion & Respiration": {
+      "subject": "Biology",
+      "class_grade": "11",
+      "cluster": "Human & Animal Physiology",
+      "prerequisites": ["Structural Organisation in Animals", "Biomolecules"]
+    },
+    "Circulation & Excretion": {
+      "subject": "Biology",
+      "class_grade": "11",
+      "cluster": "Human & Animal Physiology",
+      "prerequisites": ["Structural Organisation in Animals", "Human Digestion & Respiration"]
+    },
+    "Locomotion & Neuro-Endocrine Control": {
+      "subject": "Biology",
+      "class_grade": "11",
+      "cluster": "Human & Animal Physiology",
+      "prerequisites": ["Structural Organisation in Animals", "Cell: The Unit of Life"]
+    },
+    "Reproduction & Human Development": {
+      "subject": "Biology",
+      "class_grade": "12",
+      "cluster": "Reproduction & Genetics",
+      "prerequisites": ["Cell Cycle & Cell Division", "Morphology of Flowering Plants", "Locomotion & Neuro-Endocrine Control"]
+    },
+    "Genetics & Molecular Inheritance": {
+      "subject": "Biology",
+      "class_grade": "12",
+      "cluster": "Reproduction & Genetics",
+      "prerequisites": ["Cell Cycle & Cell Division", "Biomolecules"]
+    },
+    "Evolution": {
+      "subject": "Biology",
+      "class_grade": "12",
+      "cluster": "Reproduction & Genetics",
+      "prerequisites": ["Genetics & Molecular Inheritance", "Biological Classification"]
+    },
+    "Human Health, Disease & Microbes": {
+      "subject": "Biology",
+      "class_grade": "12",
+      "cluster": "Applied Biology & Ecology",
+      "prerequisites": ["Biological Classification", "Circulation & Excretion"]
+    },
+    "Biotechnology": {
+      "subject": "Biology",
+      "class_grade": "12",
+      "cluster": "Applied Biology & Ecology",
+      "prerequisites": ["Genetics & Molecular Inheritance", "Biomolecules"]
+    },
+    "Ecology & Environment": {
+      "subject": "Biology",
+      "class_grade": "12",
+      "cluster": "Applied Biology & Ecology",
+      "prerequisites": ["The Living World & Taxonomy", "Plant Physiology"]
+    }
+  }
+}

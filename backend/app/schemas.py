@@ -1,5 +1,11 @@
-from pydantic import BaseModel, EmailStr
-from typing import Optional
+from pydantic import BaseModel
+from typing import Optional, Any
+
+try:
+    import email_validator  # noqa: F401
+    from pydantic import EmailStr
+except ImportError:
+    EmailStr = str  # fallback when email-validator package is not installed
 
 
 class AttemptIn(BaseModel):
@@ -8,6 +14,10 @@ class AttemptIn(BaseModel):
     paper_number: int
     selected_option: str
     time_taken_seconds: int
+    # v2 SAINT+ fine-grained clickstream telemetry (optional, backwards-compatible)
+    option_switches: Optional[int] = 0
+    hesitation_ms: Optional[int] = 0
+    dwell_time_ms: Optional[int] = 0
 
 
 class TopicStateOut(BaseModel):
@@ -15,6 +25,9 @@ class TopicStateOut(BaseModel):
     level: str
     pace_flag: Optional[str] = None
     avg_time_ratio: Optional[float] = None
+    mastery_prob: Optional[float] = 0.35
+    confidence_interval: Optional[float] = 0.45
+    irt_theta: Optional[float] = 0.0
 
     class Config:
         from_attributes = True
@@ -26,6 +39,7 @@ class QuestionOut(BaseModel):
     difficulty: str
     text: str
     options: list[str]
+    expected_time_seconds: Optional[int] = 90
 
     class Config:
         from_attributes = True
@@ -56,6 +70,8 @@ class StudentOut(BaseModel):
     class_level: Optional[str] = None
     target_neet_year: Optional[int] = None
     onboarded: bool
+    global_theta: Optional[float] = 0.0
+    access_token: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -105,3 +121,35 @@ class AnalyticsOut(BaseModel):
     topics_practiced: int
     subject_breakdown: list[SubjectBreakdownOut]
     recent_attempts: list[RecentAttemptOut]
+
+
+# --- v2 Socratic RAG Remediation & Psychometric Insights ---
+
+class SocraticHintIn(BaseModel):
+    question_id: str
+    selected_option: str
+    time_taken_seconds: Optional[int] = 60
+    option_switches: Optional[int] = 0
+
+
+class SocraticHintOut(BaseModel):
+    question_id: str
+    chapter: str
+    ncert_reference: str
+    concept_summary: str
+    key_formula: str
+    diagnosed_misconception: str
+    socratic_hint: str
+    verified_step_by_step: str
+    retrieval_similarity: float
+
+
+class V2StudentInsightsOut(BaseModel):
+    student_id: str
+    global_theta: float
+    estimated_neet_percentile: float
+    predicted_neet_score_720: int
+    zpd_target_success_prob: float
+    root_cause_bottlenecks: list[dict[str, Any]]
+    recommended_unlock_topics: list[dict[str, Any]]
+    topic_mastery_details: list[dict[str, Any]]

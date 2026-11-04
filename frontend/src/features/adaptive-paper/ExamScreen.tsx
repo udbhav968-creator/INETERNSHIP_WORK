@@ -1,42 +1,37 @@
 import { useEffect, useRef, useState } from "react";
 import { api, ApiError } from "../../lib/api";
-import { OPTION_LETTERS, type OptionLetter, type PaperReviewOut, type QuestionOut } from "../../types";
+import {
+  OPTION_LETTERS,
+  type OptionLetter,
+  type PaperReviewOut,
+  type QuestionOut,
+  type SocraticHintOut,
+} from "../../types";
 import { Card } from "../../components/ui/Card";
 import { Button } from "../../components/ui/Button";
 
 interface ExamScreenProps {
   studentId: string;
   paperNumber: number;
-  /** Called when the student leaves the exam/results screen for the dashboard. */
   onExit: () => void;
-  /** Called when the student asks to start a fresh paper from the results screen. */
   onStartNext: () => void;
 }
 
 type LoadState = "loading" | "ready" | "error" | "empty" | "submitting" | "submit-error" | "results";
 
-/**
- * Real paper-taking flow: load the full paper up front, let the student
- * move freely between questions and change answers, then submit the whole
- * paper at once. No per-question correctness and no difficulty tier is
- * ever shown while solving — that only happens for a developer tool, not
- * the student. Scoring + the correct-answer review come from
- * GET /students/{id}/papers/{paperNumber}/review, which only reveals
- * answers for questions already submitted.
- */
 export function ExamScreen({ studentId, paperNumber, onExit, onStartNext }: ExamScreenProps) {
   const [questions, setQuestions] = useState<QuestionOut[]>([]);
   const [loadState, setLoadState] = useState<LoadState>("loading");
   const [errorMessage, setErrorMessage] = useState("");
   const [index, setIndex] = useState(0);
-  // questionIndex -> selected option index (0-3)
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [review, setReview] = useState<PaperReviewOut | null>(null);
   const [confirmingSubmit, setConfirmingSubmit] = useState(false);
 
-  // First time each question is viewed, remember when — used to compute
-  // time_taken_seconds per question at submit time.
+  // v2 SAINT+ fine-grained interaction telemetry refs
   const firstVisitedAt = useRef<Record<number, number>>({});
+  const firstInteractionAt = useRef<Record<number, number>>({});
+  const optionSwitchCounts = useRef<Record<number, number>>({});
 
   useEffect(() => {
     let cancelled = false;
@@ -69,6 +64,12 @@ export function ExamScreen({ studentId, paperNumber, onExit, onStartNext }: Exam
   const unansweredCount = questions.length - answeredCount;
 
   function selectOption(optionIndex: number) {
+    if (!(index in firstInteractionAt.current)) {
+      firstInteractionAt.current[index] = Date.now();
+    }
+    if (index in answers && answers[index] !== optionIndex) {
+      optionSwitchCounts.current[index] = (optionSwitchCounts.current[index] ?? 0) + 1;
+    }
     setAnswers((prev) => ({ ...prev, [index]: optionIndex }));
   }
 
@@ -82,16 +83,18 @@ export function ExamScreen({ studentId, paperNumber, onExit, onStartNext }: Exam
     setErrorMessage("");
 
     try {
-      // Sequential, not parallel — submissions update the same per-topic
-      // mastery state machine, and we want them applied in the order the
-      // student actually answered, not racing each other.
       for (const [qIndexStr, optionIndex] of Object.entries(answers)) {
         const qIndex = Number(qIndexStr);
         const question = questions[qIndex];
         if (!question) continue;
 
-        const visitedAt = firstVisitedAt.current[qIndex] ?? Date.now();
-        const timeTaken = Math.max(1, Math.round((Date.now() - visitedAt) / 1000));
+        const now = Date.now();
+        const visitedAt = firstVisitedAt.current[qIndex] ?? now;
+        const firstClickedAt = firstInteractionAt.current[qIndex] ?? now;
+        const dwellMs = Math.max(500, now - visitedAt);
+        const hesitationMs = Math.max(0, firstClickedAt - visitedAt);
+        const switches = optionSwitchCounts.current[qIndex] ?? 0;
+        const timeTaken = Math.max(1, Math.round(dwellMs / 1000));
         const letter: OptionLetter = OPTION_LETTERS[optionIndex];
 
         await api.submitAttempt({
@@ -100,6 +103,9 @@ export function ExamScreen({ studentId, paperNumber, onExit, onStartNext }: Exam
           paper_number: paperNumber,
           selected_option: letter,
           time_taken_seconds: timeTaken,
+          option_switches: switches,
+          hesitation_ms: hesitationMs,
+          dwell_time_ms: dwellMs,
         });
       }
 
@@ -146,11 +152,8 @@ export function ExamScreen({ studentId, paperNumber, onExit, onStartNext }: Exam
     return <ResultsView review={review} totalInPaper={questions.length} onExit={onExit} onStartNext={onStartNext} />;
   }
 
-  // "ready", "submitting", "submit-error" all render the paper itself —
-  // submitting/submit-error just overlay state on top of it.
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-6 lg:flex-row">
-      {/* Question navigator */}
       <aside className="order-2 flex flex-col gap-3 lg:order-1 lg:w-56 lg:shrink-0">
         <Card className="p-4">
           <p className="mb-3 text-xs font-medium uppercase tracking-wide text-midnight-700/50">
@@ -192,7 +195,6 @@ export function ExamScreen({ studentId, paperNumber, onExit, onStartNext }: Exam
         )}
       </aside>
 
-      {/* Current question */}
       <div className="order-1 flex-1 lg:order-2">
         <div className="mb-3 flex items-center justify-between">
           <p className="text-sm font-medium text-midnight-700/60">
@@ -300,6 +302,20 @@ function ResultsView({
   onStartNext: () => void;
 }) {
   const unanswered = totalInPaper - review.total_questions;
+  const [hints, setHints] = useState<Record<string, SocraticHintOut>>({});
+  const [loadingHint, setLoadingHint] = useState<Record<string, boolean>>({});
+
+  async function handleFetchSocraticHint(questionId: string, selectedOption: string) {
+    setLoadingHint((prev) => ({ ...prev, [questionId]: true }));
+    try {
+      const hint = await api.getSocraticHint(questionId, selectedOption);
+      setHints((prev) => ({ ...prev, [questionId]: hint }));
+    } catch {
+      // ignore error in UI
+    } finally {
+      setLoadingHint((prev) => ({ ...prev, [questionId]: false }));
+    }
+  }
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-6">
@@ -318,41 +334,74 @@ function ResultsView({
 
       <div className="flex flex-col gap-3">
         <h2 className="font-display text-lg font-semibold text-midnight-950">Answer review</h2>
-        {review.questions.map((q, i) => (
-          <Card key={q.question_id} className="p-5">
-            <p className="mb-1 text-xs font-medium uppercase tracking-wide text-midnight-700/50">
-              Question {i + 1} · {q.topic_id}
-            </p>
-            <p className="mb-3 text-sm leading-relaxed text-midnight-950">{q.text}</p>
-            <div className="flex flex-col gap-2">
-              {q.options.map((optionText, optIdx) => {
-                const letter = OPTION_LETTERS[optIdx];
-                const isCorrectAnswer = letter === q.correct_answer;
-                const isStudentAnswer = letter === q.selected_option;
-                let classes = "border-midnight-900/10";
-                if (isCorrectAnswer) classes = "border-signal-correct bg-signal-correct/5";
-                else if (isStudentAnswer) classes = "border-signal-incorrect bg-signal-incorrect/5";
-                return (
-                  <div
-                    key={optIdx}
-                    className={`flex items-center gap-3 rounded-lg border px-3 py-2 text-sm ${classes}`}
-                  >
-                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-midnight-900/20 text-[11px] font-semibold uppercase text-midnight-700/60">
-                      {letter}
-                    </span>
-                    <span className="text-midnight-900">{optionText}</span>
-                    {isCorrectAnswer && (
-                      <span className="ml-auto text-xs font-semibold text-signal-correct">Correct answer</span>
-                    )}
-                    {isStudentAnswer && !isCorrectAnswer && (
-                      <span className="ml-auto text-xs font-semibold text-signal-incorrect">Your answer</span>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </Card>
-        ))}
+        {review.questions.map((q, i) => {
+          const hint = hints[q.question_id];
+          return (
+            <Card key={q.question_id} className="p-5">
+              <p className="mb-1 text-xs font-medium uppercase tracking-wide text-midnight-700/50">
+                Question {i + 1} · {q.topic_id}
+              </p>
+              <p className="mb-3 text-sm leading-relaxed text-midnight-950">{q.text}</p>
+              <div className="flex flex-col gap-2">
+                {q.options.map((optionText, optIdx) => {
+                  const letter = OPTION_LETTERS[optIdx];
+                  const isCorrectAnswer = letter === q.correct_answer;
+                  const isStudentAnswer = letter === q.selected_option;
+                  let classes = "border-midnight-900/10";
+                  if (isCorrectAnswer) classes = "border-signal-correct bg-signal-correct/5";
+                  else if (isStudentAnswer) classes = "border-signal-incorrect bg-signal-incorrect/5";
+                  return (
+                    <div
+                      key={optIdx}
+                      className={`flex items-center gap-3 rounded-lg border px-3 py-2 text-sm ${classes}`}
+                    >
+                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-midnight-900/20 text-[11px] font-semibold uppercase text-midnight-700/60">
+                        {letter}
+                      </span>
+                      <span className="text-midnight-900">{optionText}</span>
+                      {isCorrectAnswer && (
+                        <span className="ml-auto text-xs font-semibold text-signal-correct">Correct answer</span>
+                      )}
+                      {isStudentAnswer && !isCorrectAnswer && (
+                        <span className="ml-auto text-xs font-semibold text-signal-incorrect">Your answer</span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {!q.is_correct && (
+                <div className="mt-4">
+                  {!hint ? (
+                    <Button
+                      variant="secondary"
+                      onClick={() => handleFetchSocraticHint(q.question_id, q.selected_option)}
+                      disabled={loadingHint[q.question_id]}
+                    >
+                      {loadingHint[q.question_id]
+                        ? "Retrieving NCERT Concept…"
+                        : "Get NCERT Socratic Hint & Misconception Analysis"}
+                    </Button>
+                  ) : (
+                    <div className="rounded-xl border border-midnight-900/10 bg-midnight-900/5 p-4 text-xs leading-relaxed text-midnight-900">
+                      <p className="font-semibold text-midnight-950">{hint.ncert_reference}</p>
+                      <p className="mt-1">
+                        <span className="font-semibold">Diagnosed Misconception:</span>{" "}
+                        {hint.diagnosed_misconception}
+                      </p>
+                      <p className="mt-1">
+                        <span className="font-semibold">Socratic Prompt:</span> {hint.socratic_hint}
+                      </p>
+                      <p className="mt-1">
+                        <span className="font-semibold">Key Formula:</span> {hint.key_formula}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </Card>
+          );
+        })}
       </div>
 
       <div className="flex justify-center gap-3 pb-4">

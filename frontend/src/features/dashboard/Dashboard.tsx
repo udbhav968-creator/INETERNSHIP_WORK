@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { api, ApiError } from "../../lib/api";
-import type { Analytics, TopicState } from "../../types";
+import type { Analytics, TopicState, V2StudentInsights } from "../../types";
 import { Card } from "../../components/ui/Card";
 import { Button } from "../../components/ui/Button";
 import { PaceBadge } from "../../components/ui/Badge";
@@ -15,17 +15,23 @@ type LoadState = "loading" | "ready" | "error" | "empty";
 export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
   const [topics, setTopics] = useState<TopicState[]>([]);
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
+  const [v2Insights, setV2Insights] = useState<V2StudentInsights | null>(null);
   const [state, setState] = useState<LoadState>("loading");
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     let cancelled = false;
     setState("loading");
-    Promise.all([api.getStudentState(studentId), api.getAnalytics(studentId)])
-      .then(([topicData, analyticsData]) => {
+    Promise.all([
+      api.getStudentState(studentId),
+      api.getAnalytics(studentId),
+      api.getV2Insights(studentId).catch(() => null),
+    ])
+      .then(([topicData, analyticsData, insightsData]) => {
         if (cancelled) return;
         setTopics(topicData);
         setAnalytics(analyticsData);
+        setV2Insights(insightsData);
         setState(topicData.length === 0 ? "empty" : "ready");
       })
       .catch((err) => {
@@ -45,7 +51,7 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
           Welcome back.
         </h1>
         <p className="text-midnight-700/70">
-          Here's where your preparation stands right now, topic by topic.
+          Here's where your preparation stands right now, powered by 3PL IRT & Bayesian Knowledge Tracing.
         </p>
       </div>
 
@@ -53,7 +59,7 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
         <div>
           <p className="text-sm font-medium text-white/60">Ready for your next session?</p>
           <p className="mt-1 font-display text-xl font-semibold">
-            Your next paper adapts to exactly where you stand.
+            Your next paper adapts to your Zone of Proximal Development.
           </p>
         </div>
         <Button onClick={onStartPaper} className="shrink-0 bg-white text-midnight-950 hover:bg-white/90">
@@ -87,23 +93,59 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
 
       {state === "ready" && (
         <>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <SummaryStat label="Questions attempted" value={analytics?.total_attempts ?? 0} />
             <SummaryStat
               label="Accuracy"
               value={analytics ? `${Math.round(analytics.accuracy * 100)}%` : "—"}
             />
-            <SummaryStat label="Topics practiced" value={topics.length} />
+            <SummaryStat
+              label="Predicted NEET Score"
+              value={v2Insights ? `${v2Insights.predicted_neet_score_720} / 720` : "—"}
+            />
+            <SummaryStat
+              label="3PL IRT Percentile"
+              value={v2Insights ? `${v2Insights.estimated_neet_percentile}%ile` : `${topics.length} topics`}
+            />
           </div>
 
+          {v2Insights && v2Insights.root_cause_bottlenecks.length > 0 && (
+            <Card className="border-amber-500/20 bg-amber-500/5 p-5">
+              <h2 className="font-display text-base font-semibold text-midnight-950">
+                Prerequisite Knowledge Graph Diagnostics
+              </h2>
+              <div className="mt-3 flex flex-col gap-2">
+                {v2Insights.root_cause_bottlenecks.map((b, idx) => (
+                  <p key={idx} className="text-sm text-midnight-800">
+                    <span className="font-semibold">{b.weak_topic}</span> is bottlenecked by foundational chapter{" "}
+                    <span className="font-semibold underline">{b.root_cause_prerequisite}</span> —{" "}
+                    {b.recommendation}
+                  </p>
+                ))}
+              </div>
+            </Card>
+          )}
+
           <div>
-            <h2 className="mb-3 font-display text-lg font-semibold text-midnight-950">Topics you're working on</h2>
+            <h2 className="mb-3 font-display text-lg font-semibold text-midnight-950">
+              Topics you're working on
+            </h2>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               {topics.map((t) => (
                 <Card key={t.topic_id} className="flex flex-col gap-2 p-5">
-                  <p className="font-medium text-midnight-900">{t.topic_id}</p>
-                  <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex items-center justify-between">
+                    <p className="font-medium text-midnight-900">{t.topic_id}</p>
+                    <span className="rounded-full bg-midnight-900/5 px-2.5 py-0.5 text-xs font-medium capitalize text-midnight-800">
+                      {t.level}
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap items-center justify-between gap-2">
                     <PaceBadge pace={t.pace_flag} />
+                    {typeof t.mastery_prob === "number" && (
+                      <span className="text-xs font-medium text-midnight-700/70">
+                        BKT Mastery: {Math.round(t.mastery_prob * 100)}%
+                      </span>
+                    )}
                   </div>
                 </Card>
               ))}

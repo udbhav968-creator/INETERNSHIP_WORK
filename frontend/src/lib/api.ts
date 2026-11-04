@@ -4,11 +4,11 @@ import type {
   AttemptResult,
   PaperReviewOut,
   QuestionOut,
+  SocraticHintOut,
   TopicState,
+  V2StudentInsights,
 } from "../types";
 
-// Configurable base URL — defaults to local dev backend. Set
-// VITE_API_BASE_URL in a .env file to point elsewhere.
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://127.0.0.1:8000";
 
 export class ApiError extends Error {
@@ -28,7 +28,6 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
       ...options,
     });
   } catch {
-    // Network-level failure — backend likely not running at all.
     throw new ApiError("Could not reach the backend. Is the server running?", 0);
   }
 
@@ -66,4 +65,18 @@ export const api = {
 
   getAnalytics: (studentId: string) =>
     request<Analytics>(`/students/${encodeURIComponent(studentId)}/analytics`),
+
+  getV2Insights: (studentId: string) =>
+    request<V2StudentInsights>(`/students/${encodeURIComponent(studentId)}/v2_insights`),
+
+  getSocraticHint: (questionId: string, selectedOption: string, timeTakenSeconds = 60, optionSwitches = 0) =>
+    request<SocraticHintOut>("/remediation/socratic_hint", {
+      method: "POST",
+      body: JSON.stringify({
+        question_id: questionId,
+        selected_option: selectedOption,
+        time_taken_seconds: timeTakenSeconds,
+        option_switches: optionSwitches,
+      }),
+    }),
 };

@@ -1,5 +1,5 @@
 """
-SQLAlchemy models — mirrors docs/spec.md Section 5 exactly.
+SQLAlchemy models — mirrors docs/spec.md Section 5 + Enterprise v2 psychometric telemetry extensions.
 Using SQLite for local dev (zero setup). Swap DATABASE_URL in database.py
 for Postgres later without touching these models.
 """
@@ -23,6 +23,9 @@ class Student(Base):
     class_level = Column(String, nullable=True)          # "11" | "12" | "dropper"
     target_neet_year = Column(Integer, nullable=True)
     onboarded = Column(Boolean, default=False, nullable=False)
+
+    # --- v2 3PL IRT global latent ability ---
+    global_theta = Column(Float, default=0.0, nullable=False)
 
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
@@ -58,6 +61,11 @@ class StudentTopicState(Base):
     attempts_counted = Column(Integer, default=0)          # correct-only attempts counted into avg_time_ratio
     pace_flag = Column(String, nullable=True)              # "fast" | "slow" | None
 
+    # --- v2 BKT & 3PL IRT per-topic parameters ---
+    mastery_prob = Column(Float, default=0.35, nullable=False)
+    confidence_interval = Column(Float, default=0.45, nullable=False)
+    irt_theta = Column(Float, default=0.0, nullable=False)
+
 
 class TestAttempt(Base):
     __tablename__ = "test_attempts"
@@ -68,4 +76,10 @@ class TestAttempt(Base):
     is_correct = Column(Boolean, nullable=False)
     time_taken_seconds = Column(Integer, nullable=False)
     selected_option = Column(String, nullable=False)
+
+    # --- v2 SAINT+ fine-grained interaction telemetry ---
+    option_switches = Column(Integer, default=0, nullable=False)
+    hesitation_ms = Column(Integer, default=0, nullable=False)
+    dwell_time_ms = Column(Integer, default=0, nullable=False)
+
     timestamp = Column(DateTime, default=datetime.datetime.utcnow)

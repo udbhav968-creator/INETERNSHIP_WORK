@@ -1,0 +1,343 @@
+[
+  {
+    "chunk_id": "NCERT_PHY_01",
+    "subject": "Physics",
+    "chapter": "Units & Dimensions",
+    "ncert_ref": "NCERT Class XI Physics Part 1, Chapter 2",
+    "core_concept": "Dimensional analysis, principle of homogeneity, and propagation of fractional/percentage errors in physical measurements.",
+    "formulas": [
+      "If Z = A^p * B^q / C^r, then maximum fractional error: ΔZ/Z = |p|(ΔA/A) + |q|(ΔB/B) + |r|(ΔC/C)",
+      "Principle of Homogeneity: Only quantities with identical dimensional formulas [M^a L^b T^c] can be added, subtracted, or equated."
+    ],
+    "common_misconceptions": [
+      "Subtracting errors when quantities are in the denominator instead of adding absolute fractional errors.",
+      "Forgetting that exponents inside trigonometric, logarithmic, or exponential functions must be dimensionless."
+    ],
+    "socratic_questions": [
+      "In error propagation, do uncertainties in a denominator cancel out or compound in the worst-case measurement?",
+      "If a physical quantity appears raised to power n, how does its relative error scale when taking the logarithmic differential?"
+    ]
+  },
+  {
+    "chunk_id": "NCERT_PHY_02",
+    "subject": "Physics",
+    "chapter": "Kinematics",
+    "ncert_ref": "NCERT Class XI Physics Part 1, Chapters 3 & 4",
+    "core_concept": "Motion in straight line and plane, relative velocity, projectile trajectory, and vector decomposition.",
+    "formulas": [
+      "v = u + at; s = ut + (1/2)at^2; v^2 - u^2 = 2as",
+      "Projectile Time of Flight: T = 2u sin(θ)/g; Horizontal Range: R = u^2 sin(2θ)/g; Max Height: H = u^2 sin^2(θ)/(2g)"
+    ],
+    "common_misconceptions": [
+      "Assuming horizontal velocity changes during projectile motion in the absence of air resistance.",
+      "Confusing average speed (total distance / total time) with magnitude of average velocity (net displacement / total time)."
+    ],
+    "socratic_questions": [
+      "Which component of a projectile's velocity experiences zero acceleration throughout its flight?",
+      "At the highest point of trajectory, what is the angle between the velocity vector and acceleration due to gravity?"
+    ]
+  },
+  {
+    "chunk_id": "NCERT_PHY_03",
+    "subject": "Physics",
+    "chapter": "Laws of Motion",
+    "ncert_ref": "NCERT Class XI Physics Part 1, Chapter 5",
+    "core_concept": "Newton's three laws, conservation of linear momentum, impulse, static vs kinetic friction, and circular banking dynamics.",
+    "formulas": [
+      "F_net = dp/dt = m*a; Impulse J = Δp = F_avg * Δt",
+      "f_s <= μ_s * N; f_k = μ_k * N; Safe speed on banked road: v_max = sqrt(Rg(μ_s + tanθ)/(1 - μ_s tanθ))"
+    ],
+    "common_misconceptions": [
+      "Treating normal reaction N as always equal to mg even on inclined planes or accelerating elevators.",
+      "Assuming action and reaction forces cancel each other out despite acting on two different bodies."
+    ],
+    "socratic_questions": [
+      "If you draw the free-body diagram of a block on an incline of angle θ, which component of weight balances the normal reaction?",
+      "Does static friction always equal μ_s * N, or only at the verge of slipping?"
+    ]
+  },
+  {
+    "chunk_id": "NCERT_PHY_04",
+    "subject": "Physics",
+    "chapter": "Work, Energy & Power",
+    "ncert_ref": "NCERT Class XI Physics Part 1, Chapter 6",
+    "core_concept": "Work-Energy theorem, conservative vs non-conservative forces, potential energy curves, and elastic/inelastic collisions.",
+    "formulas": [
+      "W_all = ΔK = (1/2)mv_f^2 - (1/2)mv_i^2; F(x) = -dU/dx",
+      "Coefficient of restitution: e = (v_2 - v_1)/(u_1 - u_2); Instantaneous Power: P = F · v"
+    ],
+    "common_misconceptions": [
+      "Applying conservation of mechanical energy when non-conservative frictional forces perform non-zero work.",
+      "Confusing conservation of linear momentum (holds in all isolated collisions) with conservation of kinetic energy (holds only in elastic collisions)."
+    ],
+    "socratic_questions": [
+      "Does the Work-Energy theorem apply only to conservative forces, or to the net work done by all forces?",
+      "In an inelastic collision, which physical quantity remains strictly conserved if no external force acts?"
+    ]
+  },
+  {
+    "chunk_id": "NCERT_PHY_05",
+    "subject": "Physics",
+    "chapter": "Rotational Motion",
+    "ncert_ref": "NCERT Class XI Physics Part 1, Chapter 7",
+    "core_concept": "Center of mass, moment of inertia, parallel and perpendicular axis theorems, torque, angular momentum conservation, and pure rolling.",
+    "formulas": [
+      "I_parallel = I_cm + M*d^2; I_perp = I_x + I_y; τ = r × F = I*α",
+      "L = I*ω; If τ_ext = 0, I_1*ω_1 = I_2*ω_2; Rolling kinetic energy: K = (1/2)Mv_cm^2 (1 + k^2/R^2)"
+    ],
+    "common_misconceptions": [
+      "Applying the perpendicular axis theorem to 3D solid objects instead of strictly planar laminae.",
+      "Forgetting the no-slip constraint v_cm = ωR when analyzing pure rolling down an incline."
+    ],
+    "socratic_questions": [
+      "With respect to which axis is the moment of inertia given before you shift it using the parallel axis theorem?",
+      "If no external torque acts on a rotating system and its moment of inertia decreases, how must angular velocity respond?"
+    ]
+  },
+  {
+    "chunk_id": "NCERT_PHY_06",
+    "subject": "Physics",
+    "chapter": "Electrostatics",
+    "ncert_ref": "NCERT Class XII Physics Part 1, Chapters 1 & 2",
+    "core_concept": "Coulomb's law, electric field & dipole, Gauss's law, electrostatic potential, and capacitance with dielectrics.",
+    "formulas": [
+      "Flux Φ = ∮ E · dA = q_enclosed / ε_0; Dipole torque τ = p × E; Potential energy U = -p · E",
+      "Capacitance of parallel plate: C = K ε_0 A / d; Energy stored: U = (1/2)CV^2 = Q^2/(2C)"
+    ],
+    "common_misconceptions": [
+      "Assuming E = 0 at a point implies V = 0 (counterexample: midpoint of two equal like charges).",
+      "Using U = (1/2)CV^2 without checking whether the capacitor remains connected to the battery (constant V) or isolated (constant Q) when a dielectric is inserted."
+    ],
+    "socratic_questions": [
+      "When a dielectric slab is inserted into an isolated charged capacitor, does the charge Q or voltage V remain constant?",
+      "According to Gauss's Law, do charges outside the Gaussian surface contribute to the net electric flux through it?"
+    ]
+  },
+  {
+    "chunk_id": "NCERT_PHY_07",
+    "subject": "Physics",
+    "chapter": "Current Electricity",
+    "ncert_ref": "NCERT Class XII Physics Part 1, Chapter 3",
+    "core_concept": "Drift velocity, Ohm's law, temperature dependence of resistivity, Kirchhoff's laws, Wheatstone bridge, and potentiometer.",
+    "formulas": [
+      "I = n e A v_d; R = ρ L / A; Terminal voltage: V = ε - I*r",
+      "Balanced Wheatstone Bridge: P/Q = R/S; Thermal Power: P = I^2 R = V^2 / R"
+    ],
+    "common_misconceptions": [
+      "Using P = I^2 R vs P = V^2 / R interchangeably without checking if resistors are in series (same I) or parallel (same V).",
+      "Forgetting that when a wire of fixed volume is stretched to n times its length, its cross-sectional area shrinks by 1/n, making R' = n^2 R."
+    ],
+    "socratic_questions": [
+      "If a metallic wire is stretched to double its length at constant volume, what happens to its cross-sectional area simultaneously?",
+      "In a balanced Wheatstone bridge, how much current flows through the central galvanometer branch?"
+    ]
+  },
+  {
+    "chunk_id": "NCERT_PHY_08",
+    "subject": "Physics",
+    "chapter": "Thermodynamics",
+    "ncert_ref": "NCERT Class XI Physics Part 2, Chapter 12",
+    "core_concept": "Zeroth, First, and Second Laws of Thermodynamics, isothermal/adiabatic/isobaric/isochoric processes, and Carnot engine efficiency.",
+    "formulas": [
+      "First Law: ΔQ = ΔU + ΔW; ΔU = n C_v ΔT (always for ideal gas); W_iso = nRT ln(V_2/V_1)",
+      "Adiabatic relation: PV^γ = const; Carnot efficiency: η = 1 - T_sink / T_source (in Kelvin)"
+    ],
+    "common_misconceptions": [
+      "Substituting temperatures in Celsius instead of absolute Kelvin in Carnot efficiency η = 1 - T_2/T_1.",
+      "Thinking ΔU = n C_v ΔT applies only to isochoric processes, whereas internal energy of an ideal gas depends solely on temperature T."
+    ],
+    "socratic_questions": [
+      "For an ideal gas undergoing a cyclic process returning to its initial state on a P-V diagram, what is the net change in internal energy ΔU?",
+      "Have you converted the source and sink temperatures to the absolute Kelvin scale before computing Carnot efficiency?"
+    ]
+  },
+  {
+    "chunk_id": "NCERT_CHEM_01",
+    "subject": "Chemistry",
+    "chapter": "Mole Concept / Stoichiometry",
+    "ncert_ref": "NCERT Class XI Chemistry Part 1, Unit 1",
+    "core_concept": "Avogadro's law, molar mass, limiting reagent, empirical & molecular formulas, molarity, molality, and mole fraction.",
+    "formulas": [
+      "Moles n = given mass / molar mass = N / N_A = V_STP (L) / 22.4",
+      "Molarity M = moles of solute / volume of solution (L); Molality m = moles of solute / mass of solvent (kg)"
+    ],
+    "common_misconceptions": [
+      "Calculating yield from the reagent present in lesser mass rather than the limiting reagent with the smallest (moles / stoichiometric coefficient) ratio.",
+      "Forgetting that Molarity depends on temperature (due to volume expansion) whereas Molality and Mole Fraction are temperature-independent."
+    ],
+    "socratic_questions": [
+      "To identify the limiting reagent, did you divide each reactant's available moles by its balanced stoichiometric coefficient?",
+      "Which concentration term uses mass of solvent in kilograms rather than volume of solution in liters?"
+    ]
+  },
+  {
+    "chunk_id": "NCERT_CHEM_02",
+    "subject": "Chemistry",
+    "chapter": "Structure of Atom",
+    "ncert_ref": "NCERT Class XI Chemistry Part 1, Unit 2",
+    "core_concept": "Bohr model for hydrogen-like species, de Broglie wavelength, Heisenberg uncertainty principle, quantum numbers, and electronic configurations.",
+    "formulas": [
+      "Bohr radius: r_n = 0.529 * n^2 / Z Å; Energy: E_n = -13.6 * Z^2 / n^2 eV",
+      "de Broglie: λ = h / mv = h / sqrt(2mKE); Max electrons in shell = 2n^2; Angular nodes = l, Radial nodes = n - l - 1"
+    ],
+    "common_misconceptions": [
+      "Confusing radial nodes (n - l - 1) with total nodes (n - 1) or angular/planar nodes (l).",
+      "Overlooking anomalous half-filled and fully-filled d-subshell stability in Cr (3d^5 4s^1) and Cu (3d^10 4s^1)."
+    ],
+    "socratic_questions": [
+      "For an orbital with principal quantum number n and azimuthal quantum number l, how many radial vs angular nodes exist?",
+      "Which values of azimuthal quantum number l are permitted for a given principal quantum number n?"
+    ]
+  },
+  {
+    "chunk_id": "NCERT_CHEM_03",
+    "subject": "Chemistry",
+    "chapter": "Chemical Bonding",
+    "ncert_ref": "NCERT Class XI Chemistry Part 1, Unit 4",
+    "core_concept": "VSEPR theory, hybridization, dipole moment, Fajans' rules, and Molecular Orbital Theory (MOT) bond order and magnetism.",
+    "formulas": [
+      "Steric Number H = (1/2) [V + M - C + A]; Bond Order = (N_b - N_a) / 2",
+      "Bond Order is directly proportional to bond stability/dissociation energy and inversely proportional to bond length."
+    ],
+    "common_misconceptions": [
+      "Confusing electronic geometry (includes lone pairs) with molecular shape/geometry (determined by atomic positions only).",
+      "Forgetting the σ2p_z vs π2p_x/π2p_y energy ordering crossover in MOT between ≤14 electrons (N_2) and >14 electrons (O_2, F_2)."
+    ],
+    "socratic_questions": [
+      "After counting bond pairs and lone pairs around the central atom, how do lone-pair repulsions modify the ideal bond angle?",
+      "In Molecular Orbital Theory, are there any unpaired electrons in the antibonding π* orbitals of this species?"
+    ]
+  },
+  {
+    "chunk_id": "NCERT_CHEM_04",
+    "subject": "Chemistry",
+    "chapter": "Equilibrium",
+    "ncert_ref": "NCERT Class XI Chemistry Part 1, Unit 7",
+    "core_concept": "Law of mass action, Kp and Kc relationship, Le Chatelier's principle, Ostwald dilution law, pH, buffer solutions, and solubility product Ksp.",
+    "formulas": [
+      "K_p = K_c (RT)^(Δn_g); ΔG° = -2.303 RT log K_eq",
+      "Henderson-Hasselbalch: pH = pK_a + log([Salt]/[Acid]); For A_x B_y: K_sp = x^x y^y s^(x+y)"
+    ],
+    "common_misconceptions": [
+      "Including pure solids or pure liquids when computing Δn_g for K_p = K_c (RT)^(Δn_g).",
+      "Assuming addition of an inert gas at constant volume shifts chemical equilibrium (it only shifts equilibrium at constant pressure if Δn_g != 0)."
+    ],
+    "socratic_questions": [
+      "When counting Δn_g = (moles of gaseous products - moles of gaseous reactants), did you exclude solid and liquid phases?",
+      "According to Le Chatelier's principle, which direction lowers the total number of gas molecules when pressure is increased?"
+    ]
+  },
+  {
+    "chunk_id": "NCERT_CHEM_05",
+    "subject": "Chemistry",
+    "chapter": "General Organic Chemistry",
+    "ncert_ref": "NCERT Class XI Chemistry Part 2, Unit 12",
+    "core_concept": "Inductive, electromeric, resonance/mesomeric, and hyperconjugation effects; carbocation/carbanion stability; acidity and basicity trends.",
+    "formulas": [
+      "Stability of Carbocations: 3° > 2° > 1° > CH3+ (governed by +M, +H α-hydrogens, and +I effects)",
+      "Acidity strength is proportional to stability of conjugate base (enhanced by -M and -I electron-withdrawing groups)."
+    ],
+    "common_misconceptions": [
+      "Prioritizing inductive effect over resonance/mesomeric effect (except in halobenzenes where -I > +M).",
+      "Counting β-hydrogens instead of α-hydrogens attached to sp^3 carbons adjacent to the sp^2 carbocation/alkene center for hyperconjugation."
+    ],
+    "socratic_questions": [
+      "How many α-hydrogens on sp^3 hybridized carbons are directly adjacent to the positively charged or doubly bonded carbon?",
+      "Does the substituent delocalize charge via resonance (+M/-M) or only through sigma-bond induction (+I/-I)?"
+    ]
+  },
+  {
+    "chunk_id": "NCERT_BIO_01",
+    "subject": "Biology",
+    "chapter": "Cell: The Unit of Life",
+    "ncert_ref": "NCERT Class XI Biology, Chapter 8",
+    "core_concept": "Prokaryotic vs eukaryotic cell architecture, fluid mosaic membrane model, endomembrane system (ER, Golgi, lysosomes, vacuoles), mitochondria, plastids, and ribosomes.",
+    "formulas": [
+      "Prokaryotic ribosomes: 70S (50S + 30S); Eukaryotic cytosolic ribosomes: 80S (60S + 40S); Semi-autonomous organelles: Mitochondria & Chloroplasts (possess circular dsDNA + 70S ribosomes)"
+    ],
+    "common_misconceptions": [
+      "Assuming Svedberg unit (S) is additive by mass rather than a measure of sedimentation rate.",
+      "Including peroxisomes, chloroplasts, or mitochondria inside the endomembrane system (only ER, Golgi, lysosomes, and vacuoles have coordinated functions)."
+    ],
+    "socratic_questions": [
+      "Which organelles possess their own circular double-stranded DNA and 70S ribosomes, making them semi-autonomous?",
+      "Why are mitochondria and peroxisomes excluded from the endomembrane system despite being membrane-bound?"
+    ]
+  },
+  {
+    "chunk_id": "NCERT_BIO_02",
+    "subject": "Biology",
+    "chapter": "Biomolecules",
+    "ncert_ref": "NCERT Class XI Biology, Chapter 9",
+    "core_concept": "Amino acids, protein structure levels, polysaccharides, nucleic acids, and enzyme kinetics (Km, Vmax, competitive inhibition).",
+    "formulas": [
+      "Competitive Inhibition: K_m increases (apparent affinity drops), V_max remains unchanged (overcome by high substrate [S]).",
+      "Chargaff's Rule (dsDNA): [A] = [T], [G] = [C], Purines (A+G) = Pyrimidines (T+C)."
+    ],
+    "common_misconceptions": [
+      "Thinking competitive inhibitors lower V_max rather than increasing apparent K_m.",
+      "Applying Chargaff's base-pairing equality rule to single-stranded RNA molecules."
+    ],
+    "socratic_questions": [
+      "If a competitive inhibitor competes with the substrate for the active site, what happens when substrate concentration is raised to saturation?",
+      "Which level of protein structure is strictly required for biological enzymatic activity in a monomeric enzyme?"
+    ]
+  },
+  {
+    "chunk_id": "NCERT_BIO_03",
+    "subject": "Biology",
+    "chapter": "Cell Cycle & Cell Division",
+    "ncert_ref": "NCERT Class XI Biology, Chapter 10",
+    "core_concept": "Interphase (G1, S, G2), mitosis stages, and meiosis I & II including prophase I substages (leptotene, zygotene, pachytene, diplotene, diakinesis).",
+    "formulas": [
+      "S-phase: DNA content doubles (2C -> 4C), chromosome number remains unchanged (2n -> 2n).",
+      "Prophase I: Zygotene (synapsis/bivalent), Pachytene (crossing over via recombinase), Diplotene (chiasmata & dissolution of synaptonemal complex), Diakinesis (terminalisation)."
+    ],
+    "common_misconceptions": [
+      "Thinking chromosome ploidy (2n) doubles during S-phase along with DNA content (2C -> 4C).",
+      "Confusing Zygotene (pairing/synapsis) with Pachytene (actual crossing over of non-sister chromatids)."
+    ],
+    "socratic_questions": [
+      "During S-phase, when DNA replicates from 2C to 4C, does the number of centromeres (chromosome count) change?",
+      "In which specific substage of Meiosis Prophase I does the enzyme recombinase mediate crossing over?"
+    ]
+  },
+  {
+    "chunk_id": "NCERT_BIO_04",
+    "subject": "Biology",
+    "chapter": "Genetics & Molecular Inheritance",
+    "ncert_ref": "NCERT Class XII Biology, Chapters 5 & 6",
+    "core_concept": "Mendelian inheritance, incomplete dominance, codominance, linkage, pedigree analysis, DNA replication, transcription, genetic code, translation, and Lac operon.",
+    "formulas": [
+      "Monohybrid phenotypic ratio: 3:1 (Incomplete dominance: 1:2:1); Dihybrid independent assortment: 9:3:3:1; Gametes = 2^n (n = heterozygous pairs).",
+      "Lac Operon: Inducer (allolactose) binds repressor protein to inactivate it and permit RNA polymerase transcription of z, y, a genes."
+    ],
+    "common_misconceptions": [
+      "Confusing incomplete dominance (blended intermediate phenotype, F2 1:2:1) with codominance (both alleles expressed simultaneously, e.g., AB blood group).",
+      "Reversing template strand polarity (3'->5') and coding strand polarity (5'->3') when writing transcribed mRNA (5'->3', U replaces T)."
+    ],
+    "socratic_questions": [
+      "Since RNA polymerase polymerizes solely in the 5'→3' direction, which DNA strand serves as the template and which has the same sequence as mRNA?",
+      "How many heterozygous gene pairs (n) are present in the parent genotype when computing 2^n possible gametes?"
+    ]
+  },
+  {
+    "chunk_id": "NCERT_BIO_05",
+    "subject": "Biology",
+    "chapter": "Reproduction & Human Development",
+    "ncert_ref": "NCERT Class XII Biology, Chapters 2 & 3",
+    "core_concept": "Double fertilization in angiosperms, gametogenesis (spermatogenesis & oogenesis), menstrual cycle hormonal regulation, fertilization, and embryonic development.",
+    "formulas": [
+      "Angiosperm Double Fertilization: Syngamy (n + n -> 2n zygote) + Triple Fusion (n + 2n -> 3n Primary Endosperm Nucleus).",
+      "LH Surge (Day 14): Induced by peak estrogen positive feedback, triggering ovulation and corpus luteum formation (secretes progesterone)."
+    ],
+    "common_misconceptions": [
+      "Equating polar body formation in oogenesis with equal cytokinesis in spermatogenesis (1 primary spermatocyte -> 4 functional sperm; 1 primary oocyte -> 1 functional ovum).",
+      "Confusing FSH and LH roles across follicular vs luteal phases of the menstrual cycle."
+    ],
+    "socratic_questions": [
+      "What is the ploidy of the central cell versus the male gamete that fuses with it during triple fusion?",
+      "Which hormone maintains the endometrium during the luteal phase, and what structure secretes it after ovulation?"
+    ]
+  }
+]
