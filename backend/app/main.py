@@ -9,7 +9,7 @@ import threading
 from datetime import datetime, timezone
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, HTMLResponse, Response
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 
@@ -611,8 +611,32 @@ def get_mlops_health_and_drift(db: Session = Depends(get_db)):
 # Serve production React SPA build when frontend/dist exists (Vercel / Docker / Render / Railway)
 _FRONTEND_DIST = PROJECT_ROOT / "frontend" / "dist"
 if (_FRONTEND_DIST / "index.html").exists():
-    if (_FRONTEND_DIST / "assets").exists():
-        app.mount("/assets", StaticFiles(directory=str(_FRONTEND_DIST / "assets")), name="frontend_assets")
+    @app.get("/assets/{asset_name}", include_in_schema=False)
+    def serve_frontend_asset(asset_name: str):
+        assets_dir = _FRONTEND_DIST / "assets"
+        target = assets_dir / asset_name
+        if not target.exists():
+            # Fallback for browsers holding a cached index.html with an older bundle hash
+            if asset_name.endswith(".js"):
+                js_files = sorted(assets_dir.glob("*.js"))
+                if js_files:
+                    target = js_files[0]
+            elif asset_name.endswith(".css"):
+                css_files = sorted(assets_dir.glob("*.css"))
+                if css_files:
+                    target = css_files[0]
+        if not target.exists():
+            raise HTTPException(status_code=404, detail="Asset not found")
+        media_type = (
+            "application/javascript; charset=utf-8"
+            if target.suffix == ".js"
+            else ("text/css; charset=utf-8" if target.suffix == ".css" else "application/octet-stream")
+        )
+        return Response(
+            content=target.read_bytes(),
+            media_type=media_type,
+            headers={"Cache-Control": "no-cache, must-revalidate"},
+        )
 
     @app.get("/vite.svg", include_in_schema=False)
     def serve_vite_svg():
@@ -623,6 +647,9 @@ if (_FRONTEND_DIST / "index.html").exists():
 
     @app.get("/", include_in_schema=False)
     def serve_spa_root():
-        return FileResponse(str(_FRONTEND_DIST / "index.html"), media_type="text/html")
+        return HTMLResponse(
+            content=(_FRONTEND_DIST / "index.html").read_text(encoding="utf-8"),
+            headers={"Cache-Control": "no-store, no-cache, must-revalidate, max-age=0"},
+        )
 
 

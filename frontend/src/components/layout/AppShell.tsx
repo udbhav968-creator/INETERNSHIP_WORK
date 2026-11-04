@@ -7,6 +7,7 @@ interface AppShellProps {
   activeView: View;
   onNavigate: (view: View) => void;
   studentId: string;
+  onSwitchAccount?: () => void;
 }
 
 const navItems: { key: View; label: string; icon: string }[] = [
@@ -14,7 +15,7 @@ const navItems: { key: View; label: string; icon: string }[] = [
   { key: "exam", label: "Practice Paper", icon: "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" },
 ];
 
-export function AppShell({ children, activeView, onNavigate, studentId }: AppShellProps) {
+export function AppShell({ children, activeView, onNavigate, studentId, onSwitchAccount }: AppShellProps) {
   return (
     <div className="min-h-screen bg-surface">
       {/* Desktop sidebar */}
@@ -49,6 +50,15 @@ export function AppShell({ children, activeView, onNavigate, studentId }: AppShe
           <p className="text-xs font-medium text-midnight-700/60">Signed in as</p>
           <p className="truncate text-sm font-semibold text-midnight-900">{studentId}</p>
           <p className="mt-1 text-[11px] text-midnight-700/60">Enterprise v2 · 3PL IRT & BKT Active</p>
+          {onSwitchAccount && (
+            <button
+              type="button"
+              onClick={onSwitchAccount}
+              className="mt-2 text-xs font-medium text-accent hover:underline"
+            >
+              Switch account
+            </button>
+          )}
         </div>
       </aside>
 
