@@ -10,14 +10,14 @@ on:
 jobs:
   mlops-training-validation-and-harness:
     name: ML Training, 5-Fold CV, Psychometric Harness & 18-Suite Gate
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Python 3.11
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.11"
           cache: "pip"
@@ -45,18 +45,27 @@ jobs:
         run: |
           python backend/tests/test_v2_engine.py
 
+      - name: Upload MLOps Validation & Harness Benchmark Reports
+        uses: actions/upload-artifact@v7
+        with:
+          name: klassed-mlops-validation-and-harness-reports
+          path: |
+            model/validation_report.json
+            model/harness_benchmark_report.json
+            model/question_difficulty_metrics.json
+
   frontend-typecheck-and-build:
     name: Frontend TypeScript Typecheck & Vite Production Build Gate
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
-      - name: Set up Node.js 20
-        uses: actions/setup-node@v4
+      - name: Set up Node.js 24
+        uses: actions/setup-node@v7
         with:
-          node-version: "20"
+          node-version: "24"
           cache: "npm"
           cache-dependency-path: "frontend/package-lock.json"
 
