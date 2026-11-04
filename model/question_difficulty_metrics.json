@@ -3,7 +3,7 @@
   "target": "difficulty_level",
   "training_rows": 1976,
   "testing_rows": 495,
-  "accuracy": 0.9919191919191919,
+  "accuracy": 0.9959595959595959,
   "classes": [
     "advanced",
     "basic",
