@@ -6,6 +6,7 @@ Run locally with:
 """
 import json
 import threading
+from datetime import datetime, timezone
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
@@ -26,12 +27,20 @@ from model.irt_3pl_model import (
     irt_3pl_probability,
     update_student_theta_map,
     theta_to_percentile,
+    compute_mirt_3d_profile,
+    predict_cold_start_difficulty_and_irt,
+    recalibrate_item_parameters_online,
 )
 from model.knowledge_graph_dag import (
     DAG_NODES,
     compute_prerequisite_readiness,
     compute_hierarchical_shrinkage_prior,
     diagnose_prerequisite_bottlenecks,
+    propagate_dag_belief_update,
+)
+from model.state_machine.bkt_model import (
+    compute_ebbinghaus_forgetting_prior,
+    compute_retention_urgency,
 )
 from model.linucb_bandit import record_bandit_feedback
 from model.rag_socratic_engine import generate_socratic_remediation, _INDEX as _RAG_INDEX
@@ -161,13 +170,31 @@ def submit_attempt(attempt: schemas.AttemptIn, db: Session = Depends(get_db)):
         exp_sec = expected_time(question.difficulty, question.expected_time_seconds)
         time_ratio = attempt.time_taken_seconds / max(1, exp_sec)
 
-        # Prior probability for drift/calibration logging before state update
+        # Compute elapsed hours since last attempt in this topic for Ebbinghaus spaced repetition
+        prev_topic_attempt = (
+            db.query(TestAttempt)
+            .join(Question, TestAttempt.question_id == Question.question_id)
+            .filter(
+                TestAttempt.student_id == attempt.student_id,
+                Question.topic_id == question.topic_id,
+            )
+            .order_by(TestAttempt.attempt_id.desc())
+            .first()
+        )
+        elapsed_hours = 0.0
+        if prev_topic_attempt and getattr(prev_topic_attempt, "timestamp", None):
+            ts = prev_topic_attempt.timestamp
+            now_dt = datetime.now(timezone.utc) if ts.tzinfo else datetime.utcnow()
+            elapsed_hours = max(0.0, (now_dt - ts).total_seconds() / 3600.0)
+
+        # Prior probability and mastery before state update
         prior_theta = float(getattr(state, "irt_theta", 0.0) or 0.0)
+        prior_mastery = float(getattr(state, "mastery_prob", 0.35) or 0.35)
         irt_params = get_item_params(question.question_id, question.difficulty, exp_sec)
         pred_prob = irt_3pl_probability(prior_theta, irt_params)
         DRIFT_MONITOR.log_prediction(pred_prob, int(is_correct), question.difficulty, attempt.time_taken_seconds)
 
-        # 1. State Machine & BKT Posterior Update
+        # 1. State Machine & BKT Posterior Update (with Ebbinghaus forgetting prior)
         process_answer(
             state,
             is_correct,
@@ -175,6 +202,7 @@ def submit_attempt(attempt: schemas.AttemptIn, db: Session = Depends(get_db)):
             time_ratio=time_ratio,
             option_switches=opt_switches,
             hesitation_ms=hesitation,
+            elapsed_hours=elapsed_hours,
         )
 
         # 2. Pace Tracking Update (Part I Fix #3: uses question.expected_time_seconds)
@@ -186,13 +214,19 @@ def submit_attempt(attempt: schemas.AttemptIn, db: Session = Depends(get_db)):
             expected_time_seconds=question.expected_time_seconds,
         )
 
-        # 3. 3PL IRT Latent Ability (theta) MAP Update
+        # 3. 3PL IRT Latent Ability (theta) MAP Update + Online Item Recalibration
         new_topic_theta = update_student_theta_map(
             current_theta=prior_theta,
             is_correct=is_correct,
             params=irt_params,
         )
         state.irt_theta = new_topic_theta
+        recalibrate_item_parameters_online(
+            question_id=question.question_id,
+            student_theta=prior_theta,
+            is_correct=is_correct,
+            time_ratio=time_ratio,
+        )
 
         student = db.query(Student).filter_by(student_id=attempt.student_id).first()
         if student:
@@ -203,13 +237,27 @@ def submit_attempt(attempt: schemas.AttemptIn, db: Session = Depends(get_db)):
         all_student_states = (
             db.query(StudentTopicState).filter_by(student_id=attempt.student_id).all()
         )
+        state_by_topic = {s.topic_id: s for s in all_student_states}
         mastery_map = {
             s.topic_id: float(getattr(s, "mastery_prob", 0.35) or 0.35)
             for s in all_student_states
         }
+
+        # 3b. 1-Hop Bayesian Belief Propagation across Prerequisite DAG
+        dag_updates = propagate_dag_belief_update(
+            topic_id=question.topic_id,
+            is_correct=is_correct,
+            difficulty=question.difficulty,
+            student_mastery_map=mastery_map,
+        )
+        for neighbor_topic, new_neighbor_mastery in dag_updates.items():
+            mastery_map[neighbor_topic] = new_neighbor_mastery
+            if neighbor_topic in state_by_topic:
+                state_by_topic[neighbor_topic].mastery_prob = new_neighbor_mastery
+
         prereq_ready = compute_prerequisite_readiness(question.topic_id, mastery_map)
 
-        # 4. LinUCB Contextual Bandit Reward Update
+        # 4. LinUCB Contextual Bandit Reward Update (with delayed mastery gain Delta P(L_t))
         record_bandit_feedback(
             student_id=attempt.student_id,
             question_id=question.question_id,
@@ -222,6 +270,7 @@ def submit_attempt(attempt: schemas.AttemptIn, db: Session = Depends(get_db)):
             pace_flag=state.pace_flag,
             is_correct=is_correct,
             time_taken_seconds=attempt.time_taken_seconds,
+            prior_mastery_prob=prior_mastery,
         )
 
         # 5. Synchronize Low-Latency In-Memory Feature Store
@@ -337,12 +386,57 @@ def get_v2_student_insights(student_id: str, db: Session = Depends(get_db)):
     percentile = theta_to_percentile(global_theta)
     predicted_score = int(max(120, min(720, round(380 + global_theta * 110))))
 
+    # Fetch student attempt rows for MIRT 3D profile and Ebbinghaus Spaced Repetition decay
+    attempt_rows = (
+        db.query(TestAttempt, Question)
+        .join(Question, TestAttempt.question_id == Question.question_id)
+        .filter(TestAttempt.student_id == student_id)
+        .order_by(TestAttempt.attempt_id.asc())
+        .all()
+    )
+    mirt_inputs = []
+    last_attempt_ts_by_topic: dict[str, datetime] = {}
+    for att, q in attempt_rows:
+        rich_q = _RAG_INDEX.question_lookup.get(q.question_id, {})
+        mirt_inputs.append(
+            {
+                "question_id": q.question_id,
+                "question_text": q.text,
+                "question_type": rich_q.get("question_type", ""),
+                "difficulty": q.difficulty,
+                "expected_time_seconds": q.expected_time_seconds or 90,
+                "is_correct": att.is_correct,
+            }
+        )
+        if getattr(att, "timestamp", None):
+            last_attempt_ts_by_topic[q.topic_id] = att.timestamp
+
+    mirt_3d = compute_mirt_3d_profile(mirt_inputs)
+    spaced_reviews = []
+
     for st in states:
         att_cnt = int(st.attempts_counted or len(st.last_3_results or []) or 1)
         shrunk_m = compute_hierarchical_shrinkage_prior(
             topic_id=st.topic_id,
             student_mastery_map=mastery_map,
             attempts_count=att_cnt,
+        )
+        elapsed_h = 0.0
+        if st.topic_id in last_attempt_ts_by_topic:
+            ts = last_attempt_ts_by_topic[st.topic_id]
+            now_dt = datetime.now(timezone.utc) if ts.tzinfo else datetime.utcnow()
+            elapsed_h = max(0.0, (now_dt - ts).total_seconds() / 3600.0)
+
+        decayed_m = compute_ebbinghaus_forgetting_prior(shrunk_m, elapsed_h, int(st.streak or 0))
+        urgency = compute_retention_urgency(shrunk_m, elapsed_h, int(st.streak or 0))
+        spaced_reviews.append(
+            {
+                "topic_id": st.topic_id,
+                "peak_mastery": round(shrunk_m, 4),
+                "decayed_mastery": round(decayed_m, 4),
+                "elapsed_hours": round(elapsed_h, 2),
+                "retention_urgency": urgency,
+            }
         )
         topic_details.append(
             {
@@ -355,6 +449,7 @@ def get_v2_student_insights(student_id: str, db: Session = Depends(get_db)):
                 "pace_flag": st.pace_flag,
             }
         )
+    spaced_reviews.sort(key=lambda r: (r["retention_urgency"], r["peak_mastery"]), reverse=True)
 
     raw_bottlenecks = diagnose_prerequisite_bottlenecks(mastery_map)
     formatted_bottlenecks = []
@@ -395,9 +490,25 @@ def get_v2_student_insights(student_id: str, db: Session = Depends(get_db)):
         estimated_neet_percentile=percentile,
         predicted_neet_score_720=predicted_score,
         zpd_target_success_prob=0.70,
+        mirt_3d_profile=mirt_3d,
+        spaced_repetition_reviews=spaced_reviews[:5],
         root_cause_bottlenecks=formatted_bottlenecks,
         recommended_unlock_topics=recommended[:5],
         topic_mastery_details=topic_details,
+    )
+
+
+@app.post("/mlops/predict_cold_start_item")
+def predict_cold_start_item(payload: schemas.ColdStartItemIn):
+    """
+    Zero-attempt cold-start NLP & cognitive complexity estimator: predicts difficulty tier
+    ('basic', 'medium', 'advanced') and initial 3PL IRT parameters (a_i, b_i, c_i) directly
+    from question text and options without requiring historical student attempt data.
+    """
+    return predict_cold_start_difficulty_and_irt(
+        question_text=payload.question_text,
+        options=payload.options,
+        has_diagram=bool(payload.has_diagram),
     )
 
 

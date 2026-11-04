@@ -130,6 +130,28 @@ class NCERTVectorIndex:
 _INDEX = NCERTVectorIndex()
 
 
+def _detect_distractor_trap(sel_text: str, corr_text: str) -> str:
+    """
+    Analyzes numerical and structural differences between the student's chosen
+    distractor and the correct option to pinpoint specific calculation traps.
+    """
+    sel_nums = [float(x) for x in re.findall(r"[+\-]?\d+(?:\.\d+)?", sel_text)]
+    corr_nums = [float(x) for x in re.findall(r"[+\-]?\d+(?:\.\d+)?", corr_text)]
+    if sel_nums and corr_nums:
+        v_s, v_c = sel_nums[0], corr_nums[0]
+        if abs(v_c) > 1e-9:
+            ratio = v_s / v_c
+            if abs(ratio + 1.0) < 0.05:
+                return "[Sign Inversion Trap: magnitude matches but sign is reversed] Typically stems from "
+            if abs(ratio - 2.0) < 0.08 or abs(ratio - 0.5) < 0.05:
+                return "[Factor-of-2 Trap: check 1/2 coefficient or radius vs. diameter] Typically stems from "
+            if abs(abs(ratio) - 10.0) < 0.5 or abs(abs(ratio) - 100.0) < 2.0 or abs(abs(ratio) - 0.1) < 0.01 or abs(abs(ratio) - 0.001) < 0.0002:
+                return "[SI Unit / Order-of-Magnitude Trap: check unit conversion factors] Typically stems from "
+            if abs(v_s * v_c - 1.0) < 0.05:
+                return "[Reciprocal Formula Trap: numerator and denominator inverted] Typically stems from "
+    return "Typically stems from: "
+
+
 def generate_socratic_remediation(
     question_id: str,
     topic_id: str,
@@ -162,10 +184,15 @@ def generate_socratic_remediation(
 
     misconceptions = primary_chunk.get("common_misconceptions", [])
     if sel_norm and sel_norm != corr_norm:
+        trap_detail = _detect_distractor_trap(str(sel_text), str(corr_text))
+        base_misconception = (
+            misconceptions[0]
+            if misconceptions
+            else f"misapplying a boundary condition or formula in {topic_id}"
+        )
         misconception_diagnosis = (
-            f"Selecting option ({sel_norm.upper()}: '{sel_text}') typically stems from: "
-            f"{misconceptions[0] if misconceptions else 'misapplying a boundary condition or formula in ' + topic_id}. "
-            f"Focus on {topic_tag}."
+            f"Selecting option ({sel_norm.upper()}: '{sel_text}') instead of ({corr_norm.upper()}: '{corr_text}'): "
+            f"{trap_detail}{base_misconception} Focus on {topic_tag}."
         )
     else:
         misconception_diagnosis = (

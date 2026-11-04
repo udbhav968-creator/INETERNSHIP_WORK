@@ -10,6 +10,7 @@ Maximum A Posteriori (MAP) Newton-Raphson optimization.
 import csv
 import json
 import math
+import re
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -241,6 +242,163 @@ def update_student_theta_map(
 def theta_to_percentile(theta: float) -> float:
     cdf = 0.5 * (1.0 + math.erf(theta / math.sqrt(2.0)))
     return round(max(1.0, min(99.9, cdf * 100.0)), 1)
+
+
+def extract_cold_start_nlp_features(question_text: str, options: list[str] | None = None) -> dict[str, float]:
+    """
+    Extracts intrinsic NLP, mathematical formula, and distractor similarity features
+    directly from a brand-new unattempted question stem and options (cold start n_i = 0).
+    """
+    text = str(question_text or "")
+    opts = [str(o) for o in (options or []) if o is not None]
+    words = re.findall(r"[a-zA-Z]{2,}", text.lower())
+    word_count = len(words)
+
+    # Formula & symbolic density (=, +, -, /, ^, Greek/physics symbols, exponents)
+    formula_tokens = re.findall(r"[=+\-*/^<>]|\\frac|\\sqrt|\b(?:sin|cos|tan|log|ln|lim|mol|kg|Hz|ohm|volt|joule)\b", text)
+    formula_density = min(1.0, len(formula_tokens) / max(8.0, word_count * 0.35))
+
+    # Numerical & multi-step calculation density
+    numeric_tokens = re.findall(r"\b\d+(?:\.\d+)?(?:[eE][+\-]?\d+)?\b", text)
+    numerical_complexity = min(1.0, len(numeric_tokens) / 4.0)
+
+    # Negation, exception, and assertion-reason cognitive trap indicators
+    negation_matches = re.findall(
+        r"\b(?:not|incorrect|false|except|wrong|never|neither|assertion|reason|match\s+the)\b",
+        text.lower(),
+    )
+    negation_trap = 1.0 if negation_matches else 0.0
+
+    # Pairwise Jaccard lexical overlap among the 4 options (subtle distractors -> higher discrimination)
+    opt_token_sets = [set(re.findall(r"[a-zA-Z0-9]+", o.lower())) for o in opts if o.strip()]
+    pair_sims: list[float] = []
+    for i in range(len(opt_token_sets)):
+        for j in range(i + 1, len(opt_token_sets)):
+            union = len(opt_token_sets[i] | opt_token_sets[j])
+            if union > 0:
+                pair_sims.append(len(opt_token_sets[i] & opt_token_sets[j]) / union)
+    distractor_similarity = sum(pair_sims) / len(pair_sims) if pair_sims else 0.25
+
+    return {
+        "word_count": float(word_count),
+        "formula_density": round(formula_density, 4),
+        "numerical_complexity": round(numerical_complexity, 4),
+        "negation_trap": negation_trap,
+        "distractor_similarity": round(distractor_similarity, 4),
+    }
+
+
+def predict_cold_start_difficulty_and_irt(
+    question_text: str,
+    options: list[str] | None = None,
+    has_diagram: bool = False,
+) -> dict:
+    """
+    Zero-attempt cold-start estimator that predicts difficulty tier ('basic', 'medium', 'advanced')
+    and initial 3PL IRT parameters (a_i, b_i, c_i) purely from NLP & cognitive stem complexity.
+    """
+    feats = extract_cold_start_nlp_features(question_text, options)
+    length_norm = min(1.0, feats["word_count"] / 55.0)
+    diag_bonus = 0.20 if has_diagram else 0.0
+
+    complexity_score = (
+        0.30 * feats["formula_density"]
+        + 0.30 * feats["numerical_complexity"]
+        + 0.15 * feats["negation_trap"]
+        + 0.15 * length_norm
+        + 0.10 * feats["distractor_similarity"]
+        + diag_bonus
+    )
+
+    if complexity_score < 0.28:
+        tier = "basic"
+    elif complexity_score < 0.56:
+        tier = "medium"
+    else:
+        tier = "advanced"
+
+    b_est = round(max(-2.5, min(2.5, (complexity_score - 0.42) * 3.8)), 4)
+    a_est = round(max(0.75, min(2.35, 1.05 + 0.65 * complexity_score + 0.25 * feats["distractor_similarity"])), 4)
+    c_est = round(max(0.14, min(0.26, 0.25 - 0.06 * feats["distractor_similarity"] - 0.04 * feats["numerical_complexity"])), 4)
+
+    return {
+        "predicted_difficulty": tier,
+        "complexity_score": round(complexity_score, 4),
+        "irt_params": {"a": a_est, "b": b_est, "c": c_est},
+        "nlp_features": feats,
+    }
+
+
+def classify_cognitive_skill_dimension(question_text: str, question_type: str = "") -> str:
+    """Classifies a NEET item into one of 3 MIRT skill axes: 'numerical', 'formula', or 'conceptual'."""
+    feats = extract_cold_start_nlp_features(question_text)
+    qt = (question_type or "").lower()
+    if "numerical" in qt or feats["numerical_complexity"] >= 0.50:
+        return "numerical"
+    if "formula" in qt or feats["formula_density"] >= 0.25 or "=" in (question_text or ""):
+        return "formula"
+    return "conceptual"
+
+
+def compute_mirt_3d_profile(attempt_records: list[dict]) -> dict[str, float]:
+    """
+    Multidimensional 3PL IRT (MIRT): Estimates a 3D latent skill vector
+    theta_s = (theta_conceptual, theta_formula, theta_numerical) across attempted items.
+    Each record in attempt_records expects keys: question_id, question_text, difficulty,
+    expected_time_seconds, is_correct.
+    """
+    dims = {"conceptual": 0.0, "formula": 0.0, "numerical": 0.0}
+    counts = {"conceptual": 0, "formula": 0, "numerical": 0}
+
+    for rec in attempt_records:
+        q_text = str(rec.get("question_text", ""))
+        q_type = str(rec.get("question_type", ""))
+        dim = classify_cognitive_skill_dimension(q_text, q_type)
+        params = get_item_params(
+            str(rec.get("question_id", "")),
+            str(rec.get("difficulty", "medium")),
+            int(rec.get("expected_time_seconds") or 90),
+        )
+        dims[dim] = update_student_theta_map(
+            current_theta=dims[dim],
+            is_correct=bool(rec.get("is_correct", False)),
+            params=params,
+        )
+        counts[dim] += 1
+
+    return {
+        "theta_conceptual": round(dims["conceptual"], 4),
+        "theta_formula": round(dims["formula"], 4),
+        "theta_numerical": round(dims["numerical"], 4),
+        "attempts_conceptual": counts["conceptual"],
+        "attempts_formula": counts["formula"],
+        "attempts_numerical": counts["numerical"],
+    }
+
+
+def recalibrate_item_parameters_online(
+    question_id: str,
+    student_theta: float,
+    is_correct: bool,
+    time_ratio: float = 1.0,
+    lr: float = 0.06,
+) -> IRTItemParams:
+    """
+    Closed-loop online Empirical Bayes / EM step that refines item difficulty (b_i)
+    and discrimination (a_i) in CALIBRATED_ITEMS from live student attempt residuals.
+    """
+    current = get_item_params(question_id)
+    pred_p = irt_3pl_probability(student_theta, current)
+    y = 1.0 if is_correct else 0.0
+    residual = y - pred_p  # positive when student succeeded unexpectedly (item easier than b_i)
+
+    new_b = max(-2.85, min(2.85, current.b - lr * residual + 0.02 * (time_ratio - 1.0)))
+    alignment = (student_theta - current.b) * residual
+    new_a = max(0.65, min(2.40, current.a + 0.5 * lr * max(-0.2, min(0.2, alignment))))
+
+    updated = IRTItemParams(a=round(new_a, 4), b=round(new_b, 4), c=current.c)
+    CALIBRATED_ITEMS[question_id] = {"a": updated.a, "b": updated.b, "c": updated.c}
+    return updated
 
 
 if __name__ == "__main__":

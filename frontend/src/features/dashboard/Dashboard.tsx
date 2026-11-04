@@ -172,6 +172,55 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
             </div>
           )}
 
+          {v2Insights?.mirt_3d_profile && (
+            <div>
+              <h2 className="mb-3 font-display text-lg font-semibold text-midnight-950">
+                3D Multidimensional IRT (MIRT) Skill Profile
+              </h2>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <Card className="flex flex-col gap-1 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-midnight-700/60">
+                    Conceptual Recall (θ)
+                  </p>
+                  <p className="font-display text-2xl font-semibold text-midnight-950">
+                    {v2Insights.mirt_3d_profile.theta_conceptual >= 0
+                      ? `+${v2Insights.mirt_3d_profile.theta_conceptual.toFixed(2)}`
+                      : v2Insights.mirt_3d_profile.theta_conceptual.toFixed(2)}
+                  </p>
+                  <p className="text-xs text-midnight-700/70">
+                    {v2Insights.mirt_3d_profile.attempts_conceptual} conceptual items calibrated
+                  </p>
+                </Card>
+                <Card className="flex flex-col gap-1 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-midnight-700/60">
+                    Formula Application (θ)
+                  </p>
+                  <p className="font-display text-2xl font-semibold text-midnight-950">
+                    {v2Insights.mirt_3d_profile.theta_formula >= 0
+                      ? `+${v2Insights.mirt_3d_profile.theta_formula.toFixed(2)}`
+                      : v2Insights.mirt_3d_profile.theta_formula.toFixed(2)}
+                  </p>
+                  <p className="text-xs text-midnight-700/70">
+                    {v2Insights.mirt_3d_profile.attempts_formula} formula items calibrated
+                  </p>
+                </Card>
+                <Card className="flex flex-col gap-1 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-midnight-700/60">
+                    Numerical Speed & Precision (θ)
+                  </p>
+                  <p className="font-display text-2xl font-semibold text-midnight-950">
+                    {v2Insights.mirt_3d_profile.theta_numerical >= 0
+                      ? `+${v2Insights.mirt_3d_profile.theta_numerical.toFixed(2)}`
+                      : v2Insights.mirt_3d_profile.theta_numerical.toFixed(2)}
+                  </p>
+                  <p className="text-xs text-midnight-700/70">
+                    {v2Insights.mirt_3d_profile.attempts_numerical} numerical items calibrated
+                  </p>
+                </Card>
+              </div>
+            </div>
+          )}
+
           {v2Insights && v2Insights.root_cause_bottlenecks.length > 0 && (
             <Card className="border-amber-500/20 bg-amber-500/5 p-5">
               <h2 className="font-display text-base font-semibold text-midnight-950">

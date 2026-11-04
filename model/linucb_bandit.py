@@ -5,7 +5,12 @@ Optimizes active question routing within the student's Zone of Proximal
 Development (ZPD, target P(correct) ~ 0.70) by balancing exploitation of weak
 spots with exploration of borderline topics.
 """
+import json
 import math
+import os
+import tempfile
+import threading
+from pathlib import Path
 import numpy as np
 from .irt_3pl_model import get_item_params, irt_3pl_probability, fisher_information
 
@@ -14,6 +19,17 @@ DEFAULT_ALPHA = 0.35
 ZPD_TARGET_PROB = 0.70
 
 _PRIOR_B = np.array([0.45, 0.30, 0.25, 0.20, 0.25, 0.15], dtype=np.float64)
+_BANDIT_LOCK = threading.RLock()
+_MODEL_DIR = Path(__file__).resolve().parent
+
+
+def _resolve_checkpoint_path() -> Path:
+    if os.environ.get("VERCEL") or not os.access(_MODEL_DIR, os.W_OK):
+        return Path(tempfile.gettempdir()) / "klassed_linucb_state.json"
+    return _MODEL_DIR / "linucb_state.json"
+
+
+_CHECKPOINT_PATH = _resolve_checkpoint_path()
 
 
 class LinUCBStudentState:
@@ -31,14 +47,56 @@ class LinUCBStudentState:
         self.b += float(reward) * x
         self.total_updates += 1
 
+    def to_dict(self) -> dict:
+        return {
+            "alpha": self.alpha,
+            "A": self.A.tolist(),
+            "b": self.b.tolist(),
+            "total_updates": self.total_updates,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "LinUCBStudentState":
+        inst = cls(alpha=float(data.get("alpha", DEFAULT_ALPHA)))
+        inst.A = np.array(data["A"], dtype=np.float64)
+        inst.A_inv = np.linalg.inv(inst.A)
+        inst.b = np.array(data["b"], dtype=np.float64)
+        inst.total_updates = int(data.get("total_updates", 0))
+        return inst
+
 
 _STUDENT_BANDITS: dict[str, LinUCBStudentState] = {}
 
 
+def _load_bandit_checkpoint() -> None:
+    if not _CHECKPOINT_PATH.exists():
+        return
+    try:
+        with open(_CHECKPOINT_PATH, encoding="utf-8") as f:
+            raw = json.load(f)
+        for sid, payload in raw.items():
+            _STUDENT_BANDITS[sid] = LinUCBStudentState.from_dict(payload)
+    except Exception:
+        pass
+
+
+def _save_bandit_checkpoint() -> None:
+    try:
+        payload = {sid: st.to_dict() for sid, st in _STUDENT_BANDITS.items()}
+        with open(_CHECKPOINT_PATH, "w", encoding="utf-8") as f:
+            json.dump(payload, f)
+    except Exception:
+        pass
+
+
+_load_bandit_checkpoint()
+
+
 def get_student_bandit(student_id: str) -> LinUCBStudentState:
-    if student_id not in _STUDENT_BANDITS:
-        _STUDENT_BANDITS[student_id] = LinUCBStudentState()
-    return _STUDENT_BANDITS[student_id]
+    with _BANDIT_LOCK:
+        if student_id not in _STUDENT_BANDITS:
+            _STUDENT_BANDITS[student_id] = LinUCBStudentState()
+        return _STUDENT_BANDITS[student_id]
 
 
 def build_context_vector(
@@ -89,6 +147,7 @@ def record_bandit_feedback(
     pace_flag: str | None,
     is_correct: bool,
     time_taken_seconds: int,
+    prior_mastery_prob: float | None = None,
 ) -> float:
     x = build_context_vector(
         question_id=question_id,
@@ -109,6 +168,17 @@ def record_bandit_feedback(
     engagement_quality = 1.0 if 0.25 <= time_ratio <= 1.8 else 0.5
     outcome_bonus = 0.85 if is_correct else 0.65
 
-    reward = round(0.45 * zpd_quality + 0.30 * engagement_quality + 0.25 * outcome_bonus, 4)
-    get_student_bandit(student_id).update(x, reward)
+    # Delayed / posterior BKT mastery gain bonus: Delta P(L_t) = max(0, P(L_t) - P(L_{t-1}))
+    mastery_gain_bonus = 0.0
+    if prior_mastery_prob is not None:
+        delta_m = max(0.0, float(topic_mastery_prob) - float(prior_mastery_prob))
+        mastery_gain_bonus = min(0.20, delta_m * 1.5)
+
+    reward = round(
+        min(1.0, 0.40 * zpd_quality + 0.25 * engagement_quality + 0.25 * outcome_bonus + mastery_gain_bonus),
+        4,
+    )
+    with _BANDIT_LOCK:
+        get_student_bandit(student_id).update(x, reward)
+        _save_bandit_checkpoint()
     return reward

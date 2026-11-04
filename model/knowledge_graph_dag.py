@@ -136,3 +136,39 @@ def diagnose_prerequisite_bottlenecks(
         reverse=True,
     )
     return bottlenecks
+
+
+def propagate_dag_belief_update(
+    topic_id: str,
+    is_correct: bool,
+    difficulty: str,
+    student_mastery_map: dict[str, float],
+) -> dict[str, float]:
+    """
+    1-Hop Bayesian Belief Propagation across the Prerequisite DAG:
+    - Backward Evidence Boost: Solving a 'medium' or 'advanced' item in a downstream
+      chapter propagates positive mastery evidence to its direct prerequisite chapters.
+    - Forward Prerequisite Warning: Failing a 'basic' item in a foundational chapter
+      propagates a cautious downward adjustment to direct dependent chapters.
+    Returns {neighbor_topic_id: new_mastery_prob} for updated 1-hop neighbors.
+    """
+    updates: dict[str, float] = {}
+    diff = (difficulty or "medium").lower()
+
+    if is_correct and diff in ("medium", "advanced"):
+        boost_rate = 0.08 if diff == "advanced" else 0.05
+        for prereq in get_direct_prerequisites(topic_id):
+            curr = float(student_mastery_map.get(prereq, 0.35))
+            if curr < 0.88:
+                new_m = round(min(0.92, curr + boost_rate * (1.0 - curr)), 4)
+                updates[prereq] = new_m
+
+    elif not is_correct and diff == "basic":
+        for dep in get_dependents(topic_id):
+            if dep in student_mastery_map:
+                curr = float(student_mastery_map[dep])
+                new_m = round(max(0.12, curr * 0.95), 4)
+                updates[dep] = new_m
+
+    return updates
+

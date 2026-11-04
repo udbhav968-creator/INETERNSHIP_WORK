@@ -532,17 +532,31 @@ def test_14_all_11_endpoints_and_concurrent_stress():
         r_ana = client.get(f"/students/{created_student_id}/analytics")
         assert r_ana.status_code == 200 and r_ana.json()["total_attempts"] == 8
 
-        # 10. v2 Insights
+        # 10. v2 Insights (including MIRT 3D Profile & Spaced Repetition Reviews)
         r_ins = client.get(f"/students/{created_student_id}/v2_insights")
         assert r_ins.status_code == 200
-        assert 120 <= r_ins.json()["predicted_neet_score_720"] <= 720
+        ins_body = r_ins.json()
+        assert 120 <= ins_body["predicted_neet_score_720"] <= 720
+        assert "mirt_3d_profile" in ins_body and ins_body["mirt_3d_profile"] is not None
+        assert "spaced_repetition_reviews" in ins_body
 
-        # 11. Socratic Hint & MLOps Health/Drift
+        # 11. Socratic Hint & MLOps Health/Drift & Cold-Start Item Predictor
         r_soc = client.post(
             "/remediation/socratic_hint",
             json={"question_id": paper_items[0]["question_id"], "selected_option": "b"},
         )
         assert r_soc.status_code == 200 and len(r_soc.json()["socratic_hint"]) > 10
+
+        r_cold = client.post(
+            "/mlops/predict_cold_start_item",
+            json={
+                "question_text": "Which of the following is NOT true if a 5.0 kg block accelerates at 2.5 m/s^2 under F = m * a = 12.5 N?",
+                "options": ["12.5 N", "-12.5 N", "6.25 N", "25.0 N"],
+                "has_diagram": True,
+            },
+        )
+        assert r_cold.status_code == 200
+        assert r_cold.json()["predicted_difficulty"] in ("basic", "medium", "advanced")
 
         r_health = client.get("/mlops/health_and_drift")
         assert r_health.status_code == 200
@@ -556,6 +570,91 @@ def test_14_all_11_endpoints_and_concurrent_stress():
             db.query(Student).filter_by(student_id=created_student_id).delete()
             db.commit()
             db.close()
+
+
+# ============================================================================
+# 15. ADVANCED V3 UPGRADES: EBBINGHAUS SPACED REPETITION, MIRT 3D, DAG MESSAGE
+#     PASSING, COLD-START NLP DIFFICULTY & DISTRACTOR TRAP DIAGNOSIS
+# ============================================================================
+def test_15_v3_advanced_psychometric_and_nlp_upgrades():
+    from model.state_machine.bkt_model import (
+        compute_ebbinghaus_forgetting_prior,
+        compute_retention_urgency,
+    )
+    from model.irt_3pl_model import (
+        predict_cold_start_difficulty_and_irt,
+        compute_mirt_3d_profile,
+        recalibrate_item_parameters_online,
+        get_item_params,
+    )
+    from model.knowledge_graph_dag import propagate_dag_belief_update
+    from model.rag_socratic_engine import generate_socratic_remediation
+
+    # 1. Ebbinghaus Forgetting Curve decay
+    p_fresh = compute_ebbinghaus_forgetting_prior(0.85, elapsed_hours=0.1, streak=2)
+    p_week_old = compute_ebbinghaus_forgetting_prior(0.85, elapsed_hours=168.0, streak=0)
+    assert p_fresh == 0.85
+    assert 0.35 <= p_week_old < p_fresh, f"Expected decay after 168h: {p_week_old} vs {p_fresh}"
+    assert compute_retention_urgency(0.85, elapsed_hours=168.0, streak=0) > 0.25
+
+    # 2. Cold-Start NLP Difficulty & IRT Estimator
+    simple_pred = predict_cold_start_difficulty_and_irt(
+        "What is the SI unit of electric current?",
+        ["Ampere", "Volt", "Ohm", "Watt"],
+        has_diagram=False,
+    )
+    complex_pred = predict_cold_start_difficulty_and_irt(
+        "Which statement is NOT correct when calculating sin(30) = 0.5 for a 2.5e-3 mol/L solution at 298 K and 101.3 kPa with E = -13.6 / n^2 eV?",
+        ["-3.40 eV", "+3.40 eV", "-1.51 eV", "+1.51 eV"],
+        has_diagram=True,
+    )
+    assert complex_pred["complexity_score"] > simple_pred["complexity_score"]
+    assert complex_pred["irt_params"]["b"] > simple_pred["irt_params"]["b"]
+
+    # 3. Multidimensional 3PL IRT (MIRT 3D Profile)
+    mirt = compute_mirt_3d_profile([
+        {"question_id": "Q1", "question_text": "Calculate the molarity of 2.5 mol in 0.5 L.", "question_type": "Numerical", "difficulty": "medium", "expected_time_seconds": 90, "is_correct": True},
+        {"question_id": "Q2", "question_text": "Given F = q * E, find the electric field relation.", "question_type": "Direct Formula", "difficulty": "basic", "expected_time_seconds": 60, "is_correct": True},
+        {"question_id": "Q3", "question_text": "Which organelle is known as the powerhouse of the cell?", "question_type": "Conceptual", "difficulty": "basic", "expected_time_seconds": 45, "is_correct": False},
+    ])
+    assert mirt["theta_numerical"] > 0.0
+    assert mirt["theta_formula"] > 0.0
+    assert mirt["theta_conceptual"] < 0.0
+
+    # 4. Online EM Item Recalibration
+    before_b = get_item_params("NEET_2025_PHY_001").b
+    updated_item = recalibrate_item_parameters_online("NEET_2025_PHY_001", student_theta=-1.0, is_correct=True, time_ratio=0.7)
+    assert updated_item.b < before_b, "Item solved easily by low-theta student should become slightly easier (lower b_i)"
+
+    # 5. 1-Hop Bayesian Belief Propagation on Prerequisite DAG
+    dag_boosts = propagate_dag_belief_update(
+        topic_id="Rotational Motion",
+        is_correct=True,
+        difficulty="advanced",
+        student_mastery_map={"Laws of Motion": 0.45},
+    )
+    assert "Laws of Motion" in dag_boosts and dag_boosts["Laws of Motion"] > 0.45
+
+    # 6. Distractor-Specific Mathematical Trap Diagnosis (Sign Inversion & Factor-of-2)
+    rem_sign = generate_socratic_remediation(
+        question_id="NEET_SIGN_TEST",
+        topic_id="Ray Optics",
+        question_text="Find the focal length of a concave mirror of radius 20 cm.",
+        options=["-10 cm", "+10 cm", "-20 cm", "+20 cm"],
+        correct_answer="a",
+        selected_option="b",
+    )
+    assert "Sign Inversion Trap" in rem_sign["misconception_diagnosis"]
+
+    rem_factor2 = generate_socratic_remediation(
+        question_id="NEET_FACTOR2_TEST",
+        topic_id="Ray Optics",
+        question_text="Find the focal length of a concave mirror of radius 20 cm.",
+        options=["-10 cm", "+10 cm", "-20 cm", "+20 cm"],
+        correct_answer="a",
+        selected_option="c",
+    )
+    assert "Factor-of-2 Trap" in rem_factor2["misconception_diagnosis"]
 
 
 if __name__ == "__main__":
@@ -574,6 +673,7 @@ if __name__ == "__main__":
         test_12_auth_bcrypt_and_jwt_security,
         test_13_database_counts_and_adaptive_paper_generator,
         test_14_all_11_endpoints_and_concurrent_stress,
+        test_15_v3_advanced_psychometric_and_nlp_upgrades,
     ]
     for fn in suites:
         fn()

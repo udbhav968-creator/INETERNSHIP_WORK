@@ -10,3 +10,4 @@ data/raw_papers/*
 *.db-shm
 *.db-wal
 .vercel/
+model/linucb_state.json

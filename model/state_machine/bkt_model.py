@@ -59,6 +59,40 @@ def modulate_params_with_telemetry(
     return p_t, p_g, p_s
 
 
+def compute_ebbinghaus_forgetting_prior(
+    prior_mastery: float,
+    elapsed_hours: float = 0.0,
+    streak: int = 0,
+    base_prior: float = 0.35,
+) -> float:
+    """
+    Half-Life Regression (HLR) / Ebbinghaus Spaced Repetition Forgetting Curve:
+      P(L_t)^decayed = P_base + (P(L_{t-1}) - P_base) * 2^(-elapsed_hours / half_life_hours)
+    Memory half-life scales with streak length and current mastery level.
+    """
+    p_prev = max(0.01, min(0.99, prior_mastery if prior_mastery is not None else base_prior))
+    if elapsed_hours <= 0.5 or p_prev <= base_prior:
+        return p_prev
+    half_life_hours = 24.0 * (1.0 + 0.85 * max(0, int(streak))) * (1.0 + p_prev)
+    retention_factor = math.pow(2.0, -float(elapsed_hours) / max(1.0, half_life_hours))
+    decayed = base_prior + (p_prev - base_prior) * retention_factor
+    return round(max(0.05, min(0.99, decayed)), 4)
+
+
+def compute_retention_urgency(
+    mastery_prob: float,
+    elapsed_hours: float = 0.0,
+    streak: int = 0,
+) -> float:
+    """
+    Quantifies spaced-repetition review urgency in [0.0, 1.0] based on how much
+    mastery has decayed since the student's last review of the chapter.
+    """
+    decayed = compute_ebbinghaus_forgetting_prior(mastery_prob, elapsed_hours, streak)
+    decay_drop = max(0.0, float(mastery_prob) - decayed)
+    return round(min(1.0, decay_drop * 3.5), 4)
+
+
 def compute_bkt_update(
     prior_mastery: float,
     is_correct: bool,
@@ -68,12 +102,18 @@ def compute_bkt_update(
     option_switches: int = 0,
     hesitation_ms: int = 0,
     attempts_count: int = 1,
+    elapsed_hours: float = 0.0,
+    streak: int = 0,
 ) -> tuple[float, float]:
     """
     Computes posterior mastery probability P(L_{t+1}) and 95% Bayesian credible
-    interval half-width.
+    interval half-width after applying Ebbinghaus temporal forgetting decay.
     """
-    p_prev = max(0.01, min(0.99, prior_mastery if prior_mastery is not None else 0.35))
+    p_prev = compute_ebbinghaus_forgetting_prior(
+        prior_mastery=prior_mastery if prior_mastery is not None else 0.35,
+        elapsed_hours=elapsed_hours,
+        streak=streak,
+    )
     params = DIFFICULTY_BKT_PRESETS.get(difficulty, DIFFICULTY_BKT_PRESETS["medium"])
 
     p_t, p_g, p_s = modulate_params_with_telemetry(

@@ -144,12 +144,20 @@ class SocraticHintOut(BaseModel):
     retrieval_similarity: float
 
 
+class ColdStartItemIn(BaseModel):
+    question_text: str
+    options: Optional[list[str]] = None
+    has_diagram: Optional[bool] = False
+
+
 class V2StudentInsightsOut(BaseModel):
     student_id: str
     global_theta: float
     estimated_neet_percentile: float
     predicted_neet_score_720: int
     zpd_target_success_prob: float
+    mirt_3d_profile: Optional[dict[str, Any]] = None
+    spaced_repetition_reviews: Optional[list[dict[str, Any]]] = None
     root_cause_bottlenecks: list[dict[str, Any]]
     recommended_unlock_topics: list[dict[str, Any]]
     topic_mastery_details: list[dict[str, Any]]

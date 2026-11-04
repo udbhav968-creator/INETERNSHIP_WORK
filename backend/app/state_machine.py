@@ -24,6 +24,7 @@ def process_answer(
     time_ratio: float = 1.0,
     option_switches: int = 0,
     hesitation_ms: int = 0,
+    elapsed_hours: float = 0.0,
 ) -> StudentTopicState:
     """Mutates and returns the given state object. Updates both the deterministic
     rolling-window state machine and the continuous v2 BKT mastery posterior."""
@@ -48,6 +49,8 @@ def process_answer(
         option_switches=int(option_switches),
         hesitation_ms=int(hesitation_ms),
         attempts_count=int(attempts_so_far),
+        elapsed_hours=float(elapsed_hours),
+        streak=int(state.streak or 0),
     )
     state.mastery_prob = p_next
     state.confidence_interval = ci_95

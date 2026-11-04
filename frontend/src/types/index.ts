@@ -111,6 +111,21 @@ export interface V2StudentInsights {
   estimated_neet_percentile: number;
   predicted_neet_score_720: number;
   zpd_target_success_prob: number;
+  mirt_3d_profile?: {
+    theta_conceptual: number;
+    theta_formula: number;
+    theta_numerical: number;
+    attempts_conceptual: number;
+    attempts_formula: number;
+    attempts_numerical: number;
+  };
+  spaced_repetition_reviews?: Array<{
+    topic_id: string;
+    peak_mastery: number;
+    decayed_mastery: number;
+    elapsed_hours: number;
+    retention_urgency: number;
+  }>;
   root_cause_bottlenecks: Array<{
     weak_topic: string;
     weak_topic_mastery: number;
