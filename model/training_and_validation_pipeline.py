@@ -132,14 +132,33 @@ def run_deep_training_and_validation(save_artifacts: bool = True) -> dict:
         y_onehot[idx, class_to_idx[label]] = 1.0
     multiclass_brier = float(np.mean(np.sum((oof_probs - y_onehot) ** 2, axis=1)))
 
-    # 3. Canonical 80/20 Stratified Holdout Split (Champion Verification)
+    # 3. Canonical 80/20 Stratified Holdout Split (Champion vs. Challenger Gate)
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.20, random_state=42, stratify=y
     )
-    champion_pipe = _build_rf_pipeline()
-    champion_pipe.fit(X_train, y_train)
-    test_preds = champion_pipe.predict(X_test)
-    holdout_accuracy = float(accuracy_score(y_test, test_preds))
+    challenger_pipe = _build_rf_pipeline()
+    challenger_pipe.fit(X_train, y_train)
+    challenger_preds = challenger_pipe.predict(X_test)
+    challenger_acc = float(accuracy_score(y_test, challenger_preds))
+
+    champion_pipe = challenger_pipe
+    test_preds = challenger_preds
+    holdout_accuracy = challenger_acc
+    challenger_promoted = True
+
+    if MODEL_FILE.exists():
+        try:
+            existing_pipe = joblib.load(MODEL_FILE)
+            existing_preds = existing_pipe.predict(X_test)
+            existing_acc = float(accuracy_score(y_test, existing_preds))
+            if existing_acc >= challenger_acc:
+                champion_pipe = existing_pipe
+                test_preds = existing_preds
+                holdout_accuracy = existing_acc
+                challenger_promoted = False
+        except Exception:
+            pass
+
     holdout_correct = int((test_preds == y_test).sum())
     holdout_total = len(y_test)
 
@@ -163,13 +182,7 @@ def run_deep_training_and_validation(save_artifacts: bool = True) -> dict:
         for i, cls_name in enumerate(classes)
     }
 
-    # Champion/Challenger Gate: only update joblib if accuracy >= existing champion accuracy
-    existing_acc = 0.0
-    if METRICS_FILE.exists():
-        with open(METRICS_FILE, encoding="utf-8") as f:
-            existing_acc = float(json.load(f).get("accuracy", 0.0))
-
-    if save_artifacts and holdout_accuracy >= existing_acc:
+    if save_artifacts and challenger_promoted:
         joblib.dump(champion_pipe, MODEL_FILE)
         metrics_payload = {
             "model": "RandomForestClassifier",
