@@ -9,3 +9,5 @@ data/raw_papers/*
 !data/raw_papers/.gitkeep
 *.db-shm
 *.db-wal
+.vercel/
+frontend/dist/

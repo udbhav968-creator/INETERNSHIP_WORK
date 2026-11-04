@@ -5,7 +5,13 @@
  */
 import type { LoginPayload, OnboardingPayload, SignupPayload, Student } from "../types/auth";
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
+const API_BASE =
+  import.meta.env.VITE_API_BASE_URL ||
+  (typeof window !== "undefined" &&
+  window.location.hostname !== "localhost" &&
+  window.location.hostname !== "127.0.0.1"
+    ? ""
+    : "http://127.0.0.1:8000");
 
 async function parseOrThrow(res: Response) {
   const body = await res.json().catch(() => ({}));

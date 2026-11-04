@@ -1,4 +1,7 @@
 import os
+import shutil
+import tempfile
+from pathlib import Path
 from sqlalchemy import create_engine, event, text
 from sqlalchemy.orm import sessionmaker
 from .db_models import Base
@@ -6,7 +9,20 @@ from .paths import PROJECT_ROOT
 
 # Anchor SQLite DB path to PROJECT_ROOT/backend/klassed.db so launching uvicorn
 # from either the repo root or backend/ always resolves to the exact same database.
-_DEFAULT_DB_PATH = (PROJECT_ROOT / "backend" / "klassed.db").as_posix()
+# In read-only serverless environments (e.g. Vercel), copy the pre-seeded SQLite DB to /tmp.
+_REPO_DB_PATH = PROJECT_ROOT / "backend" / "klassed.db"
+
+
+def _resolve_sqlite_path() -> str:
+    if os.environ.get("VERCEL") or not os.access(_REPO_DB_PATH.parent, os.W_OK):
+        tmp_db = Path(tempfile.gettempdir()) / "klassed.db"
+        if not tmp_db.exists() and _REPO_DB_PATH.exists():
+            shutil.copy2(_REPO_DB_PATH, tmp_db)
+        return tmp_db.as_posix()
+    return _REPO_DB_PATH.as_posix()
+
+
+_DEFAULT_DB_PATH = _resolve_sqlite_path()
 DATABASE_URL = os.environ.get("KLASSED_DB_URL", f"sqlite:///{_DEFAULT_DB_PATH}")
 
 _IS_SQLITE = DATABASE_URL.startswith("sqlite")

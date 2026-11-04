@@ -8,6 +8,8 @@ import json
 import threading
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 
 from . import schemas, auth
@@ -17,7 +19,7 @@ from .db_models import Question, Student, StudentTopicState, TestAttempt
 from .state_machine import process_answer
 from .time_tracking import update_pace, expected_time
 from .paper_generator import generate_paper
-from .paths import MODEL_DIR
+from .paths import MODEL_DIR, PROJECT_ROOT
 
 from model.irt_3pl_model import (
     get_item_params,
@@ -56,7 +58,7 @@ def _get_student_lock(student_id: str) -> threading.RLock:
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origin_regex=r"http://(localhost|127\.0\.0\.1):\d+",
+    allow_origin_regex=r"(http://(localhost|127\.0\.0\.1):\d+|https://.*\.(vercel\.app|netlify\.app|onrender\.com|up\.railway\.app|hf\.space))",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -66,6 +68,15 @@ app.add_middleware(
 @app.on_event("startup")
 def on_startup():
     init_db()
+
+
+@app.get("/health")
+def health_check():
+    return {
+        "status": "ok",
+        "version": "2.0.0",
+        "engine": "Klassed NEET Adaptive Engine (v2 Enterprise Psychometric & RAG Edition)",
+    }
 
 
 # --- auth / onboarding ---
@@ -484,3 +495,15 @@ def get_mlops_health_and_drift(db: Session = Depends(get_db)):
             "rag_ncert_socratic_engine": True,
         },
     }
+
+
+# Serve production React SPA build when frontend/dist exists (Docker / Render / Railway / Unified Server)
+_FRONTEND_DIST = PROJECT_ROOT / "frontend" / "dist"
+if (_FRONTEND_DIST / "index.html").exists():
+    if (_FRONTEND_DIST / "assets").exists():
+        app.mount("/assets", StaticFiles(directory=str(_FRONTEND_DIST / "assets")), name="frontend_assets")
+
+    @app.get("/", include_in_schema=False)
+    def serve_spa_root():
+        return FileResponse(str(_FRONTEND_DIST / "index.html"))
+
