@@ -291,20 +291,35 @@ def extract_cold_start_nlp_features(question_text: str, options: list[str] | Non
     }
 
 
+_RF_PIPELINE = None
+try:
+    import joblib
+    import pandas as pd
+    _RF_PATH = MODEL_DIR / "question_difficulty_model.joblib"
+    if _RF_PATH.exists():
+        _RF_PIPELINE = joblib.load(_RF_PATH)
+except Exception:
+    _RF_PIPELINE = None
+
+
 def predict_cold_start_difficulty_and_irt(
     question_text: str,
     options: list[str] | None = None,
     has_diagram: bool = False,
+    subject: str = "Physics",
+    chapter: str = "Laws of Motion",
+    topic_tag: str = "Newton's Laws",
 ) -> dict:
     """
     Zero-attempt cold-start estimator that predicts difficulty tier ('basic', 'medium', 'advanced')
-    and initial 3PL IRT parameters (a_i, b_i, c_i) purely from NLP & cognitive stem complexity.
+    and initial 3PL IRT parameters (a_i, b_i, c_i) by combining NLP & cognitive stem complexity
+    with the trained RandomForestClassifier (question_difficulty_model.joblib) when available.
     """
     feats = extract_cold_start_nlp_features(question_text, options)
     length_norm = min(1.0, feats["word_count"] / 55.0)
     diag_bonus = 0.20 if has_diagram else 0.0
 
-    complexity_score = (
+    nlp_score = (
         0.30 * feats["formula_density"]
         + 0.30 * feats["numerical_complexity"]
         + 0.15 * feats["negation_trap"]
@@ -312,6 +327,42 @@ def predict_cold_start_difficulty_and_irt(
         + 0.10 * feats["distractor_similarity"]
         + diag_bonus
     )
+
+    rf_probs: dict[str, float] | None = None
+    complexity_score = nlp_score
+    if _RF_PIPELINE is not None:
+        try:
+            inferred_qtype = (
+                "Numerical"
+                if feats["numerical_complexity"] >= 0.50
+                else ("Assertion-Reason" if feats["negation_trap"] > 0 else "Conceptual")
+            )
+            inferred_time = int(round(45 + 75 * min(1.0, nlp_score)))
+            row_df = pd.DataFrame(
+                [
+                    {
+                        "subject": subject,
+                        "chapter": chapter,
+                        "topic_tag": topic_tag,
+                        "question_type": inferred_qtype,
+                        "ideal_time_sec": inferred_time,
+                        "has_diagram": int(bool(has_diagram)),
+                        "marks": 4,
+                        "negative_marks": -1,
+                    }
+                ]
+            )
+            probas = _RF_PIPELINE.predict_proba(row_df)[0]
+            classes = list(_RF_PIPELINE.classes_)
+            rf_probs = {str(c): round(float(p), 4) for c, p in zip(classes, probas)}
+            rf_expected = (
+                0.15 * rf_probs.get("basic", 0.0)
+                + 0.45 * rf_probs.get("medium", 0.0)
+                + 0.85 * rf_probs.get("advanced", 0.0)
+            )
+            complexity_score = 0.65 * nlp_score + 0.35 * rf_expected
+        except Exception:
+            pass
 
     if complexity_score < 0.28:
         tier = "basic"
@@ -329,6 +380,7 @@ def predict_cold_start_difficulty_and_irt(
         "complexity_score": round(complexity_score, 4),
         "irt_params": {"a": a_est, "b": b_est, "c": c_est},
         "nlp_features": feats,
+        "rf_probabilities": rf_probs,
     }
 
 

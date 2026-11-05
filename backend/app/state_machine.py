@@ -58,31 +58,35 @@ def process_answer(
     if state.level == "basic":
         state.streak = (state.streak + 1) if is_correct else 0
         if sum(1 for r in results if r) >= 2:
-            state.level = resolve_level_with_hysteresis(state.level, max(p_next, 0.58), ci_95)
-            state.streak = 0
-            state.last_3_results = []
-            state.mastery_prob = max(state.mastery_prob, 0.58)
+            new_lvl = resolve_level_with_hysteresis(state.level, p_next, ci_95)
+            if new_lvl != state.level:
+                state.level = new_lvl
+                state.streak = 0
+                state.last_3_results = []
 
     elif state.level == "medium":
         state.streak = (state.streak + 1) if is_correct else 0
         wrong_count = results.count(False)
         if state.streak >= 3:
-            state.level = resolve_level_with_hysteresis(state.level, max(p_next, 0.82), ci_95)
-            state.streak = 0
-            state.last_3_results = []
-            state.mastery_prob = max(state.mastery_prob, 0.82)
+            new_lvl = resolve_level_with_hysteresis(state.level, p_next, ci_95)
+            if new_lvl != state.level:
+                state.level = new_lvl
+                state.streak = 0
+                state.last_3_results = []
         elif wrong_count >= 2:
-            state.level = resolve_level_with_hysteresis(state.level, min(p_next, 0.34), ci_95)
-            state.streak = 0
-            state.last_3_results = []
-            state.mastery_prob = min(state.mastery_prob, 0.42)
+            new_lvl = resolve_level_with_hysteresis(state.level, p_next, ci_95)
+            if new_lvl != state.level:
+                state.level = new_lvl
+                state.streak = 0
+                state.last_3_results = []
 
     elif state.level == "advanced":
         state.streak = (state.streak + 1) if is_correct else 0
         if len(results) >= 2 and results[-2:] == [False, False]:
-            state.level = resolve_level_with_hysteresis(state.level, min(p_next, 0.58), ci_95)
-            state.streak = 0
-            state.last_3_results = []
-            state.mastery_prob = min(state.mastery_prob, 0.65)
+            new_lvl = resolve_level_with_hysteresis(state.level, p_next, ci_95)
+            if new_lvl != state.level:
+                state.level = new_lvl
+                state.streak = 0
+                state.last_3_results = []
 
     return state

@@ -24,7 +24,7 @@ DIFFICULTY_BKT_PRESETS: dict[str, BKTParams] = {
 }
 
 PROMOTE_TO_MEDIUM_THRESHOLD = 0.52
-DEMOTE_TO_BASIC_THRESHOLD = 0.35
+DEMOTE_TO_BASIC_THRESHOLD = 0.40
 PROMOTE_TO_ADVANCED_THRESHOLD = 0.78
 DEMOTE_TO_MEDIUM_THRESHOLD = 0.60
 
@@ -132,8 +132,9 @@ def compute_bkt_update(
         den = num + (1.0 - p_prev) * (1.0 - p_g)
 
     posterior = num / den if den > 0 else p_prev
-    p_next = posterior + (1.0 - posterior) * p_t
-    p_next = round(max(0.02, min(0.99, p_next)), 4)
+    effective_p_t = p_t if is_correct else (0.35 * p_t)
+    p_next = posterior + (1.0 - posterior) * effective_p_t
+    p_next = round(max(0.05, min(0.95, p_next)), 4)
 
     effective_n = max(1, attempts_count) + 4
     std_err = math.sqrt((p_next * (1.0 - p_next)) / effective_n)

@@ -12,7 +12,8 @@ type Mode = "signup" | "login";
 
 /**
  * Real signup + login, backed by POST /auth/signup and POST /auth/login.
- * Also provides one-click Instant Demo Login for the pre-seeded UDBHAVYADAV profile.
+ * No more hardcoded TEST_STUDENT — this creates (or authenticates) an
+ * actual row in the students table.
  */
 export function AuthPage({ onAuthenticated }: AuthPageProps) {
   const [mode, setMode] = useState<Mode>("signup");
@@ -38,19 +39,6 @@ export function AuthPage({ onAuthenticated }: AuthPageProps) {
     } finally {
       setSubmitting(false);
     }
-  }
-
-  function handleDemoLogin() {
-    const demoStudent: Student = {
-      student_id: "UDBHAVYADAV",
-      name: "Udbhav Yadav",
-      email: "udbhav@klassed.in",
-      class_level: "12",
-      target_neet_year: 2027,
-      onboarded: true,
-    };
-    saveSession(demoStudent);
-    onAuthenticated(demoStudent);
   }
 
   return (
@@ -141,16 +129,6 @@ export function AuthPage({ onAuthenticated }: AuthPageProps) {
                 : "Log in"}
             </button>
           </form>
-
-          <div className="mt-5 border-t border-slate-800 pt-4">
-            <button
-              type="button"
-              onClick={handleDemoLogin}
-              className="w-full rounded-lg border border-slate-700 bg-[#0b0f1a] py-2 text-xs font-medium text-slate-300 transition hover:border-violet-500 hover:text-white"
-            >
-              Instant Demo Login (Pre-Calibrated 65-Chapter Profile)
-            </button>
-          </div>
         </div>
       </div>
     </div>

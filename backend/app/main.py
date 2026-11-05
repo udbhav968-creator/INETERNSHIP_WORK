@@ -23,6 +23,7 @@ from .paper_generator import generate_paper
 from .paths import MODEL_DIR, PROJECT_ROOT
 
 from model.irt_3pl_model import (
+    CALIBRATED_ITEMS,
     get_item_params,
     irt_3pl_probability,
     update_student_theta_map,
@@ -109,6 +110,7 @@ def complete_onboarding(student_id: str, payload: schemas.OnboardingIn, db: Sess
             student_id=student_id,
             name=student_id.title(),
             email=f"{student_id.lower()}@klassed.in",
+            password_hash="serverless_provisioned",
             onboarded=False,
         )
         db.add(student)
@@ -141,6 +143,23 @@ def _process_single_attempt_no_commit(
     opt_switches = int(attempt.option_switches or 0)
     hesitation = int(attempt.hesitation_ms or 0)
     dwell = int(attempt.dwell_time_ms or (attempt.time_taken_seconds * 1000))
+
+    # Compute elapsed hours since last attempt in this topic BEFORE inserting the new attempt
+    prev_topic_attempt = (
+        db.query(TestAttempt)
+        .join(Question, TestAttempt.question_id == Question.question_id)
+        .filter(
+            TestAttempt.student_id == attempt.student_id,
+            Question.topic_id == question.topic_id,
+        )
+        .order_by(TestAttempt.attempt_id.desc())
+        .first()
+    )
+    elapsed_hours = 0.0
+    if prev_topic_attempt and getattr(prev_topic_attempt, "timestamp", None):
+        ts = prev_topic_attempt.timestamp
+        now_dt = datetime.now(timezone.utc) if ts.tzinfo else datetime.utcnow()
+        elapsed_hours = max(0.0, (now_dt - ts).total_seconds() / 3600.0)
 
     # Log the raw attempt with v2 telemetry
     db.add(
@@ -175,26 +194,10 @@ def _process_single_attempt_no_commit(
             irt_theta=0.0,
         )
         db.add(state)
+        db.flush()
 
     exp_sec = expected_time(question.difficulty, question.expected_time_seconds)
     time_ratio = attempt.time_taken_seconds / max(1, exp_sec)
-
-    # Compute elapsed hours since last attempt in this topic for Ebbinghaus spaced repetition
-    prev_topic_attempt = (
-        db.query(TestAttempt)
-        .join(Question, TestAttempt.question_id == Question.question_id)
-        .filter(
-            TestAttempt.student_id == attempt.student_id,
-            Question.topic_id == question.topic_id,
-        )
-        .order_by(TestAttempt.attempt_id.desc())
-        .first()
-    )
-    elapsed_hours = 0.0
-    if prev_topic_attempt and getattr(prev_topic_attempt, "timestamp", None):
-        ts = prev_topic_attempt.timestamp
-        now_dt = datetime.now(timezone.utc) if ts.tzinfo else datetime.utcnow()
-        elapsed_hours = max(0.0, (now_dt - ts).total_seconds() / 3600.0)
 
     # Prior probability and mastery before state update
     prior_theta = float(getattr(state, "irt_theta", 0.0) or 0.0)
@@ -294,6 +297,7 @@ def _process_single_attempt_no_commit(
             "pace_flag": state.pace_flag,
         },
     )
+    db.flush()
     return is_correct, question, state
 
 
@@ -682,12 +686,12 @@ def get_mlops_health_and_drift(db: Session = Depends(get_db)):
         "feature_store": FEATURE_STORE.get_latency_percentiles(),
         "drift_and_calibration": DRIFT_MONITOR.evaluate_health(db_attempts),
         "models_loaded": {
-            "random_forest_difficulty_classifier": True,
-            "bkt_bayesian_knowledge_tracing": True,
-            "irt_3pl_psychometric_engine": True,
+            "random_forest_difficulty_classifier": (MODEL_DIR / "question_difficulty_model.joblib").exists(),
+            "bkt_bayesian_knowledge_tracing": len(_TOPIC_IMPORTANCE) == 65,
+            "irt_3pl_psychometric_engine": len(CALIBRATED_ITEMS) >= 2471,
             "ncert_prerequisite_dag_nodes": len(DAG_NODES),
-            "linucb_contextual_bandit": True,
-            "rag_ncert_socratic_engine": True,
+            "linucb_contextual_bandit": len(_TOPIC_IMPORTANCE) == 65,
+            "rag_ncert_socratic_engine": len(_RAG_INDEX.chunks) == 65,
         },
     }
 

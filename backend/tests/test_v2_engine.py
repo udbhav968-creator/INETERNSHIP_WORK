@@ -533,11 +533,11 @@ def test_14_all_11_endpoints_and_concurrent_stress():
         r_rev = client.get(f"/students/{created_student_id}/papers/1/review")
         assert r_rev.status_code == 200 and r_rev.json()["total_questions"] == 8
 
-        # 8b. Chapter-focused adaptive drill + atomic batch POST /submit_paper
-        r_chap = client.get(f"/students/{created_student_id}/next_paper?topic_id=Electrostatics")
+        # 8b. Chapter-focused adaptive drill + atomic batch POST /submit_paper on an unattempted topic
+        r_chap = client.get(f"/students/{created_student_id}/next_paper?topic_id=Wave%20Optics")
         assert r_chap.status_code == 200
         chap_items = r_chap.json()
-        assert len(chap_items) >= 2 and all(q["topic_id"] == "Electrostatics" for q in chap_items)
+        assert len(chap_items) >= 2 and all(q["topic_id"] == "Wave Optics" for q in chap_items)
 
         r_batch = client.post(
             "/submit_paper",
