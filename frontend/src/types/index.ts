@@ -105,6 +105,74 @@ export interface SocraticHintOut {
   retrieval_similarity: number;
 }
 
+export interface DinaSkillItem {
+  skill_id: string;
+  name: string;
+  description: string;
+  mastery_probability: number;
+  posterior_sd: number;
+  attempts_count: number;
+  correct_count: number;
+  status: "uncalibrated" | "mastered" | "developing" | "bottleneck";
+}
+
+export interface DinaCognitiveProfile {
+  model_type: string;
+  skills: DinaSkillItem[];
+  primary_cognitive_bottleneck: {
+    skill_id: string;
+    name: string;
+    mastery_probability: number;
+    diagnosis: string;
+  };
+  speed_ability_profile: {
+    latent_speed_tau: number;
+    latent_speed_se: number;
+    speed_percentile: number;
+    avg_time_ratio: number;
+    behavior_classification: {
+      fluent_mastery: number;
+      deep_derivation: number;
+      careless_slip: number;
+      rapid_guess: number;
+      conceptual_struggle: number;
+    };
+  };
+}
+
+export interface MonteCarloConformalSimulator {
+  model_type: string;
+  n_trials: number;
+  expected_score_attempt_all_720: number;
+  conformal_90_interval: [number, number];
+  interquartile_50_interval: [number, number];
+  score_std_dev: number;
+  negative_marking_optimizer: {
+    ev_formula: string;
+    optimal_skip_threshold_prob: number;
+    optimal_skip_expected_score_720: number;
+    expected_marks_gained_by_skipping: number;
+    recommended_skip_questions_per_180: number;
+    recommended_attempt_questions_per_180: number;
+  };
+  cutoff_probabilities: {
+    qualifying_cutoff_165_percent: number;
+    state_govt_mbbs_550_percent: number;
+    top_aiims_650_percent: number;
+  };
+  high_yield_leverage_chapters: Array<{
+    topic_id: string;
+    subject: string;
+    cluster: string;
+    current_mastery: number;
+    direct_marks_gain: number;
+    downstream_diffused_marks_gain: number;
+    total_expected_marks_gain: number;
+    unlocks_downstream_count: number;
+    downstream_chapters: string[];
+  }>;
+}
+
 export interface V2StudentInsights {
   student_id: string;
   global_theta: number;
@@ -119,6 +187,8 @@ export interface V2StudentInsights {
     attempts_formula: number;
     attempts_numerical: number;
   };
+  dina_cognitive_profile?: DinaCognitiveProfile;
+  monte_carlo_conformal_simulator?: MonteCarloConformalSimulator;
   spaced_repetition_reviews?: Array<{
     topic_id: string;
     peak_mastery: number;

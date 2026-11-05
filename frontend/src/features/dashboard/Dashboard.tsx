@@ -341,6 +341,165 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
         </>
       )}
 
+      {/* Monte Carlo Conformal NEET Simulator & Negative-Marking Skip Policy + Graph Laplacian Leverage */}
+      {v2Insights?.monte_carlo_conformal_simulator && (
+        <div className="flex flex-col gap-4">
+          <div>
+            <h2 className="font-display text-lg font-semibold text-midnight-950">
+              Monte Carlo Conformal NEET Simulator & Negative-Marking Optimizer ({v2Insights.monte_carlo_conformal_simulator.n_trials} Trials)
+            </h2>
+            <p className="text-xs text-midnight-700/70">
+              Split conformal prediction bounds across 180 blueprint questions (+4 / −1 marking) with decision-theoretic skip optimization (E[V] = 5P − 1) & Graph Laplacian Heat-Kernel diffusion leverage.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <Card className="flex flex-col gap-1 p-4">
+              <p className="text-xs font-semibold uppercase tracking-wide text-midnight-700/60">
+                90% Conformal Score Interval
+              </p>
+              <p className="font-display text-2xl font-semibold text-midnight-950">
+                {v2Insights.monte_carlo_conformal_simulator.conformal_90_interval[0]} –{" "}
+                {v2Insights.monte_carlo_conformal_simulator.conformal_90_interval[1]}
+              </p>
+              <p className="text-xs text-midnight-700/70">
+                50% IQR: {v2Insights.monte_carlo_conformal_simulator.interquartile_50_interval[0]}–
+                {v2Insights.monte_carlo_conformal_simulator.interquartile_50_interval[1]} (±
+                {v2Insights.monte_carlo_conformal_simulator.score_std_dev} SD)
+              </p>
+            </Card>
+
+            <Card className="flex flex-col gap-1 p-4">
+              <p className="text-xs font-semibold uppercase tracking-wide text-midnight-700/60">
+                Optimal Skip Policy Score
+              </p>
+              <p className="font-display text-2xl font-semibold text-midnight-950">
+                {v2Insights.monte_carlo_conformal_simulator.negative_marking_optimizer.optimal_skip_expected_score_720} / 720
+              </p>
+              <p className="text-xs text-midnight-700/70">
+                +{v2Insights.monte_carlo_conformal_simulator.negative_marking_optimizer.expected_marks_gained_by_skipping} marks gained by skipping P &lt; 23%
+              </p>
+            </Card>
+
+            <Card className="flex flex-col gap-1 p-4">
+              <p className="text-xs font-semibold uppercase tracking-wide text-midnight-700/60">
+                Optimal 180-Q Attempt Split
+              </p>
+              <p className="font-display text-2xl font-semibold text-midnight-950">
+                {v2Insights.monte_carlo_conformal_simulator.negative_marking_optimizer.recommended_attempt_questions_per_180} Attempt /{" "}
+                {v2Insights.monte_carlo_conformal_simulator.negative_marking_optimizer.recommended_skip_questions_per_180} Skip
+              </p>
+              <p className="text-xs text-midnight-700/70">
+                Avoids negative-EV distractor traps
+              </p>
+            </Card>
+
+            <Card className="flex flex-col gap-1 p-4">
+              <p className="text-xs font-semibold uppercase tracking-wide text-midnight-700/60">
+                Cutoff Probabilities
+              </p>
+              <p className="font-display text-lg font-semibold text-midnight-950">
+                Qualifying (≥165): {v2Insights.monte_carlo_conformal_simulator.cutoff_probabilities.qualifying_cutoff_165_percent}%
+              </p>
+              <p className="text-xs text-midnight-700/70">
+                Govt MBBS (≥550): {v2Insights.monte_carlo_conformal_simulator.cutoff_probabilities.state_govt_mbbs_550_percent}% · AIIMS (≥650):{" "}
+                {v2Insights.monte_carlo_conformal_simulator.cutoff_probabilities.top_aiims_650_percent}%
+              </p>
+            </Card>
+          </div>
+
+          {v2Insights.monte_carlo_conformal_simulator.high_yield_leverage_chapters.length > 0 && (
+            <div>
+              <h3 className="mb-2.5 font-display text-sm font-semibold text-midnight-950">
+                Graph Laplacian Heat-Kernel Leverage: Highest Expected +Marks Chapters
+              </h3>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {v2Insights.monte_carlo_conformal_simulator.high_yield_leverage_chapters.slice(0, 3).map((lev) => (
+                  <Card key={lev.topic_id} className="flex flex-col justify-between gap-2 p-4">
+                    <div>
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-[11px] font-semibold uppercase tracking-wide text-midnight-700/60">
+                          {lev.subject} · {lev.cluster}
+                        </span>
+                        <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs font-semibold text-emerald-800">
+                          +{lev.total_expected_marks_gain.toFixed(1)} NEET Marks
+                        </span>
+                      </div>
+                      <p className="mt-1 font-medium text-midnight-950">{lev.topic_id}</p>
+                      <p className="mt-1 text-xs text-midnight-700/75">
+                        Direct Gain: <strong>+{lev.direct_marks_gain.toFixed(1)}</strong> · Downstream Diffusion:{" "}
+                        <strong>+{lev.downstream_diffused_marks_gain.toFixed(1)}</strong> ({lev.unlocks_downstream_count} dependent chapters)
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => onStartPaper(lev.topic_id)}
+                      className="self-start text-xs font-semibold text-accent hover:underline"
+                    >
+                      Unlock +{lev.total_expected_marks_gain.toFixed(0)} marks →
+                    </button>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* 8-Micro-Skill DINA Q-Matrix Cognitive Diagnosis & van der Linden Bivariate Speed-Accuracy Profile */}
+      {v2Insights?.dina_cognitive_profile && (
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-end">
+            <div>
+              <h2 className="font-display text-lg font-semibold text-midnight-950">
+                8-Skill DINA Cognitive Q-Matrix & van der Linden Response-Time (τ) Diagnosis
+              </h2>
+              <p className="text-xs text-midnight-700/70">
+                {v2Insights.dina_cognitive_profile.primary_cognitive_bottleneck.diagnosis}
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2 text-xs font-medium text-midnight-800">
+              <span className="rounded-xl bg-midnight-900/5 px-3 py-1">
+                Latent Speed τ:{" "}
+                <strong>
+                  {v2Insights.dina_cognitive_profile.speed_ability_profile.latent_speed_tau >= 0
+                    ? `+${v2Insights.dina_cognitive_profile.speed_ability_profile.latent_speed_tau.toFixed(2)}`
+                    : v2Insights.dina_cognitive_profile.speed_ability_profile.latent_speed_tau.toFixed(2)}
+                </strong>{" "}
+                ({v2Insights.dina_cognitive_profile.speed_ability_profile.speed_percentile}%ile)
+              </span>
+              <span className="rounded-xl bg-midnight-900/5 px-3 py-1">
+                Fluent: <strong>{v2Insights.dina_cognitive_profile.speed_ability_profile.behavior_classification.fluent_mastery}</strong> ·
+                Slips: <strong>{v2Insights.dina_cognitive_profile.speed_ability_profile.behavior_classification.careless_slip}</strong> ·
+                Struggle: <strong>{v2Insights.dina_cognitive_profile.speed_ability_profile.behavior_classification.conceptual_struggle}</strong>
+              </span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {v2Insights.dina_cognitive_profile.skills.map((sk) => (
+              <Card key={sk.skill_id} className="flex flex-col justify-between gap-1.5 p-4">
+                <div>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-display text-lg font-semibold text-midnight-950">
+                      {Math.round(sk.mastery_probability * 100)}%
+                    </span>
+                    <span className="rounded-full bg-midnight-900/5 px-2 py-0.5 text-[11px] font-medium capitalize text-midnight-800">
+                      {sk.status}
+                    </span>
+                  </div>
+                  <p className="mt-0.5 text-sm font-medium text-midnight-900">{sk.name}</p>
+                  <p className="mt-0.5 text-[11px] text-midnight-700/65">{sk.description}</p>
+                </div>
+                <p className="border-t border-midnight-900/[0.06] pt-1.5 text-[11px] text-midnight-700/60">
+                  {sk.correct_count}/{sk.attempts_count} items · ±{Math.round(sk.posterior_sd * 100)}% SD
+                </p>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Complete 65-Chapter NCERT Syllabus & Mastery Explorer (Always visible in both empty and ready states) */}
       {allSyllabusChapters.length > 0 && (
         <div className="flex flex-col gap-4">

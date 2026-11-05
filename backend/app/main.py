@@ -46,6 +46,8 @@ from model.state_machine.bkt_model import (
 from model.linucb_bandit import record_bandit_feedback
 from model.rag_socratic_engine import generate_socratic_remediation, _INDEX as _RAG_INDEX
 from model.feature_store_and_drift import FEATURE_STORE, DRIFT_MONITOR
+from model.dina_cognitive_diagnosis import COGNITIVE_SKILLS, compute_dina_and_rt_profile
+from model.monte_carlo_conformal_neet import run_monte_carlo_conformal_neet_simulation
 
 with open(MODEL_DIR / "topic_importance.json", encoding="utf-8") as f:
     _TOPIC_IMPORTANCE = json.load(f)
@@ -448,13 +450,18 @@ def get_v2_student_insights(student_id: str, db: Session = Depends(get_db)):
     states = db.query(StudentTopicState).filter_by(student_id=student_id).all()
 
     mastery_map = {}
+    theta_map = {}
+    ci_map = {}
     thetas = []
     topic_details = []
 
     for st in states:
         m_prob = float(getattr(st, "mastery_prob", 0.35) or 0.35)
         t_theta = float(getattr(st, "irt_theta", 0.0) or 0.0)
+        t_ci = float(getattr(st, "confidence_interval", 0.45) or 0.45)
         mastery_map[st.topic_id] = m_prob
+        theta_map[st.topic_id] = t_theta
+        ci_map[st.topic_id] = t_ci
         thetas.append(t_theta)
 
     global_theta = (
@@ -484,9 +491,11 @@ def get_v2_student_insights(student_id: str, db: Session = Depends(get_db)):
             {
                 "question_id": q.question_id,
                 "question_text": q.text,
+                "topic_id": q.topic_id,
                 "question_type": rich_q.get("question_type", ""),
                 "difficulty": q.difficulty,
                 "expected_time_seconds": q.expected_time_seconds or 90,
+                "time_taken_seconds": att.time_taken_seconds or 60,
                 "is_correct": att.is_correct,
             }
         )
@@ -494,6 +503,7 @@ def get_v2_student_insights(student_id: str, db: Session = Depends(get_db)):
             last_attempt_ts_by_topic[q.topic_id] = att.timestamp
 
     mirt_3d = compute_mirt_3d_profile(mirt_inputs)
+    dina_profile = compute_dina_and_rt_profile(mirt_inputs)
     spaced_reviews = []
 
     for st in states:
@@ -549,11 +559,13 @@ def get_v2_student_insights(student_id: str, db: Session = Depends(get_db)):
 
     # Evaluate all 65 NCERT chapters in DAG_NODES weighted by NEET importance and ZPD readiness
     state_lookup = {s.topic_id: s for s in states}
+    shrunk_mastery_map: dict[str, float] = {}
     recommended = []
     for topic_id, meta in DAG_NODES.items():
         st_obj = state_lookup.get(topic_id)
         att_cnt = int(st_obj.attempts_counted or len(st_obj.last_3_results or []) or 1) if st_obj else 0
         curr_m = compute_hierarchical_shrinkage_prior(topic_id, mastery_map, attempts_count=att_cnt)
+        shrunk_mastery_map[topic_id] = curr_m
         readiness = compute_prerequisite_readiness(topic_id, mastery_map)
         importance_weight = float(_TOPIC_IMPORTANCE.get(topic_id, 1.0))
         zpd_score = readiness * (1.0 - abs(curr_m - 0.55)) * (1.0 + 0.1 * importance_weight)
@@ -572,6 +584,15 @@ def get_v2_student_insights(student_id: str, db: Session = Depends(get_db)):
         )
     recommended.sort(key=lambda r: r["zpd_priority_score"], reverse=True)
 
+    mc_simulator = run_monte_carlo_conformal_neet_simulation(
+        student_id=student_id,
+        global_theta=global_theta,
+        mastery_map=shrunk_mastery_map,
+        theta_map=theta_map,
+        ci_map=ci_map,
+        topic_importance=_TOPIC_IMPORTANCE,
+    )
+
     return schemas.V2StudentInsightsOut(
         student_id=student_id,
         global_theta=round(global_theta, 4),
@@ -579,6 +600,8 @@ def get_v2_student_insights(student_id: str, db: Session = Depends(get_db)):
         predicted_neet_score_720=predicted_score,
         zpd_target_success_prob=0.70,
         mirt_3d_profile=mirt_3d,
+        dina_cognitive_profile=dina_profile,
+        monte_carlo_conformal_simulator=mc_simulator,
         spaced_repetition_reviews=spaced_reviews[:5],
         root_cause_bottlenecks=formatted_bottlenecks,
         recommended_unlock_topics=recommended,
@@ -692,6 +715,8 @@ def get_mlops_health_and_drift(db: Session = Depends(get_db)):
             "ncert_prerequisite_dag_nodes": len(DAG_NODES),
             "linucb_contextual_bandit": len(_TOPIC_IMPORTANCE) == 65,
             "rag_ncert_socratic_engine": len(_RAG_INDEX.chunks) == 65,
+            "dina_8_skill_q_matrix": len(COGNITIVE_SKILLS) == 8,
+            "monte_carlo_conformal_neet_simulator": len(_TOPIC_IMPORTANCE) == 65,
         },
     }
 

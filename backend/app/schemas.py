@@ -163,6 +163,8 @@ class V2StudentInsightsOut(BaseModel):
     predicted_neet_score_720: int
     zpd_target_success_prob: float
     mirt_3d_profile: Optional[dict[str, Any]] = None
+    dina_cognitive_profile: Optional[dict[str, Any]] = None
+    monte_carlo_conformal_simulator: Optional[dict[str, Any]] = None
     spaced_repetition_reviews: Optional[list[dict[str, Any]]] = None
     root_cause_bottlenecks: list[dict[str, Any]]
     recommended_unlock_topics: list[dict[str, Any]]

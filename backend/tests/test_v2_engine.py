@@ -804,6 +804,111 @@ def test_20_all_65_chapters_end_to_end_curriculum_integrity():
         db.close()
 
 
+# ============================================================================
+# 21. DINA 8-SKILL Q-MATRIX & VAN DER LINDEN LOG-NORMAL RT MODEL
+# ============================================================================
+def test_21_dina_8_skill_q_matrix_and_lognormal_rt_model():
+    from model.dina_cognitive_diagnosis import (
+        COGNITIVE_SKILLS,
+        extract_item_q_vector,
+        compute_dina_and_rt_profile,
+    )
+
+    assert len(COGNITIVE_SKILLS) == 8
+    q_vec = extract_item_q_vector(
+        "Calculate the pH and molarity in mol/L for a first-order reaction with half-life 20 s.",
+        topic_id="Chemical Kinetics",
+        difficulty="medium",
+    )
+    assert q_vec["dimensional_unit_analysis"] == 1
+    assert q_vec["algebraic_numerical_computation"] == 1
+    assert q_vec["log_exp_calculus_reasoning"] == 1
+
+    attempts = [
+        {
+            "question_id": "Q1",
+            "question_text": "Calculate the molarity in mol/L when 4.0 g of NaOH is dissolved in 500 mL.",
+            "topic_id": "Mole Concept / Stoichiometry",
+            "difficulty": "basic",
+            "expected_time_seconds": 90,
+            "time_taken_seconds": 42,
+            "is_correct": True,
+        },
+        {
+            "question_id": "Q2",
+            "question_text": "Find the half-life and log rate constant for a first-order radioactive decay.",
+            "topic_id": "Chemical Kinetics",
+            "difficulty": "medium",
+            "expected_time_seconds": 100,
+            "time_taken_seconds": 135,
+            "is_correct": False,
+        },
+        {
+            "question_id": "Q3",
+            "question_text": "Which of the following statements is incorrect regarding lanthanoid contraction?",
+            "topic_id": "d- and f-Block Elements",
+            "difficulty": "advanced",
+            "expected_time_seconds": 90,
+            "time_taken_seconds": 8,
+            "is_correct": False,
+        },
+    ]
+    profile = compute_dina_and_rt_profile(attempts)
+    assert len(profile["skills"]) == 8
+    skill_map = {s["skill_id"]: s for s in profile["skills"]}
+    assert skill_map["dimensional_unit_analysis"]["mastery_probability"] > 0.50
+    assert skill_map["log_exp_calculus_reasoning"]["mastery_probability"] < 0.50
+    beh = profile["speed_ability_profile"]["behavior_classification"]
+    assert beh["fluent_mastery"] >= 1
+    assert beh["rapid_guess"] >= 1
+    assert beh["conceptual_struggle"] >= 1
+
+
+# ============================================================================
+# 22. MONTE CARLO CONFORMAL NEET SIMULATOR & GRAPH LAPLACIAN LEVERAGE
+# ============================================================================
+def test_22_monte_carlo_conformal_simulator_and_graph_laplacian_leverage():
+    from model.monte_carlo_conformal_neet import (
+        _allocate_180_neet_questions,
+        run_monte_carlo_conformal_neet_simulation,
+    )
+
+    with open(MODEL_DIR / "topic_importance.json", encoding="utf-8") as f:
+        imp = json.load(f)
+
+    alloc = _allocate_180_neet_questions(imp)
+    assert len(alloc) == 65
+    assert sum(cnt for _, _, cnt in alloc) == 180
+    assert sum(cnt for _, subj, cnt in alloc if subj == "Physics") == 45
+    assert sum(cnt for _, subj, cnt in alloc if subj == "Chemistry") == 45
+    assert sum(cnt for _, subj, cnt in alloc if subj == "Biology") == 90
+
+    sim_low = run_monte_carlo_conformal_neet_simulation(
+        student_id="TEST_LOW",
+        global_theta=-0.8,
+        mastery_map={k: 0.22 for k in imp},
+        theta_map={k: -0.8 for k in imp},
+        ci_map={k: 0.35 for k in imp},
+        topic_importance=imp,
+        n_trials=500,
+    )
+    sim_high = run_monte_carlo_conformal_neet_simulation(
+        student_id="TEST_HIGH",
+        global_theta=1.4,
+        mastery_map={k: 0.88 for k in imp},
+        theta_map={k: 1.4 for k in imp},
+        ci_map={k: 0.18 for k in imp},
+        topic_importance=imp,
+        n_trials=500,
+    )
+    assert sim_high["expected_score_attempt_all_720"] > sim_low["expected_score_attempt_all_720"] + 200
+    low_90, high_90 = sim_low["conformal_90_interval"]
+    assert low_90 <= sim_low["expected_score_attempt_all_720"] <= high_90
+    assert sim_low["negative_marking_optimizer"]["expected_marks_gained_by_skipping"] > 0
+    assert len(sim_low["high_yield_leverage_chapters"]) == 6
+    assert sim_low["high_yield_leverage_chapters"][0]["total_expected_marks_gain"] > 0
+
+
 if __name__ == "__main__":
     suites = [
         test_01_random_forest_model_and_live_inference,
@@ -826,6 +931,8 @@ if __name__ == "__main__":
         test_18_cicd_pipeline_and_deployment_manifests,
         test_19_serverless_numpy_tfidf_and_scientific_trap_detector,
         test_20_all_65_chapters_end_to_end_curriculum_integrity,
+        test_21_dina_8_skill_q_matrix_and_lognormal_rt_model,
+        test_22_monte_carlo_conformal_simulator_and_graph_laplacian_leverage,
     ]
     for fn in suites:
         fn()
