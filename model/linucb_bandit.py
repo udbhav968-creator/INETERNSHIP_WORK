@@ -69,13 +69,15 @@ _STUDENT_BANDITS: dict[str, LinUCBStudentState] = {}
 
 
 def _load_bandit_checkpoint() -> None:
-    if not _CHECKPOINT_PATH.exists():
+    src = _CHECKPOINT_PATH if _CHECKPOINT_PATH.exists() else (_MODEL_DIR / "linucb_state.json")
+    if not src.exists():
         return
     try:
-        with open(_CHECKPOINT_PATH, encoding="utf-8") as f:
+        with open(src, encoding="utf-8") as f:
             raw = json.load(f)
         for sid, payload in raw.items():
-            _STUDENT_BANDITS[sid] = LinUCBStudentState.from_dict(payload)
+            if isinstance(payload, dict) and "A" in payload and "b" in payload:
+                _STUDENT_BANDITS[sid] = LinUCBStudentState.from_dict(payload)
     except Exception:
         pass
 
@@ -84,9 +86,18 @@ def _save_bandit_checkpoint() -> None:
     try:
         payload = {sid: st.to_dict() for sid, st in _STUDENT_BANDITS.items()}
         with open(_CHECKPOINT_PATH, "w", encoding="utf-8") as f:
-            json.dump(payload, f)
+            json.dump(payload, f, indent=2)
     except Exception:
         pass
+
+
+def reset_student_bandit(student_id: str, remove: bool = False) -> None:
+    with _BANDIT_LOCK:
+        if remove:
+            _STUDENT_BANDITS.pop(student_id, None)
+        else:
+            _STUDENT_BANDITS[student_id] = LinUCBStudentState()
+        _save_bandit_checkpoint()
 
 
 _load_bandit_checkpoint()

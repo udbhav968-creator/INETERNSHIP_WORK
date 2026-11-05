@@ -294,6 +294,8 @@ def benchmark_engine_latencies(iterations: int = 50) -> dict:
         FEATURE_STORE.get_student_features("HARNESS_BENCH")
         fs_times.append((time.perf_counter() - t0) * 1000.0)
 
+    FEATURE_STORE.evict_student("HARNESS_BENCH")
+
     for _ in range(15):
         t0 = time.perf_counter()
         generate_socratic_remediation(

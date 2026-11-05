@@ -332,26 +332,31 @@ def test_09_linucb_bandit_uncertainty_and_reward():
     assert x.shape == (6,) and np.all((x >= 0.0) & (x <= 1.0))
 
     student_id = "UNIT_BANDIT_STUDENT"
-    ucb1, exploit1, explore1 = score_candidate_ucb(student_id, x)
-    assert abs(ucb1 - (exploit1 + explore1)) < 1e-6
+    from model.linucb_bandit import reset_student_bandit
+    reset_student_bandit(student_id, remove=True)
+    try:
+        ucb1, exploit1, explore1 = score_candidate_ucb(student_id, x)
+        assert abs(ucb1 - (exploit1 + explore1)) < 1e-6
 
-    # Repeated feedback on the same context shrinks exploration uncertainty
-    reward = record_bandit_feedback(
-        student_id=student_id,
-        question_id="NEET_2024_PHY_1",
-        difficulty="medium",
-        expected_time_seconds=90,
-        student_theta=0.0,
-        topic_mastery_prob=0.45,
-        topic_importance=3.0,
-        prereq_readiness=0.85,
-        pace_flag="fast",
-        is_correct=True,
-        time_taken_seconds=70,
-    )
-    _, _, explore2 = score_candidate_ucb(student_id, x)
-    assert 0.0 < reward <= 1.0
-    assert explore2 < explore1, "LinUCB exploration bonus must shrink as context observations accumulate"
+        # Repeated feedback on the same context shrinks exploration uncertainty
+        reward = record_bandit_feedback(
+            student_id=student_id,
+            question_id="NEET_2024_PHY_1",
+            difficulty="medium",
+            expected_time_seconds=90,
+            student_theta=0.0,
+            topic_mastery_prob=0.45,
+            topic_importance=3.0,
+            prereq_readiness=0.85,
+            pace_flag="fast",
+            is_correct=True,
+            time_taken_seconds=70,
+        )
+        _, _, explore2 = score_candidate_ucb(student_id, x)
+        assert 0.0 < reward <= 1.0
+        assert explore2 < explore1, "LinUCB exploration bonus must shrink as context observations accumulate"
+    finally:
+        reset_student_bandit(student_id, remove=True)
 
 
 # ---------------------------------------------------------------------------
@@ -745,6 +750,60 @@ def test_18_cicd_pipeline_and_deployment_manifests():
         assert (PROJECT_ROOT / manifest).exists(), f"Missing deployment manifest: {manifest}"
 
 
+# ============================================================================
+# 19. SERVERLESS PURE-NUMPY TF-IDF VECTORIZER & SCIENTIFIC TRAP DETECTOR
+# ============================================================================
+def test_19_serverless_numpy_tfidf_and_scientific_trap_detector():
+    from model.rag_socratic_engine import _NumpyTfidfVectorizer, _detect_distractor_trap, _INDEX
+
+    corpus = [
+        f"{c['subject']} {c['chapter']} {c['core_concept']} {' '.join(c.get('formulas', []))}"
+        for c in _INDEX.chunks
+    ]
+    vec = _NumpyTfidfVectorizer()
+    mat = vec.fit_transform(corpus)
+    assert mat.shape[0] == 65 and mat.shape[1] > 100
+    # Verify L2 normalization on every row
+    row_norms = np.linalg.norm(mat, axis=1)
+    assert np.allclose(row_norms, 1.0, atol=1e-5)
+
+    q_vec = vec.transform(["Gauss law electric flux point charge Coulomb permitivity"])
+    sims = (mat @ q_vec.T).flatten()
+    best_chunk = _INDEX.chunks[int(np.argmax(sims))]
+    assert best_chunk["chapter"] == "Electrostatics"
+
+    # Scientific notation, Unicode minus, SI order-of-magnitude, and reciprocal trap checks
+    assert "Sign Inversion Trap" in _detect_distractor_trap("−1.6e-19 C", "+1.6e-19 C")
+    assert "SI Unit / Order-of-Magnitude Trap" in _detect_distractor_trap("2.5e-2 mol/L", "2.5e-5 mol/L")
+    assert "Reciprocal Formula Trap" in _detect_distractor_trap("0.25 Hz", "4.0 Hz")
+
+
+# ============================================================================
+# 20. ALL 65 NCERT CHAPTERS CROSS-MODULE & ADAPTIVE DRILL INTEGRITY GATE
+# ============================================================================
+def test_20_all_65_chapters_end_to_end_curriculum_integrity():
+    with open(MODEL_DIR / "topic_importance.json", encoding="utf-8") as f:
+        imp_topics = set(json.load(f).keys())
+    dag_topics = set(DAG_NODES.keys())
+    rag_topics = {c["chapter"] for c in _RAG_INDEX.chunks}
+
+    assert len(imp_topics) == 65
+    assert imp_topics == dag_topics == rag_topics, "Mismatch across importance, DAG, and RAG 65 chapters"
+
+    db = SessionLocal()
+    try:
+        db_topics = {t.topic_id for t in db.query(Topic).all()}
+        assert db_topics == dag_topics, "SQLite topics table does not match the 65 DAG chapters"
+
+        # Verify every single one of the 65 chapters generates a valid adaptive chapter drill
+        for chap in sorted(dag_topics):
+            drill = generate_paper(db, "UDBHAVYADAV", topic_id=chap)
+            assert len(drill) >= 2, f"Chapter drill for '{chap}' returned fewer than 2 items"
+            assert all(q.topic_id == chap for q in drill), f"Topic mismatch in drill for '{chap}'"
+    finally:
+        db.close()
+
+
 if __name__ == "__main__":
     suites = [
         test_01_random_forest_model_and_live_inference,
@@ -765,6 +824,8 @@ if __name__ == "__main__":
         test_16_deep_training_and_cross_validation_pipeline,
         test_17_harness_engineering_multi_persona_and_bandit_regret,
         test_18_cicd_pipeline_and_deployment_manifests,
+        test_19_serverless_numpy_tfidf_and_scientific_trap_detector,
+        test_20_all_65_chapters_end_to_end_curriculum_integrity,
     ]
     for fn in suites:
         fn()

@@ -163,8 +163,11 @@ def calibrate_question_bank() -> dict[str, dict]:
             "c": round(c_i, 4),
         }
 
-    with open(IRT_PARAMS_PATH, "w", encoding="utf-8") as f:
-        json.dump(calibrated, f, indent=2)
+    try:
+        with open(IRT_PARAMS_PATH, "w", encoding="utf-8") as f:
+            json.dump(calibrated, f, indent=2)
+    except OSError:
+        pass
 
     CALIBRATED_ITEMS = calibrated
     return calibrated

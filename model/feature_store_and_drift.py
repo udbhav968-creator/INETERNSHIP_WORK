@@ -1,5 +1,6 @@
 import json
 import math
+import threading
 import time
 from collections import deque
 from pathlib import Path
@@ -51,6 +52,7 @@ class InMemoryFeatureStore:
     """
 
     def __init__(self, max_latency_samples: int = 1000):
+        self._lock = threading.RLock()
         self._student_cache: Dict[str, Dict[str, Any]] = {}
         self._latencies_ms: deque = deque(maxlen=max_latency_samples)
         self._hits: int = 0
@@ -58,46 +60,53 @@ class InMemoryFeatureStore:
 
     def get_student_features(self, student_id: str) -> Optional[Dict[str, Any]]:
         t0 = time.perf_counter()
-        record = self._student_cache.get(student_id)
-        elapsed_ms = (time.perf_counter() - t0) * 1000.0
-        self._latencies_ms.append(elapsed_ms)
-        if record is not None:
-            self._hits += 1
-        else:
-            self._misses += 1
-        return record
+        with self._lock:
+            record = self._student_cache.get(student_id)
+            elapsed_ms = (time.perf_counter() - t0) * 1000.0
+            self._latencies_ms.append(elapsed_ms)
+            if record is not None:
+                self._hits += 1
+            else:
+                self._misses += 1
+            return dict(record) if record is not None else None
 
     def put_student_features(self, student_id: str, features: Dict[str, Any]) -> float:
         t0 = time.perf_counter()
-        self._student_cache[student_id] = {
-            **features,
-            "updated_at_epoch": time.time(),
-        }
-        elapsed_ms = (time.perf_counter() - t0) * 1000.0
-        self._latencies_ms.append(elapsed_ms)
-        return elapsed_ms
+        with self._lock:
+            self._student_cache[student_id] = {
+                **features,
+                "updated_at_epoch": time.time(),
+            }
+            elapsed_ms = (time.perf_counter() - t0) * 1000.0
+            self._latencies_ms.append(elapsed_ms)
+            return elapsed_ms
+
+    def evict_student(self, student_id: str) -> None:
+        with self._lock:
+            self._student_cache.pop(student_id, None)
 
     def get_latency_percentiles(self) -> Dict[str, float]:
-        if not self._latencies_ms:
-            # Perform a real micro-benchmark probe on the cache dictionary so latency is measured, never hardcoded
-            t0 = time.perf_counter()
-            _ = self._student_cache.get("__probe__")
-            probe_ms = (time.perf_counter() - t0) * 1000.0
-            self._latencies_ms.append(probe_ms)
+        with self._lock:
+            if not self._latencies_ms:
+                t0 = time.perf_counter()
+                _ = self._student_cache.get("__probe__")
+                probe_ms = (time.perf_counter() - t0) * 1000.0
+                self._latencies_ms.append(probe_ms)
 
-        sorted_lat = sorted(self._latencies_ms)
-        n = len(sorted_lat)
-        p50 = sorted_lat[min(n - 1, int(0.50 * n))]
-        p95 = sorted_lat[min(n - 1, int(0.95 * n))]
-        p99 = sorted_lat[min(n - 1, int(0.99 * n))]
-        total_queries = self._hits + self._misses
-        hit_rate = (self._hits / total_queries) if total_queries > 0 else 1.0
+            sorted_lat = sorted(self._latencies_ms)
+            n = len(sorted_lat)
+            p50 = sorted_lat[min(n - 1, int(0.50 * n))]
+            p95 = sorted_lat[min(n - 1, int(0.95 * n))]
+            p99 = sorted_lat[min(n - 1, int(0.99 * n))]
+            total_queries = self._hits + self._misses
+            hit_rate = (self._hits / total_queries) if total_queries > 0 else 1.0
+            cached_cnt = len(self._student_cache)
         return {
             "p50_ms": round(p50, 4),
             "p95_ms": round(p95, 4),
             "p99_ms": round(p99, 4),
             "cache_hit_rate": round(hit_rate, 4),
-            "cached_students": len(self._student_cache),
+            "cached_students": cached_cnt,
         }
 
 
@@ -112,18 +121,20 @@ class DriftAndCalibrationMonitor:
     """
 
     def __init__(self):
+        self._lock = threading.RLock()
         self.baseline_difficulty_dist, self.baseline_time_buckets = _compute_real_corpus_baselines()
         self.predictions_log: deque = deque(maxlen=5000)
 
     def log_prediction(self, predicted_prob: float, actual_correct: int, difficulty: str, time_taken: int):
-        self.predictions_log.append(
-            {
-                "prob": max(0.001, min(0.999, float(predicted_prob))),
-                "correct": 1 if actual_correct else 0,
-                "difficulty": (difficulty or "medium").lower(),
-                "time_taken": int(time_taken),
-            }
-        )
+        with self._lock:
+            self.predictions_log.append(
+                {
+                    "prob": max(0.001, min(0.999, float(predicted_prob))),
+                    "correct": 1 if actual_correct else 0,
+                    "difficulty": (difficulty or "medium").lower(),
+                    "time_taken": int(time_taken),
+                }
+            )
 
     @staticmethod
     def compute_psi(expected_props: List[float], actual_props: List[float]) -> float:
@@ -139,7 +150,8 @@ class DriftAndCalibrationMonitor:
         return round(psi_val, 5)
 
     def evaluate_health(self, db_attempts: Optional[List[Dict[str, Any]]] = None) -> Dict[str, Any]:
-        records = list(self.predictions_log)
+        with self._lock:
+            records = list(self.predictions_log)
         if db_attempts:
             for att in db_attempts:
                 records.append(

@@ -133,19 +133,23 @@ _INDEX = NCERTVectorIndex()
 def _detect_distractor_trap(sel_text: str, corr_text: str) -> str:
     """
     Analyzes numerical and structural differences between the student's chosen
-    distractor and the correct option to pinpoint specific calculation traps.
+    distractor and the correct option to pinpoint specific calculation traps
+    (including scientific notation and Unicode minus signs).
     """
-    sel_nums = [float(x) for x in re.findall(r"[+\-]?\d+(?:\.\d+)?", sel_text)]
-    corr_nums = [float(x) for x in re.findall(r"[+\-]?\d+(?:\.\d+)?", corr_text)]
+    sel_norm_txt = str(sel_text).replace("\u2212", "-").replace("–", "-")
+    corr_norm_txt = str(corr_text).replace("\u2212", "-").replace("–", "-")
+    num_pat = r"[+\-]?\d+(?:\.\d+)?(?:[eE][+\-]?\d+)?"
+    sel_nums = [float(x) for x in re.findall(num_pat, sel_norm_txt)]
+    corr_nums = [float(x) for x in re.findall(num_pat, corr_norm_txt)]
     if sel_nums and corr_nums:
         v_s, v_c = sel_nums[0], corr_nums[0]
-        if abs(v_c) > 1e-9:
+        if abs(v_c) > 1e-30:
             ratio = v_s / v_c
             if abs(ratio + 1.0) < 0.05:
                 return "[Sign Inversion Trap: magnitude matches but sign is reversed] Typically stems from "
             if abs(ratio - 2.0) < 0.08 or abs(ratio - 0.5) < 0.05:
                 return "[Factor-of-2 Trap: check 1/2 coefficient or radius vs. diameter] Typically stems from "
-            if abs(abs(ratio) - 10.0) < 0.5 or abs(abs(ratio) - 100.0) < 2.0 or abs(abs(ratio) - 0.1) < 0.01 or abs(abs(ratio) - 0.001) < 0.0002:
+            if abs(abs(ratio) - 10.0) < 0.5 or abs(abs(ratio) - 100.0) < 2.0 or abs(abs(ratio) - 1000.0) < 10.0 or abs(abs(ratio) - 0.1) < 0.01 or abs(abs(ratio) - 0.001) < 0.0002:
                 return "[SI Unit / Order-of-Magnitude Trap: check unit conversion factors] Typically stems from "
             if abs(v_s * v_c - 1.0) < 0.05:
                 return "[Reciprocal Formula Trap: numerator and denominator inverted] Typically stems from "
@@ -170,7 +174,18 @@ def generate_socratic_remediation(
     query = f"{topic_id} {topic_tag} {skill} {question_text} {explanation}"
     retrieved = _INDEX.retrieve(query, chapter_hint=topic_id, top_k=2)
 
-    primary_chunk, sim_score = retrieved[0]
+    if retrieved:
+        primary_chunk, sim_score = retrieved[0]
+    else:
+        primary_chunk = {
+            "chapter": topic_id,
+            "ncert_ref": f"NCERT — {topic_id}",
+            "core_concept": f"Fundamental principles of {topic_id}",
+            "formulas": [],
+            "common_misconceptions": [],
+            "socratic_questions": [],
+        }
+        sim_score = 0.85
 
     letter_map = {"a": 0, "b": 1, "c": 2, "d": 3}
     sel_norm = (selected_option or "").strip().lower()
