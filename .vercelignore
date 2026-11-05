@@ -5,8 +5,6 @@ __pycache__
 *.pyc
 backend/*.db-wal
 backend/*.db-shm
-model/linucb_state.json
-model/question_difficulty_model.joblib
 data/tagged_questions/neet_all_papers_2013_2026_flawless.json
 data/tagged_questions/neet_all_papers_2013_2026_flawless.clean.json
 data/tagged_questions/neet_all_papers_2013_2026_flawless.quarantine.json
