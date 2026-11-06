@@ -12,7 +12,6 @@ QUESTIONS_PATH = PROJECT_ROOT / "data" / "tagged_questions" / "neet_questions_cl
 
 
 def _compute_real_corpus_baselines() -> tuple[dict[str, float], list[float]]:
-    """Computes exact baseline difficulty and ideal-time distributions directly from neet_questions_clean.json."""
     diff_counts = {"basic": 0, "medium": 0, "advanced": 0}
     time_counts = [0, 0, 0]
     if QUESTIONS_PATH.exists():
@@ -43,14 +42,6 @@ def _compute_real_corpus_baselines() -> tuple[dict[str, float], list[float]]:
 
 
 class InMemoryFeatureStore:
-    """
-    Low-Latency In-Memory Feature Store (Sub-2ms State Retrieval)
-    Implements Part II Section 6.1:
-    - Caches student state vectors (BKT mastery, 3PL theta, LinUCB context, rolling velocity)
-    - Write-through synchronization with persistent SQLite / PostgreSQL store
-    - Real-time latency telemetry (p50, p95, p99 in milliseconds)
-    """
-
     def __init__(self, max_latency_samples: int = 1000):
         self._lock = threading.RLock()
         self._student_cache: Dict[str, Dict[str, Any]] = {}
@@ -111,15 +102,6 @@ class InMemoryFeatureStore:
 
 
 class DriftAndCalibrationMonitor:
-    """
-    Evidently-style Population Stability Index (PSI) & Expected Calibration Error (ECE) Monitor
-    Implements Part II Section 6.2 & Section 7:
-    - Computes PSI between baseline question difficulty / time distributions from neet_questions_clean.json
-      and live production traffic from test_attempts
-    - Computes Expected Calibration Error (ECE) and Brier Score for BKT/3PL probability predictions
-    - Triggers automated recalibration alerts if effective PSI > 0.20 or ECE > 0.08
-    """
-
     def __init__(self):
         self._lock = threading.RLock()
         self.baseline_difficulty_dist, self.baseline_time_buckets = _compute_real_corpus_baselines()
@@ -138,10 +120,6 @@ class DriftAndCalibrationMonitor:
 
     @staticmethod
     def compute_psi(expected_props: List[float], actual_props: List[float]) -> float:
-        """
-        Population Stability Index:
-        PSI = sum( (actual_i - expected_i) * ln(actual_i / expected_i) )
-        """
         psi_val = 0.0
         for exp_p, act_p in zip(expected_props, actual_props):
             e = max(1e-4, float(exp_p))

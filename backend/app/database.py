@@ -7,9 +7,6 @@ from sqlalchemy.orm import sessionmaker
 from .db_models import Base
 from .paths import PROJECT_ROOT
 
-# Anchor SQLite DB path to PROJECT_ROOT/backend/klassed.db so launching uvicorn
-# from either the repo root or backend/ always resolves to the exact same database.
-# In read-only serverless environments (e.g. Vercel), copy the pre-seeded SQLite DB to /tmp.
 _REPO_DB_PATH = PROJECT_ROOT / "backend" / "klassed.db"
 
 
@@ -45,14 +42,12 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
 def init_db():
-    """Call this once on startup to create all tables, v2 columns, and composite high-concurrency indexes."""
     Base.metadata.create_all(bind=engine)
     _migrate_v2_columns()
     _create_composite_indexes()
 
 
 def _migrate_v2_columns():
-    """Ensure existing SQLite databases gain v2 columns without data loss."""
     migrations = [
         ("students", "global_theta", "FLOAT NOT NULL DEFAULT 0.0"),
         ("student_topic_state", "mastery_prob", "FLOAT NOT NULL DEFAULT 0.35"),
@@ -74,7 +69,6 @@ def _migrate_v2_columns():
 
 
 def _create_composite_indexes():
-    """Creates composite B-tree indexes for sub-millisecond adaptive paper generation and analytics."""
     index_statements = [
         "CREATE INDEX IF NOT EXISTS idx_questions_topic_diff ON questions (topic_id, difficulty)",
         "CREATE INDEX IF NOT EXISTS idx_attempts_student_paper ON test_attempts (student_id, paper_number)",
@@ -97,5 +91,4 @@ def get_db():
         db.close()
 
 
-# Ensure schema, v2 column migrations, and composite indexes are applied immediately on import
 init_db()

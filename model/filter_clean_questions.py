@@ -1,14 +1,3 @@
-"""
-Splits a question bank into a clean subset (safe to load now) and a
-quarantined subset (needs fixing) — so you don't have to wait for a 100%
-perfect resubmission before using the data that's already good.
-
-Usage:
-    python filter_clean_questions.py path/to/question_bank.json
-Outputs, next to the input file:
-    <name>.clean.json       - safe to load into the DB now
-    <name>.quarantine.json  - send back to the intern with specifics
-"""
 import json
 import re
 import sys
@@ -42,9 +31,9 @@ def main(path: str):
     clean_path = p.with_suffix("").with_suffix(".clean.json")
     quarantine_path = p.with_suffix("").with_suffix(".quarantine.json")
 
-    with open(clean_path, "w") as f:
+    with open(clean_path, "w", encoding="utf-8") as f:
         json.dump(clean, f, indent=2)
-    with open(quarantine_path, "w") as f:
+    with open(quarantine_path, "w", encoding="utf-8") as f:
         json.dump(quarantine, f, indent=2)
 
     print(f"Clean: {len(clean)} questions -> {clean_path}")

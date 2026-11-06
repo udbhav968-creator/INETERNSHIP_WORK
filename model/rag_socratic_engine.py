@@ -1,11 +1,3 @@
-"""
-RAG-Powered Socratic Remediation Engine — Enterprise v2.
-
-Integrates TF-IDF vector search over all 65 NCERT Physics, Chemistry, and Biology
-chapters in data/ncert_knowledge_base.json and verified NEET solution explanations
-in data/tagged_questions/neet_questions_clean.json to generate conceptual hints
-and misconception diagnostics on failure in under 40ms.
-"""
 import json
 import math
 import re
@@ -31,8 +23,6 @@ _STOP_WORDS = {
 
 
 class _NumpyTfidfVectorizer:
-    """Pure-NumPy unigram + bigram TF-IDF vectorizer with smoothed IDF and L2 normalization."""
-
     def __init__(self) -> None:
         self.vocab: dict[str, int] = {}
         self.idf: np.ndarray = np.array([])
@@ -73,6 +63,7 @@ class _NumpyTfidfVectorizer:
                 mat[row_idx] /= norm
         return mat
 
+
 MODEL_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = MODEL_DIR.parent
 _NCERT_KB_PATH = PROJECT_ROOT / "data" / "ncert_knowledge_base.json"
@@ -83,19 +74,23 @@ class NCERTVectorIndex:
     def __init__(self):
         self.chunks: list[dict] = []
         self.question_lookup: dict[str, dict] = {}
-        self.vectorizer: TfidfVectorizer | None = None
+        self.vectorizer: TfidfVectorizer | _NumpyTfidfVectorizer | None = None
         self.chunk_matrix = None
         self._build_index()
 
     def _build_index(self) -> None:
         if _NCERT_KB_PATH.exists():
             with open(_NCERT_KB_PATH, encoding="utf-8") as f:
-                self.chunks = json.load(f)
+                data = json.load(f)
+                self.chunks = data.get("chunks", data) if isinstance(data, dict) else data
 
         if _CLEAN_QUESTIONS_PATH.exists():
             with open(_CLEAN_QUESTIONS_PATH, encoding="utf-8") as f:
                 for q in json.load(f):
                     self.question_lookup[q["question_id"]] = q
+
+        if not self.chunks:
+            return
 
         corpus = [
             f"{c['subject']} {c['chapter']} {c['core_concept']} {' '.join(c.get('formulas', []))} {' '.join(c.get('common_misconceptions', []))}"
@@ -131,11 +126,6 @@ _INDEX = NCERTVectorIndex()
 
 
 def _detect_distractor_trap(sel_text: str, corr_text: str) -> str:
-    """
-    Analyzes numerical and structural differences between the student's chosen
-    distractor and the correct option to pinpoint specific calculation traps
-    (including scientific notation and Unicode minus signs).
-    """
     sel_norm_txt = str(sel_text).replace("\u2212", "-").replace("–", "-")
     corr_norm_txt = str(corr_text).replace("\u2212", "-").replace("–", "-")
     num_pat = r"[+\-]?\d+(?:\.\d+)?(?:[eE][+\-]?\d+)?"
@@ -163,15 +153,17 @@ def generate_socratic_remediation(
     options: list[str],
     correct_answer: str,
     selected_option: str | None = None,
+    topic_tag: str = "",
+    explanation: str = "",
 ) -> dict:
     t0 = time.perf_counter()
 
     rich_q = _INDEX.question_lookup.get(question_id, {})
-    topic_tag = rich_q.get("topic_tag") or topic_id
+    resolved_topic_tag = topic_tag or rich_q.get("topic_tag") or topic_id
     skill = rich_q.get("skill") or f"Mastery of {topic_id}"
-    explanation = rich_q.get("explanation") or ""
+    resolved_explanation = explanation or rich_q.get("explanation") or ""
 
-    query = f"{topic_id} {topic_tag} {skill} {question_text} {explanation}"
+    query = f"{topic_id} {resolved_topic_tag} {skill} {question_text} {resolved_explanation}"
     retrieved = _INDEX.retrieve(query, chapter_hint=topic_id, top_k=2)
 
     if retrieved:
@@ -207,27 +199,27 @@ def generate_socratic_remediation(
         )
         misconception_diagnosis = (
             f"Selecting option ({sel_norm.upper()}: '{sel_text}') instead of ({corr_norm.upper()}: '{corr_text}'): "
-            f"{trap_detail}{base_misconception} Focus on {topic_tag}."
+            f"{trap_detail}{base_misconception} Focus on {resolved_topic_tag}."
         )
     else:
         misconception_diagnosis = (
-            f"Your selection aligns with the target concept in {topic_tag}. "
+            f"Your selection aligns with the target concept in {resolved_topic_tag}. "
             f"Review the NCERT anchor below to reinforce speed and retention."
         )
 
     socratic_prompts = list(primary_chunk.get("socratic_questions", []))
-    if topic_tag and topic_tag != topic_id:
+    if resolved_topic_tag and resolved_topic_tag != topic_id:
         socratic_prompts.insert(
             0,
-            f"In '{topic_tag}', how does the governing NCERT relationship constrain the choices before computing the final value?",
+            f"In '{resolved_topic_tag}', how does the governing NCERT relationship constrain the choices before computing the final value?",
         )
 
     prereqs = get_direct_prerequisites(topic_id)
 
-    raw_steps = [s.strip() for s in explanation.replace("\n", " ").split(". ") if s.strip()]
+    raw_steps = [s.strip() for s in resolved_explanation.replace("\n", " ").split(". ") if s.strip()]
     derivation_steps = raw_steps[:4] if raw_steps else [
         f"Identify the core principle from {primary_chunk.get('ncert_ref')}.",
-        f"Apply the governing formula for {topic_tag}.",
+        f"Apply the governing formula for {resolved_topic_tag}.",
         f"Verify units and eliminate distractors to arrive at Option ({corr_norm.upper()}): {corr_text}.",
     ]
 
@@ -236,7 +228,7 @@ def generate_socratic_remediation(
     return {
         "question_id": question_id,
         "topic_id": topic_id,
-        "subtopic_tag": topic_tag,
+        "subtopic_tag": resolved_topic_tag,
         "ncert_reference": primary_chunk.get("ncert_ref", f"NCERT — {topic_id}"),
         "retrieval_confidence": max(0.82, sim_score),
         "core_concept_anchor": primary_chunk.get("core_concept", ""),

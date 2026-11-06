@@ -1,16 +1,9 @@
-"""
-Klassed NEET Adaptive Engine — backend API (v1 Core + Enterprise v2 Psychometric & RAG Architecture).
-
-Run locally with:
-    uvicorn app.main:app --reload
-"""
 import json
 import threading
 from datetime import datetime, timezone
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse, Response
-from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 
 from . import schemas, auth
@@ -53,11 +46,10 @@ with open(MODEL_DIR / "topic_importance.json", encoding="utf-8") as f:
     _TOPIC_IMPORTANCE = json.load(f)
 
 app = FastAPI(
-    title="Klassed NEET Adaptive Engine (v2 Enterprise Psychometric & RAG Edition)",
+    title="Klassed NEET Adaptive Engine",
     version="2.0.0",
 )
 
-# Per-student striped locks guarding per-student state read-modify-write without blocking other students
 _LOCK_REGISTRY_GUARD = threading.Lock()
 _STUDENT_LOCKS: dict[str, threading.RLock] = {}
 
@@ -67,6 +59,7 @@ def _get_student_lock(student_id: str) -> threading.RLock:
         if student_id not in _STUDENT_LOCKS:
             _STUDENT_LOCKS[student_id] = threading.RLock()
         return _STUDENT_LOCKS[student_id]
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -87,11 +80,9 @@ def health_check():
     return {
         "status": "ok",
         "version": "2.0.0",
-        "engine": "Klassed NEET Adaptive Engine (v2 Enterprise Psychometric & RAG Edition)",
+        "engine": "Klassed NEET Adaptive Engine",
     }
 
-
-# --- auth / onboarding ---
 
 @app.post("/auth/signup", response_model=schemas.StudentOut)
 def signup(payload: schemas.SignupIn, db: Session = Depends(get_db)):
@@ -107,7 +98,6 @@ def login(payload: schemas.LoginIn, db: Session = Depends(get_db)):
 def complete_onboarding(student_id: str, payload: schemas.OnboardingIn, db: Session = Depends(get_db)):
     student = db.query(Student).filter_by(student_id=student_id).first()
     if not student:
-        # Auto-provision student row if request landed on a fresh serverless instance
         student = Student(
             student_id=student_id,
             name=student_id.title(),
@@ -128,8 +118,6 @@ def get_student(student_id: str, db: Session = Depends(get_db)):
     return student
 
 
-# --- adaptive engine (v1 Core + v2 BKT, 3PL IRT, LinUCB, Feature Store, Drift Monitor) ---
-
 def _process_single_attempt_no_commit(
     attempt: schemas.AttemptIn,
     db: Session,
@@ -146,7 +134,6 @@ def _process_single_attempt_no_commit(
     hesitation = int(attempt.hesitation_ms or 0)
     dwell = int(attempt.dwell_time_ms or (attempt.time_taken_seconds * 1000))
 
-    # Compute elapsed hours since last attempt in this topic BEFORE inserting the new attempt
     prev_topic_attempt = (
         db.query(TestAttempt)
         .join(Question, TestAttempt.question_id == Question.question_id)
@@ -160,10 +147,9 @@ def _process_single_attempt_no_commit(
     elapsed_hours = 0.0
     if prev_topic_attempt and getattr(prev_topic_attempt, "timestamp", None):
         ts = prev_topic_attempt.timestamp
-        now_dt = datetime.now(timezone.utc) if ts.tzinfo else datetime.utcnow()
+        now_dt = datetime.now(timezone.utc) if ts.tzinfo else datetime.now(timezone.utc).replace(tzinfo=None)
         elapsed_hours = max(0.0, (now_dt - ts).total_seconds() / 3600.0)
 
-    # Log the raw attempt with v2 telemetry
     db.add(
         TestAttempt(
             student_id=attempt.student_id,
@@ -178,7 +164,6 @@ def _process_single_attempt_no_commit(
         )
     )
 
-    # Fetch or create this student's state for this topic
     state = (
         db.query(StudentTopicState)
         .filter_by(student_id=attempt.student_id, topic_id=question.topic_id)
@@ -201,14 +186,12 @@ def _process_single_attempt_no_commit(
     exp_sec = expected_time(question.difficulty, question.expected_time_seconds)
     time_ratio = attempt.time_taken_seconds / max(1, exp_sec)
 
-    # Prior probability and mastery before state update
     prior_theta = float(getattr(state, "irt_theta", 0.0) or 0.0)
     prior_mastery = float(getattr(state, "mastery_prob", 0.35) or 0.35)
     irt_params = get_item_params(question.question_id, question.difficulty, exp_sec)
     pred_prob = irt_3pl_probability(prior_theta, irt_params)
     DRIFT_MONITOR.log_prediction(pred_prob, int(is_correct), question.difficulty, attempt.time_taken_seconds)
 
-    # 1. State Machine & BKT Posterior Update (with Ebbinghaus forgetting prior)
     process_answer(
         state,
         is_correct,
@@ -219,7 +202,6 @@ def _process_single_attempt_no_commit(
         elapsed_hours=elapsed_hours,
     )
 
-    # 2. Pace Tracking Update (Part I Fix #3: uses question.expected_time_seconds)
     update_pace(
         state,
         is_correct,
@@ -228,7 +210,6 @@ def _process_single_attempt_no_commit(
         expected_time_seconds=question.expected_time_seconds,
     )
 
-    # 3. 3PL IRT Latent Ability (theta) MAP Update + Online Item Recalibration
     new_topic_theta = update_student_theta_map(
         current_theta=prior_theta,
         is_correct=is_correct,
@@ -247,7 +228,6 @@ def _process_single_attempt_no_commit(
         curr_global = float(getattr(student, "global_theta", 0.0) or 0.0)
         student.global_theta = round(0.85 * curr_global + 0.15 * new_topic_theta, 4)
 
-    # Compute real prerequisite readiness from the student's topic states in the DB
     all_student_states = (
         db.query(StudentTopicState).filter_by(student_id=attempt.student_id).all()
     )
@@ -257,7 +237,6 @@ def _process_single_attempt_no_commit(
         for s in all_student_states
     }
 
-    # 3b. 1-Hop Bayesian Belief Propagation across Prerequisite DAG
     dag_updates = propagate_dag_belief_update(
         topic_id=question.topic_id,
         is_correct=is_correct,
@@ -271,7 +250,6 @@ def _process_single_attempt_no_commit(
 
     prereq_ready = compute_prerequisite_readiness(question.topic_id, mastery_map)
 
-    # 4. LinUCB Contextual Bandit Reward Update (with delayed mastery gain Delta P(L_t))
     record_bandit_feedback(
         student_id=attempt.student_id,
         question_id=question.question_id,
@@ -287,7 +265,6 @@ def _process_single_attempt_no_commit(
         prior_mastery_prob=prior_mastery,
     )
 
-    # 5. Synchronize Low-Latency In-Memory Feature Store
     FEATURE_STORE.put_student_features(
         attempt.student_id,
         {
@@ -320,11 +297,6 @@ def submit_attempt(attempt: schemas.AttemptIn, db: Session = Depends(get_db)):
 
 @app.post("/submit_paper", response_model=schemas.PaperReviewOut)
 def submit_paper(payload: schemas.PaperSubmitIn, db: Session = Depends(get_db)):
-    """
-    Atomic batch paper submission endpoint: processes all answered questions in a single
-    database transaction, prevents paper_number collisions across sessions, and directly
-    returns PaperReviewOut in one round-trip.
-    """
     if not payload.attempts:
         raise HTTPException(status_code=400, detail="No attempts provided in paper submission")
 
@@ -435,17 +407,8 @@ def get_analytics(student_id: str, db: Session = Depends(get_db)):
     return build_analytics(db, student_id)
 
 
-# --- Enterprise v2 Endpoints: Cognitive Insights, Socratic RAG & MLOps Drift ---
-
 @app.get("/students/{student_id}/v2_insights", response_model=schemas.V2StudentInsightsOut)
 def get_v2_student_insights(student_id: str, db: Session = Depends(get_db)):
-    """
-    Returns Enterprise v2 Psychometric & Prerequisite Graph Diagnostics:
-    - 3PL IRT Global Latent Ability (theta), Predicted NEET Percentile & Score (/720)
-    - Root-Cause Prerequisite Bottlenecks via Ancestral DAG Traversal
-    - Next Recommended Topics in the Student's Zone of Proximal Development (ZPD) across all 65 NCERT chapters
-    - Hierarchical Bayesian Empirical Shrinkage Mastery Estimates
-    """
     student = db.query(Student).filter_by(student_id=student_id).first()
     states = db.query(StudentTopicState).filter_by(student_id=student_id).all()
 
@@ -475,7 +438,6 @@ def get_v2_student_insights(student_id: str, db: Session = Depends(get_db)):
     percentile = theta_to_percentile(global_theta)
     predicted_score = int(max(120, min(720, round(380 + global_theta * 110))))
 
-    # Fetch student attempt rows for MIRT 3D profile and Ebbinghaus Spaced Repetition decay
     attempt_rows = (
         db.query(TestAttempt, Question)
         .join(Question, TestAttempt.question_id == Question.question_id)
@@ -516,7 +478,7 @@ def get_v2_student_insights(student_id: str, db: Session = Depends(get_db)):
         elapsed_h = 0.0
         if st.topic_id in last_attempt_ts_by_topic:
             ts = last_attempt_ts_by_topic[st.topic_id]
-            now_dt = datetime.now(timezone.utc) if ts.tzinfo else datetime.utcnow()
+            now_dt = datetime.now(timezone.utc) if ts.tzinfo else datetime.now(timezone.utc).replace(tzinfo=None)
             elapsed_h = max(0.0, (now_dt - ts).total_seconds() / 3600.0)
 
         decayed_m = compute_ebbinghaus_forgetting_prior(shrunk_m, elapsed_h, int(st.streak or 0))
@@ -557,7 +519,6 @@ def get_v2_student_insights(student_id: str, db: Session = Depends(get_db)):
             }
         )
 
-    # Evaluate all 65 NCERT chapters in DAG_NODES weighted by NEET importance and ZPD readiness
     state_lookup = {s.topic_id: s for s in states}
     shrunk_mastery_map: dict[str, float] = {}
     recommended = []
@@ -611,11 +572,6 @@ def get_v2_student_insights(student_id: str, db: Session = Depends(get_db)):
 
 @app.post("/mlops/predict_cold_start_item")
 def predict_cold_start_item(payload: schemas.ColdStartItemIn):
-    """
-    Zero-attempt cold-start NLP & cognitive complexity estimator: predicts difficulty tier
-    ('basic', 'medium', 'advanced') and initial 3PL IRT parameters (a_i, b_i, c_i) directly
-    from question text and options without requiring historical student attempt data.
-    """
     return predict_cold_start_difficulty_and_irt(
         question_text=payload.question_text,
         options=payload.options,
@@ -625,10 +581,6 @@ def predict_cold_start_item(payload: schemas.ColdStartItemIn):
 
 @app.post("/remediation/socratic_hint", response_model=schemas.SocraticHintOut)
 def get_socratic_hint(payload: schemas.SocraticHintIn, db: Session = Depends(get_db)):
-    """
-    Retrieves NCERT-grounded Socratic guidance, formula anchors, and distractor
-    misconception diagnosis for an attempted NEET question.
-    """
     q_row = db.query(Question).filter_by(question_id=payload.question_id).first()
     rich_q = _RAG_INDEX.question_lookup.get(payload.question_id, {})
 
@@ -661,11 +613,11 @@ def get_socratic_hint(payload: schemas.SocraticHintIn, db: Session = Depends(get
     return schemas.SocraticHintOut(
         question_id=payload.question_id,
         chapter=raw.get("topic_id", topic_id),
-        ncert_reference=raw.get("ncert_reference", f"NCERT — {topic_id}"),
+        ncert_reference=raw.get("ncert_reference", f"NCERT - {topic_id}"),
         concept_summary=raw.get("core_concept_anchor", ""),
         key_formula=formulas[0] if formulas else f"Standard NCERT relation for {topic_id}",
         diagnosed_misconception=raw.get("misconception_diagnosis", ""),
-        socratic_hint=socratic_qs[0] if socratic_qs else "What fundamental NCERT principle governs this question?",
+        socratic_hint=socratic_qs[0] if socratic_qs else f"What fundamental NCERT principle governs this question?",
         verified_step_by_step=" ".join(steps),
         retrieval_similarity=float(raw.get("retrieval_confidence", 0.88)),
     )
@@ -673,11 +625,6 @@ def get_socratic_hint(payload: schemas.SocraticHintIn, db: Session = Depends(get
 
 @app.get("/mlops/health_and_drift")
 def get_mlops_health_and_drift(db: Session = Depends(get_db)):
-    """
-    Exposes real-time Feature Store latency percentiles (p50/p95/p99) and
-    Evidently-style Population Stability Index (PSI) & Expected Calibration Error (ECE)
-    computed from actual TestAttempt rows and calibrated 3PL IRT probabilities.
-    """
     recent_rows = (
         db.query(TestAttempt, Question)
         .join(Question, TestAttempt.question_id == Question.question_id)
@@ -721,7 +668,6 @@ def get_mlops_health_and_drift(db: Session = Depends(get_db)):
     }
 
 
-# Serve production React SPA build when frontend/dist exists (Vercel / Docker / Render / Railway)
 _FRONTEND_DIST = PROJECT_ROOT / "frontend" / "dist"
 if (_FRONTEND_DIST / "index.html").exists():
     @app.get("/assets/{asset_name}", include_in_schema=False)
@@ -729,7 +675,6 @@ if (_FRONTEND_DIST / "index.html").exists():
         assets_dir = _FRONTEND_DIST / "assets"
         target = assets_dir / asset_name
         if not target.exists():
-            # Fallback for browsers holding a cached index.html with an older bundle hash
             if asset_name.endswith(".js"):
                 js_files = sorted(assets_dir.glob("*.js"))
                 if js_files:
@@ -764,5 +709,3 @@ if (_FRONTEND_DIST / "index.html").exists():
             content=(_FRONTEND_DIST / "index.html").read_text(encoding="utf-8"),
             headers={"Cache-Control": "no-store, no-cache, must-revalidate, max-age=0"},
         )
-
-

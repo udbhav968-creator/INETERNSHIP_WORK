@@ -1,11 +1,3 @@
-"""
-Harness Engineering — Multi-Persona Monte Carlo Psychometric, Bandit Regret & SLA Benchmark Harness.
-
-Executes longitudinal simulations across 4 synthetic NEET student archetypes,
-runs an ablation study comparing Disjoint LinUCB routing against Uniform Random
-selection, and benchmarks p50/p95/p99 latencies across all ML engines.
-Outputs verifiable results to `model/harness_benchmark_report.json`.
-"""
 import json
 import random
 import time
@@ -57,12 +49,6 @@ def _percentiles_ms(samples_ms: list[float]) -> dict[str, float]:
 
 
 def simulate_student_personas() -> dict:
-    """
-    Simulates 4 canonical student personas over longitudinal item sequences and
-    verifies state transitions, BKT mastery posteriors, 3PL IRT theta trajectories,
-    DAG belief propagation, and SAINT+ telemetry damping.
-    """
-    # 1. Strong Master Archetype (true_theta = +1.8)
     master_level = "basic"
     master_prob = 0.35
     master_ci = 0.35
@@ -86,10 +72,9 @@ def simulate_student_personas() -> dict:
             streak=master_streak,
         )
         master_streak += 1
-        master_level = resolve_level_with_hysteresis(master_level, master_prob, master_ci)
+        master_level = resolve_level_with_hysteresis(master_level, master_prob, [True, True, True])
         master_theta = update_student_theta_map(master_theta, True, item)
 
-    # 2. Foundational Struggler Archetype (starts at advanced, fails consecutively)
     struggler_level = "advanced"
     struggler_prob = 0.75
     struggler_ci = 0.25
@@ -107,14 +92,13 @@ def simulate_student_personas() -> dict:
             attempts_count=step,
             streak=0,
         )
-        struggler_level = resolve_level_with_hysteresis(struggler_level, struggler_prob, struggler_ci)
+        struggler_level = resolve_level_with_hysteresis(struggler_level, struggler_prob, [False, False, False])
         struggler_theta = update_student_theta_map(struggler_theta, False, item)
 
     bottlenecks = diagnose_prerequisite_bottlenecks(
         {"Rotational Motion": struggler_prob, "Laws of Motion": 0.28, "Kinematics": 0.30}
     )
 
-    # 3. Impulsive Guesser vs. Deliberate Solver (SAINT+ Clickstream Telemetry Audit)
     p_deliberate, _ = compute_bkt_update(
         prior_mastery=0.40,
         is_correct=True,
@@ -136,7 +120,6 @@ def simulate_student_personas() -> dict:
         attempts_count=3,
     )
 
-    # 4. Spaced Repetition Decay Archetype (168h / 7-day retention gap)
     peak_m = 0.88
     decayed_7d = compute_ebbinghaus_forgetting_prior(peak_m, elapsed_hours=168.0, streak=1)
     urgency_7d = compute_retention_urgency(peak_m, elapsed_hours=168.0, streak=1)
@@ -172,17 +155,10 @@ def simulate_student_personas() -> dict:
 
 
 def benchmark_linucb_vs_random_ablation(n_rounds: int = 120) -> dict:
-    """
-    Ablation benchmark comparing Disjoint LinUCB question routing against Uniform
-    Random selection across n_rounds for a target student with true ability theta = 0.15.
-    Measures Zone of Proximal Development (ZPD, target P=0.70) alignment, Fisher
-    Information gain, and cumulative pedagogical regret.
-    """
     rng = random.Random(42)
     student_theta = 0.15
     bandit = LinUCBStudentState(alpha=0.35)
 
-    # Candidate arms representing basic (too easy), medium-ZPD (optimal P~0.70), and advanced (too hard)
     candidate_arms = [
         {"qid": "ARM_EASY", "diff": "basic", "exp_t": 50, "params": IRTItemParams(a=0.95, b=-1.60, c=0.25), "imp": 1.5, "mastery": 0.82},
         {"qid": "ARM_ZPD_OPT", "diff": "medium", "exp_t": 85, "params": IRTItemParams(a=1.65, b=-0.22, c=0.20), "imp": 4.2, "mastery": 0.48},
@@ -217,7 +193,6 @@ def benchmark_linucb_vs_random_ablation(n_rounds: int = 120) -> dict:
     random_regret = 0.0
 
     for _ in range(n_rounds):
-        # 1. LinUCB selection
         best_arm = None
         best_ucb = -1e9
         best_x = None
@@ -240,7 +215,6 @@ def benchmark_linucb_vs_random_ablation(n_rounds: int = 120) -> dict:
         linucb_info_scores.append(best_info)
         linucb_regret += max(0.0, oracle_zpd - best_zpd)
 
-        # 2. Uniform Random baseline
         rand_arm = rng.choice(candidate_arms)
         _, r_zpd, r_info = _arm_context_and_zpd(rand_arm)
         random_zpd_scores.append(r_zpd)
@@ -267,7 +241,6 @@ def benchmark_linucb_vs_random_ablation(n_rounds: int = 120) -> dict:
 
 
 def benchmark_engine_latencies(iterations: int = 50) -> dict:
-    """Measures p50/p95/p99 latency in milliseconds across all core ML components."""
     irt_times: list[float] = []
     bkt_times: list[float] = []
     bandit_times: list[float] = []
@@ -293,8 +266,6 @@ def benchmark_engine_latencies(iterations: int = 50) -> dict:
         FEATURE_STORE.put_student_features("HARNESS_BENCH", {"theta": 0.1})
         FEATURE_STORE.get_student_features("HARNESS_BENCH")
         fs_times.append((time.perf_counter() - t0) * 1000.0)
-
-    FEATURE_STORE.evict_student("HARNESS_BENCH")
 
     for _ in range(15):
         t0 = time.perf_counter()

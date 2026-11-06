@@ -1,10 +1,3 @@
-"""
-Contextual Multi-Armed Bandits (LinUCB) Question Router — Enterprise v2.
-
-Optimizes active question routing within the student's Zone of Proximal
-Development (ZPD, target P(correct) ~ 0.70) by balancing exploitation of weak
-spots with exploration of borderline topics.
-"""
 import json
 import math
 import os
@@ -179,7 +172,6 @@ def record_bandit_feedback(
     engagement_quality = 1.0 if 0.25 <= time_ratio <= 1.8 else 0.5
     outcome_bonus = 0.85 if is_correct else 0.65
 
-    # Delayed / posterior BKT mastery gain bonus: Delta P(L_t) = max(0, P(L_t) - P(L_{t-1}))
     mastery_gain_bonus = 0.0
     if prior_mastery_prob is not None:
         delta_m = max(0.0, float(topic_mastery_prob) - float(prior_mastery_prob))

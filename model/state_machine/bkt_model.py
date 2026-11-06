@@ -1,20 +1,13 @@
-"""
-Bayesian Knowledge Tracing (BKT) & SAINT+-Inspired Sequence Tracker — Enterprise v2.
-
-Lives in `model/state_machine/` as specified in `docs/spec.md` Section 11.
-Replaces rigid binary rolling windows with continuous mastery probability P(L_t)
-and smoothed Bayesian credible intervals to eliminate tier boundary oscillation.
-"""
 import math
 from dataclasses import dataclass
 
 
 @dataclass
 class BKTParams:
-    p_init: float = 0.35      # P(L_0): EdNet / cohort-informed cold-start prior
-    p_transit: float = 0.15   # P(T): learning transition rate per attempt
-    p_guess: float = 0.22     # P(G): 4-option MCQ guess rate
-    p_slip: float = 0.10      # P(S): careless slip rate despite mastery
+    p_init: float = 0.35
+    p_transit: float = 0.15
+    p_guess: float = 0.22
+    p_slip: float = 0.10
 
 
 DIFFICULTY_BKT_PRESETS: dict[str, BKTParams] = {
@@ -36,10 +29,6 @@ def modulate_params_with_telemetry(
     option_switches: int = 0,
     hesitation_ms: int = 0,
 ) -> tuple[float, float, float]:
-    """
-    SAINT+-inspired attention modulation over response time ratio, option-switching
-    frequency, and hesitation latency.
-    """
     p_t, p_g, p_s = params.p_transit, params.p_guess, params.p_slip
     time_ratio = time_taken_seconds / max(1, expected_time_seconds)
 
@@ -65,11 +54,6 @@ def compute_ebbinghaus_forgetting_prior(
     streak: int = 0,
     base_prior: float = 0.35,
 ) -> float:
-    """
-    Half-Life Regression (HLR) / Ebbinghaus Spaced Repetition Forgetting Curve:
-      P(L_t)^decayed = P_base + (P(L_{t-1}) - P_base) * 2^(-elapsed_hours / half_life_hours)
-    Memory half-life scales with streak length and current mastery level.
-    """
     p_prev = max(0.01, min(0.99, prior_mastery if prior_mastery is not None else base_prior))
     if elapsed_hours <= 0.5 or p_prev <= base_prior:
         return p_prev
@@ -80,24 +64,20 @@ def compute_ebbinghaus_forgetting_prior(
 
 
 def compute_retention_urgency(
-    mastery_prob: float,
-    elapsed_hours: float = 0.0,
-    streak: int = 0,
+    prior_mastery: float, elapsed_hours: float = 0.0, streak: int = 0, base_prior: float = 0.35
 ) -> float:
-    """
-    Quantifies spaced-repetition review urgency in [0.0, 1.0] based on how much
-    mastery has decayed since the student's last review of the chapter.
-    """
-    decayed = compute_ebbinghaus_forgetting_prior(mastery_prob, elapsed_hours, streak)
-    decay_drop = max(0.0, float(mastery_prob) - decayed)
-    return round(min(1.0, decay_drop * 3.5), 4)
+    decayed = compute_ebbinghaus_forgetting_prior(prior_mastery, elapsed_hours, streak, base_prior)
+    peak = max(0.01, min(0.99, prior_mastery if prior_mastery is not None else base_prior))
+    drop = max(0.0, peak - decayed)
+    urgency = min(1.0, (drop / 0.30) * (float(elapsed_hours) / 48.0))
+    return round(urgency, 4)
 
 
 def compute_bkt_update(
     prior_mastery: float,
     is_correct: bool,
     difficulty: str = "medium",
-    time_taken_seconds: int = 75,
+    time_taken_seconds: int = 90,
     expected_time_seconds: int = 90,
     option_switches: int = 0,
     hesitation_ms: int = 0,
@@ -105,19 +85,12 @@ def compute_bkt_update(
     elapsed_hours: float = 0.0,
     streak: int = 0,
 ) -> tuple[float, float]:
-    """
-    Computes posterior mastery probability P(L_{t+1}) and 95% Bayesian credible
-    interval half-width after applying Ebbinghaus temporal forgetting decay.
-    """
-    p_prev = compute_ebbinghaus_forgetting_prior(
-        prior_mastery=prior_mastery if prior_mastery is not None else 0.35,
-        elapsed_hours=elapsed_hours,
-        streak=streak,
-    )
-    params = DIFFICULTY_BKT_PRESETS.get(difficulty, DIFFICULTY_BKT_PRESETS["medium"])
+    p_decayed = compute_ebbinghaus_forgetting_prior(prior_mastery, elapsed_hours, streak)
+    p_t = max(0.05, min(0.95, p_decayed))
 
-    p_t, p_g, p_s = modulate_params_with_telemetry(
-        params=params,
+    base_params = DIFFICULTY_BKT_PRESETS.get(difficulty, DIFFICULTY_BKT_PRESETS["medium"])
+    p_transit, p_guess, p_slip = modulate_params_with_telemetry(
+        base_params,
         time_taken_seconds=time_taken_seconds,
         expected_time_seconds=expected_time_seconds,
         option_switches=option_switches,
@@ -125,48 +98,49 @@ def compute_bkt_update(
     )
 
     if is_correct:
-        num = p_prev * (1.0 - p_s)
-        den = num + (1.0 - p_prev) * p_g
+        numerator = p_t * (1.0 - p_slip)
+        denominator = numerator + (1.0 - p_t) * p_guess
     else:
-        num = p_prev * p_s
-        den = num + (1.0 - p_prev) * (1.0 - p_g)
+        numerator = p_t * p_slip
+        denominator = numerator + (1.0 - p_t) * (1.0 - p_guess)
 
-    posterior = num / den if den > 0 else p_prev
-    effective_p_t = p_t if is_correct else (0.35 * p_t)
-    p_next = posterior + (1.0 - posterior) * effective_p_t
-    p_next = round(max(0.05, min(0.95, p_next)), 4)
+    p_updated = numerator / max(1e-6, denominator)
 
-    effective_n = max(1, attempts_count) + 4
-    std_err = math.sqrt((p_next * (1.0 - p_next)) / effective_n)
-    ci_95 = round(min(0.35, 1.96 * std_err), 4)
+    effective_transit = p_transit if is_correct else (0.35 * p_transit)
+    p_next = p_updated + (1.0 - p_updated) * effective_transit
+    p_next = max(0.05, min(0.95, p_next))
 
-    return p_next, ci_95
+    n = max(1, attempts_count)
+    se = math.sqrt(p_next * (1.0 - p_next) / (n + 2.0))
+    ci_half_width = 1.96 * se
+
+    return round(p_next, 4), round(ci_half_width, 4)
 
 
 def resolve_level_with_hysteresis(
-    current_level: str, mastery_prob: float, ci_95: float
+    current_level: str,
+    mastery_prob: float,
+    rolling_results: list[bool],
 ) -> str:
-    """
-    Applies smoothed Bayesian confidence intervals to prevent rapid tier oscillation.
-    """
-    level = current_level or "basic"
-    conservative_lower = mastery_prob - 0.35 * ci_95
+    level = current_level
+    results = list(rolling_results)
+    m = mastery_prob
 
     if level == "basic":
-        if conservative_lower >= PROMOTE_TO_MEDIUM_THRESHOLD or mastery_prob >= 0.58:
+        if sum(1 for r in results[-3:] if r) >= 2 and m >= PROMOTE_TO_MEDIUM_THRESHOLD:
             return "medium"
         return "basic"
 
     if level == "medium":
-        if conservative_lower >= PROMOTE_TO_ADVANCED_THRESHOLD or mastery_prob >= 0.82:
+        if len(results) >= 3 and all(results[-3:]) and m >= PROMOTE_TO_ADVANCED_THRESHOLD:
             return "advanced"
-        if mastery_prob <= DEMOTE_TO_BASIC_THRESHOLD:
+        if sum(1 for r in results[-3:] if not r) >= 2 and m <= DEMOTE_TO_BASIC_THRESHOLD:
             return "basic"
         return "medium"
 
     if level == "advanced":
-        if mastery_prob <= DEMOTE_TO_MEDIUM_THRESHOLD:
+        if len(results) >= 2 and (not results[-1]) and (not results[-2]) and m <= DEMOTE_TO_MEDIUM_THRESHOLD:
             return "medium"
         return "advanced"
 
-    return "basic"
+    return level

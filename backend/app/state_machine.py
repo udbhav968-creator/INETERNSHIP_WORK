@@ -1,17 +1,5 @@
-"""
-The per-topic mastery state machine — docs/spec.md Section 7 + Enterprise v2 BKT / Hysteresis.
-
-This is the ONE place promotion/demotion logic lives. Nothing else should
-reimplement these rules — import and call process_answer() everywhere.
-
-Rules (rolling-window gated + Bayesian Knowledge Tracing posterior with hysteresis):
-  basic    -> medium   : 2 correct out of last 3 (with BKT hysteresis floor >= 0.58)
-  medium   -> advanced : 3 correct IN A ROW (a true streak, with BKT hysteresis floor >= 0.82)
-  medium   -> basic    : 2 wrong out of last 3
-  advanced -> medium   : last 2 answers both wrong
-"""
 from .db_models import StudentTopicState
-from .paths import PROJECT_ROOT  # ensures PROJECT_ROOT is on sys.path
+from .paths import PROJECT_ROOT
 from model.state_machine.bkt_model import compute_bkt_update, resolve_level_with_hysteresis
 
 WINDOW_SIZE = 3
@@ -26,9 +14,6 @@ def process_answer(
     hesitation_ms: int = 0,
     elapsed_hours: float = 0.0,
 ) -> StudentTopicState:
-    """Mutates and returns the given state object. Updates both the deterministic
-    rolling-window state machine and the continuous v2 BKT mastery posterior."""
-
     results = list(state.last_3_results or [])
     results.append(bool(is_correct))
     results = results[-WINDOW_SIZE:]
@@ -58,7 +43,7 @@ def process_answer(
     if state.level == "basic":
         state.streak = (state.streak + 1) if is_correct else 0
         if sum(1 for r in results if r) >= 2:
-            new_lvl = resolve_level_with_hysteresis(state.level, p_next, ci_95)
+            new_lvl = resolve_level_with_hysteresis(state.level, p_next, results)
             if new_lvl != state.level:
                 state.level = new_lvl
                 state.streak = 0
@@ -68,13 +53,13 @@ def process_answer(
         state.streak = (state.streak + 1) if is_correct else 0
         wrong_count = results.count(False)
         if state.streak >= 3:
-            new_lvl = resolve_level_with_hysteresis(state.level, p_next, ci_95)
+            new_lvl = resolve_level_with_hysteresis(state.level, p_next, results)
             if new_lvl != state.level:
                 state.level = new_lvl
                 state.streak = 0
                 state.last_3_results = []
         elif wrong_count >= 2:
-            new_lvl = resolve_level_with_hysteresis(state.level, p_next, ci_95)
+            new_lvl = resolve_level_with_hysteresis(state.level, p_next, results)
             if new_lvl != state.level:
                 state.level = new_lvl
                 state.streak = 0
@@ -83,7 +68,7 @@ def process_answer(
     elif state.level == "advanced":
         state.streak = (state.streak + 1) if is_correct else 0
         if len(results) >= 2 and results[-2:] == [False, False]:
-            new_lvl = resolve_level_with_hysteresis(state.level, p_next, ci_95)
+            new_lvl = resolve_level_with_hysteresis(state.level, p_next, results)
             if new_lvl != state.level:
                 state.level = new_lvl
                 state.streak = 0

@@ -1,14 +1,3 @@
-"""
-Question bank quality validator.
-
-Run this on ANY tagged batch before trusting it — from this intern or
-anyone else. Catches the exact problems found in the first submission:
-boilerplate explanations, blanket fake verification, duplicate options,
-and non-standard difficulty labels.
-
-Usage:
-    python validate_question_bank.py path/to/file.json
-"""
 import json
 import sys
 from collections import Counter
@@ -66,7 +55,6 @@ def validate(questions: list[dict]) -> dict:
             f"Non-standard difficulty labels found (need exactly basic/medium/advanced): {bad_labels}"
         )
 
-    # duplicate question_text across supposedly distinct entries (catches fake "variants")
     texts = Counter(q.get("question_text", q.get("text", "")).split("for ", 1)[-1] for q in questions)
     near_dupes = sum(c for c in texts.values() if c > 1)
     if near_dupes:
@@ -79,20 +67,17 @@ def validate(questions: list[dict]) -> dict:
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Usage: python validate_question_bank.py <path-to-json>")
+    if len(sys.argv) < 2:
+        print("Usage: python validate_question_bank.py path/to/file.json")
         sys.exit(1)
 
     path = sys.argv[1]
-
     with open(path, encoding="utf-8") as f:
         data = json.load(f)
 
-    # handle both a flat list and the nested {"Curated_Sample_Papers": [...]} shape
     if isinstance(data, dict):
         for key in ("Curated_Sample_Papers", "questions", "Adaptive_Item_Bank"):
             if key in data:
-                print(f"\n=== Validating '{key}' ({len(data[key])} entries) ===")
                 report = validate(data[key])
                 print(json.dumps(report, indent=2))
     else:

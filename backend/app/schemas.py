@@ -5,7 +5,7 @@ try:
     import email_validator  # noqa: F401
     from pydantic import EmailStr
 except ImportError:
-    EmailStr = str  # fallback when email-validator package is not installed
+    EmailStr = str
 
 
 class AttemptIn(BaseModel):
@@ -14,7 +14,6 @@ class AttemptIn(BaseModel):
     paper_number: int
     selected_option: str
     time_taken_seconds: int
-    # v2 SAINT+ fine-grained clickstream telemetry (optional, backwards-compatible)
     option_switches: Optional[int] = 0
     hesitation_ms: Optional[int] = 0
     dwell_time_ms: Optional[int] = 0
@@ -51,8 +50,6 @@ class QuestionOut(BaseModel):
         from_attributes = True
 
 
-# --- auth / onboarding ---
-
 class SignupIn(BaseModel):
     name: str
     email: EmailStr
@@ -65,7 +62,7 @@ class LoginIn(BaseModel):
 
 
 class OnboardingIn(BaseModel):
-    class_level: str   # "11" | "12" | "dropper"
+    class_level: str
     target_neet_year: int
 
 
@@ -82,8 +79,6 @@ class StudentOut(BaseModel):
     class Config:
         from_attributes = True
 
-
-# --- paper review (post-submission only — never exposes answers mid-exam) ---
 
 class QuestionReviewOut(BaseModel):
     question_id: str
@@ -102,8 +97,6 @@ class PaperReviewOut(BaseModel):
     score_percent: float
     questions: list[QuestionReviewOut]
 
-
-# --- analytics (read-only, derived entirely from real test_attempts rows) ---
 
 class SubjectBreakdownOut(BaseModel):
     subject: str
@@ -128,8 +121,6 @@ class AnalyticsOut(BaseModel):
     subject_breakdown: list[SubjectBreakdownOut]
     recent_attempts: list[RecentAttemptOut]
 
-
-# --- v2 Socratic RAG Remediation & Psychometric Insights ---
 
 class SocraticHintIn(BaseModel):
     question_id: str

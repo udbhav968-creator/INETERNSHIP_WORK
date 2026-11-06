@@ -1,12 +1,3 @@
-"""
-Psychometric Item Response Theory (IRT — 3-Parameter Logistic Model) — Enterprise v2.
-
-Dynamically calibrates question difficulty (b_i), discrimination (a_i), and
-pseudo-guessing (c_i) from real question features (ideal_time_sec, question_type,
-has_diagram, chapter weightage, explanation step complexity, option length dispersion,
-and empirical attempt accuracy), and estimates student latent ability (theta) via
-Maximum A Posteriori (MAP) Newton-Raphson optimization.
-"""
 import csv
 import json
 import math
@@ -26,9 +17,9 @@ D_SCALING = 1.702
 
 @dataclass
 class IRTItemParams:
-    a: float = 1.25  # Discrimination
-    b: float = 0.00  # Difficulty
-    c: float = 0.22  # Pseudo-guessing
+    a: float = 1.25
+    b: float = 0.00
+    c: float = 0.22
 
 
 _DEFAULT_DIFFICULTY_B: dict[str, IRTItemParams] = {
@@ -53,7 +44,6 @@ CALIBRATED_ITEMS: dict[str, dict] = {}
 
 
 def _load_empirical_attempt_stats() -> dict[str, dict[str, float]]:
-    """Loads real empirical accuracy and response time ratios from student_attempts.csv if present."""
     stats: dict[str, dict[str, float]] = {}
     if not ATTEMPTS_CSV_PATH.exists():
         return stats
@@ -106,7 +96,6 @@ def calibrate_question_bank() -> dict[str, dict]:
         q_text = str(q.get("question_text", ""))
         explanation = str(q.get("explanation", ""))
 
-        # Real structural & linguistic complexity features from question & explanation
         time_delta = (ideal_time - 85.0) / 55.0
         length_delta = min(0.25, max(-0.15, (len(q_text) - 140.0) / 400.0))
         expl_steps = max(1, explanation.count(".") + explanation.count("="))
@@ -114,7 +103,6 @@ def calibrate_question_bank() -> dict[str, dict]:
         diagram_delta = 0.18 if has_diagram else 0.0
         a_type_mod, b_type_mod = QUESTION_TYPE_MODIFIERS.get(q_type, (0.05, 0.02))
 
-        # Option length dispersion affects distractor plausibility (pseudo-guessing c_i)
         opt_lengths = [
             len(str(q.get(k, ""))) for k in ("option_a", "option_b", "option_c", "option_d")
         ]
@@ -122,11 +110,9 @@ def calibrate_question_bank() -> dict[str, dict]:
         opt_var = sum((ol - mean_opt_len) ** 2 for ol in opt_lengths) / 4.0
         distractor_spread = min(0.04, math.sqrt(opt_var) / 250.0)
 
-        # Empirical adjustment from actual student attempts when available
         emp_b_shift = 0.0
         if qid in empirical_stats:
             emp = empirical_stats[qid]
-            # Higher empirical error rate shifts b_i upward proportional to sample weight
             weight = min(0.35, emp["n"] * 0.10)
             emp_b_shift = weight * ((0.60 - emp["accuracy"]) * 1.5 + (emp["avg_time_ratio"] - 1.0) * 0.4)
 
@@ -248,31 +234,23 @@ def theta_to_percentile(theta: float) -> float:
 
 
 def extract_cold_start_nlp_features(question_text: str, options: list[str] | None = None) -> dict[str, float]:
-    """
-    Extracts intrinsic NLP, mathematical formula, and distractor similarity features
-    directly from a brand-new unattempted question stem and options (cold start n_i = 0).
-    """
     text = str(question_text or "")
     opts = [str(o) for o in (options or []) if o is not None]
     words = re.findall(r"[a-zA-Z]{2,}", text.lower())
     word_count = len(words)
 
-    # Formula & symbolic density (=, +, -, /, ^, Greek/physics symbols, exponents)
     formula_tokens = re.findall(r"[=+\-*/^<>]|\\frac|\\sqrt|\b(?:sin|cos|tan|log|ln|lim|mol|kg|Hz|ohm|volt|joule)\b", text)
     formula_density = min(1.0, len(formula_tokens) / max(8.0, word_count * 0.35))
 
-    # Numerical & multi-step calculation density
     numeric_tokens = re.findall(r"\b\d+(?:\.\d+)?(?:[eE][+\-]?\d+)?\b", text)
     numerical_complexity = min(1.0, len(numeric_tokens) / 4.0)
 
-    # Negation, exception, and assertion-reason cognitive trap indicators
     negation_matches = re.findall(
         r"\b(?:not|incorrect|false|except|wrong|never|neither|assertion|reason|match\s+the)\b",
         text.lower(),
     )
     negation_trap = 1.0 if negation_matches else 0.0
 
-    # Pairwise Jaccard lexical overlap among the 4 options (subtle distractors -> higher discrimination)
     opt_token_sets = [set(re.findall(r"[a-zA-Z0-9]+", o.lower())) for o in opts if o.strip()]
     pair_sims: list[float] = []
     for i in range(len(opt_token_sets)):
@@ -310,11 +288,6 @@ def predict_cold_start_difficulty_and_irt(
     chapter: str = "Laws of Motion",
     topic_tag: str = "Newton's Laws",
 ) -> dict:
-    """
-    Zero-attempt cold-start estimator that predicts difficulty tier ('basic', 'medium', 'advanced')
-    and initial 3PL IRT parameters (a_i, b_i, c_i) by combining NLP & cognitive stem complexity
-    with the trained RandomForestClassifier (question_difficulty_model.joblib) when available.
-    """
     feats = extract_cold_start_nlp_features(question_text, options)
     length_norm = min(1.0, feats["word_count"] / 55.0)
     diag_bonus = 0.20 if has_diagram else 0.0
@@ -385,7 +358,6 @@ def predict_cold_start_difficulty_and_irt(
 
 
 def classify_cognitive_skill_dimension(question_text: str, question_type: str = "") -> str:
-    """Classifies a NEET item into one of 3 MIRT skill axes: 'numerical', 'formula', or 'conceptual'."""
     feats = extract_cold_start_nlp_features(question_text)
     qt = (question_type or "").lower()
     if "numerical" in qt or feats["numerical_complexity"] >= 0.50:
@@ -396,12 +368,6 @@ def classify_cognitive_skill_dimension(question_text: str, question_type: str = 
 
 
 def compute_mirt_3d_profile(attempt_records: list[dict]) -> dict[str, float]:
-    """
-    Multidimensional 3PL IRT (MIRT): Estimates a 3D latent skill vector
-    theta_s = (theta_conceptual, theta_formula, theta_numerical) across attempted items.
-    Each record in attempt_records expects keys: question_id, question_text, difficulty,
-    expected_time_seconds, is_correct.
-    """
     dims = {"conceptual": 0.0, "formula": 0.0, "numerical": 0.0}
     counts = {"conceptual": 0, "formula": 0, "numerical": 0}
 
@@ -438,14 +404,10 @@ def recalibrate_item_parameters_online(
     time_ratio: float = 1.0,
     lr: float = 0.06,
 ) -> IRTItemParams:
-    """
-    Closed-loop online Empirical Bayes / EM step that refines item difficulty (b_i)
-    and discrimination (a_i) in CALIBRATED_ITEMS from live student attempt residuals.
-    """
     current = get_item_params(question_id)
     pred_p = irt_3pl_probability(student_theta, current)
     y = 1.0 if is_correct else 0.0
-    residual = y - pred_p  # positive when student succeeded unexpectedly (item easier than b_i)
+    residual = y - pred_p
 
     new_b = max(-2.85, min(2.85, current.b - lr * residual + 0.02 * (time_ratio - 1.0)))
     alignment = (student_theta - current.b) * residual

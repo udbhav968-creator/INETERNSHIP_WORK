@@ -1,11 +1,3 @@
-"""
-Computes real progress analytics from the student's actual test_attempts —
-no invented numbers, no placeholder charts. Every figure here traces back
-to a row in the database.
-
-This is a new, additive module — it doesn't touch state_machine.py,
-time_tracking.py, or paper_generator.py. Those stay exactly as they are.
-"""
 from sqlalchemy.orm import Session
 from .db_models import TestAttempt, Question, Topic
 

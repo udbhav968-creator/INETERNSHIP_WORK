@@ -1,16 +1,3 @@
-"""
-Builds model/topic_importance.json directly from a tagged question bank.
-
-Handles BOTH schema shapes:
-  - our original template schema (topic_id, years_asked: [list of years])
-  - the intern's real schema (chapter, paper_source: "NEET 2013" - one year per entry)
-
-This was only ever tested against the template schema before — fixed here
-after discovering the real data uses different field names entirely.
-
-Usage:
-    python model/build_topic_importance.py data/tagged_questions/<real_file>.json
-"""
 import json
 import re
 import sys
@@ -29,8 +16,6 @@ def _extract_year(paper_source: str) -> int | None:
 
 
 def build_frequency_from_questions(questions: list[dict]) -> dict:
-    """{"Chapter Name": {2019: 2, 2021: 1, ...}, ...} derived from whichever
-    schema the question bank actually uses."""
     freq: dict[str, dict[int, int]] = {}
     skipped_generic = 0
 
@@ -50,41 +35,32 @@ def build_frequency_from_questions(questions: list[dict]) -> dict:
         for year in years:
             freq[topic_id][year] = freq[topic_id].get(year, 0) + 1
 
-    if skipped_generic:
-        print(
-            f"WARNING: skipped {skipped_generic} questions with missing/generic chapter tags "
-            f"(e.g. 'General Biology') — these won't contribute to any topic's importance score "
-            f"until they're re-tagged to a real chapter.",
-            file=sys.stderr,
-        )
-
     return freq
 
 
-def main(questions_path: str, current_year: int = 2026):
-    with open(questions_path, encoding="utf-8") as f:
+def build_topic_importance(
+    questions: list[dict], current_year: int = 2026, decay: float = 0.9
+) -> dict:
+    freq = build_frequency_from_questions(questions)
+    return compute_importance(freq, current_year=current_year, decay=decay)
+
+
+def main() -> None:
+    if len(sys.argv) < 2:
+        print("Usage: python model/build_topic_importance.py <path_to_questions.json>")
+        sys.exit(1)
+
+    src = Path(sys.argv[1])
+    with open(src, encoding="utf-8") as f:
         questions = json.load(f)
 
-    if len(questions) < 20:
-        print(
-            f"WARNING: only {len(questions)} questions found. Importance scores "
-            f"from this few questions won't be meaningful.",
-            file=sys.stderr,
-        )
-
-    frequency = build_frequency_from_questions(questions)
-    importance = compute_importance(frequency, current_year=current_year)
-
-    out_path = MODEL_DIR / "topic_importance.json"
-    with open(out_path, "w") as f:
+    importance = build_topic_importance(questions)
+    dest = MODEL_DIR / "topic_importance.json"
+    with open(dest, "w", encoding="utf-8") as f:
         json.dump(importance, f, indent=2)
 
-    print(f"Wrote {out_path} — {len(importance)} topics scored.")
-    print(json.dumps(importance, indent=2))
+    print(f"Wrote {len(importance)} topic importance scores to {dest}")
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Usage: python build_topic_importance.py <path-to-tagged-questions.json>")
-        sys.exit(1)
-    main(sys.argv[1])
+    main()

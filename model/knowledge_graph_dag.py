@@ -1,10 +1,3 @@
-"""
-Knowledge-Graph Prerequisite DAG & Hierarchical Bayesian Shrinkage — Enterprise v2.
-
-Maps prerequisite dependency trees between micro-topics and canonical NCERT
-chapters, providing prerequisite readiness scores, root-cause bottleneck
-diagnostics, and Empirical Bayes shrinkage pooling for low-sample topics.
-"""
 import json
 from collections import deque
 from pathlib import Path
@@ -71,13 +64,6 @@ def compute_hierarchical_shrinkage_prior(
     global_prior: float = 0.35,
     shrinkage_strength: float = 2.0,
 ) -> float:
-    """
-    Hierarchical Empirical Bayes Shrinkage:
-      theta_EB = (n_k * P_obs(L_k) + tau * mu_cluster) / (n_k + tau)
-    Pools information across prerequisite and sibling chapters in the same NCERT
-    cluster so low-sample topics (n_k = 0, 1, 2) are stabilized against noise,
-    while high-sample topics converge to the student's direct empirical mastery.
-    """
     node = DAG_NODES.get(topic_id, {})
     prereqs = node.get("prerequisites", [])
     cluster = node.get("cluster")
@@ -144,14 +130,6 @@ def propagate_dag_belief_update(
     difficulty: str,
     student_mastery_map: dict[str, float],
 ) -> dict[str, float]:
-    """
-    1-Hop Bayesian Belief Propagation across the Prerequisite DAG:
-    - Backward Evidence Boost: Solving a 'medium' or 'advanced' item in a downstream
-      chapter propagates positive mastery evidence to its direct prerequisite chapters.
-    - Forward Prerequisite Warning: Failing a 'basic' item in a foundational chapter
-      propagates a cautious downward adjustment to direct dependent chapters.
-    Returns {neighbor_topic_id: new_mastery_prob} for updated 1-hop neighbors.
-    """
     updates: dict[str, float] = {}
     diff = (difficulty or "medium").lower()
 
@@ -171,4 +149,3 @@ def propagate_dag_belief_update(
                 updates[dep] = new_m
 
     return updates
-

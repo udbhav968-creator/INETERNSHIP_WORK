@@ -1,13 +1,3 @@
-"""
-Adaptive paper generator — docs/spec.md Section 9 + Part I Fix #2 + Part II LinUCB & DAG Routing.
-
-Topic proportions (importance) are fixed and never touched per-student.
-Difficulty pool selection and within-pool item selection use:
-1. In-memory indexed Question Pool cache (eliminating 65 per-topic SQL round-trips per paper).
-2. Adjacent-pool fallback cascade when a topic's primary difficulty pool has fewer items than requested (Part I Section 7 Fix #2).
-3. LinUCB Contextual Multi-Armed Bandit & 3PL Fisher Information within the Zone of Proximal Development (Part II Section 4).
-4. Periodic retention probes for advanced topics to guard against silent forgetting.
-"""
 import json
 import random
 from sqlalchemy.orm import Session, make_transient
@@ -25,7 +15,6 @@ ADJACENT_FALLBACK_ORDER = {
     "advanced": ["medium", "basic"],
 }
 
-# In-memory cache of detached Question objects keyed by (topic_id, difficulty)
 _QUESTION_POOL_CACHE: dict[tuple[str, str], list[Question]] = {}
 _CACHED_TOTAL_QUESTIONS: int = 0
 
@@ -96,7 +85,6 @@ def generate_paper(
     state_by_topic = {s.topic_id: s for s in all_states}
     mastery_map = {s.topic_id: float(getattr(s, "mastery_prob", 0.35) or 0.35) for s in all_states}
 
-    # Chapter-Focused Adaptive Drill (when a student clicks "Practice Chapter" on any of the 65 chapters)
     if topic_id:
         target_count = min(15, total_length)
         state = state_by_topic.get(topic_id)
@@ -165,7 +153,6 @@ def generate_paper(
             pace_flag,
         )
 
-        # Part I Section 7 Fix #2: Adjacent difficulty pool fallback cascade when primary pool is sparse
         if len(selected) < num_questions:
             for fallback_diff in ADJACENT_FALLBACK_ORDER.get(level, ["medium", "basic"]):
                 needed = num_questions - len(selected)
@@ -187,7 +174,6 @@ def generate_paper(
 
         paper.extend(selected)
 
-        # Pace-driven supplement: topic is correct but slow -> add timed practice
         if state and state.pace_flag == "slow":
             remaining_pool = [q for q in pool if q not in selected]
             extra = _select_with_bandit(
@@ -202,16 +188,12 @@ def generate_paper(
             )
             paper.extend(extra)
 
-        # Retention probe for advanced topics: confirm long-term retention
         if state and state.level == "advanced" and (state.attempts_counted or 0) >= 3:
             medium_pool = pools.get((topic_id, "medium"), [])
             probe_candidates = [q for q in medium_pool if q not in paper]
             if probe_candidates and len(paper) < total_length + 5:
                 paper.append(probe_candidates[0])
 
-    # Stochastic Remainder Allocation: ensure the 31 fractional-quota NCERT chapters
-    # (where round(importance / 100 * total_length) == 0) are proportionally sampled
-    # to fill any remaining slots up to total_length.
     if len(paper) < total_length and fractional_topics:
         remaining_slots = total_length - len(paper)
         weighted_candidates: list[tuple[float, str]] = []

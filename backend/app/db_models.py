@@ -1,11 +1,6 @@
-"""
-SQLAlchemy models — mirrors docs/spec.md Section 5 + Enterprise v2 psychometric telemetry extensions.
-Using SQLite for local dev (zero setup). Swap DATABASE_URL in database.py
-for Postgres later without touching these models.
-"""
+import datetime
 from sqlalchemy import Column, String, Integer, Boolean, Float, JSON, ForeignKey, DateTime
 from sqlalchemy.orm import declarative_base
-import datetime
 
 Base = declarative_base()
 
@@ -14,20 +9,13 @@ class Student(Base):
     __tablename__ = "students"
     student_id = Column(String, primary_key=True)
     name = Column(String, nullable=False)
-
-    # --- auth ---
     email = Column(String, unique=True, nullable=False)
     password_hash = Column(String, nullable=False)
-
-    # --- onboarding ---
-    class_level = Column(String, nullable=True)          # "11" | "12" | "dropper"
+    class_level = Column(String, nullable=True)
     target_neet_year = Column(Integer, nullable=True)
     onboarded = Column(Boolean, default=False, nullable=False)
-
-    # --- v2 3PL IRT global latent ability ---
     global_theta = Column(Float, default=0.0, nullable=False)
-
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.timezone.utc))
 
 
 class Topic(Base):
@@ -41,27 +29,25 @@ class Question(Base):
     __tablename__ = "questions"
     question_id = Column(String, primary_key=True)
     topic_id = Column(String, ForeignKey("topics.topic_id"), nullable=False)
-    difficulty = Column(String, nullable=False)  # "basic" | "medium" | "advanced"
+    difficulty = Column(String, nullable=False)
     expected_time_seconds = Column(Integer, nullable=False)
     text = Column(String, nullable=False)
-    options = Column(JSON, nullable=False)              # list[str]
+    options = Column(JSON, nullable=False)
     correct_answer = Column(String, nullable=False)
-    wrong_option_tags = Column(JSON, nullable=True)      # {option: reason}
-    years_asked = Column(JSON, nullable=True)            # list[int]
+    wrong_option_tags = Column(JSON, nullable=True)
+    years_asked = Column(JSON, nullable=True)
 
 
 class StudentTopicState(Base):
     __tablename__ = "student_topic_state"
     student_id = Column(String, ForeignKey("students.student_id"), primary_key=True)
     topic_id = Column(String, ForeignKey("topics.topic_id"), primary_key=True)
-    level = Column(String, default="basic")              # "basic" | "medium" | "advanced"
+    level = Column(String, default="basic")
     streak = Column(Integer, default=0)
-    last_3_results = Column(JSON, default=list)           # list[bool], most recent last
+    last_3_results = Column(JSON, default=list)
     avg_time_ratio = Column(Float, nullable=True)
-    attempts_counted = Column(Integer, default=0)          # correct-only attempts counted into avg_time_ratio
-    pace_flag = Column(String, nullable=True)              # "fast" | "slow" | None
-
-    # --- v2 BKT & 3PL IRT per-topic parameters ---
+    attempts_counted = Column(Integer, default=0)
+    pace_flag = Column(String, nullable=True)
     mastery_prob = Column(Float, default=0.35, nullable=False)
     confidence_interval = Column(Float, default=0.45, nullable=False)
     irt_theta = Column(Float, default=0.0, nullable=False)
@@ -76,10 +62,7 @@ class TestAttempt(Base):
     is_correct = Column(Boolean, nullable=False)
     time_taken_seconds = Column(Integer, nullable=False)
     selected_option = Column(String, nullable=False)
-
-    # --- v2 SAINT+ fine-grained interaction telemetry ---
     option_switches = Column(Integer, default=0, nullable=False)
     hesitation_ms = Column(Integer, default=0, nullable=False)
     dwell_time_ms = Column(Integer, default=0, nullable=False)
-
-    timestamp = Column(DateTime, default=datetime.datetime.utcnow)
+    timestamp = Column(DateTime, default=lambda: datetime.datetime.now(datetime.timezone.utc))
