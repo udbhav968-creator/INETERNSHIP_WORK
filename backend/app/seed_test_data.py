@@ -1,12 +1,3 @@
-"""
-Seeds a handful of test rows so you can exercise the full API loop
-(submit_attempt -> state update -> next_paper) in an isolated test DB
-when real tagged data is not loaded.
-
-Run with:
-    cd backend
-    python -m app.seed_test_data
-"""
 import json
 from .auth import hash_password
 from .database import SessionLocal, init_db
@@ -21,7 +12,6 @@ def seed():
     db = SessionLocal()
 
     if db.query(Student).filter_by(student_id="TEST_STUDENT").first():
-        print("Seed data already present — skipping.")
         db.close()
         return
 
@@ -59,9 +49,6 @@ def seed():
     if not fake_importance_path.exists():
         with open(fake_importance_path, "w", encoding="utf-8") as f:
             json.dump({FAKE_TOPIC_ID: 100.0}, f, indent=2)
-        print(f"Wrote {fake_importance_path} (100% weight, one topic only, for testing only)")
-
-    print("Seeded test student, topic, and 9 questions (3 per difficulty).")
 
 
 if __name__ == "__main__":

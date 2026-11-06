@@ -1,21 +1,9 @@
-"""
-Pace tracking — docs/spec.md Section 8 + Part I Section 7 Fix #3.
-
-Runs ALONGSIDE the state machine, never inside it. Level changes only from
-process_answer() in state_machine.py; pace_flag changes only from here.
-Only correct answers count toward the average — an incorrect fast guess
-is noise, not "fast mastery".
-
-Part I Section 7 Fix #3:
-Supports per-question expected_time_seconds from Question.expected_time_seconds
-with automatic fallback to time_benchmarks.json.
-"""
 import json
 from typing import Optional
 from .db_models import StudentTopicState
 from .paths import DATA_DIR
 
-PACE_THRESHOLD = 1.2  # avg_time_ratio above this => "slow"
+PACE_THRESHOLD = 1.2
 
 with open(DATA_DIR / "config" / "time_benchmarks.json", encoding="utf-8") as f:
     _DEFAULT_BENCHMARKS = json.load(f)
@@ -35,7 +23,7 @@ def update_pace(
     expected_time_seconds: Optional[int] = None,
 ) -> StudentTopicState:
     if not is_correct:
-        return state  # exclude incorrect attempts from the time-ratio average
+        return state
 
     denom = max(1, expected_time(difficulty, expected_time_seconds))
     ratio = time_taken_seconds / denom

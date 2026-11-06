@@ -1,13 +1,3 @@
-"""
-Signup / login for real student accounts + Enterprise v2 HMAC-SHA256 JWT Bearer Token Verification.
-
-Password hashing uses bcrypt directly (no passlib — avoids the
-passlib/bcrypt>=4.1 compatibility breakage). Student IDs are derived
-from the student's name (e.g. "Parv Wadhwa" -> "PARVWADHWA"), with a
-numeric suffix if that ID is already taken, so existing code that
-keys everything off `student_id` (state machine, pace tracking,
-paper generator) needs no changes.
-"""
 import base64
 import datetime
 import hashlib
@@ -17,21 +7,18 @@ import os
 import re
 import time
 from typing import Optional
-
 import bcrypt
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
-
 from .db_models import Student
 
 MIN_PASSWORD_LENGTH = 8
 VALID_CLASS_LEVELS = ("11", "12", "dropper")
 JWT_SECRET_KEY = os.environ.get("KLASSED_JWT_SECRET", "klassed-neet-v2-enterprise-hmac-secret-2026")
-JWT_EXPIRY_SECONDS = 86400 * 7  # 7 days
+JWT_EXPIRY_SECONDS = 86400 * 7
 
 
 def create_access_token(student_id: str, email: str) -> str:
-    """Generates an RFC 7519-compliant HMAC-SHA256 signed JWT token using standard library crypto."""
     header = {"alg": "HS256", "typ": "JWT"}
     payload = {
         "sub": student_id,
@@ -48,7 +35,6 @@ def create_access_token(student_id: str, email: str) -> str:
 
 
 def verify_access_token(token: str) -> Optional[dict]:
-    """Verifies an HMAC-SHA256 JWT token and returns the decoded claims if valid."""
     try:
         parts = token.split(".")
         if len(parts) != 3:

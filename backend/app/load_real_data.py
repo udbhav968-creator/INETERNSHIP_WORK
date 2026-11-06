@@ -1,14 +1,3 @@
-"""
-Loads a VALIDATED real question bank into the database — topics and
-questions. Only run this after model/validate_question_bank.py comes back
-clean (or with issues you've consciously decided to accept).
-
-Includes:
-- Part I Section 7 Fix #1: Canonical string normalization (.strip()) on chapter and subject names.
-- Exact generic-chapter filter (matching build_topic_importance.py and filter_clean_questions.py)
-  so legitimate NCERT chapters starting with "General " ("General Organic Chemistry" and
-  "General Principles & Metallurgy") are loaded rather than dropped.
-"""
 import json
 import re
 import sys
@@ -103,15 +92,8 @@ def load(question_bank_path: str, wipe_existing: bool = False):
     db.commit()
     db.close()
 
-    print(f"Loaded {loaded} questions across {len(seen_topics)} topics.")
-    if skipped:
-        print(f"Skipped {skipped} questions:")
-        for reason, count in skip_reasons.items():
-            print(f"  - {count} due to: {reason}")
-
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Usage: python -m app.load_real_data <path-to-question-bank.json> [--wipe]")
         sys.exit(1)
     load(sys.argv[1], wipe_existing="--wipe" in sys.argv)
