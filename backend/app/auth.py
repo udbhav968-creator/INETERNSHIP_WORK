@@ -18,11 +18,22 @@ JWT_SECRET_KEY = os.environ.get("KLASSED_JWT_SECRET", "klassed-neet-v2-enterpris
 JWT_EXPIRY_SECONDS = 86400 * 7
 
 
-def create_access_token(student_id: str, email: str) -> str:
+def create_access_token(
+    student_id: str,
+    email: str,
+    name: Optional[str] = None,
+    class_level: Optional[str] = None,
+    target_neet_year: Optional[int] = None,
+    onboarded: bool = False,
+) -> str:
     header = {"alg": "HS256", "typ": "JWT"}
     payload = {
         "sub": student_id,
         "email": email,
+        "name": name or student_id,
+        "class_level": class_level,
+        "target_neet_year": target_neet_year,
+        "onboarded": bool(onboarded),
         "iat": int(time.time()),
         "exp": int(time.time()) + JWT_EXPIRY_SECONDS,
     }
@@ -98,7 +109,14 @@ def signup(db: Session, name: str, email: str, password: str) -> Student:
     db.add(student)
     db.commit()
     db.refresh(student)
-    student.access_token = create_access_token(student.student_id, student.email)
+    student.access_token = create_access_token(
+        student.student_id,
+        student.email,
+        name=student.name,
+        class_level=student.class_level,
+        target_neet_year=student.target_neet_year,
+        onboarded=student.onboarded,
+    )
     return student
 
 
@@ -107,7 +125,14 @@ def login(db: Session, email: str, password: str) -> Student:
     student = db.query(Student).filter_by(email=email).first()
     if not student or not verify_password(password, student.password_hash):
         raise HTTPException(status_code=401, detail="Incorrect email or password")
-    student.access_token = create_access_token(student.student_id, student.email)
+    student.access_token = create_access_token(
+        student.student_id,
+        student.email,
+        name=student.name,
+        class_level=student.class_level,
+        target_neet_year=student.target_neet_year,
+        onboarded=student.onboarded,
+    )
     return student
 
 
@@ -126,5 +151,12 @@ def complete_onboarding(db: Session, student: Student, class_level: str, target_
     student.onboarded = True
     db.commit()
     db.refresh(student)
-    student.access_token = create_access_token(student.student_id, student.email)
+    student.access_token = create_access_token(
+        student.student_id,
+        student.email,
+        name=student.name,
+        class_level=student.class_level,
+        target_neet_year=student.target_neet_year,
+        onboarded=student.onboarded,
+    )
     return student

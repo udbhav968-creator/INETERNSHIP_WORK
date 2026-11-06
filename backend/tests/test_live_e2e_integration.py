@@ -1,3 +1,4 @@
+import base64
 import json
 import time
 import urllib.request
@@ -43,6 +44,7 @@ with urllib.request.urlopen(req, timeout=15) as res:
     assert onboarded["onboarded"] is True
     assert onboarded["class_level"] == "12"
     assert onboarded["target_neet_year"] == 2026
+    token = onboarded.get("access_token") or token
     print(f"[PASS] 2. Onboarding Questionnaire: onboarded={onboarded['onboarded']}")
 
 with urllib.request.urlopen(f"{BASE}/students/{sid}/state", timeout=15) as res:
@@ -168,6 +170,26 @@ with urllib.request.urlopen(f"{BASE}/students/{sid}/v2_insights", timeout=15) as
     total_mirt_attempts = mirt["attempts_conceptual"] + mirt["attempts_formula"] + mirt["attempts_numerical"]
     assert total_mirt_attempts == 2
     print(f"[PASS] 8b. Real-Time MIRT & 3PL Latent Updates: theta={new_insights['global_theta']}, percentile={new_insights['estimated_neet_percentile']}%ile, score={new_insights['predicted_neet_score_720']}/720 (MIRT: {mirt['attempts_conceptual']} conceptual, {mirt['attempts_formula']} formula, {mirt['attempts_numerical']} numerical)")
+
+journal_b64 = base64.urlsafe_b64encode(
+    json.dumps([
+        [1, q1["question_id"], "a", 50, 1, 800, 50000],
+        [1, q2["question_id"], "b", 75, 0, 400, 75000],
+    ]).encode("utf-8")
+).decode("ascii").rstrip("=")
+snap_req = urllib.request.Request(
+    f"{BASE}/students/{sid}/dashboard_snapshot",
+    headers={
+        "Authorization": f"Bearer {token}",
+        "X-Klassed-Journal": journal_b64,
+    },
+)
+with urllib.request.urlopen(snap_req, timeout=15) as res:
+    snap = json.loads(res.read())
+    assert snap["analytics"]["total_attempts"] == 2
+    assert len(snap["paper_history"]) == 1 and snap["paper_history"][0]["total_questions"] == 2
+    assert len(snap["topics"]) >= 1
+    print(f"[PASS] 8c. Atomic Dashboard Snapshot & Serverless Journal Sync: attempts={snap['analytics']['total_attempts']}, active_topics={len(snap['topics'])}, papers={len(snap['paper_history'])}")
 
 with urllib.request.urlopen(f"{BASE}/mlops/health_and_drift", timeout=15) as res:
     health = json.loads(res.read())

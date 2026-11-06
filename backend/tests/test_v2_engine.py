@@ -373,9 +373,11 @@ def test_13_database_counts_and_adaptive_paper_generator():
     try:
         assert db.query(Topic).count() == 65
         assert db.query(Question).count() == 2471
-        paper = generate_paper(db, "PRANAYWADHWA", total_length=45)
+        paper = generate_paper(db, "COLD_START_AUDIT", total_length=45)
         assert len(paper) >= 40
     finally:
+        from model.linucb_bandit import reset_student_bandit
+        reset_student_bandit("COLD_START_AUDIT", remove=True)
         db.close()
 
 
@@ -547,6 +549,8 @@ def test_14_all_11_endpoints_and_concurrent_stress():
 
     finally:
         if created_student_id:
+            from model.linucb_bandit import reset_student_bandit
+            reset_student_bandit(created_student_id, remove=True)
             db = SessionLocal()
             db.query(TestAttempt).filter_by(student_id=created_student_id).delete()
             db.query(StudentTopicState).filter_by(student_id=created_student_id).delete()
@@ -716,10 +720,12 @@ def test_20_all_65_chapters_end_to_end_curriculum_integrity():
 
 
         for chap in sorted(dag_topics):
-            drill = generate_paper(db, "UDBHAVYADAV", topic_id=chap)
+            drill = generate_paper(db, "SYLLABUS_AUDIT", topic_id=chap)
             assert len(drill) >= 2, f"Chapter drill for '{chap}' returned fewer than 2 items"
             assert all(q.topic_id == chap for q in drill), f"Topic mismatch in drill for '{chap}'"
     finally:
+        from model.linucb_bandit import reset_student_bandit
+        reset_student_bandit("SYLLABUS_AUDIT", remove=True)
         db.close()
 
 
@@ -914,8 +920,38 @@ def test_23_scientific_notation_traps_paper_history_and_remediation_urgency():
         assert len(hist) == 2
         assert [h["paper_number"] for h in hist] == [2, 1]
         assert all(h["total_questions"] == 1 for h in hist)
+
+        import base64
+        journal = [
+            [1, qs[0]["question_id"], "a", 40, 0, 500, 40000],
+            [2, qs[1]["question_id"], "b", 55, 1, 800, 55000],
+        ]
+        b64_journal = base64.urlsafe_b64encode(json.dumps(journal).encode("utf-8")).decode("ascii").rstrip("=")
+
+        db = SessionLocal()
+        db.query(TestAttempt).filter_by(student_id=sid).delete()
+        db.query(StudentTopicState).filter_by(student_id=sid).delete()
+        db.query(Student).filter_by(student_id=sid).delete()
+        db.commit()
+        db.close()
+
+        onboarded_token = r_on.json()["access_token"]
+        replay_headers = {
+            "Authorization": f"Bearer {onboarded_token}",
+            "X-Klassed-Journal": b64_journal,
+        }
+        r_snap = client.get(f"/students/{sid}/dashboard_snapshot", headers=replay_headers)
+        assert r_snap.status_code == 200
+        snap = r_snap.json()
+        assert snap["analytics"]["total_attempts"] == 2
+        assert len(snap["topics"]) == 1 and snap["topics"][0]["topic_id"] == "Electrostatics"
+        assert len(snap["paper_history"]) == 2
+        mirt = snap["v2_insights"]["mirt_3d_profile"]
+        assert mirt["attempts_conceptual"] + mirt["attempts_formula"] + mirt["attempts_numerical"] == 2
     finally:
         if sid:
+            from model.linucb_bandit import reset_student_bandit
+            reset_student_bandit(sid, remove=True)
             db = SessionLocal()
             db.query(TestAttempt).filter_by(student_id=sid).delete()
             db.query(StudentTopicState).filter_by(student_id=sid).delete()

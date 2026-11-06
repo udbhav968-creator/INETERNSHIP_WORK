@@ -1,7 +1,8 @@
+import base64
 import json
 import threading
 from datetime import datetime, timezone
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse, Response
 from sqlalchemy.orm import Session
@@ -95,7 +96,13 @@ def login(payload: schemas.LoginIn, db: Session = Depends(get_db)):
 
 
 @app.post("/students/{student_id}/onboarding", response_model=schemas.StudentOut)
-def complete_onboarding(student_id: str, payload: schemas.OnboardingIn, db: Session = Depends(get_db)):
+def complete_onboarding(
+    student_id: str,
+    payload: schemas.OnboardingIn,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    _sync_serverless_context(request, db, student_id)
     student = db.query(Student).filter_by(student_id=student_id).first()
     if not student:
         student = Student(
@@ -111,7 +118,8 @@ def complete_onboarding(student_id: str, payload: schemas.OnboardingIn, db: Sess
 
 
 @app.get("/students/{student_id}", response_model=schemas.StudentOut)
-def get_student(student_id: str, db: Session = Depends(get_db)):
+def get_student(student_id: str, request: Request, db: Session = Depends(get_db)):
+    _sync_serverless_context(request, db, student_id)
     student = db.query(Student).filter_by(student_id=student_id).first()
     if not student:
         raise HTTPException(status_code=404, detail="Student not found")
@@ -280,8 +288,93 @@ def _process_single_attempt_no_commit(
     return is_correct, question, state
 
 
+def _sync_serverless_context(
+    request: Request | None,
+    db: Session,
+    target_student_id: str | None = None,
+) -> None:
+    if request is None:
+        return
+
+    claims = None
+    auth_header = request.headers.get("authorization") or ""
+    if auth_header.lower().startswith("bearer "):
+        raw_token = auth_header[7:].strip()
+        claims = auth.verify_access_token(raw_token)
+
+    if claims and claims.get("sub"):
+        jwt_sid = str(claims["sub"])
+        with _get_student_lock(jwt_sid):
+            existing = db.query(Student).filter_by(student_id=jwt_sid).first()
+            if not existing:
+                email_val = str(claims.get("email") or f"{jwt_sid.lower()}@klassed.in")
+                if db.query(Student).filter_by(email=email_val).first():
+                    email_val = f"{jwt_sid.lower()}_{int(datetime.now(timezone.utc).timestamp())}@klassed.in"
+                db.add(
+                    Student(
+                        student_id=jwt_sid,
+                        name=str(claims.get("name") or jwt_sid),
+                        email=email_val,
+                        password_hash="jwt_verified_serverless",
+                        class_level=claims.get("class_level"),
+                        target_neet_year=claims.get("target_neet_year"),
+                        onboarded=bool(claims.get("onboarded", False)),
+                    )
+                )
+                db.commit()
+
+    journal_hdr = request.headers.get("x-klassed-journal")
+    sid_for_journal = target_student_id or (str(claims["sub"]) if claims and claims.get("sub") else None)
+    if not journal_hdr or not sid_for_journal:
+        return
+    if claims and claims.get("sub") and str(claims["sub"]) != sid_for_journal:
+        return
+
+    try:
+        padded = journal_hdr.strip() + "=" * (-len(journal_hdr.strip()) % 4)
+        entries = json.loads(base64.urlsafe_b64decode(padded.encode("ascii")).decode("utf-8"))
+        if not isinstance(entries, list) or not entries:
+            return
+    except Exception:
+        return
+
+    with _get_student_lock(sid_for_journal):
+        existing_pairs = {
+            (int(r[0]), str(r[1]))
+            for r in db.query(TestAttempt.paper_number, TestAttempt.question_id)
+            .filter_by(student_id=sid_for_journal)
+            .all()
+        }
+        replayed = False
+        for item in entries[:80]:
+            if not isinstance(item, list) or len(item) < 4:
+                continue
+            p_num = int(item[0])
+            qid = str(item[1])
+            if (p_num, qid) in existing_pairs:
+                continue
+            if not db.query(Question.question_id).filter_by(question_id=qid).first():
+                continue
+            att_in = schemas.AttemptIn(
+                student_id=sid_for_journal,
+                question_id=qid,
+                paper_number=p_num,
+                selected_option=str(item[2]),
+                time_taken_seconds=max(1, int(item[3])),
+                option_switches=int(item[4]) if len(item) > 4 else 0,
+                hesitation_ms=int(item[5]) if len(item) > 5 else 0,
+                dwell_time_ms=int(item[6]) if len(item) > 6 else max(1000, int(item[3]) * 1000),
+            )
+            _process_single_attempt_no_commit(att_in, db)
+            existing_pairs.add((p_num, qid))
+            replayed = True
+        if replayed:
+            db.commit()
+
+
 @app.post("/submit_attempt")
-def submit_attempt(attempt: schemas.AttemptIn, db: Session = Depends(get_db)):
+def submit_attempt(attempt: schemas.AttemptIn, request: Request, db: Session = Depends(get_db)):
+    _sync_serverless_context(request, db, attempt.student_id)
     with _get_student_lock(attempt.student_id):
         is_correct, _, state = _process_single_attempt_no_commit(attempt, db)
         db.commit()
@@ -296,10 +389,11 @@ def submit_attempt(attempt: schemas.AttemptIn, db: Session = Depends(get_db)):
 
 
 @app.post("/submit_paper", response_model=schemas.PaperReviewOut)
-def submit_paper(payload: schemas.PaperSubmitIn, db: Session = Depends(get_db)):
+def submit_paper(payload: schemas.PaperSubmitIn, request: Request, db: Session = Depends(get_db)):
     if not payload.attempts:
         raise HTTPException(status_code=400, detail="No attempts provided in paper submission")
 
+    _sync_serverless_context(request, db, payload.student_id)
     with _get_student_lock(payload.student_id):
         existing_max_row = (
             db.query(TestAttempt.paper_number)
@@ -354,18 +448,26 @@ def submit_paper(payload: schemas.PaperSubmitIn, db: Session = Depends(get_db)):
 
 
 @app.get("/students/{student_id}/state", response_model=list[schemas.TopicStateOut])
-def get_student_state(student_id: str, db: Session = Depends(get_db)):
+def get_student_state(student_id: str, request: Request, db: Session = Depends(get_db)):
+    _sync_serverless_context(request, db, student_id)
     FEATURE_STORE.get_student_features(student_id)
     return db.query(StudentTopicState).filter_by(student_id=student_id).all()
 
 
 @app.get("/students/{student_id}/next_paper", response_model=list[schemas.QuestionOut])
-def next_paper(student_id: str, topic_id: str | None = None, db: Session = Depends(get_db)):
+def next_paper(
+    student_id: str,
+    request: Request,
+    topic_id: str | None = None,
+    db: Session = Depends(get_db),
+):
+    _sync_serverless_context(request, db, student_id)
     return generate_paper(db, student_id, topic_id=topic_id)
 
 
 @app.get("/students/{student_id}/papers/{paper_number}/review", response_model=schemas.PaperReviewOut)
-def paper_review(student_id: str, paper_number: int, db: Session = Depends(get_db)):
+def paper_review(student_id: str, paper_number: int, request: Request, db: Session = Depends(get_db)):
+    _sync_serverless_context(request, db, student_id)
     rows = (
         db.query(TestAttempt, Question)
         .join(Question, TestAttempt.question_id == Question.question_id)
@@ -402,8 +504,7 @@ def paper_review(student_id: str, paper_number: int, db: Session = Depends(get_d
     )
 
 
-@app.get("/students/{student_id}/papers/history", response_model=list[schemas.PaperHistorySummaryOut])
-def paper_history(student_id: str, db: Session = Depends(get_db)):
+def _compute_paper_history(student_id: str, db: Session) -> list[schemas.PaperHistorySummaryOut]:
     rows = (
         db.query(TestAttempt, Question.topic_id)
         .join(Question, TestAttempt.question_id == Question.question_id)
@@ -449,13 +550,19 @@ def paper_history(student_id: str, db: Session = Depends(get_db)):
     return history
 
 
+@app.get("/students/{student_id}/papers/history", response_model=list[schemas.PaperHistorySummaryOut])
+def paper_history(student_id: str, request: Request, db: Session = Depends(get_db)):
+    _sync_serverless_context(request, db, student_id)
+    return _compute_paper_history(student_id, db)
+
+
 @app.get("/students/{student_id}/analytics", response_model=schemas.AnalyticsOut)
-def get_analytics(student_id: str, db: Session = Depends(get_db)):
+def get_analytics(student_id: str, request: Request, db: Session = Depends(get_db)):
+    _sync_serverless_context(request, db, student_id)
     return build_analytics(db, student_id)
 
 
-@app.get("/students/{student_id}/v2_insights", response_model=schemas.V2StudentInsightsOut)
-def get_v2_student_insights(student_id: str, db: Session = Depends(get_db)):
+def _compute_v2_student_insights(student_id: str, db: Session) -> schemas.V2StudentInsightsOut:
     student = db.query(Student).filter_by(student_id=student_id).first()
     states = db.query(StudentTopicState).filter_by(student_id=student_id).all()
 
@@ -614,6 +721,28 @@ def get_v2_student_insights(student_id: str, db: Session = Depends(get_db)):
         root_cause_bottlenecks=formatted_bottlenecks,
         recommended_unlock_topics=recommended,
         topic_mastery_details=topic_details,
+    )
+
+
+@app.get("/students/{student_id}/v2_insights", response_model=schemas.V2StudentInsightsOut)
+def get_v2_student_insights(student_id: str, request: Request, db: Session = Depends(get_db)):
+    _sync_serverless_context(request, db, student_id)
+    return _compute_v2_student_insights(student_id, db)
+
+
+@app.get("/students/{student_id}/dashboard_snapshot", response_model=schemas.DashboardSnapshotOut)
+def get_dashboard_snapshot(student_id: str, request: Request, db: Session = Depends(get_db)):
+    _sync_serverless_context(request, db, student_id)
+    FEATURE_STORE.get_student_features(student_id)
+    topics = db.query(StudentTopicState).filter_by(student_id=student_id).all()
+    analytics = build_analytics(db, student_id)
+    v2_insights = _compute_v2_student_insights(student_id, db)
+    history = _compute_paper_history(student_id, db)
+    return schemas.DashboardSnapshotOut(
+        topics=topics,
+        analytics=analytics,
+        v2_insights=v2_insights,
+        paper_history=history,
     )
 
 

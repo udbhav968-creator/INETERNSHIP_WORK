@@ -1,6 +1,6 @@
 {
   "harness_status": "PASSED",
-  "execution_time_seconds": 0.057,
+  "execution_time_seconds": 0.045,
   "persona_simulations": {
     "strong_master": {
       "final_level": "advanced",
@@ -41,29 +41,29 @@
   },
   "latency_sla_benchmarks": {
     "irt_3pl_map_update": {
-      "p50_ms": 0.0072,
-      "p95_ms": 0.013,
-      "p99_ms": 0.0214
+      "p50_ms": 0.0123,
+      "p95_ms": 0.0137,
+      "p99_ms": 0.0184
     },
     "bkt_saint_ebbinghaus_update": {
-      "p50_ms": 0.0078,
-      "p95_ms": 0.0138,
-      "p99_ms": 0.0155
+      "p50_ms": 0.0139,
+      "p95_ms": 0.0183,
+      "p99_ms": 0.0235
     },
     "linucb_context_scoring": {
-      "p50_ms": 0.0097,
-      "p95_ms": 0.0178,
-      "p99_ms": 0.0272
+      "p50_ms": 0.0166,
+      "p95_ms": 0.019,
+      "p99_ms": 0.022
     },
     "rag_socratic_remediation": {
-      "p50_ms": 2.6776,
-      "p95_ms": 3.3722,
-      "p99_ms": 3.3722
+      "p50_ms": 1.665,
+      "p95_ms": 2.7551,
+      "p99_ms": 2.7551
     },
     "in_memory_feature_store": {
-      "p50_ms": 0.0041,
-      "p95_ms": 0.0084,
-      "p99_ms": 0.0194
+      "p50_ms": 0.0069,
+      "p95_ms": 0.0091,
+      "p99_ms": 0.0261
     },
     "all_slas_met": true
   }

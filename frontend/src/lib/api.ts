@@ -1,8 +1,9 @@
-import { loadSession } from "./session";
+import { appendJournalAttempts, encodeJournalHeader, loadSession } from "./session";
 import type {
   Analytics,
   AttemptPayload,
   AttemptResult,
+  DashboardSnapshot,
   PaperHistorySummary,
   PaperReviewOut,
   QuestionOut,
@@ -29,10 +30,16 @@ export class ApiError extends Error {
 }
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
-  const token = loadSession()?.access_token;
+  const session = loadSession();
   const headers: Record<string, string> = { "Content-Type": "application/json" };
-  if (token) {
-    headers.Authorization = `Bearer ${token}`;
+  if (session?.access_token) {
+    headers.Authorization = `Bearer ${session.access_token}`;
+  }
+  if (session?.student_id) {
+    const journalHdr = encodeJournalHeader(session.student_id);
+    if (journalHdr) {
+      headers["X-Klassed-Journal"] = journalHdr;
+    }
   }
 
   let res: Response;
@@ -63,6 +70,9 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 }
 
 export const api = {
+  getDashboardSnapshot: (studentId: string) =>
+    request<DashboardSnapshot>(`/students/${encodeURIComponent(studentId)}/dashboard_snapshot`),
+
   getStudentState: (studentId: string) =>
     request<TopicState[]>(`/students/${encodeURIComponent(studentId)}/state`),
 
@@ -71,21 +81,27 @@ export const api = {
     return request<QuestionOut[]>(`/students/${encodeURIComponent(studentId)}/next_paper${query}`);
   },
 
-  submitAttempt: (payload: AttemptPayload) =>
-    request<AttemptResult>("/submit_attempt", {
+  submitAttempt: async (payload: AttemptPayload) => {
+    const res = await request<AttemptResult>("/submit_attempt", {
       method: "POST",
       body: JSON.stringify(payload),
-    }),
+    });
+    appendJournalAttempts(payload.student_id, payload.paper_number, [payload]);
+    return res;
+  },
 
-  submitPaper: (studentId: string, paperNumber: number, attempts: AttemptPayload[]) =>
-    request<PaperReviewOut>("/submit_paper", {
+  submitPaper: async (studentId: string, paperNumber: number, attempts: AttemptPayload[]) => {
+    const review = await request<PaperReviewOut>("/submit_paper", {
       method: "POST",
       body: JSON.stringify({
         student_id: studentId,
         paper_number: paperNumber,
         attempts,
       }),
-    }),
+    });
+    appendJournalAttempts(studentId, review.paper_number, attempts);
+    return review;
+  },
 
   getPaperReview: (studentId: string, paperNumber: number) =>
     request<PaperReviewOut>(

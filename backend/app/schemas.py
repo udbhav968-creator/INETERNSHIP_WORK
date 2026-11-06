@@ -170,3 +170,10 @@ class V2StudentInsightsOut(BaseModel):
     root_cause_bottlenecks: list[dict[str, Any]]
     recommended_unlock_topics: list[dict[str, Any]]
     topic_mastery_details: list[dict[str, Any]]
+
+
+class DashboardSnapshotOut(BaseModel):
+    topics: list[TopicStateOut]
+    analytics: AnalyticsOut
+    v2_insights: V2StudentInsightsOut
+    paper_history: list[PaperHistorySummaryOut]

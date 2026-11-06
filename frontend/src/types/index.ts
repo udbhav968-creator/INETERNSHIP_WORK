@@ -226,3 +226,10 @@ export interface V2StudentInsights {
     pace_flag: PaceFlag;
   }>;
 }
+
+export interface DashboardSnapshot {
+  topics: TopicState[];
+  analytics: Analytics;
+  v2_insights: V2StudentInsights;
+  paper_history: PaperHistorySummary[];
+}

@@ -40,19 +40,15 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
   useEffect(() => {
     let cancelled = false;
     setState("loading");
-    Promise.all([
-      api.getStudentState(studentId),
-      api.getAnalytics(studentId),
-      api.getV2Insights(studentId).catch(() => null),
-      api.getPaperHistory(studentId).catch(() => []),
-    ])
-      .then(([topicData, analyticsData, insightsData, historyData]) => {
+    api
+      .getDashboardSnapshot(studentId)
+      .then((snapshot) => {
         if (cancelled) return;
-        setTopics(topicData);
-        setAnalytics(analyticsData);
-        setV2Insights(insightsData);
-        setPaperHistory(historyData);
-        setState(topicData.length === 0 ? "empty" : "ready");
+        setTopics(snapshot.topics);
+        setAnalytics(snapshot.analytics);
+        setV2Insights(snapshot.v2_insights);
+        setPaperHistory(snapshot.paper_history);
+        setState(snapshot.topics.length === 0 ? "empty" : "ready");
       })
       .catch((err) => {
         if (cancelled) return;
@@ -155,15 +151,18 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
       {state === "empty" && (
         <div className="flex flex-col gap-6">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <SummaryStat label="NCERT Chapters Mapped" value={allSyllabusChapters.length || 65} />
-            <SummaryStat label="Initial BKT Prior" value="35%" />
+            <SummaryStat label="NCERT Chapters Mapped" value={allSyllabusChapters.length} />
+            <SummaryStat
+              label="Initial BKT Prior"
+              value={`${Math.round((allSyllabusChapters[0]?.current_mastery ?? 0.35) * 100)}%`}
+            />
             <SummaryStat
               label="Baseline NEET Projection"
-              value={v2Insights ? `${v2Insights.predicted_neet_score_720} / 720` : "380 / 720"}
+              value={v2Insights ? `${v2Insights.predicted_neet_score_720} / 720` : "—"}
             />
             <SummaryStat
               label="3PL IRT Prior Percentile"
-              value={v2Insights ? `${v2Insights.estimated_neet_percentile}%ile` : "50.0%ile"}
+              value={v2Insights ? `${v2Insights.estimated_neet_percentile}%ile` : "—"}
             />
           </div>
 
