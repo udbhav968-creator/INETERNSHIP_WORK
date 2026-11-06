@@ -75,6 +75,7 @@ class StudentOut(BaseModel):
     onboarded: bool
     global_theta: Optional[float] = 0.0
     access_token: Optional[str] = None
+    vault_token: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -155,6 +156,11 @@ class ColdStartItemIn(BaseModel):
     question_text: str
     options: Optional[list[str]] = None
     has_diagram: Optional[bool] = False
+    subject: Optional[str] = "Physics"
+    chapter: Optional[str] = "Laws of Motion"
+    topic_tag: Optional[str] = "Newton's Laws"
+    question_type: Optional[str] = None
+    ideal_time_sec: Optional[int] = None
 
 
 class V2StudentInsightsOut(BaseModel):

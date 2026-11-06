@@ -1,6 +1,6 @@
 {
   "pipeline_status": "PASSED",
-  "execution_time_seconds": 12.484,
+  "execution_time_seconds": 12.286,
   "data_validation_gates": {
     "question_bank_schema_valid": true,
     "weightage_schema_valid": true,
@@ -76,13 +76,13 @@
     "oof_multiclass_brier_score": 0.02185
   },
   "irt_3pl_calibration_summary": {
-    "calibrated_questions": 2472,
+    "calibrated_questions": 2471,
     "discrimination_a_range": [
       1.1428,
       2.094
     ],
     "difficulty_b_range": [
-      -1.7754,
+      -1.7291,
       2.2364
     ],
     "guessing_c_range": [

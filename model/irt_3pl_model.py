@@ -5,6 +5,8 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
+from .rf_compact_runtime import COMPACT_RF_RUNTIME
+
 MODEL_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = MODEL_DIR.parent
 QUESTIONS_PATH = PROJECT_ROOT / "data" / "tagged_questions" / "neet_questions_clean.json"
@@ -287,6 +289,8 @@ def predict_cold_start_difficulty_and_irt(
     subject: str = "Physics",
     chapter: str = "Laws of Motion",
     topic_tag: str = "Newton's Laws",
+    question_type: str | None = None,
+    ideal_time_sec: int | None = None,
 ) -> dict:
     feats = extract_cold_start_nlp_features(question_text, options)
     length_norm = min(1.0, feats["word_count"] / 55.0)
@@ -301,24 +305,38 @@ def predict_cold_start_difficulty_and_irt(
         + diag_bonus
     )
 
+    text_low = (question_text or "").lower()
+    if question_type and question_type.strip():
+        resolved_qtype = question_type.strip()
+    elif has_diagram:
+        resolved_qtype = "Diagram_Based"
+    elif "assertion" in text_low and "reason" in text_low:
+        resolved_qtype = "Assertion_Reason"
+    elif "match" in text_low and ("column" in text_low or "list" in text_low):
+        resolved_qtype = "Match_The_Column"
+    else:
+        resolved_qtype = "Single_Choice_MCQ"
+
+    resolved_time = (
+        int(ideal_time_sec)
+        if ideal_time_sec is not None and int(ideal_time_sec) > 0
+        else int(round(45 + 75 * min(1.0, nlp_score)))
+    )
+
     rf_probs: dict[str, float] | None = None
+    rf_engine = "unavailable"
     complexity_score = nlp_score
+
     if _RF_PIPELINE is not None:
         try:
-            inferred_qtype = (
-                "Numerical"
-                if feats["numerical_complexity"] >= 0.50
-                else ("Assertion-Reason" if feats["negation_trap"] > 0 else "Conceptual")
-            )
-            inferred_time = int(round(45 + 75 * min(1.0, nlp_score)))
             row_df = pd.DataFrame(
                 [
                     {
                         "subject": subject,
                         "chapter": chapter,
                         "topic_tag": topic_tag,
-                        "question_type": inferred_qtype,
-                        "ideal_time_sec": inferred_time,
+                        "question_type": resolved_qtype,
+                        "ideal_time_sec": resolved_time,
                         "has_diagram": int(bool(has_diagram)),
                         "marks": 4,
                         "negative_marks": -1,
@@ -328,14 +346,34 @@ def predict_cold_start_difficulty_and_irt(
             probas = _RF_PIPELINE.predict_proba(row_df)[0]
             classes = list(_RF_PIPELINE.classes_)
             rf_probs = {str(c): round(float(p), 4) for c, p in zip(classes, probas)}
-            rf_expected = (
-                0.15 * rf_probs.get("basic", 0.0)
-                + 0.45 * rf_probs.get("medium", 0.0)
-                + 0.85 * rf_probs.get("advanced", 0.0)
-            )
-            complexity_score = 0.65 * nlp_score + 0.35 * rf_expected
+            rf_engine = "sklearn_300_tree_joblib"
         except Exception:
-            pass
+            rf_probs = None
+
+    if rf_probs is None and COMPACT_RF_RUNTIME.loaded:
+        probs_compact = COMPACT_RF_RUNTIME.predict_proba_single(
+            subject=subject,
+            chapter=chapter,
+            topic_tag=topic_tag,
+            question_type=resolved_qtype,
+            ideal_time_sec=resolved_time,
+            has_diagram=bool(has_diagram),
+            marks=4.0,
+            negative_marks=-1.0,
+        )
+        if probs_compact:
+            rf_probs = probs_compact
+            rf_engine = "numpy_300_tree_compact_forest"
+
+    rf_predicted_tier: str | None = None
+    if rf_probs:
+        rf_predicted_tier = max(rf_probs.items(), key=lambda kv: kv[1])[0]
+        rf_expected = (
+            0.15 * rf_probs.get("basic", 0.0)
+            + 0.45 * rf_probs.get("medium", 0.0)
+            + 0.85 * rf_probs.get("advanced", 0.0)
+        )
+        complexity_score = 0.65 * nlp_score + 0.35 * rf_expected
 
     if complexity_score < 0.28:
         tier = "basic"
@@ -350,10 +388,20 @@ def predict_cold_start_difficulty_and_irt(
 
     return {
         "predicted_difficulty": tier,
+        "rf_predicted_difficulty": rf_predicted_tier,
+        "rf_engine": rf_engine,
         "complexity_score": round(complexity_score, 4),
         "irt_params": {"a": a_est, "b": b_est, "c": c_est},
         "nlp_features": feats,
         "rf_probabilities": rf_probs,
+        "resolved_metadata": {
+            "subject": subject,
+            "chapter": chapter,
+            "topic_tag": topic_tag,
+            "question_type": resolved_qtype,
+            "ideal_time_sec": resolved_time,
+            "has_diagram": bool(has_diagram),
+        },
     }
 
 

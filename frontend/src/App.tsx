@@ -1,20 +1,19 @@
 import { useEffect, useState } from "react";
-import { AppShell } from "./components/layout/AppShell";
+import { AppShell, type AppView } from "./components/layout/AppShell";
 import { Dashboard } from "./features/dashboard/Dashboard";
 import { ExamScreen } from "./features/adaptive-paper/ExamScreen";
+import { ModelAuditView } from "./features/mlops/ModelAuditView";
 import { AuthPage } from "./features/auth/AuthPage";
 import { OnboardingPage } from "./features/auth/OnboardingPage";
 import { api } from "./lib/api";
 import { clearSession, loadSession } from "./lib/session";
 import type { Student } from "./types/auth";
 
-type View = "dashboard" | "exam";
-
 export default function App() {
   const [student, setStudent] = useState<Student | null>(null);
   const [checkingSession, setCheckingSession] = useState(true);
 
-  const [view, setView] = useState<View>("dashboard");
+  const [view, setView] = useState<AppView>("dashboard");
   const [paperRunId, setPaperRunId] = useState(0);
   const [nextPaperNumber, setNextPaperNumber] = useState(1);
   const [selectedTopicId, setSelectedTopicId] = useState<string | undefined>(undefined);
@@ -51,11 +50,11 @@ export default function App() {
     setView("exam");
   }
 
-  function handleNavigate(nextView: View) {
+  function handleNavigate(nextView: AppView) {
     if (nextView === "exam") {
       handleStartPaper(undefined);
     } else {
-      setView("dashboard");
+      setView(nextView);
     }
   }
 
@@ -100,6 +99,7 @@ export default function App() {
           onStartNext={() => handleStartPaper(selectedTopicId)}
         />
       )}
+      {view === "audit" && <ModelAuditView />}
     </AppShell>
   );
 }

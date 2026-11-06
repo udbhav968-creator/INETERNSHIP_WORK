@@ -10,6 +10,7 @@ import {
 } from "../../types";
 import { Card } from "../../components/ui/Card";
 import { Button } from "../../components/ui/Button";
+import { DifficultyBadge } from "../../components/ui/Badge";
 
 interface ExamScreenProps {
   studentId: string;
@@ -85,15 +86,68 @@ export function ExamScreen({
     if (!(index in firstInteractionAt.current)) {
       firstInteractionAt.current[index] = Date.now();
     }
+    if (answers[index] === optionIndex) {
+      optionSwitchCounts.current[index] = (optionSwitchCounts.current[index] ?? 0) + 1;
+      setAnswers((prev) => {
+        const next = { ...prev };
+        delete next[index];
+        return next;
+      });
+      return;
+    }
     if (index in answers && answers[index] !== optionIndex) {
       optionSwitchCounts.current[index] = (optionSwitchCounts.current[index] ?? 0) + 1;
     }
     setAnswers((prev) => ({ ...prev, [index]: optionIndex }));
   }
 
+  function clearCurrentOption() {
+    if (!(index in answers)) return;
+    optionSwitchCounts.current[index] = (optionSwitchCounts.current[index] ?? 0) + 1;
+    setAnswers((prev) => {
+      const next = { ...prev };
+      delete next[index];
+      return next;
+    });
+  }
+
   function goTo(i: number) {
+    if (i < 0 || i >= questions.length) return;
     setIndex(i);
   }
+
+  useEffect(() => {
+    if (loadState !== "ready" || confirmingSubmit) return;
+    function onKeyDown(e: KeyboardEvent) {
+      const tag = (e.target as HTMLElement | null)?.tagName?.toLowerCase();
+      if (tag === "input" || tag === "textarea" || tag === "select") return;
+      if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        setIndex((prev) => Math.max(0, prev - 1));
+      } else if (e.key === "ArrowRight") {
+        e.preventDefault();
+        setIndex((prev) => Math.min(questions.length - 1, prev + 1));
+      } else {
+        const k = e.key.toLowerCase();
+        const optMap: Record<string, number> = {
+          a: 0,
+          b: 1,
+          c: 2,
+          d: 3,
+          "1": 0,
+          "2": 1,
+          "3": 2,
+          "4": 3,
+        };
+        if (k in optMap && current && optMap[k] < current.options.length) {
+          e.preventDefault();
+          selectOption(optMap[k]);
+        }
+      }
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [loadState, confirmingSubmit, index, questions.length, answers, current]);
 
   async function handleSubmitPaper() {
     setConfirmingSubmit(false);
@@ -198,7 +252,7 @@ export function ExamScreen({
             })}
           </div>
           <p className="mt-3 text-xs text-midnight-700/60">
-            {answeredCount} of {questions.length} answered
+            {answeredCount} of {questions.length} answered · {unansweredCount} skipped (0 marks)
           </p>
         </Card>
 
@@ -218,7 +272,7 @@ export function ExamScreen({
       <div className="order-1 flex-1 lg:order-2">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
           <p className="text-sm font-medium text-midnight-700/60">
-            Question {index + 1} of {questions.length}
+            Question {index + 1} of {questions.length} · +4 / -1 NEET Marking
           </p>
           <div className="flex items-center gap-2">
             <span className="rounded-lg bg-midnight-900/5 px-2.5 py-1 text-xs font-mono font-medium text-midnight-800">
@@ -231,9 +285,12 @@ export function ExamScreen({
         </div>
 
         <Card className="p-7">
-          <p className="mb-1 text-xs font-medium uppercase tracking-wide text-midnight-700/50">
-            {current.topic_id}
-          </p>
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+            <p className="text-xs font-medium uppercase tracking-wide text-midnight-700/50">
+              {current.topic_id}
+            </p>
+            <DifficultyBadge level={current.difficulty} />
+          </div>
           <p className="mb-6 text-lg leading-relaxed text-midnight-950">{current.text}</p>
 
           <div className="flex flex-col gap-3">
@@ -262,10 +319,17 @@ export function ExamScreen({
             })}
           </div>
 
-          <div className="mt-6 flex items-center justify-between">
+          <div className="mt-6 flex items-center justify-between gap-2">
             <Button variant="secondary" onClick={() => goTo(index - 1)} disabled={index === 0}>
               Previous
             </Button>
+
+            {index in answers && (
+              <Button variant="ghost" size="sm" onClick={clearCurrentOption}>
+                Clear response (Skip)
+              </Button>
+            )}
+
             <Button
               variant="secondary"
               onClick={() => goTo(index + 1)}
@@ -303,7 +367,7 @@ function ConfirmSubmitDialog({
         <p className="font-display text-lg font-semibold text-midnight-950">Submit this paper?</p>
         <p className="mt-2 text-sm text-midnight-700/70">
           {unansweredCount > 0
-            ? `You have ${unansweredCount} unanswered question${unansweredCount === 1 ? "" : "s"}. ` +
+            ? `You have ${unansweredCount} skipped question${unansweredCount === 1 ? "" : "s"} (0 marks, avoiding -1 negative marking). ` +
               "You won't be able to change your answers after submitting."
             : "You won't be able to change your answers after submitting."}
         </p>
@@ -360,7 +424,7 @@ function ResultsView({
         <p className="text-white/70">{review.score_percent}% correct</p>
         {unanswered > 0 && (
           <p className="mt-1 text-xs text-white/50">
-            {unanswered} question{unanswered === 1 ? "" : "s"} left unanswered
+            {unanswered} question{unanswered === 1 ? "" : "s"} strategically skipped (0 marks)
           </p>
         )}
       </Card>

@@ -233,3 +233,175 @@ export interface DashboardSnapshot {
   v2_insights: V2StudentInsights;
   paper_history: PaperHistorySummary[];
 }
+
+export interface ColdStartItemInput {
+  question_text: string;
+  options?: string[];
+  has_diagram?: boolean;
+  subject?: string;
+  chapter?: string;
+  topic_tag?: string;
+  question_type?: string;
+  ideal_time_sec?: number;
+}
+
+export interface ColdStartItemPrediction {
+  predicted_difficulty: Difficulty;
+  rf_predicted_difficulty: Difficulty | null;
+  rf_engine: string;
+  complexity_score: number;
+  irt_params: {
+    a: number;
+    b: number;
+    c: number;
+  };
+  nlp_features: {
+    word_count: number;
+    formula_density: number;
+    numerical_complexity: number;
+    negation_trap: number;
+    distractor_similarity: number;
+  };
+  rf_probabilities: Record<string, number> | null;
+  resolved_metadata: {
+    subject: string;
+    chapter: string;
+    topic_tag: string;
+    question_type: string;
+    ideal_time_sec: number;
+    has_diagram: boolean;
+  };
+  mirt_dimension: "conceptual" | "formula" | "numerical";
+  dina_q_vector: Record<string, number>;
+  active_cognitive_skills: Array<{
+    skill_id: string;
+    name: string;
+    description: string;
+  }>;
+}
+
+export interface MlopsHealthAndDrift {
+  feature_store: {
+    p50_ms: number;
+    p95_ms: number;
+    p99_ms: number;
+    cached_students: number;
+    total_ops: number;
+  };
+  drift_and_calibration: {
+    status: string;
+    psi_difficulty_drift: number;
+    brier_score: number;
+    expected_calibration_error: number;
+    mean_predicted_prob: number;
+    empirical_accuracy: number;
+    sample_size: number;
+    retraining_recommended: boolean;
+  };
+  models_loaded: Record<string, boolean | number>;
+}
+
+export interface MlopsAuditOverview {
+  health_and_drift: MlopsHealthAndDrift;
+  corpus_integrity: {
+    verified_questions_in_db: number;
+    canonical_chapters_in_db: number;
+    subject_question_counts: Record<string, number>;
+    difficulty_tier_counts: Record<string, number>;
+    rag_ncert_chapters: number;
+    calibrated_irt_items: number;
+    dag_nodes_count: number;
+    dag_edges_count: number;
+    dag_acyclic: boolean;
+  };
+  validation_report: {
+    pipeline_status?: string;
+    execution_time_seconds?: number;
+    random_forest_holdout_evaluation?: {
+      training_rows: number;
+      testing_rows: number;
+      correct_predictions: number;
+      holdout_accuracy: number;
+      macro_f1: number;
+      weighted_f1: number;
+      confusion_matrix_labels: string[];
+      confusion_matrix: number[][];
+      per_class_metrics: Record<
+        string,
+        {
+          precision: number;
+          recall: number;
+          f1_score: number;
+          support: number;
+        }
+      >;
+    };
+    stratified_5fold_cross_validation?: {
+      n_splits: number;
+      fold_accuracies: number[];
+      mean_cv_accuracy: number;
+      std_cv_accuracy: number;
+      mean_cv_macro_f1: number;
+      mean_cv_log_loss: number;
+      oof_multiclass_brier_score: number;
+    };
+    irt_3pl_calibration_summary?: {
+      calibrated_questions: number;
+      discrimination_a_range: [number, number];
+      difficulty_b_range: [number, number];
+      guessing_c_range: [number, number];
+    };
+  };
+  harness_benchmark: {
+    harness_status?: string;
+    execution_time_seconds?: number;
+    persona_simulations?: {
+      strong_master?: {
+        final_level: string;
+        final_mastery_prob: number;
+        final_theta: number;
+        estimated_percentile: number;
+        invariants_satisfied: boolean;
+      };
+      foundational_struggler?: {
+        final_level: string;
+        final_mastery_prob: number;
+        final_theta: number;
+        detected_bottlenecks: number;
+        invariants_satisfied: boolean;
+      };
+      impulsive_guesser_telemetry_audit?: {
+        deliberate_posterior: number;
+        impulsive_guess_posterior: number;
+        damping_delta: number;
+        invariants_satisfied: boolean;
+      };
+      spaced_repetition_learner?: {
+        peak_mastery: number;
+        decayed_mastery_after_168h: number;
+        retention_urgency: number;
+        invariants_satisfied: boolean;
+      };
+    };
+    linucb_vs_random_ablation?: {
+      n_rounds: number;
+      linucb_mean_zpd_alignment: number;
+      random_mean_zpd_alignment: number;
+      linucb_mean_fisher_info: number;
+      random_mean_fisher_info: number;
+      linucb_cumulative_regret: number;
+      random_cumulative_regret: number;
+      linucb_outperforms_random: boolean;
+    };
+    latency_sla_benchmarks?: Record<
+      string,
+      | boolean
+      | {
+          p50_ms: number;
+          p95_ms: number;
+          p99_ms: number;
+        }
+    >;
+  };
+  chapters_by_subject: Record<string, string[]>;
+}

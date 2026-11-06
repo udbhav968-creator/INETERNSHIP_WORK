@@ -3,7 +3,11 @@ import type {
   Analytics,
   AttemptPayload,
   AttemptResult,
+  ColdStartItemInput,
+  ColdStartItemPrediction,
   DashboardSnapshot,
+  MlopsAuditOverview,
+  MlopsHealthAndDrift,
   PaperHistorySummary,
   PaperReviewOut,
   QuestionOut,
@@ -34,6 +38,9 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const headers: Record<string, string> = { "Content-Type": "application/json" };
   if (session?.access_token) {
     headers.Authorization = `Bearer ${session.access_token}`;
+  }
+  if (session?.vault_token) {
+    headers["X-Klassed-Vault"] = session.vault_token;
   }
   if (session?.student_id) {
     const journalHdr = encodeJournalHeader(session.student_id);
@@ -128,5 +135,15 @@ export const api = {
         time_taken_seconds: timeTakenSeconds,
         option_switches: optionSwitches,
       }),
+    }),
+
+  getMlopsHealthAndDrift: () => request<MlopsHealthAndDrift>("/mlops/health_and_drift"),
+
+  getMlopsAuditOverview: () => request<MlopsAuditOverview>("/mlops/audit_overview"),
+
+  predictColdStartItem: (payload: ColdStartItemInput) =>
+    request<ColdStartItemPrediction>("/mlops/predict_cold_start_item", {
+      method: "POST",
+      body: JSON.stringify(payload),
     }),
 };

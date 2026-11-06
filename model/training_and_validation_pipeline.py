@@ -22,6 +22,7 @@ from .importance_calculator import compute_importance
 from .irt_3pl_model import CALIBRATED_ITEMS, calibrate_question_bank
 from .knowledge_graph_dag import DAG_NODES, get_all_ancestors
 from .rag_socratic_engine import _INDEX as RAG_INDEX
+from .rf_compact_runtime import export_rf_compact_forest, reload_compact_rf_runtime
 from .validate_question_bank import validate as validate_qbank
 from .validate_weightage_file import validate as validate_weightage
 
@@ -166,19 +167,22 @@ def run_deep_training_and_validation(save_artifacts: bool = True) -> dict:
         for i, cls_name in enumerate(classes)
     }
 
-    if save_artifacts and challenger_promoted:
-        joblib.dump(champion_pipe, MODEL_FILE)
-        metrics_payload = {
-            "model": "RandomForestClassifier",
-            "target": TARGET,
-            "training_rows": len(X_train),
-            "testing_rows": len(X_test),
-            "accuracy": holdout_accuracy,
-            "classes": classes,
-            "features": FEATURES,
-        }
-        with open(METRICS_FILE, "w", encoding="utf-8") as f:
-            json.dump(metrics_payload, f, indent=2)
+    if save_artifacts:
+        export_rf_compact_forest(champion_pipe)
+        reload_compact_rf_runtime()
+        if challenger_promoted:
+            joblib.dump(champion_pipe, MODEL_FILE)
+            metrics_payload = {
+                "model": "RandomForestClassifier",
+                "target": TARGET,
+                "training_rows": len(X_train),
+                "testing_rows": len(X_test),
+                "accuracy": holdout_accuracy,
+                "classes": classes,
+                "features": FEATURES,
+            }
+            with open(METRICS_FILE, "w", encoding="utf-8") as f:
+                json.dump(metrics_payload, f, indent=2)
 
     irt_items = CALIBRATED_ITEMS if len(CALIBRATED_ITEMS) >= 2471 else calibrate_question_bank()
     a_vals = [v["a"] for v in irt_items.values()]

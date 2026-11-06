@@ -3,11 +3,42 @@ import type { Student } from "../types/auth";
 
 const STORAGE_KEY = "klassed.student";
 const JOURNAL_KEY_PREFIX = "klassed.journal.";
+const VAULTS_STORAGE_KEY = "klassed.vaults";
 
 export type CompactJournalItem = [number, string, string, number, number, number, number];
 
+export interface VaultEntry {
+  vault_token: string;
+  student_id: string;
+}
+
+function readVaultMap(): Record<string, VaultEntry> {
+  const raw = localStorage.getItem(VAULTS_STORAGE_KEY);
+  if (!raw) return {};
+  try {
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" ? (parsed as Record<string, VaultEntry>) : {};
+  } catch {
+    return {};
+  }
+}
+
 export function saveSession(student: Student): void {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(student));
+  if (student.email && student.vault_token && student.student_id) {
+    const map = readVaultMap();
+    map[student.email.trim().toLowerCase()] = {
+      vault_token: student.vault_token,
+      student_id: student.student_id,
+    };
+    localStorage.setItem(VAULTS_STORAGE_KEY, JSON.stringify(map));
+  }
+}
+
+export function loadVaultByEmail(email: string): VaultEntry | null {
+  if (!email) return null;
+  const map = readVaultMap();
+  return map[email.trim().toLowerCase()] ?? null;
 }
 
 export function loadSession(): Student | null {

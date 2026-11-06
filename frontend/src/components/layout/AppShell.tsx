@@ -1,18 +1,34 @@
 import { ReactNode } from "react";
 
-type View = "dashboard" | "exam";
+export type AppView = "dashboard" | "exam" | "audit";
 
 interface AppShellProps {
   children: ReactNode;
-  activeView: View;
-  onNavigate: (view: View) => void;
+  activeView: AppView;
+  onNavigate: (view: AppView) => void;
   studentId: string;
   onSwitchAccount?: () => void;
 }
 
-const navItems: { key: View; label: string; icon: string }[] = [
-  { key: "dashboard", label: "Dashboard", icon: "M3 12l9-9 9 9M5 10v10a1 1 0 001 1h3v-6h6v6h3a1 1 0 001-1V10" },
-  { key: "exam", label: "Practice Paper", icon: "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" },
+const navItems: { key: AppView; label: string; shortLabel: string; icon: string }[] = [
+  {
+    key: "dashboard",
+    label: "Dashboard",
+    shortLabel: "Dashboard",
+    icon: "M3 12l9-9 9 9M5 10v10a1 1 0 001 1h3v-6h6v6h3a1 1 0 001-1V10",
+  },
+  {
+    key: "exam",
+    label: "Practice Paper",
+    shortLabel: "Practice",
+    icon: "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4",
+  },
+  {
+    key: "audit",
+    label: "Model & MLOps Audit",
+    shortLabel: "ML Audit",
+    icon: "M9 17v-6m3 6V7m3 10v-4M5 21h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2z",
+  },
 ];
 
 export function AppShell({ children, activeView, onNavigate, studentId, onSwitchAccount }: AppShellProps) {
@@ -48,7 +64,7 @@ export function AppShell({ children, activeView, onNavigate, studentId, onSwitch
         <div className="rounded-xl border border-midnight-900/[0.06] bg-midnight-900/[0.03] px-3 py-3">
           <p className="text-xs font-medium text-midnight-700/60">Signed in as</p>
           <p className="truncate text-sm font-semibold text-midnight-900">{studentId}</p>
-          <p className="mt-1 text-[11px] text-midnight-700/60">Enterprise v2 · 3PL IRT & BKT Active</p>
+          <p className="mt-1 text-[11px] text-midnight-700/60">Enterprise v2 · 10-Model Adaptive Stack</p>
           {onSwitchAccount && (
             <button
               type="button"
@@ -73,11 +89,11 @@ export function AppShell({ children, activeView, onNavigate, studentId, onSwitch
             <button
               key={item.key}
               onClick={() => onNavigate(item.key)}
-              className={`focus-ring rounded-lg px-2.5 py-1.5 text-xs font-medium ${
+              className={`focus-ring rounded-lg px-2 py-1.5 text-xs font-medium ${
                 activeView === item.key ? "bg-midnight-900 text-white" : "text-midnight-700"
               }`}
             >
-              {item.label}
+              {item.shortLabel}
             </button>
           ))}
           {onSwitchAccount && (

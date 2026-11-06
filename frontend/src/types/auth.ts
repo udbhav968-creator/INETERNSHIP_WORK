@@ -9,6 +9,7 @@ export interface Student {
   onboarded: boolean;
   global_theta?: number;
   access_token?: string | null;
+  vault_token?: string | null;
 }
 
 export interface SignupPayload {

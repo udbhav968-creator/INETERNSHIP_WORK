@@ -608,6 +608,7 @@ def test_15_v3_advanced_psychometric_and_nlp_upgrades():
     before_b = get_item_params("NEET_2025_PHY_001").b
     updated_item = recalibrate_item_parameters_online("NEET_2025_PHY_001", student_theta=-1.0, is_correct=True, time_ratio=0.7)
     assert updated_item.b < before_b, "Item solved easily by low-theta student should become slightly easier (lower b_i)"
+    CALIBRATED_ITEMS.pop("NEET_2025_PHY_001", None)
 
 
     dag_boosts = propagate_dag_belief_update(
@@ -960,6 +961,198 @@ def test_23_scientific_notation_traps_paper_history_and_remediation_urgency():
             db.close()
 
 
+
+
+def test_24_serverless_vault_relogin_compact_rf_parity_and_full_audit():
+    import ast
+    import base64
+    import csv
+    import tokenize
+    from model.rf_compact_runtime import COMPACT_RF_RUNTIME
+
+    assert COMPACT_RF_RUNTIME.loaded is True
+    pipeline = joblib.load(MODEL_DIR / "question_difficulty_model.joblib")
+    classes = [str(c) for c in pipeline.classes_]
+    sample_rows = [
+        ("Physics", "Electrostatics", "Electric Field", "Single_Choice_MCQ", 95, False),
+        ("Chemistry", "Chemical & Ionic Equilibrium", "Ionic Equilibrium", "Assertion_Reason", 110, False),
+        ("Biology", "Plant Kingdom", "Algae", "Diagram_Based", 45, True),
+    ]
+    for subj, chap, ttag, qtype, itime, diag in sample_rows:
+        df_one = pd.DataFrame([{
+            "subject": subj,
+            "chapter": chap,
+            "topic_tag": ttag,
+            "question_type": qtype,
+            "ideal_time_sec": itime,
+            "has_diagram": int(diag),
+            "marks": 4,
+            "negative_marks": -1,
+        }])
+        sk_probs = {c: float(p) for c, p in zip(classes, pipeline.predict_proba(df_one)[0])}
+        np_probs = COMPACT_RF_RUNTIME.predict_proba_single(
+            subject=subj,
+            chapter=chap,
+            topic_tag=ttag,
+            question_type=qtype,
+            ideal_time_sec=itime,
+            has_diagram=diag,
+        )
+        for c in classes:
+            assert abs(sk_probs[c] - np_probs[c]) < 1e-3, f"RF parity drift on {c}: {sk_probs} vs {np_probs}"
+
+    client = TestClient(app)
+    r_audit = client.get("/mlops/audit_overview")
+    assert r_audit.status_code == 200
+    audit = r_audit.json()
+    assert audit["corpus_integrity"]["verified_questions_in_db"] == 2471
+    assert audit["corpus_integrity"]["canonical_chapters_in_db"] == 65
+    assert audit["corpus_integrity"]["dag_acyclic"] is True
+    assert audit["health_and_drift"]["models_loaded"]["rf_300_tree_compact_serverless_runtime"] is True
+    assert audit["validation_report"]["pipeline_status"] == "PASSED"
+    assert audit["harness_benchmark"]["harness_status"] == "PASSED"
+    assert set(audit["chapters_by_subject"].keys()) >= {"Physics", "Chemistry", "Biology"}
+
+    r_cal = client.post(
+        "/mlops/predict_cold_start_item",
+        json={
+            "question_text": "Two point charges +4 uC and -9 uC are separated by 0.30 m. Calculate electric field E = k*q/r^2.",
+            "options": ["5.2 x 10^6 N/C", "5.2 x 10^3 N/C", "2.0 x 10^6 N/C", "3.6 x 10^5 N/C"],
+            "has_diagram": False,
+            "subject": "Physics",
+            "chapter": "Electrostatics",
+            "topic_tag": "Electric Field",
+        },
+    )
+    assert r_cal.status_code == 200
+    cal = r_cal.json()
+    assert cal["rf_probabilities"] is not None
+    assert abs(sum(cal["rf_probabilities"].values()) - 1.0) < 0.01
+    assert cal["mirt_dimension"] in ("conceptual", "formula", "numerical")
+    assert len(cal["active_cognitive_skills"]) >= 2
+
+    email = "vault_relogin_verifier@klassed.in"
+    pw = "VaultSecurePass123!"
+    sid = None
+    try:
+        db = SessionLocal()
+        old = db.query(Student).filter_by(email=email).first()
+        if old:
+            db.query(TestAttempt).filter_by(student_id=old.student_id).delete()
+            db.query(StudentTopicState).filter_by(student_id=old.student_id).delete()
+            db.delete(old)
+            db.commit()
+        db.close()
+
+        r_up = client.post("/auth/signup", json={"name": "Vault Verifier", "email": email, "password": pw})
+        assert r_up.status_code == 200
+        up_body = r_up.json()
+        sid = up_body["student_id"]
+        jwt_tok = up_body["access_token"]
+        vault_tok = up_body["vault_token"]
+        assert jwt_tok and vault_tok
+
+        r_on = client.post(
+            f"/students/{sid}/onboarding",
+            json={"class_level": "dropper", "target_neet_year": 2027},
+            headers={"Authorization": f"Bearer {jwt_tok}", "X-Klassed-Vault": vault_tok},
+        )
+        assert r_on.status_code == 200
+        on_body = r_on.json()
+        assert on_body["onboarded"] is True
+        vault_tok = on_body["vault_token"]
+        assert vault_tok
+
+        qs = client.get(
+            f"/students/{sid}/next_paper?topic_id=Electrostatics",
+            headers={"Authorization": f"Bearer {on_body['access_token']}"},
+        ).json()
+        journal_b64 = base64.urlsafe_b64encode(
+            json.dumps([[1, qs[0]["question_id"], "a", 42, 0, 400, 42000]]).encode("utf-8")
+        ).decode("ascii").rstrip("=")
+
+        db = SessionLocal()
+        db.query(TestAttempt).filter_by(student_id=sid).delete()
+        db.query(StudentTopicState).filter_by(student_id=sid).delete()
+        db.query(Student).filter_by(student_id=sid).delete()
+        db.commit()
+        db.close()
+
+        r_wrong_pw = client.post(
+            "/auth/login",
+            json={"email": email, "password": "WrongPassword999!"},
+            headers={"X-Klassed-Vault": vault_tok},
+        )
+        assert r_wrong_pw.status_code == 401
+
+        db = SessionLocal()
+        db.query(Student).filter_by(student_id=sid).delete()
+        db.commit()
+        db.close()
+
+        tampered_vault = vault_tok[:-4] + "ZZZZ"
+        r_tampered = client.post(
+            "/auth/login",
+            json={"email": email, "password": pw},
+            headers={"X-Klassed-Vault": tampered_vault},
+        )
+        assert r_tampered.status_code == 401
+
+        r_relogin = client.post(
+            "/auth/login",
+            json={"email": email, "password": pw},
+            headers={"X-Klassed-Vault": vault_tok, "X-Klassed-Journal": journal_b64},
+        )
+        assert r_relogin.status_code == 200
+        re_body = r_relogin.json()
+        assert re_body["student_id"] == sid
+        assert re_body["onboarded"] is True
+        assert re_body["class_level"] == "dropper"
+
+        r_ana = client.get(
+            f"/students/{sid}/analytics",
+            headers={"Authorization": f"Bearer {re_body['access_token']}"},
+        )
+        assert r_ana.status_code == 200 and r_ana.json()["total_attempts"] == 1
+    finally:
+        if sid:
+            from model.linucb_bandit import reset_student_bandit
+            reset_student_bandit(sid, remove=True)
+            db = SessionLocal()
+            db.query(TestAttempt).filter_by(student_id=sid).delete()
+            db.query(StudentTopicState).filter_by(student_id=sid).delete()
+            db.query(Student).filter_by(student_id=sid).delete()
+            db.commit()
+            db.close()
+
+    assert not (PROJECT_ROOT / "data" / "tagged_questions" / "biology_questions.TEMPLATE.json").exists()
+    assert not (PROJECT_ROOT / "data" / "taxonomy" / "biology_taxonomy.TEMPLATE.json").exists()
+    with open(PROJECT_ROOT / "data" / "training" / "student_attempts.csv", encoding="utf-8") as f:
+        att_rows = list(csv.DictReader(f))
+    assert len(att_rows) == 0, f"Unexpected residual rows in student_attempts.csv: {len(att_rows)}"
+
+    py_roots = [PROJECT_ROOT / "model", PROJECT_ROOT / "backend", PROJECT_ROOT / "api"]
+    for root in py_roots:
+        for py_file in root.rglob("*.py"):
+            with tokenize.open(py_file) as tf:
+                for tok in tokenize.generate_tokens(tf.readline):
+                    assert tok.type != tokenize.COMMENT, f"Comment token found in {py_file}:{tok.start[0]}"
+            tree = ast.parse(py_file.read_text(encoding="utf-8"))
+            for node in ast.walk(tree):
+                if isinstance(node, (ast.Module, ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)):
+                    assert ast.get_docstring(node) is None, f"Docstring found in {py_file}"
+
+    line_marker = "/" + "/"
+    block_marker = "/" + "*"
+    for ts_file in (PROJECT_ROOT / "frontend" / "src").rglob("*"):
+        if ts_file.suffix not in (".ts", ".tsx") or ts_file.name == "vite-env.d.ts":
+            continue
+        for idx, line in enumerate(ts_file.read_text(encoding="utf-8").splitlines(), 1):
+            stripped = line.strip()
+            assert not stripped.startswith(line_marker), f"Line comment in {ts_file}:{idx}"
+            assert block_marker not in stripped, f"Block comment in {ts_file}:{idx}"
+
+
 if __name__ == "__main__":
     suites = [
         test_01_random_forest_model_and_live_inference,
@@ -985,6 +1178,7 @@ if __name__ == "__main__":
         test_21_dina_8_skill_q_matrix_and_lognormal_rt_model,
         test_22_monte_carlo_conformal_simulator_and_graph_laplacian_leverage,
         test_23_scientific_notation_traps_paper_history_and_remediation_urgency,
+        test_24_serverless_vault_relogin_compact_rf_parity_and_full_audit,
     ]
     for fn in suites:
         fn()

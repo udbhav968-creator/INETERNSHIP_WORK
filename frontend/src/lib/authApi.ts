@@ -1,4 +1,4 @@
-import { loadSession } from "./session";
+import { encodeJournalHeader, loadSession, loadVaultByEmail } from "./session";
 import type { LoginPayload, OnboardingPayload, SignupPayload, Student } from "../types/auth";
 
 const API_BASE =
@@ -27,9 +27,18 @@ export async function signup(payload: SignupPayload): Promise<Student> {
 }
 
 export async function login(payload: LoginPayload): Promise<Student> {
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  const vault = loadVaultByEmail(payload.email);
+  if (vault?.vault_token) {
+    headers["X-Klassed-Vault"] = vault.vault_token;
+    const journalHdr = encodeJournalHeader(vault.student_id);
+    if (journalHdr) {
+      headers["X-Klassed-Journal"] = journalHdr;
+    }
+  }
   const res = await fetch(`${API_BASE}/auth/login`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers,
     body: JSON.stringify(payload),
   });
   return parseOrThrow(res);
@@ -39,10 +48,14 @@ export async function completeOnboarding(
   studentId: string,
   payload: OnboardingPayload
 ): Promise<Student> {
-  const token = loadSession()?.access_token;
+  const session = loadSession();
   const headers: Record<string, string> = { "Content-Type": "application/json" };
-  if (token) {
-    headers.Authorization = `Bearer ${token}`;
+  if (session?.access_token) {
+    headers.Authorization = `Bearer ${session.access_token}`;
+  }
+  const vault = session?.vault_token || (session?.email ? loadVaultByEmail(session.email)?.vault_token : null);
+  if (vault) {
+    headers["X-Klassed-Vault"] = vault;
   }
   const res = await fetch(`${API_BASE}/students/${encodeURIComponent(studentId)}/onboarding`, {
     method: "POST",

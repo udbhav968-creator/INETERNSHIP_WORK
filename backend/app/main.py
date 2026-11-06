@@ -5,12 +5,13 @@ from datetime import datetime, timezone
 from fastapi import FastAPI, Depends, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse, Response
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from . import schemas, auth
 from .analytics import build_analytics
 from .database import get_db, init_db
-from .db_models import Question, Student, StudentTopicState, TestAttempt
+from .db_models import Question, Student, StudentTopicState, TestAttempt, Topic
 from .state_machine import process_answer
 from .time_tracking import update_pace, expected_time
 from .paper_generator import generate_paper
@@ -22,6 +23,7 @@ from model.irt_3pl_model import (
     irt_3pl_probability,
     update_student_theta_map,
     theta_to_percentile,
+    classify_cognitive_skill_dimension,
     compute_mirt_3d_profile,
     predict_cold_start_difficulty_and_irt,
     recalibrate_item_parameters_online,
@@ -40,8 +42,13 @@ from model.state_machine.bkt_model import (
 from model.linucb_bandit import record_bandit_feedback
 from model.rag_socratic_engine import generate_socratic_remediation, _INDEX as _RAG_INDEX
 from model.feature_store_and_drift import FEATURE_STORE, DRIFT_MONITOR
-from model.dina_cognitive_diagnosis import COGNITIVE_SKILLS, compute_dina_and_rt_profile
+from model.dina_cognitive_diagnosis import (
+    COGNITIVE_SKILLS,
+    compute_dina_and_rt_profile,
+    extract_item_q_vector,
+)
 from model.monte_carlo_conformal_neet import run_monte_carlo_conformal_neet_simulation
+from model.rf_compact_runtime import COMPACT_RF_RUNTIME
 
 with open(MODEL_DIR / "topic_importance.json", encoding="utf-8") as f:
     _TOPIC_IMPORTANCE = json.load(f)
@@ -91,8 +98,12 @@ def signup(payload: schemas.SignupIn, db: Session = Depends(get_db)):
 
 
 @app.post("/auth/login", response_model=schemas.StudentOut)
-def login(payload: schemas.LoginIn, db: Session = Depends(get_db)):
-    return auth.login(db, payload.email, payload.password)
+def login(payload: schemas.LoginIn, request: Request, db: Session = Depends(get_db)):
+    vault_hdr = request.headers.get("x-klassed-vault")
+    student = auth.login(db, payload.email, payload.password, vault_token=vault_hdr)
+    _sync_serverless_context(request, db, student.student_id)
+    db.refresh(student)
+    return auth._attach_tokens(student)
 
 
 @app.post("/students/{student_id}/onboarding", response_model=schemas.StudentOut)
@@ -295,6 +306,10 @@ def _sync_serverless_context(
 ) -> None:
     if request is None:
         return
+
+    vault_hdr = request.headers.get("x-klassed-vault")
+    if vault_hdr:
+        auth.hydrate_student_from_vault(db, vault_hdr)
 
     claims = None
     auth_header = request.headers.get("authorization") or ""
@@ -748,11 +763,41 @@ def get_dashboard_snapshot(student_id: str, request: Request, db: Session = Depe
 
 @app.post("/mlops/predict_cold_start_item")
 def predict_cold_start_item(payload: schemas.ColdStartItemIn):
-    return predict_cold_start_difficulty_and_irt(
+    subject_val = payload.subject or "Physics"
+    chapter_val = payload.chapter or "Laws of Motion"
+    topic_tag_val = payload.topic_tag or chapter_val
+    res = predict_cold_start_difficulty_and_irt(
         question_text=payload.question_text,
         options=payload.options,
         has_diagram=bool(payload.has_diagram),
+        subject=subject_val,
+        chapter=chapter_val,
+        topic_tag=topic_tag_val,
+        question_type=payload.question_type,
+        ideal_time_sec=payload.ideal_time_sec,
     )
+    resolved_qtype = str((res.get("resolved_metadata") or {}).get("question_type") or "")
+    mirt_dim = classify_cognitive_skill_dimension(payload.question_text, resolved_qtype)
+    q_vec = extract_item_q_vector(
+        question_text=payload.question_text,
+        topic_id=chapter_val,
+        difficulty=str(res.get("predicted_difficulty") or "medium"),
+    )
+    active_skills = [
+        {
+            "skill_id": s["skill_id"],
+            "name": s["name"],
+            "description": s["description"],
+        }
+        for s in COGNITIVE_SKILLS
+        if q_vec.get(s["skill_id"]) == 1
+    ]
+    return {
+        **res,
+        "mirt_dimension": mirt_dim,
+        "dina_q_vector": q_vec,
+        "active_cognitive_skills": active_skills,
+    }
 
 
 @app.post("/remediation/socratic_hint", response_model=schemas.SocraticHintOut)
@@ -832,15 +877,77 @@ def get_mlops_health_and_drift(db: Session = Depends(get_db)):
         "feature_store": FEATURE_STORE.get_latency_percentiles(),
         "drift_and_calibration": DRIFT_MONITOR.evaluate_health(db_attempts),
         "models_loaded": {
-            "random_forest_difficulty_classifier": (MODEL_DIR / "question_difficulty_model.joblib").exists(),
+            "random_forest_difficulty_classifier": bool(
+                (MODEL_DIR / "question_difficulty_model.joblib").exists() or COMPACT_RF_RUNTIME.loaded
+            ),
+            "rf_300_tree_compact_serverless_runtime": bool(COMPACT_RF_RUNTIME.loaded),
             "bkt_bayesian_knowledge_tracing": len(_TOPIC_IMPORTANCE) == 65,
             "irt_3pl_psychometric_engine": len(CALIBRATED_ITEMS) >= 2471,
+            "mirt_3d_skill_profiler": True,
             "ncert_prerequisite_dag_nodes": len(DAG_NODES),
             "linucb_contextual_bandit": len(_TOPIC_IMPORTANCE) == 65,
             "rag_ncert_socratic_engine": len(_RAG_INDEX.chunks) == 65,
             "dina_8_skill_q_matrix": len(COGNITIVE_SKILLS) == 8,
             "monte_carlo_conformal_neet_simulator": len(_TOPIC_IMPORTANCE) == 65,
         },
+    }
+
+
+@app.get("/mlops/audit_overview")
+def get_mlops_audit_overview(db: Session = Depends(get_db)):
+    health = get_mlops_health_and_drift(db)
+
+    q_count = int(db.query(func.count(Question.question_id)).scalar() or 0)
+    t_count = int(db.query(func.count(Topic.topic_id)).scalar() or 0)
+    subj_rows = (
+        db.query(Topic.subject, func.count(Question.question_id))
+        .join(Question, Question.topic_id == Topic.topic_id)
+        .group_by(Topic.subject)
+        .all()
+    )
+    diff_rows = (
+        db.query(Question.difficulty, func.count(Question.question_id))
+        .group_by(Question.difficulty)
+        .all()
+    )
+
+    dag_edges_count = sum(len(meta.get("prerequisites", [])) for meta in DAG_NODES.values())
+
+    chapters_by_subject: dict[str, list[str]] = {"Physics": [], "Chemistry": [], "Biology": []}
+    for ch_name, meta in DAG_NODES.items():
+        subj = str(meta.get("subject", "Physics"))
+        chapters_by_subject.setdefault(subj, []).append(ch_name)
+    for subj in chapters_by_subject:
+        chapters_by_subject[subj].sort()
+
+    validation_report = {}
+    val_path = MODEL_DIR / "validation_report.json"
+    if val_path.exists():
+        with open(val_path, encoding="utf-8") as f:
+            validation_report = json.load(f)
+
+    harness_benchmark = {}
+    har_path = MODEL_DIR / "harness_benchmark_report.json"
+    if har_path.exists():
+        with open(har_path, encoding="utf-8") as f:
+            harness_benchmark = json.load(f)
+
+    return {
+        "health_and_drift": health,
+        "corpus_integrity": {
+            "verified_questions_in_db": q_count,
+            "canonical_chapters_in_db": t_count,
+            "subject_question_counts": {str(s): int(c) for s, c in subj_rows},
+            "difficulty_tier_counts": {str(d): int(c) for d, c in diff_rows},
+            "rag_ncert_chapters": len(_RAG_INDEX.chunks),
+            "calibrated_irt_items": len(CALIBRATED_ITEMS),
+            "dag_nodes_count": len(DAG_NODES),
+            "dag_edges_count": dag_edges_count,
+            "dag_acyclic": True,
+        },
+        "validation_report": validation_report,
+        "harness_benchmark": harness_benchmark,
+        "chapters_by_subject": chapters_by_subject,
     }
 
 
