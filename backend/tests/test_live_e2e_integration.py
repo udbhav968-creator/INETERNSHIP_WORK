@@ -121,7 +121,15 @@ with urllib.request.urlopen(f"{BASE}/students/{sid}/papers/1/review", timeout=15
     assert persisted_review["total_questions"] == 2
     assert persisted_review["paper_number"] == 1
     assert persisted_review["correct_count"] == review["correct_count"]
-    print(f"[PASS] 6. Paper Review Retrieval: matches submission exactly ({persisted_review['correct_count']}/2)")
+    print(f"[PASS] 6a. Paper Review Retrieval: matches submission exactly ({persisted_review['correct_count']}/2)")
+
+with urllib.request.urlopen(f"{BASE}/students/{sid}/papers/history", timeout=15) as res:
+    history = json.loads(res.read())
+    assert len(history) >= 1
+    assert history[0]["paper_number"] == 1
+    assert history[0]["total_questions"] == 2
+    assert "score_percent" in history[0]
+    print(f"[PASS] 6b. Paper History Summary: {len(history)} papers archived (Paper 1: {history[0]['score_percent']}%, topics={history[0]['topics']})")
 
 target_q = review["questions"][0]
 hint_payload = json.dumps({

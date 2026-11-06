@@ -98,6 +98,16 @@ class PaperReviewOut(BaseModel):
     questions: list[QuestionReviewOut]
 
 
+class PaperHistorySummaryOut(BaseModel):
+    paper_number: int
+    total_questions: int
+    correct_count: int
+    score_percent: float
+    total_time_seconds: int
+    timestamp: str
+    topics: list[str]
+
+
 class SubjectBreakdownOut(BaseModel):
     subject: str
     attempts: int

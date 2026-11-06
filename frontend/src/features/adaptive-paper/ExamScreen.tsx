@@ -29,6 +29,15 @@ export function ExamScreen({ studentId, paperNumber, topicId, onExit, onStartNex
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [review, setReview] = useState<PaperReviewOut | null>(null);
   const [confirmingSubmit, setConfirmingSubmit] = useState(false);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+
+  useEffect(() => {
+    if (loadState !== "ready") return;
+    const interval = setInterval(() => {
+      setElapsedSeconds((s) => s + 1);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [loadState]);
 
   // v2 SAINT+ fine-grained interaction telemetry refs
   const firstVisitedAt = useRef<Record<number, number>>({});
@@ -199,10 +208,18 @@ export function ExamScreen({ studentId, paperNumber, topicId, onExit, onStartNex
       </aside>
 
       <div className="order-1 flex-1 lg:order-2">
-        <div className="mb-3 flex items-center justify-between">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
           <p className="text-sm font-medium text-midnight-700/60">
             Question {index + 1} of {questions.length}
           </p>
+          <div className="flex items-center gap-2">
+            <span className="rounded-lg bg-midnight-900/5 px-2.5 py-1 text-xs font-mono font-medium text-midnight-800">
+              ⏱️ {Math.floor(elapsedSeconds / 60).toString().padStart(2, "0")}:{(elapsedSeconds % 60).toString().padStart(2, "0")}
+            </span>
+            <span className="rounded-lg bg-midnight-900/5 px-2.5 py-1 text-xs font-medium text-midnight-700/70">
+              Target: {current.expected_time_seconds ?? 90}s
+            </span>
+          </div>
         </div>
 
         <Card className="p-7">

@@ -1,6 +1,14 @@
 import { useEffect, useState } from "react";
 import { api, ApiError } from "../../lib/api";
-import type { Analytics, TopicState, V2StudentInsights } from "../../types";
+import {
+  OPTION_LETTERS,
+  type Analytics,
+  type PaperHistorySummary,
+  type PaperReviewOut,
+  type SocraticHintOut,
+  type TopicState,
+  type V2StudentInsights,
+} from "../../types";
 import { Card } from "../../components/ui/Card";
 import { Button } from "../../components/ui/Button";
 import { PaceBadge } from "../../components/ui/Badge";
@@ -17,6 +25,11 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
   const [topics, setTopics] = useState<TopicState[]>([]);
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
   const [v2Insights, setV2Insights] = useState<V2StudentInsights | null>(null);
+  const [paperHistory, setPaperHistory] = useState<PaperHistorySummary[]>([]);
+  const [reviewModal, setReviewModal] = useState<PaperReviewOut | null>(null);
+  const [loadingReview, setLoadingReview] = useState<number | null>(null);
+  const [hints, setHints] = useState<Record<string, SocraticHintOut>>({});
+  const [loadingHint, setLoadingHint] = useState<Record<string, boolean>>({});
   const [state, setState] = useState<LoadState>("loading");
   const [errorMessage, setErrorMessage] = useState("");
   const [subjectFilter, setSubjectFilter] = useState<SubjectFilter>("All");
@@ -29,12 +42,14 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
       api.getStudentState(studentId),
       api.getAnalytics(studentId),
       api.getV2Insights(studentId).catch(() => null),
+      api.getPaperHistory(studentId).catch(() => []),
     ])
-      .then(([topicData, analyticsData, insightsData]) => {
+      .then(([topicData, analyticsData, insightsData, historyData]) => {
         if (cancelled) return;
         setTopics(topicData);
         setAnalytics(analyticsData);
         setV2Insights(insightsData);
+        setPaperHistory(historyData);
         setState(topicData.length === 0 ? "empty" : "ready");
       })
       .catch((err) => {
@@ -46,6 +61,30 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
       cancelled = true;
     };
   }, [studentId]);
+
+  async function handleOpenReview(paperNumber: number) {
+    setLoadingReview(paperNumber);
+    try {
+      const review = await api.getPaperReview(studentId, paperNumber);
+      setReviewModal(review);
+    } catch {
+      // ignore
+    } finally {
+      setLoadingReview(null);
+    }
+  }
+
+  async function handleFetchSocraticHint(questionId: string, selectedOption: string) {
+    setLoadingHint((prev) => ({ ...prev, [questionId]: true }));
+    try {
+      const hint = await api.getSocraticHint(questionId, selectedOption);
+      setHints((prev) => ({ ...prev, [questionId]: hint }));
+    } catch {
+      // ignore
+    } finally {
+      setLoadingHint((prev) => ({ ...prev, [questionId]: false }));
+    }
+  }
 
   const allSyllabusChapters = v2Insights?.recommended_unlock_topics ?? [];
   const filteredChapters = allSyllabusChapters.filter((ch) => {
@@ -255,13 +294,25 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
               <h2 className="font-display text-base font-semibold text-midnight-950">
                 Prerequisite Knowledge Graph Diagnostics
               </h2>
-              <div className="mt-3 flex flex-col gap-2">
+              <div className="mt-3 flex flex-col gap-2.5">
                 {v2Insights.root_cause_bottlenecks.map((b, idx) => (
-                  <p key={idx} className="text-sm text-midnight-800">
-                    <span className="font-semibold">{b.weak_topic}</span> is bottlenecked by foundational chapter{" "}
-                    <span className="font-semibold underline">{b.root_cause_prerequisite}</span> —{" "}
-                    {b.recommendation}
-                  </p>
+                  <div
+                    key={idx}
+                    className="flex flex-col justify-between gap-3 rounded-xl border border-amber-500/20 bg-amber-500/10 p-3.5 sm:flex-row sm:items-center"
+                  >
+                    <p className="text-sm leading-snug text-midnight-900">
+                      <span className="font-semibold">{b.weak_topic}</span> is bottlenecked by foundational chapter{" "}
+                      <span className="font-bold underline text-midnight-950">{b.root_cause_prerequisite}</span> —{" "}
+                      <span className="text-midnight-800">{b.recommendation}</span>
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => onStartPaper(b.root_cause_prerequisite)}
+                      className="shrink-0 self-start rounded-lg bg-midnight-950 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-midnight-800 sm:self-center"
+                    >
+                      Remediate Prerequisite →
+                    </button>
+                  </div>
                 ))}
               </div>
             </Card>
@@ -338,6 +389,99 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
               ))}
             </div>
           </div>
+
+          {paperHistory.length > 0 && (
+            <div>
+              <h2 className="mb-3 font-display text-lg font-semibold text-midnight-950">
+                Completed Papers & Review Archive ({paperHistory.length})
+              </h2>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {paperHistory.map((p) => (
+                  <Card key={p.paper_number} className="flex flex-col justify-between gap-3 p-4">
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <span className="font-display font-semibold text-midnight-950">
+                          Sample Paper {p.paper_number}
+                        </span>
+                        <span
+                          className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
+                            p.score_percent >= 70
+                              ? "bg-emerald-500/10 text-emerald-800"
+                              : p.score_percent >= 40
+                              ? "bg-amber-500/10 text-amber-800"
+                              : "bg-rose-500/10 text-rose-800"
+                          }`}
+                        >
+                          {p.score_percent}%
+                        </span>
+                      </div>
+                      <p className="mt-1 text-xs text-midnight-700/70">
+                        {p.correct_count} / {p.total_questions} correct · {Math.max(1, Math.round(p.total_time_seconds / 60))} min total
+                      </p>
+                      {p.topics.length > 0 && (
+                        <p className="mt-1.5 text-[11px] text-midnight-700/60 truncate">
+                          {p.topics.slice(0, 3).join(", ")}
+                          {p.topics.length > 3 ? ` +${p.topics.length - 3} more` : ""}
+                        </p>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleOpenReview(p.paper_number)}
+                      disabled={loadingReview === p.paper_number}
+                      className="self-start text-xs font-semibold text-accent hover:underline disabled:opacity-50"
+                    >
+                      {loadingReview === p.paper_number
+                        ? "Loading review…"
+                        : "Review answers & Socratic hints →"}
+                    </button>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {analytics?.recent_attempts && analytics.recent_attempts.length > 0 && (
+            <div>
+              <h2 className="mb-3 font-display text-lg font-semibold text-midnight-950">
+                Recent Attempt Activity
+              </h2>
+              <Card className="divide-y divide-midnight-900/[0.06] p-0 overflow-hidden">
+                {analytics.recent_attempts.slice(0, 6).map((att, i) => (
+                  <div key={i} className="flex items-center justify-between px-5 py-3 text-sm">
+                    <div className="flex items-center gap-3">
+                      <span
+                        className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
+                          att.is_correct
+                            ? "bg-signal-correct/15 text-signal-correct"
+                            : "bg-signal-incorrect/15 text-signal-incorrect"
+                        }`}
+                      >
+                        {att.is_correct ? "✓" : "✗"}
+                      </span>
+                      <div>
+                        <p className="font-medium text-midnight-950">{att.topic_id}</p>
+                        <p className="text-[11px] font-mono text-midnight-700/50">{att.question_id}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4 text-xs text-midnight-700/70">
+                      <span className="rounded-md bg-midnight-900/5 px-2 py-0.5 font-mono">
+                        {att.time_taken_seconds}s
+                      </span>
+                      <span className="text-midnight-700/50">
+                        {new Date(att.timestamp).toLocaleDateString(undefined, {
+                          month: "short",
+                          day: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </Card>
+            </div>
+          )}
         </>
       )}
 
@@ -575,6 +719,148 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
           </div>
         </div>
       )}
+      {reviewModal && (
+        <PaperReviewModal
+          review={reviewModal}
+          onClose={() => setReviewModal(null)}
+          onFetchHint={handleFetchSocraticHint}
+          hints={hints}
+          loadingHint={loadingHint}
+        />
+      )}
+    </div>
+  );
+}
+
+function PaperReviewModal({
+  review,
+  onClose,
+  onFetchHint,
+  hints,
+  loadingHint,
+}: {
+  review: PaperReviewOut;
+  onClose: () => void;
+  onFetchHint: (questionId: string, selectedOption: string) => void;
+  hints: Record<string, SocraticHintOut>;
+  loadingHint: Record<string, boolean>;
+}) {
+  return (
+    <div className="fixed inset-0 z-30 flex items-center justify-center bg-midnight-950/60 p-4 backdrop-blur-sm">
+      <Card className="flex max-h-[88vh] w-full max-w-3xl flex-col gap-4 overflow-hidden p-6 shadow-2xl">
+        <div className="flex items-center justify-between border-b border-midnight-900/[0.08] pb-3">
+          <div>
+            <h2 className="font-display text-xl font-semibold text-midnight-950">
+              Sample Paper {review.paper_number} Review
+            </h2>
+            <p className="text-xs text-midnight-700/70">
+              {review.correct_count} of {review.total_questions} correct · {review.score_percent}% accuracy
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-lg border border-midnight-900/10 px-3 py-1.5 text-xs font-semibold text-midnight-800 hover:bg-midnight-900/5 transition"
+          >
+            Close ✕
+          </button>
+        </div>
+
+        <div className="flex flex-1 flex-col gap-4 overflow-y-auto pr-1">
+          {review.questions.map((q, i) => {
+            const hint = hints[q.question_id];
+            return (
+              <Card key={q.question_id} className="p-4 bg-surface-raised">
+                <p className="mb-1 text-xs font-medium uppercase tracking-wide text-midnight-700/50">
+                  Question {i + 1} · {q.topic_id}
+                </p>
+                <p className="mb-3 text-sm font-medium leading-relaxed text-midnight-950">{q.text}</p>
+                <div className="flex flex-col gap-1.5">
+                  {q.options.map((optText, optIdx) => {
+                    const letter = OPTION_LETTERS[optIdx];
+                    const isCorrect = letter === q.correct_answer;
+                    const isSelected = letter === q.selected_option;
+                    let cls = "border-midnight-900/10 bg-white/50";
+                    if (isCorrect) cls = "border-signal-correct bg-signal-correct/10 font-semibold";
+                    else if (isSelected) cls = "border-signal-incorrect bg-signal-incorrect/10";
+                    return (
+                      <div
+                        key={optIdx}
+                        className={`flex items-center gap-2.5 rounded-lg border px-3 py-2 text-xs ${cls}`}
+                      >
+                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-midnight-900/20 text-[10px] font-bold uppercase text-midnight-700/70">
+                          {letter}
+                        </span>
+                        <span className="text-midnight-900">{optText}</span>
+                        {isCorrect && (
+                          <span className="ml-auto text-[11px] font-bold text-signal-correct">
+                            Correct answer
+                          </span>
+                        )}
+                        {isSelected && !isCorrect && (
+                          <span className="ml-auto text-[11px] font-bold text-signal-incorrect">
+                            Your answer
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {!q.is_correct && (
+                  <div className="mt-3">
+                    {!hint ? (
+                      <button
+                        type="button"
+                        onClick={() => onFetchHint(q.question_id, q.selected_option)}
+                        disabled={loadingHint[q.question_id]}
+                        className="rounded-lg bg-midnight-950 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-midnight-800 disabled:opacity-50"
+                      >
+                        {loadingHint[q.question_id]
+                          ? "Retrieving NCERT Concept…"
+                          : "Get NCERT Socratic Hint & Misconception Analysis"}
+                      </button>
+                    ) : (
+                      <div className="mt-2 rounded-xl border border-midnight-900/10 bg-midnight-900/5 p-3.5 text-xs leading-relaxed text-midnight-900">
+                        <p className="font-semibold text-midnight-950">{hint.ncert_reference}</p>
+                        {hint.concept_summary && (
+                          <p className="mt-1">
+                            <span className="font-semibold">NCERT Anchor:</span> {hint.concept_summary}
+                          </p>
+                        )}
+                        <p className="mt-1">
+                          <span className="font-semibold">Diagnosed Misconception:</span>{" "}
+                          {hint.diagnosed_misconception}
+                        </p>
+                        <p className="mt-1">
+                          <span className="font-semibold">Socratic Guidance:</span> {hint.socratic_hint}
+                        </p>
+                        {hint.key_formula && (
+                          <p className="mt-1">
+                            <span className="font-semibold">Key Formula:</span> {hint.key_formula}
+                          </p>
+                        )}
+                        {hint.verified_step_by_step && (
+                          <p className="mt-1">
+                            <span className="font-semibold">Derivation Steps:</span>{" "}
+                            {hint.verified_step_by_step}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </Card>
+            );
+          })}
+        </div>
+
+        <div className="flex justify-end border-t border-midnight-900/[0.08] pt-3">
+          <Button variant="secondary" onClick={onClose}>
+            Done Reviewing
+          </Button>
+        </div>
+      </Card>
     </div>
   );
 }

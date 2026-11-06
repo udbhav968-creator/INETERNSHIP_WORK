@@ -2,6 +2,7 @@ import type {
   Analytics,
   AttemptPayload,
   AttemptResult,
+  PaperHistorySummary,
   PaperReviewOut,
   QuestionOut,
   SocraticHintOut,
@@ -79,6 +80,11 @@ export const api = {
   getPaperReview: (studentId: string, paperNumber: number) =>
     request<PaperReviewOut>(
       `/students/${encodeURIComponent(studentId)}/papers/${paperNumber}/review`
+    ),
+
+  getPaperHistory: (studentId: string) =>
+    request<PaperHistorySummary[]>(
+      `/students/${encodeURIComponent(studentId)}/papers/history`
     ),
 
   getAnalytics: (studentId: string) =>

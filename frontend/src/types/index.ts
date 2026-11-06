@@ -65,6 +65,16 @@ export interface PaperReviewOut {
   questions: QuestionReviewOut[];
 }
 
+export interface PaperHistorySummary {
+  paper_number: number;
+  total_questions: number;
+  correct_count: number;
+  score_percent: number;
+  total_time_seconds: number;
+  timestamp: string;
+  topics: string[];
+}
+
 // --- analytics ---
 
 export interface SubjectBreakdown {

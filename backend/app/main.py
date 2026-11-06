@@ -402,6 +402,53 @@ def paper_review(student_id: str, paper_number: int, db: Session = Depends(get_d
     )
 
 
+@app.get("/students/{student_id}/papers/history", response_model=list[schemas.PaperHistorySummaryOut])
+def paper_history(student_id: str, db: Session = Depends(get_db)):
+    rows = (
+        db.query(TestAttempt, Question.topic_id)
+        .join(Question, TestAttempt.question_id == Question.question_id)
+        .filter(TestAttempt.student_id == student_id)
+        .order_by(TestAttempt.timestamp.desc())
+        .all()
+    )
+    papers = {}
+    for att, topic_id in rows:
+        p_num = att.paper_number
+        if p_num not in papers:
+            papers[p_num] = {
+                "paper_number": p_num,
+                "total_questions": 0,
+                "correct_count": 0,
+                "total_time_seconds": 0,
+                "timestamp": att.timestamp.isoformat() if att.timestamp else "",
+                "topics": set(),
+            }
+        p = papers[p_num]
+        p["total_questions"] += 1
+        if att.is_correct:
+            p["correct_count"] += 1
+        p["total_time_seconds"] += att.time_taken_seconds
+        if topic_id:
+            p["topics"].add(topic_id)
+
+    history = []
+    for p in sorted(papers.values(), key=lambda x: x["paper_number"], reverse=True):
+        total = p["total_questions"]
+        corr = p["correct_count"]
+        history.append(
+            schemas.PaperHistorySummaryOut(
+                paper_number=p["paper_number"],
+                total_questions=total,
+                correct_count=corr,
+                score_percent=round(100.0 * corr / total, 1) if total else 0.0,
+                total_time_seconds=p["total_time_seconds"],
+                timestamp=p["timestamp"],
+                topics=sorted(list(p["topics"])),
+            )
+        )
+    return history
+
+
 @app.get("/students/{student_id}/analytics", response_model=schemas.AnalyticsOut)
 def get_analytics(student_id: str, db: Session = Depends(get_db)):
     return build_analytics(db, student_id)
