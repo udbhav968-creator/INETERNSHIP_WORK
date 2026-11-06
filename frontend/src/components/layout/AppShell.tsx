@@ -18,7 +18,6 @@ const navItems: { key: View; label: string; icon: string }[] = [
 export function AppShell({ children, activeView, onNavigate, studentId, onSwitchAccount }: AppShellProps) {
   return (
     <div className="min-h-screen bg-surface">
-      {/* Desktop sidebar */}
       <aside className="fixed inset-y-0 left-0 hidden w-64 flex-col border-r border-midnight-900/[0.06] bg-surface-raised px-5 py-6 md:flex">
         <div className="mb-10 flex items-center gap-2 px-1">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-midnight-900">
@@ -62,7 +61,6 @@ export function AppShell({ children, activeView, onNavigate, studentId, onSwitch
         </div>
       </aside>
 
-      {/* Mobile top nav */}
       <header className="sticky top-0 z-10 flex items-center justify-between border-b border-midnight-900/[0.06] bg-surface-raised/90 px-4 py-3 backdrop-blur md:hidden">
         <div className="flex items-center gap-2">
           <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-midnight-900">
@@ -70,18 +68,27 @@ export function AppShell({ children, activeView, onNavigate, studentId, onSwitch
           </div>
           <span className="font-display text-base font-semibold">Klassed</span>
         </div>
-        <nav className="flex gap-1">
+        <nav className="flex items-center gap-1">
           {navItems.map((item) => (
             <button
               key={item.key}
               onClick={() => onNavigate(item.key)}
-              className={`focus-ring rounded-lg px-3 py-1.5 text-xs font-medium ${
+              className={`focus-ring rounded-lg px-2.5 py-1.5 text-xs font-medium ${
                 activeView === item.key ? "bg-midnight-900 text-white" : "text-midnight-700"
               }`}
             >
               {item.label}
             </button>
           ))}
+          {onSwitchAccount && (
+            <button
+              type="button"
+              onClick={onSwitchAccount}
+              className="ml-1 rounded-lg border border-midnight-900/10 px-2 py-1.5 text-xs font-medium text-accent"
+            >
+              Switch
+            </button>
+          )}
         </nav>
       </header>
 

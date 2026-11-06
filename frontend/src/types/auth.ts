@@ -1,7 +1,3 @@
-// Merge these into your existing src/types/index.ts (or keep this file
-// and `export * from "./auth"` from index.ts — whichever matches your
-// current setup).
-
 export type ClassLevel = "11" | "12" | "dropper";
 
 export interface Student {
@@ -11,6 +7,8 @@ export interface Student {
   class_level: ClassLevel | null;
   target_neet_year: number | null;
   onboarded: boolean;
+  global_theta?: number;
+  access_token?: string | null;
 }
 
 export interface SignupPayload {

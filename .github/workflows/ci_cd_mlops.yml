@@ -41,7 +41,7 @@ jobs:
         run: |
           python -m model.evaluation_harness
 
-      - name: Stage 4 — 20 Deep Unit, Integration, Security & Concurrency Test Suites
+      - name: Stage 4 — 23 Deep Unit, Integration, Security & Concurrency Test Suites
         run: |
           python backend/tests/test_v2_engine.py
 

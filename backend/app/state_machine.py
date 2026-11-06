@@ -43,7 +43,7 @@ def process_answer(
     if state.level == "basic":
         state.streak = (state.streak + 1) if is_correct else 0
         if sum(1 for r in results if r) >= 2:
-            new_lvl = resolve_level_with_hysteresis(state.level, p_next, results)
+            new_lvl = resolve_level_with_hysteresis(state.level, p_next, ci_95)
             if new_lvl != state.level:
                 state.level = new_lvl
                 state.streak = 0
@@ -53,13 +53,13 @@ def process_answer(
         state.streak = (state.streak + 1) if is_correct else 0
         wrong_count = results.count(False)
         if state.streak >= 3:
-            new_lvl = resolve_level_with_hysteresis(state.level, p_next, results)
+            new_lvl = resolve_level_with_hysteresis(state.level, p_next, ci_95)
             if new_lvl != state.level:
                 state.level = new_lvl
                 state.streak = 0
                 state.last_3_results = []
         elif wrong_count >= 2:
-            new_lvl = resolve_level_with_hysteresis(state.level, p_next, results)
+            new_lvl = resolve_level_with_hysteresis(state.level, p_next, ci_95)
             if new_lvl != state.level:
                 state.level = new_lvl
                 state.streak = 0
@@ -68,7 +68,7 @@ def process_answer(
     elif state.level == "advanced":
         state.streak = (state.streak + 1) if is_correct else 0
         if len(results) >= 2 and results[-2:] == [False, False]:
-            new_lvl = resolve_level_with_hysteresis(state.level, p_next, results)
+            new_lvl = resolve_level_with_hysteresis(state.level, p_next, ci_95)
             if new_lvl != state.level:
                 state.level = new_lvl
                 state.streak = 0

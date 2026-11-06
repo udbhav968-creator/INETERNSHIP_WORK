@@ -4,6 +4,7 @@ import { Dashboard } from "./features/dashboard/Dashboard";
 import { ExamScreen } from "./features/adaptive-paper/ExamScreen";
 import { AuthPage } from "./features/auth/AuthPage";
 import { OnboardingPage } from "./features/auth/OnboardingPage";
+import { api } from "./lib/api";
 import { clearSession, loadSession } from "./lib/session";
 import type { Student } from "./types/auth";
 
@@ -15,12 +16,34 @@ export default function App() {
 
   const [view, setView] = useState<View>("dashboard");
   const [paperRunId, setPaperRunId] = useState(0);
+  const [nextPaperNumber, setNextPaperNumber] = useState(1);
   const [selectedTopicId, setSelectedTopicId] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     setStudent(loadSession());
     setCheckingSession(false);
   }, []);
+
+  useEffect(() => {
+    if (!student || !student.onboarded) {
+      setNextPaperNumber(1);
+      return;
+    }
+    let cancelled = false;
+    api
+      .getPaperHistory(student.student_id)
+      .then((history) => {
+        if (cancelled) return;
+        const maxExisting = history.reduce((acc, p) => Math.max(acc, p.paper_number), 0);
+        setNextPaperNumber(maxExisting + 1);
+      })
+      .catch(() => {
+        if (!cancelled) setNextPaperNumber(1);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [student]);
 
   function handleStartPaper(topicId?: string) {
     setSelectedTopicId(topicId);
@@ -56,6 +79,9 @@ export default function App() {
       onSwitchAccount={() => {
         clearSession();
         setStudent(null);
+        setPaperRunId(0);
+        setNextPaperNumber(1);
+        setView("dashboard");
       }}
     >
       {view === "dashboard" && (
@@ -65,8 +91,11 @@ export default function App() {
         <ExamScreen
           key={`${paperRunId}-${selectedTopicId ?? "full"}`}
           studentId={student.student_id}
-          paperNumber={paperRunId || 1}
+          paperNumber={nextPaperNumber}
           topicId={selectedTopicId}
+          onPaperSubmitted={(submittedNumber) => {
+            setNextPaperNumber((prev) => Math.max(prev, submittedNumber + 1));
+          }}
           onExit={() => setView("dashboard")}
           onStartNext={() => handleStartPaper(selectedTopicId)}
         />

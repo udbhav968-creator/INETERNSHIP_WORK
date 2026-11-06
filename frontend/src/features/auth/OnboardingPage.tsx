@@ -17,11 +17,6 @@ const CLASS_OPTIONS: { value: ClassLevel; label: string }[] = [
 const CURRENT_YEAR = new Date().getFullYear();
 const YEAR_OPTIONS = Array.from({ length: 4 }, (_, i) => CURRENT_YEAR + i);
 
-/**
- * One-time questionnaire after signup: class + target NEET year.
- * Backed by POST /students/{id}/onboarding. Sets student.onboarded = true,
- * which is what gates a student out of this screen on future logins.
- */
 export function OnboardingPage({ student, onComplete }: OnboardingPageProps) {
   const [classLevel, setClassLevel] = useState<ClassLevel | null>(null);
   const [targetYear, setTargetYear] = useState<number>(CURRENT_YEAR + 1);

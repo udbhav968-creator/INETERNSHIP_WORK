@@ -4,17 +4,11 @@ import { saveSession } from "../../lib/session";
 import type { Student } from "../../types/auth";
 
 interface AuthPageProps {
-  /** Called once a real Student row exists and the session is saved. */
   onAuthenticated: (student: Student) => void;
 }
 
 type Mode = "signup" | "login";
 
-/**
- * Real signup + login, backed by POST /auth/signup and POST /auth/login.
- * No more hardcoded TEST_STUDENT — this creates (or authenticates) an
- * actual row in the students table.
- */
 export function AuthPage({ onAuthenticated }: AuthPageProps) {
   const [mode, setMode] = useState<Mode>("signup");
   const [name, setName] = useState("");

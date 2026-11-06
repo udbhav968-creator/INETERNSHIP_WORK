@@ -72,7 +72,7 @@ def simulate_student_personas() -> dict:
             streak=master_streak,
         )
         master_streak += 1
-        master_level = resolve_level_with_hysteresis(master_level, master_prob, [True, True, True])
+        master_level = resolve_level_with_hysteresis(master_level, master_prob, master_ci)
         master_theta = update_student_theta_map(master_theta, True, item)
 
     struggler_level = "advanced"
@@ -92,7 +92,7 @@ def simulate_student_personas() -> dict:
             attempts_count=step,
             streak=0,
         )
-        struggler_level = resolve_level_with_hysteresis(struggler_level, struggler_prob, [False, False, False])
+        struggler_level = resolve_level_with_hysteresis(struggler_level, struggler_prob, struggler_ci)
         struggler_theta = update_student_theta_map(struggler_theta, False, item)
 
     bottlenecks = diagnose_prerequisite_bottlenecks(
@@ -266,6 +266,7 @@ def benchmark_engine_latencies(iterations: int = 50) -> dict:
         FEATURE_STORE.put_student_features("HARNESS_BENCH", {"theta": 0.1})
         FEATURE_STORE.get_student_features("HARNESS_BENCH")
         fs_times.append((time.perf_counter() - t0) * 1000.0)
+    FEATURE_STORE.evict_student("HARNESS_BENCH")
 
     for _ in range(15):
         t0 = time.perf_counter()

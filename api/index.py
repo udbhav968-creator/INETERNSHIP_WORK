@@ -7,4 +7,6 @@ if str(ROOT) not in sys.path:
 if str(ROOT / "backend") not in sys.path:
     sys.path.insert(0, str(ROOT / "backend"))
 
-from app.main import app  # noqa: E402, F401
+from app.main import app
+
+__all__ = ["app"]

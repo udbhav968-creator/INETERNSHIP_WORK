@@ -1,23 +1,3 @@
-"""
-Exhaustive Unit, Integration, Concurrency, Security, and Mathematical Invariant Test Suite
-for Klassed NEET Adaptive Engine (v1 Core + v2 Enterprise Psychometric & RAG Architecture).
-
-Covers 14 comprehensive test suites:
- 1. Random Forest Difficulty Classifier (Artifact + Live Joblib Pipeline Inference on 495 test rows = 99.60%)
- 2. Topic Importance Exponential Decay Engine & 65-Chapter Weightage Sum Invariant
- 3. Question Bank & 14-Year Weightage Validators (Boilerplate, Duplicate Options, Schema Guards)
- 4. BKT & SAINT+ Telemetry Modulator (Guess/Slip/Transit Modulation, Monotonicity, Credible Intervals)
- 5. State Machine All 4 Tier Transitions (basic->medium, medium->advanced, medium->basic, advanced->medium)
- 6. Pace Tracker (Correct-Only Moving Average, Per-Question Expected Time, 1.2x Slow/Fast Boundary)
- 7. 3PL IRT Psychometric Engine (Asymptotes c_i and 1.0, Midpoint b_i, Fisher Information Peak, MAP Updates)
- 8. Prerequisite Knowledge Graph DAG (65 Nodes, Cycle-Free Acyclicity Proof, Empirical Bayes Shrinkage, Bottlenecks)
- 9. Disjoint LinUCB Contextual Multi-Armed Bandit (Context Bounds, UCB Decomposition, Uncertainty Shrinkage)
-10. NCERT Socratic RAG Engine (65 Chapters, Physics/Chemistry/Biology Retrieval, Misconception Diagnosis, <40ms Latency)
-11. In-Memory Feature Store & PSI / ECE Drift Monitor (Hit/Miss Tracking, PSI(P,P)==0, Drift Alert Triggering)
-12. Auth, Bcrypt & RFC 7519 HMAC-SHA256 JWT Security (Tamper Rejection, Duplicate Email 409, Bad Login 401, Validation 422)
-13. Adaptive Paper Generator (Warm Cache, Slow-Pace Supplement, Advanced Retention Probe Injection)
-14. All 11 FastAPI Endpoints End-to-End + Multi-Threaded Concurrent Submission Stress Test
-"""
 import concurrent.futures
 import json
 import math
@@ -82,9 +62,6 @@ from model.rag_socratic_engine import generate_socratic_remediation, _INDEX as _
 from model.feature_store_and_drift import InMemoryFeatureStore, DriftAndCalibrationMonitor
 
 
-# ---------------------------------------------------------------------------
-# 1. Random Forest Difficulty Classifier (Artifact + Live Inference)
-# ---------------------------------------------------------------------------
 def test_01_random_forest_model_and_live_inference():
     metrics_path = MODEL_DIR / "question_difficulty_metrics.json"
     model_path = MODEL_DIR / "question_difficulty_model.joblib"
@@ -109,9 +86,6 @@ def test_01_random_forest_model_and_live_inference():
     assert probas.shape == (5, 3) and np.allclose(probas.sum(axis=1), 1.0)
 
 
-# ---------------------------------------------------------------------------
-# 2. Topic Importance Exponential Decay Engine
-# ---------------------------------------------------------------------------
 def test_02_topic_importance_exponential_decay():
     synthetic_freq = {
         "Recent_Topic": {2026: 10},
@@ -127,9 +101,6 @@ def test_02_topic_importance_exponential_decay():
     assert 99.5 <= sum(prod_imp.values()) <= 100.5
 
 
-# ---------------------------------------------------------------------------
-# 3. Question Bank & Weightage Quality Validators
-# ---------------------------------------------------------------------------
 def test_03_question_bank_and_weightage_validators():
     with open(PROJECT_ROOT / "data" / "tagged_questions" / "neet_questions_clean.json", encoding="utf-8") as f:
         clean_qs = json.load(f)
@@ -137,7 +108,7 @@ def test_03_question_bank_and_weightage_validators():
     assert q_report["total_questions"] == 2471
     assert q_report["issues"] == [], f"Unexpected question bank issues: {q_report['issues']}"
 
-    # Verify validator catches broken questions (duplicate options & boilerplate)
+
     broken_qs = [
         {
             "question_id": "BAD_1",
@@ -163,36 +134,30 @@ def test_03_question_bank_and_weightage_validators():
     assert w_report["total_units"] == 25 and w_report["issues"] == []
 
 
-# ---------------------------------------------------------------------------
-# 4. BKT & SAINT+ Telemetry Modulator Unit Tests
-# ---------------------------------------------------------------------------
 def test_04_bkt_and_saint_telemetry_modulator():
     base = BKTParams(p_init=0.35, p_transit=0.15, p_guess=0.22, p_slip=0.10)
 
-    # Fast guess (<15% expected time) inflates guess rate P(G) and reduces learning transit P(T)
+
     pt_fast, pg_fast, _ = modulate_params_with_telemetry(base, time_taken_seconds=5, expected_time_seconds=90)
     assert pg_fast > base.p_guess and pt_fast < base.p_transit
 
-    # Optimal time ratio (0.40 - 1.15) boosts learning transition P(T)
+
     pt_opt, _, _ = modulate_params_with_telemetry(base, time_taken_seconds=60, expected_time_seconds=90)
     assert pt_opt > base.p_transit
 
-    # High option switching (>=2) inflates guess and slip
+
     _, pg_sw, ps_sw = modulate_params_with_telemetry(
         base, time_taken_seconds=60, expected_time_seconds=90, option_switches=3
     )
     assert pg_sw > base.p_guess and ps_sw > base.p_slip
 
-    # Monotonicity of BKT update & narrowing credible interval with attempt count
+
     p_up, ci_1 = compute_bkt_update(0.40, is_correct=True, difficulty="medium", attempts_count=1)
     p_down, ci_20 = compute_bkt_update(0.40, is_correct=False, difficulty="medium", attempts_count=20)
     assert p_up > 0.40 > p_down
     assert ci_20 < ci_1
 
 
-# ---------------------------------------------------------------------------
-# 5. State Machine All 4 Tier Transitions
-# ---------------------------------------------------------------------------
 def test_05_state_machine_all_four_transitions():
     state = StudentTopicState(
         student_id="UNIT_S1",
@@ -203,38 +168,35 @@ def test_05_state_machine_all_four_transitions():
         mastery_prob=0.35,
         confidence_interval=0.45,
     )
-    # 1) basic -> medium (2 correct in window of up to 3)
+
     process_answer(state, False, difficulty="basic", time_ratio=1.0)
     assert state.level == "basic"
     process_answer(state, True, difficulty="basic", time_ratio=0.9)
     process_answer(state, True, difficulty="basic", time_ratio=0.85)
     assert state.level == "medium"
 
-    # 2) medium -> basic (2 wrong in window)
+
     process_answer(state, False, difficulty="medium", time_ratio=1.3)
     process_answer(state, False, difficulty="medium", time_ratio=1.3)
     assert state.level == "basic"
 
-    # Promote back basic -> medium
+
     process_answer(state, True, difficulty="basic", time_ratio=0.8)
     process_answer(state, True, difficulty="basic", time_ratio=0.8)
     assert state.level == "medium"
 
-    # 3) medium -> advanced (3 consecutive correct streak)
+
     process_answer(state, True, difficulty="medium", time_ratio=0.85)
     process_answer(state, True, difficulty="medium", time_ratio=0.85)
     process_answer(state, True, difficulty="medium", time_ratio=0.85)
     assert state.level == "advanced"
 
-    # 4) advanced -> medium (2 consecutive wrong)
+
     process_answer(state, False, difficulty="advanced", time_ratio=1.4)
     process_answer(state, False, difficulty="advanced", time_ratio=1.5)
     assert state.level == "medium"
 
 
-# ---------------------------------------------------------------------------
-# 6. Pace Tracking Unit Tests
-# ---------------------------------------------------------------------------
 def test_06_pace_tracking_invariants():
     state = StudentTopicState(
         student_id="UNIT_S1",
@@ -243,27 +205,24 @@ def test_06_pace_tracking_invariants():
         attempts_counted=0,
         avg_time_ratio=None,
     )
-    # Incorrect attempts are ignored
+
     update_pace(state, is_correct=False, time_taken_seconds=200, difficulty="medium", expected_time_seconds=100)
     assert state.avg_time_ratio is None and state.attempts_counted == 0
 
-    # Fast correct attempt (80s / 100s = 0.80 <= 1.2)
+
     update_pace(state, is_correct=True, time_taken_seconds=80, difficulty="medium", expected_time_seconds=100)
     assert round(state.avg_time_ratio, 2) == 0.80 and state.pace_flag == "fast"
 
-    # Slow correct attempt (200s / 100s = 2.0 -> average (0.8 + 2.0)/2 = 1.40 > 1.2)
+
     update_pace(state, is_correct=True, time_taken_seconds=200, difficulty="medium", expected_time_seconds=100)
     assert round(state.avg_time_ratio, 2) == 1.40 and state.pace_flag == "slow"
 
 
-# ---------------------------------------------------------------------------
-# 7. 3PL IRT Mathematical Invariants
-# ---------------------------------------------------------------------------
 def test_07_3pl_irt_mathematical_invariants():
     assert len(CALIBRATED_ITEMS) == 2471
     params = IRTItemParams(a=1.5, b=0.5, c=0.20)
 
-    # Lower asymptote -> c_i, upper asymptote -> 1.0, midpoint at theta == b_i -> (1 + c_i)/2 = 0.60
+
     p_neg_inf = irt_3pl_probability(-20.0, params)
     p_pos_inf = irt_3pl_probability(20.0, params)
     p_mid = irt_3pl_probability(0.5, params)
@@ -271,12 +230,12 @@ def test_07_3pl_irt_mathematical_invariants():
     assert abs(p_pos_inf - 1.00) < 1e-4
     assert abs(p_mid - 0.60) < 1e-4
 
-    # Fisher Information is positive and higher near b_i than far away in the tails
+
     info_near = fisher_information(0.6, params)
     info_tail = fisher_information(-1.5, params)
     assert info_near > info_tail > 0.0
 
-    # MAP ability update and percentile bounds
+
     t_up = update_student_theta_map(0.0, is_correct=True, params=params)
     t_down = update_student_theta_map(0.0, is_correct=False, params=params)
     assert t_up > 0.0 > t_down
@@ -284,13 +243,10 @@ def test_07_3pl_irt_mathematical_invariants():
     assert theta_to_percentile(2.0) > 95.0
 
 
-# ---------------------------------------------------------------------------
-# 8. Prerequisite Knowledge Graph DAG & Acyclicity Proof
-# ---------------------------------------------------------------------------
 def test_08_prerequisite_dag_acyclicity_and_shrinkage():
     assert len(DAG_NODES) == 65
 
-    # Prove the 65-node graph is a strict Directed Acyclic Graph (0 cycles)
+
     for topic in DAG_NODES:
         ancestors = get_all_ancestors(topic)
         assert topic not in ancestors, f"Cycle detected in Prerequisite DAG involving {topic}"
@@ -315,9 +271,6 @@ def test_08_prerequisite_dag_acyclicity_and_shrinkage():
     assert len(bottlenecks) >= 1
 
 
-# ---------------------------------------------------------------------------
-# 9. Disjoint LinUCB Contextual Multi-Armed Bandit
-# ---------------------------------------------------------------------------
 def test_09_linucb_bandit_uncertainty_and_reward():
     x = build_context_vector(
         question_id="NEET_2024_PHY_1",
@@ -338,7 +291,7 @@ def test_09_linucb_bandit_uncertainty_and_reward():
         ucb1, exploit1, explore1 = score_candidate_ucb(student_id, x)
         assert abs(ucb1 - (exploit1 + explore1)) < 1e-6
 
-        # Repeated feedback on the same context shrinks exploration uncertainty
+
         reward = record_bandit_feedback(
             student_id=student_id,
             question_id="NEET_2024_PHY_1",
@@ -359,9 +312,6 @@ def test_09_linucb_bandit_uncertainty_and_reward():
         reset_student_bandit(student_id, remove=True)
 
 
-# ---------------------------------------------------------------------------
-# 10. NCERT Socratic RAG Engine Across All 3 Subjects
-# ---------------------------------------------------------------------------
 def test_10_rag_socratic_engine_all_subjects():
     assert len(_RAG_INDEX.chunks) == 65
     for qid, chap in [
@@ -384,9 +334,6 @@ def test_10_rag_socratic_engine_all_subjects():
         assert "Option (C" in res["misconception_diagnosis"] or "option (C" in res["misconception_diagnosis"]
 
 
-# ---------------------------------------------------------------------------
-# 11. In-Memory Feature Store & PSI / ECE Drift Monitor
-# ---------------------------------------------------------------------------
 def test_11_feature_store_and_drift_monitor():
     fs = InMemoryFeatureStore()
     assert fs.get_student_features("MISSING") is None
@@ -400,16 +347,13 @@ def test_11_feature_store_and_drift_monitor():
     high_psi = dm.compute_psi([0.3, 0.5, 0.2], [0.8, 0.1, 0.1])
     assert high_psi > 0.20
 
-    # Feed 35 heavily skewed samples to trigger DRIFT_WARNING
+
     skewed = [{"predicted_prob": 0.90, "correct": 0, "difficulty": "advanced", "time_taken": 140} for _ in range(35)]
     health = dm.evaluate_health(skewed)
     assert health["recalibration_required"] is True
     assert health["drift_status"] == "DRIFT_WARNING"
 
 
-# ---------------------------------------------------------------------------
-# 12. Auth, Bcrypt & JWT Security Guards
-# ---------------------------------------------------------------------------
 def test_12_auth_bcrypt_and_jwt_security():
     hashed = hash_password("my_secret_pass")
     assert verify_password("my_secret_pass", hashed) is True
@@ -418,15 +362,12 @@ def test_12_auth_bcrypt_and_jwt_security():
 
     token = create_access_token("S100", "s100@klassed.in")
     assert verify_access_token(token)["sub"] == "S100"
-    # Tampered signature must be rejected
+
     tampered = token[:-4] + "XXXX"
     assert verify_access_token(tampered) is None
     assert verify_access_token("not.a.jwt.token") is None
 
 
-# ---------------------------------------------------------------------------
-# 13. Adaptive Paper Generator (Database Integrity, Slow Supplement, Probes)
-# ---------------------------------------------------------------------------
 def test_13_database_counts_and_adaptive_paper_generator():
     db = SessionLocal()
     try:
@@ -438,9 +379,6 @@ def test_13_database_counts_and_adaptive_paper_generator():
         db.close()
 
 
-# ---------------------------------------------------------------------------
-# 14. All 11 FastAPI Endpoints + Multi-Threaded Concurrent Stress Test
-# ---------------------------------------------------------------------------
 def test_14_all_11_endpoints_and_concurrent_stress():
     client = TestClient(app)
     test_email = "deep_suite_verifier@klassed.in"
@@ -456,11 +394,11 @@ def test_14_all_11_endpoints_and_concurrent_stress():
             db.commit()
         db.close()
 
-        # Validation error checks (short password -> 422)
+
         r_bad_pw = client.post("/auth/signup", json={"name": "X", "email": test_email, "password": "123"})
         assert r_bad_pw.status_code == 422
 
-        # 1. Signup
+
         r_signup = client.post(
             "/auth/signup",
             json={"name": "Deep Verifier", "email": test_email, "password": "strongpassword123"},
@@ -468,38 +406,38 @@ def test_14_all_11_endpoints_and_concurrent_stress():
         assert r_signup.status_code == 200
         created_student_id = r_signup.json()["student_id"]
 
-        # Duplicate signup -> 409
+
         r_dup = client.post(
             "/auth/signup",
             json={"name": "Deep Verifier", "email": test_email, "password": "strongpassword123"},
         )
         assert r_dup.status_code == 409
 
-        # Wrong password login -> 401
+
         r_bad_login = client.post("/auth/login", json={"email": test_email, "password": "wrongpassword"})
         assert r_bad_login.status_code == 401
 
-        # 2. Valid login
+
         r_login = client.post("/auth/login", json={"email": test_email, "password": "strongpassword123"})
         assert r_login.status_code == 200
 
-        # 3. Onboarding
+
         r_onboard = client.post(
             f"/students/{created_student_id}/onboarding",
             json={"class_level": "12", "target_neet_year": 2027},
         )
         assert r_onboard.status_code == 200 and r_onboard.json()["onboarded"] is True
 
-        # 4. Get student
+
         assert client.get(f"/students/{created_student_id}").status_code == 200
 
-        # 5. Next paper
+
         r_paper = client.get(f"/students/{created_student_id}/next_paper")
         assert r_paper.status_code == 200
         paper_items = r_paper.json()
         assert len(paper_items) >= 40
 
-        # 6. Multi-threaded concurrent /submit_attempt stress test (8 questions submitted concurrently)
+
         def _submit_one(idx: int):
             q = paper_items[idx]
             resp = client.post(
@@ -525,15 +463,15 @@ def test_14_all_11_endpoints_and_concurrent_stress():
             assert code == 200, f"Concurrent submit failed: {code} {body}"
             assert "mastery_prob" in body and "irt_theta" in body
 
-        # 7. State
+
         r_state = client.get(f"/students/{created_student_id}/state")
         assert r_state.status_code == 200 and len(r_state.json()) >= 1
 
-        # 8. Paper Review
+
         r_rev = client.get(f"/students/{created_student_id}/papers/1/review")
         assert r_rev.status_code == 200 and r_rev.json()["total_questions"] == 8
 
-        # 8b. Chapter-focused adaptive drill + atomic batch POST /submit_paper on an unattempted topic
+
         r_chap = client.get(f"/students/{created_student_id}/next_paper?topic_id=Wave%20Optics")
         assert r_chap.status_code == 200
         chap_items = r_chap.json()
@@ -543,7 +481,7 @@ def test_14_all_11_endpoints_and_concurrent_stress():
             "/submit_paper",
             json={
                 "student_id": created_student_id,
-                "paper_number": 1,  # should auto-increment to 2 since paper 1 already exists
+                "paper_number": 1,
                 "attempts": [
                     {
                         "student_id": created_student_id,
@@ -572,11 +510,11 @@ def test_14_all_11_endpoints_and_concurrent_stress():
         batch_body = r_batch.json()
         assert batch_body["paper_number"] == 2 and batch_body["total_questions"] == 2
 
-        # 9. Analytics
+
         r_ana = client.get(f"/students/{created_student_id}/analytics")
         assert r_ana.status_code == 200 and r_ana.json()["total_attempts"] == 10
 
-        # 10. v2 Insights (including MIRT 3D Profile & Spaced Repetition Reviews)
+
         r_ins = client.get(f"/students/{created_student_id}/v2_insights")
         assert r_ins.status_code == 200
         ins_body = r_ins.json()
@@ -585,7 +523,7 @@ def test_14_all_11_endpoints_and_concurrent_stress():
         assert "mirt_3d_profile" in ins_body and ins_body["mirt_3d_profile"] is not None
         assert "spaced_repetition_reviews" in ins_body
 
-        # 11. Socratic Hint & MLOps Health/Drift & Cold-Start Item Predictor
+
         r_soc = client.post(
             "/remediation/socratic_hint",
             json={"question_id": paper_items[0]["question_id"], "selected_option": "b"},
@@ -617,10 +555,6 @@ def test_14_all_11_endpoints_and_concurrent_stress():
             db.close()
 
 
-# ============================================================================
-# 15. ADVANCED V3 UPGRADES: EBBINGHAUS SPACED REPETITION, MIRT 3D, DAG MESSAGE
-#     PASSING, COLD-START NLP DIFFICULTY & DISTRACTOR TRAP DIAGNOSIS
-# ============================================================================
 def test_15_v3_advanced_psychometric_and_nlp_upgrades():
     from model.state_machine.bkt_model import (
         compute_ebbinghaus_forgetting_prior,
@@ -635,14 +569,14 @@ def test_15_v3_advanced_psychometric_and_nlp_upgrades():
     from model.knowledge_graph_dag import propagate_dag_belief_update
     from model.rag_socratic_engine import generate_socratic_remediation
 
-    # 1. Ebbinghaus Forgetting Curve decay
+
     p_fresh = compute_ebbinghaus_forgetting_prior(0.85, elapsed_hours=0.1, streak=2)
     p_week_old = compute_ebbinghaus_forgetting_prior(0.85, elapsed_hours=168.0, streak=0)
     assert p_fresh == 0.85
     assert 0.35 <= p_week_old < p_fresh, f"Expected decay after 168h: {p_week_old} vs {p_fresh}"
     assert compute_retention_urgency(0.85, elapsed_hours=168.0, streak=0) > 0.25
 
-    # 2. Cold-Start NLP Difficulty & IRT Estimator
+
     simple_pred = predict_cold_start_difficulty_and_irt(
         "What is the SI unit of electric current?",
         ["Ampere", "Volt", "Ohm", "Watt"],
@@ -656,7 +590,7 @@ def test_15_v3_advanced_psychometric_and_nlp_upgrades():
     assert complex_pred["complexity_score"] > simple_pred["complexity_score"]
     assert complex_pred["irt_params"]["b"] > simple_pred["irt_params"]["b"]
 
-    # 3. Multidimensional 3PL IRT (MIRT 3D Profile)
+
     mirt = compute_mirt_3d_profile([
         {"question_id": "Q1", "question_text": "Calculate the molarity of 2.5 mol in 0.5 L.", "question_type": "Numerical", "difficulty": "medium", "expected_time_seconds": 90, "is_correct": True},
         {"question_id": "Q2", "question_text": "Given F = q * E, find the electric field relation.", "question_type": "Direct Formula", "difficulty": "basic", "expected_time_seconds": 60, "is_correct": True},
@@ -666,12 +600,12 @@ def test_15_v3_advanced_psychometric_and_nlp_upgrades():
     assert mirt["theta_formula"] > 0.0
     assert mirt["theta_conceptual"] < 0.0
 
-    # 4. Online EM Item Recalibration
+
     before_b = get_item_params("NEET_2025_PHY_001").b
     updated_item = recalibrate_item_parameters_online("NEET_2025_PHY_001", student_theta=-1.0, is_correct=True, time_ratio=0.7)
     assert updated_item.b < before_b, "Item solved easily by low-theta student should become slightly easier (lower b_i)"
 
-    # 5. 1-Hop Bayesian Belief Propagation on Prerequisite DAG
+
     dag_boosts = propagate_dag_belief_update(
         topic_id="Rotational Motion",
         is_correct=True,
@@ -680,7 +614,7 @@ def test_15_v3_advanced_psychometric_and_nlp_upgrades():
     )
     assert "Laws of Motion" in dag_boosts and dag_boosts["Laws of Motion"] > 0.45
 
-    # 6. Distractor-Specific Mathematical Trap Diagnosis (Sign Inversion & Factor-of-2)
+
     rem_sign = generate_socratic_remediation(
         question_id="NEET_SIGN_TEST",
         topic_id="Ray Optics",
@@ -702,9 +636,6 @@ def test_15_v3_advanced_psychometric_and_nlp_upgrades():
     assert "Factor-of-2 Trap" in rem_factor2["misconception_diagnosis"]
 
 
-# ============================================================================
-# 16. DEEP TRAINING & 5-FOLD STRATIFIED CROSS-VALIDATION PIPELINE GATE
-# ============================================================================
 def test_16_deep_training_and_cross_validation_pipeline():
     from model.training_and_validation_pipeline import run_deep_training_and_validation
 
@@ -718,9 +649,6 @@ def test_16_deep_training_and_cross_validation_pipeline():
     assert (PROJECT_ROOT / "model" / "validation_report.json").exists()
 
 
-# ============================================================================
-# 17. HARNESS ENGINEERING: MULTI-PERSONA SIMULATION & BANDIT REGRET ABLATION
-# ============================================================================
 def test_17_harness_engineering_multi_persona_and_bandit_regret():
     from model.evaluation_harness import run_evaluation_harness
 
@@ -735,9 +663,6 @@ def test_17_harness_engineering_multi_persona_and_bandit_regret():
     assert (PROJECT_ROOT / "model" / "harness_benchmark_report.json").exists()
 
 
-# ============================================================================
-# 18. CI/CD WORKFLOW & CLOUD DEPLOYMENT MANIFEST INTEGRITY
-# ============================================================================
 def test_18_cicd_pipeline_and_deployment_manifests():
     workflow_path = PROJECT_ROOT / ".github" / "workflows" / "ci_cd_mlops.yml"
     assert workflow_path.exists(), "Missing GitHub Actions CI/CD workflow"
@@ -750,9 +675,6 @@ def test_18_cicd_pipeline_and_deployment_manifests():
         assert (PROJECT_ROOT / manifest).exists(), f"Missing deployment manifest: {manifest}"
 
 
-# ============================================================================
-# 19. SERVERLESS PURE-NUMPY TF-IDF VECTORIZER & SCIENTIFIC TRAP DETECTOR
-# ============================================================================
 def test_19_serverless_numpy_tfidf_and_scientific_trap_detector():
     from model.rag_socratic_engine import _NumpyTfidfVectorizer, _detect_distractor_trap, _INDEX
 
@@ -763,7 +685,7 @@ def test_19_serverless_numpy_tfidf_and_scientific_trap_detector():
     vec = _NumpyTfidfVectorizer()
     mat = vec.fit_transform(corpus)
     assert mat.shape[0] == 65 and mat.shape[1] > 100
-    # Verify L2 normalization on every row
+
     row_norms = np.linalg.norm(mat, axis=1)
     assert np.allclose(row_norms, 1.0, atol=1e-5)
 
@@ -772,15 +694,12 @@ def test_19_serverless_numpy_tfidf_and_scientific_trap_detector():
     best_chunk = _INDEX.chunks[int(np.argmax(sims))]
     assert best_chunk["chapter"] == "Electrostatics"
 
-    # Scientific notation, Unicode minus, SI order-of-magnitude, and reciprocal trap checks
+
     assert "Sign Inversion Trap" in _detect_distractor_trap("−1.6e-19 C", "+1.6e-19 C")
     assert "SI Unit / Order-of-Magnitude Trap" in _detect_distractor_trap("2.5e-2 mol/L", "2.5e-5 mol/L")
     assert "Reciprocal Formula Trap" in _detect_distractor_trap("0.25 Hz", "4.0 Hz")
 
 
-# ============================================================================
-# 20. ALL 65 NCERT CHAPTERS CROSS-MODULE & ADAPTIVE DRILL INTEGRITY GATE
-# ============================================================================
 def test_20_all_65_chapters_end_to_end_curriculum_integrity():
     with open(MODEL_DIR / "topic_importance.json", encoding="utf-8") as f:
         imp_topics = set(json.load(f).keys())
@@ -795,7 +714,7 @@ def test_20_all_65_chapters_end_to_end_curriculum_integrity():
         db_topics = {t.topic_id for t in db.query(Topic).all()}
         assert db_topics == dag_topics, "SQLite topics table does not match the 65 DAG chapters"
 
-        # Verify every single one of the 65 chapters generates a valid adaptive chapter drill
+
         for chap in sorted(dag_topics):
             drill = generate_paper(db, "UDBHAVYADAV", topic_id=chap)
             assert len(drill) >= 2, f"Chapter drill for '{chap}' returned fewer than 2 items"
@@ -804,9 +723,6 @@ def test_20_all_65_chapters_end_to_end_curriculum_integrity():
         db.close()
 
 
-# ============================================================================
-# 21. DINA 8-SKILL Q-MATRIX & VAN DER LINDEN LOG-NORMAL RT MODEL
-# ============================================================================
 def test_21_dina_8_skill_q_matrix_and_lognormal_rt_model():
     from model.dina_cognitive_diagnosis import (
         COGNITIVE_SKILLS,
@@ -864,9 +780,6 @@ def test_21_dina_8_skill_q_matrix_and_lognormal_rt_model():
     assert beh["conceptual_struggle"] >= 1
 
 
-# ============================================================================
-# 22. MONTE CARLO CONFORMAL NEET SIMULATOR & GRAPH LAPLACIAN LEVERAGE
-# ============================================================================
 def test_22_monte_carlo_conformal_simulator_and_graph_laplacian_leverage():
     from model.monte_carlo_conformal_neet import (
         _allocate_180_neet_questions,
@@ -909,6 +822,108 @@ def test_22_monte_carlo_conformal_simulator_and_graph_laplacian_leverage():
     assert sim_low["high_yield_leverage_chapters"][0]["total_expected_marks_gain"] > 0
 
 
+def test_23_scientific_notation_traps_paper_history_and_remediation_urgency():
+    from model.rag_socratic_engine import _detect_distractor_trap
+    from model.state_machine.bkt_model import compute_retention_urgency
+
+    assert "SI Unit / Order-of-Magnitude Trap" in _detect_distractor_trap("36 × 104 J", "36 × 107 J")
+    assert "SI Unit / Order-of-Magnitude Trap" in _detect_distractor_trap("6.67 × 1015", "6.67 × 1011")
+    assert "SI Unit / Order-of-Magnitude Trap" in _detect_distractor_trap("42 × 10–15", "42 × 10–18")
+    assert "Factor-of-2 Trap" in _detect_distractor_trap("25 × 10–6 N", "50 × 10–6 N")
+    assert "Sign Inversion Trap" in _detect_distractor_trap("-1.6 × 10⁻¹⁹ C", "1.6 × 10⁻¹⁹ C")
+
+    assert compute_retention_urgency(0.29, elapsed_hours=0.1, streak=0) == 0.0
+    assert compute_retention_urgency(0.29, elapsed_hours=43.3, streak=0) > 0.30
+
+    client = TestClient(app)
+    email = "deep_history_jwt_verifier@klassed.in"
+    sid = None
+    try:
+        db = SessionLocal()
+        old = db.query(Student).filter_by(email=email).first()
+        if old:
+            db.query(TestAttempt).filter_by(student_id=old.student_id).delete()
+            db.query(StudentTopicState).filter_by(student_id=old.student_id).delete()
+            db.delete(old)
+            db.commit()
+        db.close()
+
+        r_up = client.post(
+            "/auth/signup",
+            json={"name": "History JWT Verifier", "email": email, "password": "strongpassword123"},
+        )
+        assert r_up.status_code == 200
+        body = r_up.json()
+        sid = body["student_id"]
+        token = body["access_token"]
+        assert token and len(token.split(".")) == 3
+        headers = {"Authorization": f"Bearer {token}"}
+
+        r_on = client.post(
+            f"/students/{sid}/onboarding",
+            json={"class_level": "12", "target_neet_year": 2027},
+            headers=headers,
+        )
+        assert r_on.status_code == 200 and r_on.json()["onboarded"] is True
+
+        r_qs = client.get(f"/students/{sid}/next_paper?topic_id=Electrostatics", headers=headers)
+        assert r_qs.status_code == 200
+        qs = r_qs.json()
+
+        r_p1 = client.post(
+            "/submit_paper",
+            headers=headers,
+            json={
+                "student_id": sid,
+                "paper_number": 1,
+                "attempts": [
+                    {
+                        "student_id": sid,
+                        "question_id": qs[0]["question_id"],
+                        "paper_number": 1,
+                        "selected_option": "a",
+                        "time_taken_seconds": 40,
+                    }
+                ],
+            },
+        )
+        assert r_p1.status_code == 200 and r_p1.json()["paper_number"] == 1
+
+        r_p2 = client.post(
+            "/submit_paper",
+            headers=headers,
+            json={
+                "student_id": sid,
+                "paper_number": 1,
+                "attempts": [
+                    {
+                        "student_id": sid,
+                        "question_id": qs[1]["question_id"],
+                        "paper_number": 1,
+                        "selected_option": "b",
+                        "time_taken_seconds": 55,
+                    }
+                ],
+            },
+        )
+        assert r_p2.status_code == 200 and r_p2.json()["paper_number"] == 2
+
+        r_hist = client.get(f"/students/{sid}/papers/history", headers=headers)
+        assert r_hist.status_code == 200
+        hist = r_hist.json()
+        assert len(hist) == 2
+        assert [h["paper_number"] for h in hist] == [2, 1]
+        assert all(h["total_questions"] == 1 for h in hist)
+    finally:
+        if sid:
+            db = SessionLocal()
+            db.query(TestAttempt).filter_by(student_id=sid).delete()
+            db.query(StudentTopicState).filter_by(student_id=sid).delete()
+            db.query(Student).filter_by(student_id=sid).delete()
+            db.commit()
+            db.close()
+
+
 if __name__ == "__main__":
     suites = [
         test_01_random_forest_model_and_live_inference,
@@ -933,6 +948,7 @@ if __name__ == "__main__":
         test_20_all_65_chapters_end_to_end_curriculum_integrity,
         test_21_dina_8_skill_q_matrix_and_lognormal_rt_model,
         test_22_monte_carlo_conformal_simulator_and_graph_laplacian_leverage,
+        test_23_scientific_notation_traps_paper_history_and_remediation_urgency,
     ]
     for fn in suites:
         fn()

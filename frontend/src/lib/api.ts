@@ -1,3 +1,4 @@
+import { loadSession } from "./session";
 import type {
   Analytics,
   AttemptPayload,
@@ -28,11 +29,20 @@ export class ApiError extends Error {
 }
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
+  const token = loadSession()?.access_token;
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
   let res: Response;
   try {
     res = await fetch(`${API_BASE_URL}${path}`, {
-      headers: { "Content-Type": "application/json" },
       ...options,
+      headers: {
+        ...headers,
+        ...(options?.headers as Record<string, string> | undefined),
+      },
     });
   } catch {
     throw new ApiError("Could not reach the backend. Is the server running?", 0);
@@ -44,7 +54,7 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
       const body = await res.json();
       detail = body.detail ?? detail;
     } catch {
-      // response wasn't JSON — fall back to statusText
+      detail = res.statusText;
     }
     throw new ApiError(detail, res.status);
   }

@@ -1,8 +1,4 @@
-/**
- * Auth + onboarding calls. Mirrors whatever pattern your existing
- * src/lib/api.ts uses for the base URL — merge this in rather than
- * duplicating API_BASE if that file already defines one.
- */
+import { loadSession } from "./session";
 import type { LoginPayload, OnboardingPayload, SignupPayload, Student } from "../types/auth";
 
 const API_BASE =
@@ -43,9 +39,14 @@ export async function completeOnboarding(
   studentId: string,
   payload: OnboardingPayload
 ): Promise<Student> {
-  const res = await fetch(`${API_BASE}/students/${studentId}/onboarding`, {
+  const token = loadSession()?.access_token;
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+  const res = await fetch(`${API_BASE}/students/${encodeURIComponent(studentId)}/onboarding`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers,
     body: JSON.stringify(payload),
   });
   return parseOrThrow(res);

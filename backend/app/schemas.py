@@ -2,7 +2,7 @@ from pydantic import BaseModel
 from typing import Optional, Any
 
 try:
-    import email_validator  # noqa: F401
+    __import__("email_validator")
     from pydantic import EmailStr
 except ImportError:
     EmailStr = str

@@ -66,18 +66,23 @@ def compute_ebbinghaus_forgetting_prior(
 def compute_retention_urgency(
     prior_mastery: float, elapsed_hours: float = 0.0, streak: int = 0, base_prior: float = 0.35
 ) -> float:
-    decayed = compute_ebbinghaus_forgetting_prior(prior_mastery, elapsed_hours, streak, base_prior)
     peak = max(0.01, min(0.99, prior_mastery if prior_mastery is not None else base_prior))
-    drop = max(0.0, peak - decayed)
-    urgency = min(1.0, (drop / 0.30) * (float(elapsed_hours) / 48.0))
-    return round(urgency, 4)
+    if elapsed_hours <= 0.5:
+        return 0.0
+    decayed = compute_ebbinghaus_forgetting_prior(peak, elapsed_hours, streak, base_prior)
+    decay_drop = max(0.0, peak - decayed)
+    forgetting_urgency = decay_drop * 3.5
+    remediation_urgency = (
+        (0.45 - peak) * min(1.0, float(elapsed_hours) / 48.0) * 2.5 if peak < 0.45 else 0.0
+    )
+    return round(min(1.0, max(forgetting_urgency, remediation_urgency)), 4)
 
 
 def compute_bkt_update(
     prior_mastery: float,
     is_correct: bool,
     difficulty: str = "medium",
-    time_taken_seconds: int = 90,
+    time_taken_seconds: int = 75,
     expected_time_seconds: int = 90,
     option_switches: int = 0,
     hesitation_ms: int = 0,
@@ -85,9 +90,11 @@ def compute_bkt_update(
     elapsed_hours: float = 0.0,
     streak: int = 0,
 ) -> tuple[float, float]:
-    p_decayed = compute_ebbinghaus_forgetting_prior(prior_mastery, elapsed_hours, streak)
-    p_t = max(0.05, min(0.95, p_decayed))
-
+    p_prev = compute_ebbinghaus_forgetting_prior(
+        prior_mastery=prior_mastery if prior_mastery is not None else 0.35,
+        elapsed_hours=elapsed_hours,
+        streak=streak,
+    )
     base_params = DIFFICULTY_BKT_PRESETS.get(difficulty, DIFFICULTY_BKT_PRESETS["medium"])
     p_transit, p_guess, p_slip = modulate_params_with_telemetry(
         base_params,
@@ -98,49 +105,47 @@ def compute_bkt_update(
     )
 
     if is_correct:
-        numerator = p_t * (1.0 - p_slip)
-        denominator = numerator + (1.0 - p_t) * p_guess
+        numerator = p_prev * (1.0 - p_slip)
+        denominator = numerator + (1.0 - p_prev) * p_guess
     else:
-        numerator = p_t * p_slip
-        denominator = numerator + (1.0 - p_t) * (1.0 - p_guess)
+        numerator = p_prev * p_slip
+        denominator = numerator + (1.0 - p_prev) * (1.0 - p_guess)
 
-    p_updated = numerator / max(1e-6, denominator)
-
+    posterior = numerator / denominator if denominator > 0 else p_prev
     effective_transit = p_transit if is_correct else (0.35 * p_transit)
-    p_next = p_updated + (1.0 - p_updated) * effective_transit
-    p_next = max(0.05, min(0.95, p_next))
+    p_next = posterior + (1.0 - posterior) * effective_transit
+    p_next = round(max(0.05, min(0.95, p_next)), 4)
 
-    n = max(1, attempts_count)
-    se = math.sqrt(p_next * (1.0 - p_next) / (n + 2.0))
-    ci_half_width = 1.96 * se
+    effective_n = max(1, attempts_count) + 4
+    std_err = math.sqrt(p_next * (1.0 - p_next) / effective_n)
+    ci_95 = round(min(0.35, 1.96 * std_err), 4)
 
-    return round(p_next, 4), round(ci_half_width, 4)
+    return p_next, ci_95
 
 
 def resolve_level_with_hysteresis(
     current_level: str,
     mastery_prob: float,
-    rolling_results: list[bool],
+    ci_95: float = 0.25,
 ) -> str:
-    level = current_level
-    results = list(rolling_results)
-    m = mastery_prob
+    level = current_level or "basic"
+    conservative_lower = mastery_prob - 0.35 * float(ci_95)
 
     if level == "basic":
-        if sum(1 for r in results[-3:] if r) >= 2 and m >= PROMOTE_TO_MEDIUM_THRESHOLD:
+        if conservative_lower >= PROMOTE_TO_MEDIUM_THRESHOLD or mastery_prob >= 0.58:
             return "medium"
         return "basic"
 
     if level == "medium":
-        if len(results) >= 3 and all(results[-3:]) and m >= PROMOTE_TO_ADVANCED_THRESHOLD:
+        if conservative_lower >= PROMOTE_TO_ADVANCED_THRESHOLD or mastery_prob >= 0.82:
             return "advanced"
-        if sum(1 for r in results[-3:] if not r) >= 2 and m <= DEMOTE_TO_BASIC_THRESHOLD:
+        if mastery_prob <= DEMOTE_TO_BASIC_THRESHOLD:
             return "basic"
         return "medium"
 
     if level == "advanced":
-        if len(results) >= 2 and (not results[-1]) and (not results[-2]) and m <= DEMOTE_TO_MEDIUM_THRESHOLD:
+        if mastery_prob <= DEMOTE_TO_MEDIUM_THRESHOLD:
             return "medium"
         return "advanced"
 
-    return level
+    return "basic"

@@ -15,13 +15,21 @@ interface ExamScreenProps {
   studentId: string;
   paperNumber: number;
   topicId?: string;
+  onPaperSubmitted?: (submittedNumber: number) => void;
   onExit: () => void;
   onStartNext: () => void;
 }
 
 type LoadState = "loading" | "ready" | "error" | "empty" | "submitting" | "submit-error" | "results";
 
-export function ExamScreen({ studentId, paperNumber, topicId, onExit, onStartNext }: ExamScreenProps) {
+export function ExamScreen({
+  studentId,
+  paperNumber,
+  topicId,
+  onPaperSubmitted,
+  onExit,
+  onStartNext,
+}: ExamScreenProps) {
   const [questions, setQuestions] = useState<QuestionOut[]>([]);
   const [loadState, setLoadState] = useState<LoadState>("loading");
   const [errorMessage, setErrorMessage] = useState("");
@@ -39,7 +47,6 @@ export function ExamScreen({ studentId, paperNumber, topicId, onExit, onStartNex
     return () => clearInterval(interval);
   }, [loadState]);
 
-  // v2 SAINT+ fine-grained interaction telemetry refs
   const firstVisitedAt = useRef<Record<number, number>>({});
   const firstInteractionAt = useRef<Record<number, number>>({});
   const optionSwitchCounts = useRef<Record<number, number>>({});
@@ -122,6 +129,7 @@ export function ExamScreen({ studentId, paperNumber, topicId, onExit, onStartNex
       }
 
       const reviewData = await api.submitPaper(studentId, paperNumber, batchPayloads);
+      onPaperSubmitted?.(reviewData.paper_number);
       setReview(reviewData);
       setLoadState("results");
     } catch (err) {
@@ -214,7 +222,7 @@ export function ExamScreen({ studentId, paperNumber, topicId, onExit, onStartNex
           </p>
           <div className="flex items-center gap-2">
             <span className="rounded-lg bg-midnight-900/5 px-2.5 py-1 text-xs font-mono font-medium text-midnight-800">
-              ⏱️ {Math.floor(elapsedSeconds / 60).toString().padStart(2, "0")}:{(elapsedSeconds % 60).toString().padStart(2, "0")}
+              Time {Math.floor(elapsedSeconds / 60).toString().padStart(2, "0")}:{(elapsedSeconds % 60).toString().padStart(2, "0")}
             </span>
             <span className="rounded-lg bg-midnight-900/5 px-2.5 py-1 text-xs font-medium text-midnight-700/70">
               Target: {current.expected_time_seconds ?? 90}s
@@ -324,14 +332,19 @@ function ResultsView({
   const unanswered = totalInPaper - review.total_questions;
   const [hints, setHints] = useState<Record<string, SocraticHintOut>>({});
   const [loadingHint, setLoadingHint] = useState<Record<string, boolean>>({});
+  const [hintErrors, setHintErrors] = useState<Record<string, string>>({});
 
   async function handleFetchSocraticHint(questionId: string, selectedOption: string) {
     setLoadingHint((prev) => ({ ...prev, [questionId]: true }));
+    setHintErrors((prev) => ({ ...prev, [questionId]: "" }));
     try {
       const hint = await api.getSocraticHint(questionId, selectedOption);
       setHints((prev) => ({ ...prev, [questionId]: hint }));
-    } catch {
-      // ignore error in UI
+    } catch (err) {
+      setHintErrors((prev) => ({
+        ...prev,
+        [questionId]: err instanceof ApiError ? err.message : "Failed to load Socratic hint.",
+      }));
     } finally {
       setLoadingHint((prev) => ({ ...prev, [questionId]: false }));
     }
@@ -393,15 +406,20 @@ function ResultsView({
               {!q.is_correct && (
                 <div className="mt-4">
                   {!hint ? (
-                    <Button
-                      variant="secondary"
-                      onClick={() => handleFetchSocraticHint(q.question_id, q.selected_option)}
-                      disabled={loadingHint[q.question_id]}
-                    >
-                      {loadingHint[q.question_id]
-                        ? "Retrieving NCERT Concept…"
-                        : "Get NCERT Socratic Hint & Misconception Analysis"}
-                    </Button>
+                    <div className="flex flex-col items-start gap-1.5">
+                      <Button
+                        variant="secondary"
+                        onClick={() => handleFetchSocraticHint(q.question_id, q.selected_option)}
+                        disabled={loadingHint[q.question_id]}
+                      >
+                        {loadingHint[q.question_id]
+                          ? "Retrieving NCERT Concept…"
+                          : "Get NCERT Socratic Hint & Misconception Analysis"}
+                      </Button>
+                      {hintErrors[q.question_id] && (
+                        <p className="text-xs text-signal-incorrect">{hintErrors[q.question_id]}</p>
+                      )}
+                    </div>
                   ) : (
                     <div className="rounded-xl border border-midnight-900/10 bg-midnight-900/5 p-4 text-xs leading-relaxed text-midnight-900">
                       <p className="font-semibold text-midnight-950">{hint.ncert_reference}</p>

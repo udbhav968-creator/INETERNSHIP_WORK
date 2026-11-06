@@ -4,8 +4,8 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "backend"))
-from app.paths import MODEL_DIR  # noqa: E402
-from importance_calculator import compute_importance  # noqa: E402
+from app.paths import MODEL_DIR
+from importance_calculator import compute_importance
 
 GENERIC_CHAPTER_PREFIXES = ("General Biology", "General Chemistry", "General Physics")
 

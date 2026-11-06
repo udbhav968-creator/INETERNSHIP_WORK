@@ -1,5 +1,3 @@
-// Mirrors backend/app/schemas.py and db_models.py (v1 + Enterprise v2 Psychometric & Socratic RAG).
-
 export type Difficulty = "basic" | "medium" | "advanced";
 export type PaceFlag = "fast" | "slow" | null;
 export type OptionLetter = "a" | "b" | "c" | "d";
@@ -45,8 +43,6 @@ export interface AttemptResult {
   irt_theta?: number;
 }
 
-// --- paper review (post-submission only) ---
-
 export interface QuestionReviewOut {
   question_id: string;
   topic_id: string;
@@ -75,8 +71,6 @@ export interface PaperHistorySummary {
   topics: string[];
 }
 
-// --- analytics ---
-
 export interface SubjectBreakdown {
   subject: string;
   attempts: number;
@@ -100,8 +94,6 @@ export interface Analytics {
   subject_breakdown: SubjectBreakdown[];
   recent_attempts: RecentAttempt[];
 }
-
-// --- v2 Psychometric Insights & Socratic RAG Remediation ---
 
 export interface SocraticHintOut {
   question_id: string;

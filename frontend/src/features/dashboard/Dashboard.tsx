@@ -28,8 +28,10 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
   const [paperHistory, setPaperHistory] = useState<PaperHistorySummary[]>([]);
   const [reviewModal, setReviewModal] = useState<PaperReviewOut | null>(null);
   const [loadingReview, setLoadingReview] = useState<number | null>(null);
+  const [reviewError, setReviewError] = useState("");
   const [hints, setHints] = useState<Record<string, SocraticHintOut>>({});
   const [loadingHint, setLoadingHint] = useState<Record<string, boolean>>({});
+  const [hintErrors, setHintErrors] = useState<Record<string, string>>({});
   const [state, setState] = useState<LoadState>("loading");
   const [errorMessage, setErrorMessage] = useState("");
   const [subjectFilter, setSubjectFilter] = useState<SubjectFilter>("All");
@@ -64,11 +66,12 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
 
   async function handleOpenReview(paperNumber: number) {
     setLoadingReview(paperNumber);
+    setReviewError("");
     try {
       const review = await api.getPaperReview(studentId, paperNumber);
       setReviewModal(review);
-    } catch {
-      // ignore
+    } catch (err) {
+      setReviewError(err instanceof ApiError ? err.message : "Could not load paper review.");
     } finally {
       setLoadingReview(null);
     }
@@ -76,11 +79,15 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
 
   async function handleFetchSocraticHint(questionId: string, selectedOption: string) {
     setLoadingHint((prev) => ({ ...prev, [questionId]: true }));
+    setHintErrors((prev) => ({ ...prev, [questionId]: "" }));
     try {
       const hint = await api.getSocraticHint(questionId, selectedOption);
       setHints((prev) => ({ ...prev, [questionId]: hint }));
-    } catch {
-      // ignore
+    } catch (err) {
+      setHintErrors((prev) => ({
+        ...prev,
+        [questionId]: err instanceof ApiError ? err.message : "Could not load Socratic hint.",
+      }));
     } finally {
       setLoadingHint((prev) => ({ ...prev, [questionId]: false }));
     }
@@ -395,6 +402,9 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
               <h2 className="mb-3 font-display text-lg font-semibold text-midnight-950">
                 Completed Papers & Review Archive ({paperHistory.length})
               </h2>
+              {reviewError && (
+                <p className="mb-2 text-xs text-signal-incorrect">{reviewError}</p>
+              )}
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {paperHistory.map((p) => (
                   <Card key={p.paper_number} className="flex flex-col justify-between gap-3 p-4">
@@ -485,7 +495,6 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
         </>
       )}
 
-      {/* Monte Carlo Conformal NEET Simulator & Negative-Marking Skip Policy + Graph Laplacian Leverage */}
       {v2Insights?.monte_carlo_conformal_simulator && (
         <div className="flex flex-col gap-4">
           <div>
@@ -590,7 +599,6 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
         </div>
       )}
 
-      {/* 8-Micro-Skill DINA Q-Matrix Cognitive Diagnosis & van der Linden Bivariate Speed-Accuracy Profile */}
       {v2Insights?.dina_cognitive_profile && (
         <div className="flex flex-col gap-4">
           <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-end">
@@ -644,7 +652,6 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
         </div>
       )}
 
-      {/* Complete 65-Chapter NCERT Syllabus & Mastery Explorer (Always visible in both empty and ready states) */}
       {allSyllabusChapters.length > 0 && (
         <div className="flex flex-col gap-4">
           <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
@@ -726,6 +733,7 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
           onFetchHint={handleFetchSocraticHint}
           hints={hints}
           loadingHint={loadingHint}
+          hintErrors={hintErrors}
         />
       )}
     </div>
@@ -738,12 +746,14 @@ function PaperReviewModal({
   onFetchHint,
   hints,
   loadingHint,
+  hintErrors,
 }: {
   review: PaperReviewOut;
   onClose: () => void;
   onFetchHint: (questionId: string, selectedOption: string) => void;
   hints: Record<string, SocraticHintOut>;
   loadingHint: Record<string, boolean>;
+  hintErrors: Record<string, string>;
 }) {
   return (
     <div className="fixed inset-0 z-30 flex items-center justify-center bg-midnight-950/60 p-4 backdrop-blur-sm">
@@ -810,16 +820,21 @@ function PaperReviewModal({
                 {!q.is_correct && (
                   <div className="mt-3">
                     {!hint ? (
-                      <button
-                        type="button"
-                        onClick={() => onFetchHint(q.question_id, q.selected_option)}
-                        disabled={loadingHint[q.question_id]}
-                        className="rounded-lg bg-midnight-950 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-midnight-800 disabled:opacity-50"
-                      >
-                        {loadingHint[q.question_id]
-                          ? "Retrieving NCERT Concept…"
-                          : "Get NCERT Socratic Hint & Misconception Analysis"}
-                      </button>
+                      <div className="flex flex-col items-start gap-1">
+                        <button
+                          type="button"
+                          onClick={() => onFetchHint(q.question_id, q.selected_option)}
+                          disabled={loadingHint[q.question_id]}
+                          className="rounded-lg bg-midnight-950 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-midnight-800 disabled:opacity-50"
+                        >
+                          {loadingHint[q.question_id]
+                            ? "Retrieving NCERT Concept…"
+                            : "Get NCERT Socratic Hint & Misconception Analysis"}
+                        </button>
+                        {hintErrors[q.question_id] && (
+                          <p className="text-xs text-signal-incorrect">{hintErrors[q.question_id]}</p>
+                        )}
+                      </div>
                     ) : (
                       <div className="mt-2 rounded-xl border border-midnight-900/10 bg-midnight-900/5 p-3.5 text-xs leading-relaxed text-midnight-900">
                         <p className="font-semibold text-midnight-950">{hint.ncert_reference}</p>
