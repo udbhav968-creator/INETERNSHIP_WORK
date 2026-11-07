@@ -29,8 +29,11 @@ def _load_chapter_irt_pools() -> dict[str, list[tuple[float, float, float]]]:
             qid = str(q.get("question_id", ""))
             ch = str(q.get("chapter", ""))
             ip = CALIBRATED_ITEMS.get(qid)
-            if ch and isinstance(ip, dict):
-                pools[ch].append((float(ip["a"]), float(ip["b"]), float(ip["c"])))
+            if ch and ip is not None:
+                a_v = float(ip["a"] if isinstance(ip, dict) else ip.a)
+                b_v = float(ip["b"] if isinstance(ip, dict) else ip.b)
+                c_v = float(ip["c"] if isinstance(ip, dict) else ip.c)
+                pools[ch].append((a_v, b_v, c_v))
     except Exception:
         pass
     return pools

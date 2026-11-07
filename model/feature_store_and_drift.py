@@ -127,6 +127,46 @@ class DriftAndCalibrationMonitor:
             psi_val += (a - e) * math.log(a / e)
         return round(psi_val, 5)
 
+    @staticmethod
+    def compute_wasserstein_1d(u_values: List[float], v_values: List[float]) -> float:
+        if not u_values or not v_values:
+            return 0.0
+        u_sorted = sorted(u_values)
+        v_sorted = sorted(v_values)
+        all_vals = sorted(list(set(u_sorted + v_sorted)))
+        if len(all_vals) <= 1:
+            return 0.0
+        n_u = len(u_sorted)
+        n_v = len(v_sorted)
+        w_dist = 0.0
+        idx_u = 0
+        idx_v = 0
+        for i in range(len(all_vals) - 1):
+            x_curr = all_vals[i]
+            x_next = all_vals[i + 1]
+            while idx_u < n_u and u_sorted[idx_u] <= x_curr:
+                idx_u += 1
+            while idx_v < n_v and v_sorted[idx_v] <= x_curr:
+                idx_v += 1
+            cdf_u = idx_u / n_u
+            cdf_v = idx_v / n_v
+            w_dist += abs(cdf_u - cdf_v) * (x_next - x_curr)
+        return round(w_dist, 5)
+
+    @staticmethod
+    def compute_ks_statistic(sample: List[float], reference_mean: float = 85.0, reference_sd: float = 25.0) -> float:
+        if not sample:
+            return 0.0
+        sorted_s = sorted(sample)
+        n = len(sorted_s)
+        d_max = 0.0
+        for i, val in enumerate(sorted_s):
+            z = (val - reference_mean) / max(1.0, reference_sd)
+            ref_cdf = 0.5 * (1.0 + math.erf(z / math.sqrt(2.0)))
+            emp_cdf = (i + 1) / n
+            d_max = max(d_max, abs(emp_cdf - ref_cdf))
+        return round(d_max, 5)
+
     def evaluate_health(self, db_attempts: Optional[List[Dict[str, Any]]] = None) -> Dict[str, Any]:
         with self._lock:
             records = list(self.predictions_log)
@@ -148,6 +188,8 @@ class DriftAndCalibrationMonitor:
                 "effective_psi": 0.0,
                 "brier_score": 0.0,
                 "expected_calibration_error": 0.0,
+                "wasserstein_response_time": 0.0,
+                "ks_response_time_statistic": 0.0,
                 "drift_status": "NO_ATTEMPTS_YET",
                 "recalibration_required": False,
                 "sample_size": 0,
@@ -211,6 +253,11 @@ class DriftAndCalibrationMonitor:
                 ece += (b["count"] / n) * abs(avg_p - avg_acc)
         ece = round(ece, 4)
 
+        times_list = [float(r["time_taken"]) for r in records]
+        baseline_times = [65.0, 85.0, 110.0] * max(1, n // 3)
+        w_time = self.compute_wasserstein_1d(baseline_times, times_list)
+        ks_time = self.compute_ks_statistic(times_list, reference_mean=85.0, reference_sd=25.0)
+
         effective_psi = psi_diff if n >= 30 else round(psi_diff * (n / 30.0), 4)
         recal_needed = effective_psi > 0.20 or (n >= 30 and ece > 0.08)
 
@@ -220,6 +267,8 @@ class DriftAndCalibrationMonitor:
             "effective_psi": effective_psi,
             "brier_score": brier_score,
             "expected_calibration_error": ece,
+            "wasserstein_response_time": w_time,
+            "ks_response_time_statistic": ks_time,
             "drift_status": "DRIFT_WARNING" if recal_needed else "HEALTHY",
             "recalibration_required": recal_needed,
             "sample_size": n,

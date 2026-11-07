@@ -500,6 +500,37 @@ def ml_suite_19_all_trained_auxiliary_models_and_chapter_datasets():
     assert (MODEL_DIR / "conformal_laplacian_model.json").exists()
 
 
+def ml_suite_20_pipeline_deep_invariants_and_statistical_drift_gate():
+    from model.feature_store_and_drift import DriftAndCalibrationMonitor
+    from model.irt_3pl_model import IRTItemParams, fisher_information, irt_3pl_probability
+    from model.state_machine.bkt_model import compute_bkt_update
+
+    item = IRTItemParams(a=1.65, b=0.45, c=0.20)
+    p_low = irt_3pl_probability(-6.0, item)
+    p_mid = irt_3pl_probability(0.45, item)
+    p_high = irt_3pl_probability(6.0, item)
+    assert 0.20 <= p_low <= 0.205
+    assert p_low < p_mid < p_high <= 1.0
+    assert fisher_information(0.45, item) > 0.0
+    assert fisher_information(0.45, item) > fisher_information(5.0, item)
+
+    p_streak, ci_streak = compute_bkt_update(0.90, True, "advanced", 45, 90, 0, 1000, 3, streak=25)
+    assert 0.90 < p_streak < 1.0
+    assert 0.0 < ci_streak < 0.25
+
+    mon = DriftAndCalibrationMonitor()
+    mon.log_prediction(0.75, 1, "medium", 82)
+    mon.log_prediction(0.45, 0, "advanced", 115)
+    mon.log_prediction(0.85, 1, "basic", 58)
+    mon.log_prediction(0.25, 0, "advanced", 140)
+    health = mon.evaluate_health()
+    assert health["sample_size"] == 4
+    assert health["wasserstein_response_time"] >= 0.0
+    assert 0.0 <= health["ks_response_time_statistic"] <= 1.0
+    assert 0.0 <= health["brier_score"] <= 1.0
+    assert 0.0 <= health["expected_calibration_error"] <= 1.0
+
+
 if __name__ == "__main__":
     suites = [
         ml_suite_01_question_bank_and_weightage_schema_validators,
@@ -521,6 +552,7 @@ if __name__ == "__main__":
         ml_suite_17_near_duplicate_pyq_cosine_similarity_audit,
         ml_suite_18_temperature_probability_calibration_and_compression,
         ml_suite_19_all_trained_auxiliary_models_and_chapter_datasets,
+        ml_suite_20_pipeline_deep_invariants_and_statistical_drift_gate,
     ]
     for fn in suites:
         fn()
