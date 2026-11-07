@@ -104,23 +104,25 @@ class CompactRandomForestRuntime:
         offsets = self.tree_offsets
         assert cr is not None and feat is not None and thresh is not None and lprobs is not None
 
-        n_trees = len(offsets) - 1
-        acc = np.zeros(len(self.classes), dtype=np.float64)
-        for t in range(n_trees):
-            base = int(offsets[t])
-            node = 0
-            while True:
-                g_idx = base + node
-                left_child = int(cl[g_idx])
-                if left_child < 0:
-                    acc += lprobs[g_idx]
-                    break
-                f_idx = int(feat[g_idx])
-                if x[f_idx] <= float(thresh[g_idx]):
-                    node = left_child
-                else:
-                    node = int(cr[g_idx])
-        mean_probs = acc / max(1, n_trees)
+        roots = offsets[:-1].astype(np.int32)
+        g_idx = roots.copy()
+        active = np.ones(len(roots), dtype=bool)
+        while np.any(active):
+            act_indices = np.flatnonzero(active)
+            act_g = g_idx[act_indices]
+            left_c = cl[act_g]
+            is_leaf = left_c < 0
+            if np.any(is_leaf):
+                active[act_indices[is_leaf]] = False
+            non_leaf = ~is_leaf
+            if not np.any(non_leaf):
+                break
+            nl_indices = act_indices[non_leaf]
+            nl_g = act_g[non_leaf]
+            go_left = x[feat[nl_g]] <= thresh[nl_g]
+            next_local = np.where(go_left, cl[nl_g], cr[nl_g]).astype(np.int32)
+            g_idx[nl_indices] = roots[nl_indices] + next_local
+        mean_probs = np.mean(lprobs[g_idx], axis=0)
         return {cls_name: round(float(mean_probs[i]), 4) for i, cls_name in enumerate(self.classes)}
 
 

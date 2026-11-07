@@ -296,4 +296,20 @@ for k in ("p50_ms", "p95_ms", "p99_ms", "cache_hit_rate", "cached_students"):
     assert k in fstore_block, f"Missing live feature_store schema key: {k}"
 print(f"[PASS] 14. Frontend-Backend MLOps UI Contract Verified: status={drift_block['drift_status']}, effective_psi={drift_block['effective_psi']}, cache_hit={fstore_block['cache_hit_rate']}")
 
-print("\n>>> ALL 14 END-TO-END LIVE PRODUCTION INTEGRATION GATES PASSED (100%) <<<")
+with urllib.request.urlopen(f"{BASE}/mlops/corpus_distribution", timeout=15) as res:
+    dist_payload = json.loads(res.read())
+    assert dist_payload["distribution_audit"]["corpus_totals"]["total_verified_questions"] == 2471
+    assert dist_payload["distribution_audit"]["gap_summary"]["topics_missing_medium_count"] == 0
+    assert dist_payload["live_integrity_verification"]["integrity_status"] == "VERIFIED"
+    print(f"[PASS] 15. MLOps 65-Chapter Distribution & SHA-256 Registry Gate: 2471 PYQs, 0 medium gaps, integrity={dist_payload['live_integrity_verification']['integrity_status']}")
+
+req_plan = urllib.request.Request(f"{BASE}/students/{sid}/study_plan", headers=full_sync_headers)
+with urllib.request.urlopen(req_plan, timeout=15) as res:
+    plan_payload = json.loads(res.read())
+    cov = plan_payload["syllabus_coverage"]
+    assert cov["total_chapters"] == 65
+    assert cov["practiced_chapters"] >= 1
+    assert len(plan_payload["improvement_action_table"]) >= 5
+    print(f"[PASS] 16. ML Syllabus Coverage & Ranked Improvement Plan: practiced={cov['practiced_chapters']}/65 ({cov['coverage_percent']}%), top_action='{plan_payload['improvement_action_table'][0]['topic_id']}'")
+
+print("\n>>> ALL 16 END-TO-END LIVE PRODUCTION INTEGRATION GATES PASSED (100%) <<<")

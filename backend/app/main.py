@@ -49,6 +49,12 @@ from model.dina_cognitive_diagnosis import (
 )
 from model.monte_carlo_conformal_neet import run_monte_carlo_conformal_neet_simulation
 from model.rf_compact_runtime import COMPACT_RF_RUNTIME
+from model.corpus_distribution_and_readiness_audit import (
+    DISTRIBUTION_REPORT_PATH,
+    run_corpus_distribution_and_readiness_audit,
+)
+from model.study_plan_and_coverage_engine import compute_syllabus_coverage_and_improvement_plan
+from model.verify_artifact_integrity import REGISTRY_MANIFEST_FILE, verify_all_ml_artifacts
 
 with open(MODEL_DIR / "topic_importance.json", encoding="utf-8") as f:
     _TOPIC_IMPORTANCE = json.load(f)
@@ -949,6 +955,86 @@ def get_mlops_audit_overview(db: Session = Depends(get_db)):
         "harness_benchmark": harness_benchmark,
         "chapters_by_subject": chapters_by_subject,
     }
+
+
+@app.get("/mlops/corpus_distribution")
+def get_mlops_corpus_distribution():
+    if DISTRIBUTION_REPORT_PATH.exists():
+        with open(DISTRIBUTION_REPORT_PATH, encoding="utf-8") as f:
+            dist_report = json.load(f)
+    else:
+        dist_report = run_corpus_distribution_and_readiness_audit(save_report=False)
+
+    registry = {}
+    if REGISTRY_MANIFEST_FILE.exists():
+        with open(REGISTRY_MANIFEST_FILE, encoding="utf-8") as f:
+            registry = json.load(f)
+
+    integrity = verify_all_ml_artifacts(allow_serverless_omissions=True, require_clean_bandit=False)
+    return {
+        "distribution_audit": dist_report,
+        "artifact_registry": registry,
+        "live_integrity_verification": integrity,
+    }
+
+
+@app.get("/students/{student_id}/study_plan")
+def get_student_ml_study_plan(student_id: str, request: Request, db: Session = Depends(get_db)):
+    _sync_serverless_context(request, db, student_id)
+    student = db.query(Student).filter_by(student_id=student_id).first()
+    global_theta = float(getattr(student, "global_theta", 0.0) or 0.0) if student else 0.0
+
+    states = db.query(StudentTopicState).filter_by(student_id=student_id).all()
+    attempt_rows = (
+        db.query(TestAttempt, Question)
+        .join(Question, TestAttempt.question_id == Question.question_id)
+        .filter(TestAttempt.student_id == student_id)
+        .order_by(TestAttempt.attempt_id.asc())
+        .all()
+    )
+
+    now_utc = datetime.now(timezone.utc)
+    last_ts_by_topic: dict[str, datetime] = {}
+    attempt_records: list[dict] = []
+    for att, q in attempt_rows:
+        if att.timestamp:
+            ts = att.timestamp if att.timestamp.tzinfo else att.timestamp.replace(tzinfo=timezone.utc)
+            last_ts_by_topic[q.topic_id] = ts
+        attempt_records.append(
+            {
+                "question_id": q.question_id,
+                "question_text": q.text,
+                "topic_id": q.topic_id,
+                "difficulty": q.difficulty,
+                "expected_time_seconds": q.expected_time_seconds or 90,
+                "time_taken_seconds": att.time_taken_seconds,
+                "is_correct": att.is_correct,
+            }
+        )
+
+    topic_state_dicts: list[dict] = []
+    for st in states:
+        last_ts = last_ts_by_topic.get(st.topic_id)
+        elapsed_h = max(0.0, (now_utc - last_ts).total_seconds() / 3600.0) if last_ts else 0.0
+        topic_state_dicts.append(
+            {
+                "topic_id": st.topic_id,
+                "level": st.level,
+                "mastery_prob": float(getattr(st, "mastery_prob", 0.35) or 0.35),
+                "confidence_interval": float(getattr(st, "confidence_interval", 0.35) or 0.35),
+                "irt_theta": float(getattr(st, "irt_theta", global_theta) or global_theta),
+                "pace_flag": st.pace_flag,
+                "streak": int(getattr(st, "streak", 0) or 0),
+                "elapsed_hours": elapsed_h,
+            }
+        )
+
+    return compute_syllabus_coverage_and_improvement_plan(
+        student_id=student_id,
+        global_theta=global_theta,
+        topic_states=topic_state_dicts,
+        attempt_records=attempt_records,
+    )
 
 
 _FRONTEND_DIST = PROJECT_ROOT / "frontend" / "dist"

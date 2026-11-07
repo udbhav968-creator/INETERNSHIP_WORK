@@ -1414,6 +1414,107 @@ def test_25_forensic_reality_audit_all_2471_items_non_repeating_papers_and_ui_sc
         db_end.close()
 
 
+def test_26_ml_devops_standalone_suite_registry_checksums_and_study_plan_endpoints():
+    from model.linucb_bandit import reset_student_bandit
+    from model.tests.test_ml_standalone_suite import (
+        ml_suite_11_corpus_65_topic_distribution_and_180q_readiness_audit,
+        ml_suite_12_syllabus_coverage_less_learned_and_improvement_plan_engine,
+        ml_suite_14_multi_model_tournament_and_sha256_registry_integrity,
+        ml_suite_15_clean_code_zero_comments_and_zero_seeded_attempts_gate,
+    )
+    from model.verify_artifact_integrity import render_ci_markdown_summary, verify_all_ml_artifacts
+
+    ml_suite_11_corpus_65_topic_distribution_and_180q_readiness_audit()
+    ml_suite_12_syllabus_coverage_less_learned_and_improvement_plan_engine()
+    ml_suite_14_multi_model_tournament_and_sha256_registry_integrity()
+    ml_suite_15_clean_code_zero_comments_and_zero_seeded_attempts_gate()
+
+    integrity = verify_all_ml_artifacts()
+    assert integrity["integrity_status"] == "VERIFIED"
+    assert integrity["verified_artifacts_count"] == 9
+    md_summary = render_ci_markdown_summary()
+    assert "Multi-Model Champion-Challenger Tournament" in md_summary
+    assert "NEET PYQ Corpus Subject x Difficulty" in md_summary
+
+    assert (PROJECT_ROOT / ".dockerignore").exists()
+    dockerfile_text = (PROJECT_ROOT / "Dockerfile").read_text(encoding="utf-8")
+    assert "HEALTHCHECK" in dockerfile_text
+    assert "USER appuser" in dockerfile_text
+    assert "model.verify_artifact_integrity" in dockerfile_text
+
+    client = TestClient(app)
+    r_dist = client.get("/mlops/corpus_distribution")
+    assert r_dist.status_code == 200
+    dist_body = r_dist.json()
+    assert dist_body["distribution_audit"]["corpus_totals"]["total_verified_questions"] == 2471
+    assert dist_body["distribution_audit"]["gap_summary"]["topics_missing_medium_count"] == 0
+    assert dist_body["live_integrity_verification"]["integrity_status"] == "VERIFIED"
+
+    sid = None
+    email = "ml_study_plan_endpoint_test@klassed.in"
+    try:
+        db = SessionLocal()
+        old = db.query(Student).filter_by(email=email).first()
+        if old:
+            db.query(TestAttempt).filter_by(student_id=old.student_id).delete()
+            db.query(StudentTopicState).filter_by(student_id=old.student_id).delete()
+            db.delete(old)
+            db.commit()
+        answer_key = {q.question_id: q.correct_answer.lower() for q in db.query(Question).all()}
+        db.close()
+
+        up = client.post(
+            "/auth/signup",
+            json={"name": "Study Plan Tester", "email": email, "password": "PlanPassword123!"},
+        ).json()
+        sid = up["student_id"]
+        hdr = {"Authorization": f"Bearer {up['access_token']}"}
+        client.post(
+            f"/students/{sid}/onboarding",
+            json={"class_level": "12", "target_neet_year": 2027},
+            headers=hdr,
+        )
+
+        rot_qs = client.get(f"/students/{sid}/next_paper?topic_id=Rotational%20Motion", headers=hdr).json()
+        wrong_opt = next(o for o in ("a", "b", "c", "d") if o != answer_key[rot_qs[0]["question_id"]])
+        client.post(
+            "/submit_paper",
+            headers=hdr,
+            json={
+                "student_id": sid,
+                "paper_number": 1,
+                "attempts": [
+                    {
+                        "student_id": sid,
+                        "question_id": rot_qs[0]["question_id"],
+                        "paper_number": 1,
+                        "selected_option": wrong_opt,
+                        "time_taken_seconds": 140,
+                    }
+                ],
+            },
+        )
+
+        r_plan = client.get(f"/students/{sid}/study_plan", headers=hdr)
+        assert r_plan.status_code == 200
+        plan = r_plan.json()
+        assert plan["syllabus_coverage"]["total_chapters"] == 65
+        assert plan["syllabus_coverage"]["practiced_chapters"] == 1
+        assert plan["syllabus_coverage"]["less_learned_chapters"] == 1
+        assert len(plan["less_learned_lessons"]) == 1
+        assert plan["less_learned_lessons"][0]["topic_id"] == "Rotational Motion"
+        assert len(plan["improvement_action_table"]) >= 5
+    finally:
+        if sid:
+            reset_student_bandit(sid, remove=True)
+            db = SessionLocal()
+            db.query(TestAttempt).filter_by(student_id=sid).delete()
+            db.query(StudentTopicState).filter_by(student_id=sid).delete()
+            db.query(Student).filter_by(student_id=sid).delete()
+            db.commit()
+            db.close()
+
+
 if __name__ == "__main__":
     suites = [
         test_01_random_forest_model_and_live_inference,
@@ -1441,6 +1542,7 @@ if __name__ == "__main__":
         test_23_scientific_notation_traps_paper_history_and_remediation_urgency,
         test_24_serverless_vault_relogin_compact_rf_parity_and_full_audit,
         test_25_forensic_reality_audit_all_2471_items_non_repeating_papers_and_ui_schema_contract,
+        test_26_ml_devops_standalone_suite_registry_checksums_and_study_plan_endpoints,
     ]
     for fn in suites:
         fn()

@@ -4,7 +4,8 @@ import time
 from pathlib import Path
 import numpy as np
 
-from .feature_store_and_drift import FEATURE_STORE, DRIFT_MONITOR
+from .dina_cognitive_diagnosis import compute_dina_and_rt_profile
+from .feature_store_and_drift import FEATURE_STORE
 from .irt_3pl_model import (
     IRTItemParams,
     fisher_information,
@@ -13,24 +14,21 @@ from .irt_3pl_model import (
     theta_to_percentile,
     update_student_theta_map,
 )
-from .knowledge_graph_dag import (
-    compute_hierarchical_shrinkage_prior,
-    compute_prerequisite_readiness,
-    diagnose_prerequisite_bottlenecks,
-    propagate_dag_belief_update,
-)
+from .knowledge_graph_dag import diagnose_prerequisite_bottlenecks
 from .linucb_bandit import (
     ZPD_TARGET_PROB,
     LinUCBStudentState,
     build_context_vector,
 )
 from .rag_socratic_engine import generate_socratic_remediation
+from .rf_compact_runtime import COMPACT_RF_RUNTIME
 from .state_machine.bkt_model import (
     compute_bkt_update,
     compute_ebbinghaus_forgetting_prior,
     compute_retention_urgency,
     resolve_level_with_hysteresis,
 )
+from .study_plan_and_coverage_engine import compute_syllabus_coverage_and_improvement_plan
 
 MODEL_DIR = Path(__file__).resolve().parent
 HARNESS_REPORT_PATH = MODEL_DIR / "harness_benchmark_report.json"
@@ -137,7 +135,9 @@ def simulate_student_personas() -> dict:
             "final_mastery_prob": struggler_prob,
             "final_theta": struggler_theta,
             "detected_bottlenecks": len(bottlenecks),
-            "invariants_satisfied": bool(struggler_level == "basic" and struggler_prob < 0.35 and struggler_theta < 0.0 and len(bottlenecks) >= 1),
+            "invariants_satisfied": bool(
+                struggler_level == "basic" and struggler_prob < 0.35 and struggler_theta < 0.0 and len(bottlenecks) >= 1
+            ),
         },
         "impulsive_guesser_telemetry_audit": {
             "deliberate_posterior": p_deliberate,
@@ -193,7 +193,6 @@ def benchmark_linucb_vs_random_ablation(n_rounds: int = 120) -> dict:
     random_regret = 0.0
 
     for _ in range(n_rounds):
-        best_arm = None
         best_ucb = -1e9
         best_x = None
         best_zpd = 0.0
@@ -204,7 +203,6 @@ def benchmark_linucb_vs_random_ablation(n_rounds: int = 120) -> dict:
             ucb = float(x @ w_hat) + bandit.alpha * float(np.sqrt(max(1e-9, float(x @ bandit.A_inv @ x))))
             if ucb > best_ucb:
                 best_ucb = ucb
-                best_arm = arm
                 best_x = x
                 best_zpd = zpd_val
                 best_info = info_val
@@ -244,10 +242,24 @@ def benchmark_engine_latencies(iterations: int = 50) -> dict:
     irt_times: list[float] = []
     bkt_times: list[float] = []
     bandit_times: list[float] = []
+    rf_times: list[float] = []
+    dina_times: list[float] = []
     rag_times: list[float] = []
+    plan_times: list[float] = []
     fs_times: list[float] = []
 
     sample_item = get_item_params("NEET_2025_PHY_001", "medium", 90)
+    sample_attempts = [
+        {
+            "question_id": "Q1",
+            "question_text": "Calculate molarity in mol/L for 4.0 g NaOH in 500 mL.",
+            "topic_id": "Mole Concept / Stoichiometry",
+            "difficulty": "basic",
+            "expected_time_seconds": 90,
+            "time_taken_seconds": 45,
+            "is_correct": True,
+        }
+    ]
 
     for i in range(iterations):
         t0 = time.perf_counter()
@@ -261,6 +273,21 @@ def benchmark_engine_latencies(iterations: int = 50) -> dict:
         t0 = time.perf_counter()
         build_context_vector("NEET_2025_PHY_001", "medium", 90, 0.1, 0.45, 3.2, 0.85, None)
         bandit_times.append((time.perf_counter() - t0) * 1000.0)
+
+        t0 = time.perf_counter()
+        COMPACT_RF_RUNTIME.predict_proba_single(
+            subject="Physics",
+            chapter="Electrostatics",
+            topic_tag="Electric Field",
+            question_type="Single_Choice_MCQ",
+            ideal_time_sec=90,
+            has_diagram=False,
+        )
+        rf_times.append((time.perf_counter() - t0) * 1000.0)
+
+        t0 = time.perf_counter()
+        compute_dina_and_rt_profile(sample_attempts)
+        dina_times.append((time.perf_counter() - t0) * 1000.0)
 
         t0 = time.perf_counter()
         FEATURE_STORE.put_student_features("HARNESS_BENCH", {"theta": 0.1})
@@ -280,15 +307,29 @@ def benchmark_engine_latencies(iterations: int = 50) -> dict:
         )
         rag_times.append((time.perf_counter() - t0) * 1000.0)
 
+    for _ in range(10):
+        t0 = time.perf_counter()
+        compute_syllabus_coverage_and_improvement_plan(
+            student_id="HARNESS_PLAN",
+            global_theta=-0.1,
+            topic_states=[{"topic_id": "Electrostatics", "level": "medium", "mastery_prob": 0.42}],
+            attempt_records=sample_attempts,
+        )
+        plan_times.append((time.perf_counter() - t0) * 1000.0)
+
     return {
         "irt_3pl_map_update": _percentiles_ms(irt_times),
         "bkt_saint_ebbinghaus_update": _percentiles_ms(bkt_times),
         "linucb_context_scoring": _percentiles_ms(bandit_times),
+        "compact_rf_300_tree_inference": _percentiles_ms(rf_times),
+        "dina_8_skill_cognitive_diagnosis": _percentiles_ms(dina_times),
         "rag_socratic_remediation": _percentiles_ms(rag_times),
+        "study_plan_coverage_prescription": _percentiles_ms(plan_times),
         "in_memory_feature_store": _percentiles_ms(fs_times),
         "all_slas_met": bool(
             _percentiles_ms(irt_times)["p95_ms"] < 5.0
             and _percentiles_ms(bkt_times)["p95_ms"] < 5.0
+            and _percentiles_ms(rf_times)["p95_ms"] < 20.0
             and _percentiles_ms(rag_times)["p95_ms"] < 40.0
         ),
     }

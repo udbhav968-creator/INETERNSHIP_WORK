@@ -1,6 +1,6 @@
 {
   "pipeline_status": "PASSED",
-  "execution_time_seconds": 11.401,
+  "execution_time_seconds": 36.713,
   "data_validation_gates": {
     "question_bank_schema_valid": true,
     "weightage_schema_valid": true,
@@ -8,7 +8,8 @@
     "ncert_dag_nodes": 65,
     "ncert_dag_acyclic": true,
     "rag_knowledge_base_chapters": 65,
-    "topic_importance_chapters": 65
+    "topic_importance_chapters": 65,
+    "adjacent_fallback_covers_all_65_chapters": true
   },
   "random_forest_holdout_evaluation": {
     "training_rows": 1976,
@@ -74,6 +75,62 @@
     "mean_cv_macro_f1": 0.9733,
     "mean_cv_log_loss": 0.0398,
     "oof_multiclass_brier_score": 0.02185
+  },
+  "champion_challenger_tournament": {
+    "random_forest_300_balanced": {
+      "holdout_accuracy": 0.996,
+      "macro_f1": 0.9923,
+      "log_loss": 0.0317
+    },
+    "extra_trees_300_balanced": {
+      "holdout_accuracy": 0.9919,
+      "macro_f1": 0.9843,
+      "log_loss": 0.0287
+    },
+    "multinomial_logistic_l2": {
+      "holdout_accuracy": 0.998,
+      "macro_f1": 0.9962,
+      "log_loss": 0.0372
+    }
+  },
+  "permutation_feature_importance": {
+    "subject": {
+      "mean_accuracy_drop": 0.23152,
+      "std_accuracy_drop": 0.01791
+    },
+    "chapter": {
+      "mean_accuracy_drop": -0.00162,
+      "std_accuracy_drop": 0.00081
+    },
+    "topic_tag": {
+      "mean_accuracy_drop": 0.0,
+      "std_accuracy_drop": 0.00128
+    },
+    "question_type": {
+      "mean_accuracy_drop": 0.00566,
+      "std_accuracy_drop": 0.00297
+    },
+    "ideal_time_sec": {
+      "mean_accuracy_drop": 0.32323,
+      "std_accuracy_drop": 0.01157
+    },
+    "has_diagram": {
+      "mean_accuracy_drop": 0.0,
+      "std_accuracy_drop": 0.0
+    },
+    "marks": {
+      "mean_accuracy_drop": 0.0,
+      "std_accuracy_drop": 0.0
+    },
+    "negative_marks": {
+      "mean_accuracy_drop": 0.0,
+      "std_accuracy_drop": 0.0
+    }
+  },
+  "serverless_compact_rf_parity": {
+    "verified_rows": 2471,
+    "exact_class_matches": 2471,
+    "max_abs_probability_diff": 3.8e-05
   },
   "irt_3pl_calibration_summary": {
     "calibrated_questions": 2471,

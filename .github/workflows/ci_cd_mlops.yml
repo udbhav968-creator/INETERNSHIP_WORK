@@ -8,8 +8,66 @@ on:
   workflow_dispatch:
 
 jobs:
-  mlops-training-validation-and-harness:
-    name: ML Training, 5-Fold CV, Psychometric Harness & 25-Suite Gate
+  standalone-mlops-governance-and-training:
+    name: Pure ML Training, 5-Fold CV, Checksum Registry & 15-Suite ML Gate
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v7
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: "backend/requirements.txt"
+
+      - name: Install ML & Psychometric Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+
+      - name: Stage 1 — Data, Taxonomy & 65-Chapter Distribution Audit
+        run: |
+          python -m model.validate_question_bank data/tagged_questions/neet_questions_clean.json
+          python -m model.validate_weightage_file data/taxonomy/NEET_Unified_Weightage_And_Marks_2013_2026.json
+          python -m model.corpus_distribution_and_readiness_audit
+
+      - name: Stage 2 — Multi-Model Champion-Challenger Tournament, 5-Fold CV & SHA-256 Registry
+        run: |
+          python -m model.training_and_validation_pipeline
+
+      - name: Stage 3 — Cryptographic Artifact Checksum & Cold-Start Boot SLA Gate
+        run: |
+          python -m model.verify_artifact_integrity
+
+      - name: Stage 4 — Multi-Persona Psychometric, Bandit Regret & 8-Subsystem SLA Harness
+        run: |
+          python -m model.evaluation_harness
+
+      - name: Stage 5 — 15 Standalone Pure-ML & MLOps Verification Suites
+        run: |
+          python -m model.tests.test_ml_standalone_suite
+
+      - name: Stage 6 — Publish MLOps & Corpus Distribution Governance Summary
+        run: |
+          python -m model.verify_artifact_integrity --markdown-summary >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload MLOps Validation, Distribution & Registry Artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: klassed-mlops-governance-reports
+          path: |
+            model/validation_report.json
+            model/harness_benchmark_report.json
+            model/corpus_distribution_report.json
+            model/model_registry_manifest.json
+            model/question_difficulty_metrics.json
+
+  fullstack-integration-and-security-gate:
+    name: Full-Stack Psychometric, Concurrency, Security & 26-Suite Gate
+    needs: standalone-mlops-governance-and-training
     runs-on: ubuntu-24.04
 
     steps:
@@ -28,39 +86,27 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r backend/requirements.txt
 
-      - name: Stage 1 — Data & Taxonomy Schema Gate
-        run: |
-          python -m model.validate_question_bank data/tagged_questions/neet_questions_clean.json
-          python -m model.validate_weightage_file data/taxonomy/NEET_Unified_Weightage_And_Marks_2013_2026.json
-
-      - name: Stage 2 — Deep Training, 5-Fold Stratified CV & Champion Accuracy Gate (>=99.0%)
-        run: |
-          python -m model.training_and_validation_pipeline
-
-      - name: Stage 3 — Multi-Persona Psychometric, Bandit Regret & SLA Evaluation Harness
-        run: |
-          python -m model.evaluation_harness
-
-      - name: Stage 4 — 25 Deep Unit, Integration, Security & Concurrency Test Suites
+      - name: Run All 26 Deep Unit, Integration, Concurrency & Forensic Suites
         run: |
           python backend/tests/test_v2_engine.py
 
-      - name: Upload MLOps Validation & Harness Benchmark Reports
-        uses: actions/upload-artifact@v7
-        with:
-          name: klassed-mlops-validation-and-harness-reports
-          path: |
-            model/validation_report.json
-            model/harness_benchmark_report.json
-            model/question_difficulty_metrics.json
-
-  frontend-typecheck-and-build:
-    name: Frontend TypeScript Typecheck & Vite Production Build Gate
+  frontend-build-and-devops-container-gate:
+    name: Frontend Production Bundle & DevOps Container Hardening Gate
     runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v7
+
+      - name: Verify Hardened Container & Cloud Deployment Manifests
+        run: |
+          test -f .dockerignore
+          grep -q "HEALTHCHECK" Dockerfile
+          grep -q "USER appuser" Dockerfile
+          grep -q "model.verify_artifact_integrity" Dockerfile
+          test -f render.yaml
+          test -f railway.json
+          test -f vercel.json
 
       - name: Set up Node.js 24
         uses: actions/setup-node@v7

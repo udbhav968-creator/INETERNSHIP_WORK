@@ -1,0 +1,52 @@
+{
+  "registry_version": "2.1.0",
+  "champion_classifier": "RandomForestClassifier_300_Balanced",
+  "serverless_runtime": "CompactNumPyForest_300_Trees",
+  "artifacts": {
+    "model/question_difficulty_model.joblib": {
+      "exists": true,
+      "size_bytes": 7852154,
+      "sha256": "26543b2289112e95eceb394a6da7652ff2f9253c77e9cc2c103ee8182a1ea948"
+    },
+    "model/rf_difficulty_forest.npz": {
+      "exists": true,
+      "size_bytes": 332706,
+      "sha256": "ecb2276be4012c9981204a4e16c7ef24df2befa1820f4cbf2bfac780b2f01dbd"
+    },
+    "model/rf_difficulty_meta.json": {
+      "exists": true,
+      "size_bytes": 12312,
+      "sha256": "91cc7dd79a4aeed38ac311ae22faaeb228b9cb579b48a90dfc0c538f70eb5117"
+    },
+    "model/irt_item_parameters.json": {
+      "exists": true,
+      "size_bytes": 206605,
+      "sha256": "da8f0a5156c83ca09ba3b7b96c98de1be7460f1fbcf4e5dbd863e8765d4181ee"
+    },
+    "model/topic_importance.json": {
+      "exists": true,
+      "size_bytes": 2176,
+      "sha256": "a3a0bd0b187e54c34cb0664d3d3108d247bb3eeac61cc922a5817641804c232a"
+    },
+    "data/tagged_questions/neet_questions_clean.json": {
+      "exists": true,
+      "size_bytes": 3249018,
+      "sha256": "43c73a7881dd91c64ae8e89d47c61ab6ea03a3d2706501a5cfa56536d968a9f9"
+    },
+    "data/ncert_knowledge_base.json": {
+      "exists": true,
+      "size_bytes": 85165,
+      "sha256": "d5a5ee86a10a0e35fddedeff0678a81861ff6ad306f46bd54848c84f8a89a684"
+    },
+    "data/taxonomy/NEET_Unified_Weightage_And_Marks_2013_2026.json": {
+      "exists": true,
+      "size_bytes": 688497,
+      "sha256": "86c05a7f85941008cf431bc496d4801a547df74c97364f768809a68fdeca8c2f"
+    },
+    "data/training/question_features.csv": {
+      "exists": true,
+      "size_bytes": 547320,
+      "sha256": "ed7ccd008f5634be13d69a5760a83cd728044282fa6f155291fa2fb1c8e652b7"
+    }
+  }
+}
