@@ -232,11 +232,11 @@ export function ModelAuditView() {
         <Card className="p-5">
           <p className="text-xs font-medium text-midnight-700/60">RF Holdout Accuracy</p>
           <p className="mt-1 font-display text-2xl font-semibold text-midnight-950">
-            {rfEval ? `${(rfEval.holdout_accuracy * 100).toFixed(2)}%` : "99.60%"}
+            {rfEval ? `${(rfEval.holdout_accuracy * 100).toFixed(2)}%` : "—"}
           </p>
           <p className="mt-1 text-xs text-midnight-700/60">
-            {rfEval ? `${rfEval.correct_predictions} / ${rfEval.testing_rows} test items` : "493 / 495"} · Macro F1{" "}
-            {rfEval?.macro_f1.toFixed(4)}
+            {rfEval ? `${rfEval.correct_predictions} / ${rfEval.testing_rows} test items` : "—"} · Macro F1{" "}
+            {rfEval ? rfEval.macro_f1.toFixed(4) : "—"}
           </p>
         </Card>
 
@@ -246,29 +246,31 @@ export function ModelAuditView() {
             {corpus.verified_questions_in_db.toLocaleString()} PYQs
           </p>
           <p className="mt-1 text-xs text-midnight-700/60">
-            {corpus.canonical_chapters_in_db} NCERT chapters · {corpus.dag_edges_count} DAG edges · Acyclic
+            {corpus.canonical_chapters_in_db} NCERT chapters · {corpus.dag_edges_count} DAG edges ·{" "}
+            {corpus.dag_acyclic ? "Acyclic" : "Cycle Detected"}
           </p>
         </Card>
 
         <Card className="p-5">
           <p className="text-xs font-medium text-midnight-700/60">120-Round Bandit Regret</p>
           <p className="mt-1 font-display text-2xl font-semibold text-midnight-950">
-            {ablation ? ablation.linucb_cumulative_regret.toFixed(2) : "0.00"} vs{" "}
-            {ablation ? ablation.random_cumulative_regret.toFixed(1) : "36.8"}
+            {ablation ? ablation.linucb_cumulative_regret.toFixed(2) : "—"} vs{" "}
+            {ablation ? ablation.random_cumulative_regret.toFixed(1) : "—"}
           </p>
           <p className="mt-1 text-xs text-midnight-700/60">
-            LinUCB ZPD {ablation ? `${(ablation.linucb_mean_zpd_alignment * 100).toFixed(1)}%` : "86.4%"} vs Random{" "}
-            {ablation ? `${(ablation.random_mean_zpd_alignment * 100).toFixed(1)}%` : "55.7%"}
+            LinUCB ZPD {ablation ? `${(ablation.linucb_mean_zpd_alignment * 100).toFixed(1)}%` : "—"} vs Random{" "}
+            {ablation ? `${(ablation.random_mean_zpd_alignment * 100).toFixed(1)}%` : "—"}
           </p>
         </Card>
 
         <Card className="p-5">
           <p className="text-xs font-medium text-midnight-700/60">Drift & Feature Store SLA</p>
           <p className="mt-1 font-display text-2xl font-semibold text-midnight-950">
-            {drift.status}
+            {drift.drift_status ?? "HEALTHY"}
           </p>
           <p className="mt-1 text-xs text-midnight-700/60">
-            PSI {drift.psi_difficulty_drift.toFixed(4)} · p50 {fstore.p50_ms.toFixed(3)} ms
+            PSI {(drift.effective_psi ?? 0).toFixed(4)} · p50 {(fstore.p50_ms ?? 0).toFixed(3)} ms ·{" "}
+            {drift.sample_size ?? 0} live samples
           </p>
         </Card>
       </div>
@@ -558,15 +560,23 @@ export function ModelAuditView() {
             </table>
           </div>
 
-          <div className="mt-4 grid grid-cols-3 gap-2 rounded-xl bg-midnight-900/[0.03] p-3 text-xs">
+          <div className="mt-4 grid grid-cols-2 gap-2 rounded-xl bg-midnight-900/[0.03] p-3 text-xs sm:grid-cols-4">
             <div>
               <p className="text-[11px] text-midnight-700/60">Online Brier Score</p>
-              <p className="mt-0.5 font-mono font-semibold text-midnight-950">{drift.brier_score.toFixed(4)}</p>
+              <p className="mt-0.5 font-mono font-semibold text-midnight-950">
+                {(drift.brier_score ?? 0).toFixed(4)}
+              </p>
             </div>
             <div>
               <p className="text-[11px] text-midnight-700/60">Expected Calib. Error</p>
               <p className="mt-0.5 font-mono font-semibold text-midnight-950">
-                {drift.expected_calibration_error.toFixed(4)}
+                {(drift.expected_calibration_error ?? 0).toFixed(4)}
+              </p>
+            </div>
+            <div>
+              <p className="text-[11px] text-midnight-700/60">Cache Hit Rate</p>
+              <p className="mt-0.5 font-mono font-semibold text-midnight-950">
+                {((fstore.cache_hit_rate ?? 0) * 100).toFixed(1)}% ({fstore.cached_students ?? 0} active)
               </p>
             </div>
             <div>
@@ -772,7 +782,8 @@ export function ModelAuditView() {
               <p className="text-white/60">Mean 3PL Fisher Information I(theta)</p>
               <p className="mt-0.5 font-mono text-sm font-semibold">
                 LinUCB {ablation.linucb_mean_fisher_info.toFixed(3)} vs Random{" "}
-                {ablation.random_mean_fisher_info.toFixed(3)} (3.1x gain)
+                {ablation.random_mean_fisher_info.toFixed(3)} (
+                {(ablation.linucb_mean_fisher_info / Math.max(0.001, ablation.random_mean_fisher_info)).toFixed(1)}x gain)
               </p>
             </div>
             <div>

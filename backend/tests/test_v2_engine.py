@@ -1153,6 +1153,267 @@ def test_24_serverless_vault_relogin_compact_rf_parity_and_full_audit():
             assert block_marker not in stripped, f"Block comment in {ts_file}:{idx}"
 
 
+def test_25_forensic_reality_audit_all_2471_items_non_repeating_papers_and_ui_schema_contract():
+    from model.rf_compact_runtime import COMPACT_RF_RUNTIME
+    from model.linucb_bandit import reset_student_bandit
+
+    df_all = pd.read_csv(PROJECT_ROOT / "data" / "training" / "question_features.csv")
+    assert len(df_all) == 2471
+    pipeline = joblib.load(MODEL_DIR / "question_difficulty_model.joblib")
+    classes = [str(c) for c in pipeline.classes_]
+    sk_all_probs = pipeline.predict_proba(
+        df_all[
+            [
+                "subject",
+                "chapter",
+                "topic_tag",
+                "question_type",
+                "ideal_time_sec",
+                "has_diagram",
+                "marks",
+                "negative_marks",
+            ]
+        ]
+    )
+    max_diff = 0.0
+    exact_class_matches = 0
+    for idx, row in enumerate(df_all.itertuples(index=False)):
+        np_probs = COMPACT_RF_RUNTIME.predict_proba_single(
+            subject=str(row.subject),
+            chapter=str(row.chapter),
+            topic_tag=str(row.topic_tag),
+            question_type=str(row.question_type),
+            ideal_time_sec=float(row.ideal_time_sec),
+            has_diagram=bool(row.has_diagram),
+            marks=float(row.marks),
+            negative_marks=float(row.negative_marks),
+        )
+        assert np_probs is not None
+        sk_row = {c: float(p) for c, p in zip(classes, sk_all_probs[idx])}
+        for c in classes:
+            d = abs(sk_row[c] - np_probs[c])
+            if d > max_diff:
+                max_diff = d
+        if max(sk_row, key=sk_row.get) == max(np_probs, key=np_probs.get):
+            exact_class_matches += 1
+    assert max_diff < 1e-3, f"Max RF probability diff across 2471 items too large: {max_diff}"
+    assert exact_class_matches == 2471, f"RF argmax mismatch: {exact_class_matches}/2471"
+
+    with open(PROJECT_ROOT / "data" / "ncert_knowledge_base.json", encoding="utf-8") as f:
+        kb = json.load(f)
+    kb_chunks = kb["chapters"] if isinstance(kb, dict) and "chapters" in kb else kb
+    assert len(kb_chunks) == 65
+    for ch in kb_chunks:
+        assert len(str(ch.get("ncert_ref", "")).strip()) > 5
+        assert len(str(ch.get("core_concept", "")).strip()) > 20
+        assert len(ch.get("formulas") or []) >= 1
+        assert len(ch.get("common_misconceptions") or []) >= 1
+        assert len(ch.get("socratic_questions") or []) >= 1
+
+    assert len(CALIBRATED_ITEMS) == 2471
+    a_vals = [float(item_p["a"] if isinstance(item_p, dict) else item_p.a) for item_p in CALIBRATED_ITEMS.values()]
+    b_vals = [float(item_p["b"] if isinstance(item_p, dict) else item_p.b) for item_p in CALIBRATED_ITEMS.values()]
+    c_vals = [float(item_p["c"] if isinstance(item_p, dict) else item_p.c) for item_p in CALIBRATED_ITEMS.values()]
+    assert float(np.std(a_vals)) > 0.05
+    assert float(np.std(b_vals)) > 0.20
+    assert all(0.4 <= a <= 2.5 for a in a_vals)
+    assert all(-3.0 <= b <= 3.0 for b in b_vals)
+    assert all(0.05 <= c <= 0.35 for c in c_vals)
+
+    db_map = SessionLocal()
+    try:
+        answer_key = {q.question_id: q.correct_answer.lower() for q in db_map.query(Question).all()}
+        assert len(answer_key) == 2471
+    finally:
+        db_map.close()
+
+    client = TestClient(app)
+    sid_master = None
+    sid_struggler = None
+    email_master = "forensic_master_audit@klassed.in"
+    email_struggler = "forensic_struggler_audit@klassed.in"
+
+    try:
+        db_clean = SessionLocal()
+        for em in (email_master, email_struggler):
+            old = db_clean.query(Student).filter_by(email=em).first()
+            if old:
+                db_clean.query(TestAttempt).filter_by(student_id=old.student_id).delete()
+                db_clean.query(StudentTopicState).filter_by(student_id=old.student_id).delete()
+                db_clean.delete(old)
+        db_clean.commit()
+        db_clean.close()
+
+        up_m = client.post(
+            "/auth/signup",
+            json={"name": "Forensic Master", "email": email_master, "password": "MasterPass123!"},
+        ).json()
+        sid_master = up_m["student_id"]
+        hdr_m = {"Authorization": f"Bearer {up_m['access_token']}"}
+        client.post(
+            f"/students/{sid_master}/onboarding",
+            json={"class_level": "12", "target_neet_year": 2027},
+            headers=hdr_m,
+        )
+
+        p1 = client.get(f"/students/{sid_master}/next_paper", headers=hdr_m).json()
+        assert len(p1) >= 40
+        p1_ids = {q["question_id"] for q in p1}
+        assert len(p1_ids) == len(p1)
+
+        r_sub1 = client.post(
+            "/submit_paper",
+            headers=hdr_m,
+            json={
+                "student_id": sid_master,
+                "paper_number": 1,
+                "attempts": [
+                    {
+                        "student_id": sid_master,
+                        "question_id": q["question_id"],
+                        "paper_number": 1,
+                        "selected_option": answer_key[q["question_id"]],
+                        "time_taken_seconds": 38,
+                        "option_switches": 0,
+                        "hesitation_ms": 600,
+                        "dwell_time_ms": 38000,
+                    }
+                    for q in p1
+                ],
+            },
+        )
+        assert r_sub1.status_code == 200
+        assert r_sub1.json()["correct_count"] == len(p1)
+
+        p2 = client.get(f"/students/{sid_master}/next_paper", headers=hdr_m).json()
+        assert len(p2) >= 40
+        p2_ids = {q["question_id"] for q in p2}
+        assert len(p2_ids) == len(p2)
+        assert p1_ids.isdisjoint(p2_ids), f"Repeated questions between Paper 1 and Paper 2: {p1_ids & p2_ids}"
+
+        d1 = client.get(f"/students/{sid_master}/next_paper?topic_id=Electrostatics", headers=hdr_m).json()
+        assert len(d1) == 15
+        client.post(
+            "/submit_paper",
+            headers=hdr_m,
+            json={
+                "student_id": sid_master,
+                "paper_number": 2,
+                "attempts": [
+                    {
+                        "student_id": sid_master,
+                        "question_id": q["question_id"],
+                        "paper_number": 2,
+                        "selected_option": answer_key[q["question_id"]],
+                        "time_taken_seconds": 35,
+                        "option_switches": 0,
+                        "hesitation_ms": 500,
+                        "dwell_time_ms": 35000,
+                    }
+                    for q in d1[:6]
+                ],
+            },
+        )
+        d2 = client.get(f"/students/{sid_master}/next_paper?topic_id=Electrostatics", headers=hdr_m).json()
+        d2_ids = {q["question_id"] for q in d2}
+        assert d2_ids.isdisjoint({q["question_id"] for q in d1[:6]} | p1_ids)
+
+        snap_m = client.get(f"/students/{sid_master}/dashboard_snapshot", headers=hdr_m).json()
+        elec_state = next(t for t in snap_m["topics"] if t["topic_id"] == "Electrostatics")
+        assert elec_state["level"] in ("medium", "advanced")
+        assert snap_m["v2_insights"]["global_theta"] > 0.8
+        assert snap_m["v2_insights"]["predicted_neet_score_720"] > 460
+        assert snap_m["v2_insights"]["estimated_neet_percentile"] > 75.0
+        beh_m = snap_m["v2_insights"]["dina_cognitive_profile"]["speed_ability_profile"]["behavior_classification"]
+        assert beh_m["fluent_mastery"] >= 15
+        assert beh_m["fluent_mastery"] + beh_m["deep_derivation"] == len(p1) + 6
+        assert beh_m["conceptual_struggle"] == 0
+
+        up_s = client.post(
+            "/auth/signup",
+            json={"name": "Forensic Struggler", "email": email_struggler, "password": "StrugglerPass123!"},
+        ).json()
+        sid_struggler = up_s["student_id"]
+        hdr_s = {"Authorization": f"Bearer {up_s['access_token']}"}
+        client.post(
+            f"/students/{sid_struggler}/onboarding",
+            json={"class_level": "11", "target_neet_year": 2028},
+            headers=hdr_s,
+        )
+
+        rot_qs = client.get(
+            f"/students/{sid_struggler}/next_paper?topic_id=Rotational%20Motion",
+            headers=hdr_s,
+        ).json()
+        wrong_attempts = []
+        for q in rot_qs[:6]:
+            corr = answer_key[q["question_id"]]
+            wrong_opt = next(opt for opt in ("a", "b", "c", "d") if opt != corr)
+            wrong_attempts.append(
+                {
+                    "student_id": sid_struggler,
+                    "question_id": q["question_id"],
+                    "paper_number": 1,
+                    "selected_option": wrong_opt,
+                    "time_taken_seconds": 145,
+                    "option_switches": 2,
+                    "hesitation_ms": 4500,
+                    "dwell_time_ms": 145000,
+                }
+            )
+        client.post(
+            "/submit_paper",
+            headers=hdr_s,
+            json={"student_id": sid_struggler, "paper_number": 1, "attempts": wrong_attempts},
+        )
+
+        snap_s = client.get(f"/students/{sid_struggler}/dashboard_snapshot", headers=hdr_s).json()
+        assert snap_s["v2_insights"]["global_theta"] < -0.2
+        assert snap_s["v2_insights"]["predicted_neet_score_720"] < 365
+        assert (
+            snap_m["v2_insights"]["predicted_neet_score_720"]
+            > snap_s["v2_insights"]["predicted_neet_score_720"] + 120
+        )
+        assert len(snap_s["v2_insights"]["root_cause_bottlenecks"]) >= 1
+        assert (
+            snap_m["v2_insights"]["monte_carlo_conformal_simulator"]["negative_marking_optimizer"][
+                "recommended_skip_questions_per_180"
+            ]
+            < snap_s["v2_insights"]["monte_carlo_conformal_simulator"]["negative_marking_optimizer"][
+                "recommended_skip_questions_per_180"
+            ]
+        )
+
+        live_audit = client.get("/mlops/audit_overview").json()
+        drift_obj = live_audit["health_and_drift"]["drift_and_calibration"]
+        fstore_obj = live_audit["health_and_drift"]["feature_store"]
+        for required_drift_key in (
+            "psi_difficulty",
+            "psi_response_time",
+            "effective_psi",
+            "brier_score",
+            "expected_calibration_error",
+            "drift_status",
+            "recalibration_required",
+            "sample_size",
+        ):
+            assert required_drift_key in drift_obj, f"Missing drift key: {required_drift_key}"
+        assert drift_obj["sample_size"] >= 50
+        assert drift_obj["brier_score"] > 0.0
+        for required_fstore_key in ("p50_ms", "p95_ms", "p99_ms", "cache_hit_rate", "cached_students"):
+            assert required_fstore_key in fstore_obj, f"Missing feature_store key: {required_fstore_key}"
+    finally:
+        db_end = SessionLocal()
+        for sid in (sid_master, sid_struggler):
+            if sid:
+                reset_student_bandit(sid, remove=True)
+                db_end.query(TestAttempt).filter_by(student_id=sid).delete()
+                db_end.query(StudentTopicState).filter_by(student_id=sid).delete()
+                db_end.query(Student).filter_by(student_id=sid).delete()
+        db_end.commit()
+        db_end.close()
+
+
 if __name__ == "__main__":
     suites = [
         test_01_random_forest_model_and_live_inference,
@@ -1179,6 +1440,7 @@ if __name__ == "__main__":
         test_22_monte_carlo_conformal_simulator_and_graph_laplacian_leverage,
         test_23_scientific_notation_traps_paper_history_and_remediation_urgency,
         test_24_serverless_vault_relogin_compact_rf_parity_and_full_audit,
+        test_25_forensic_reality_audit_all_2471_items_non_repeating_papers_and_ui_schema_contract,
     ]
     for fn in suites:
         fn()

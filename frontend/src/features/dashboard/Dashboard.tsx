@@ -121,7 +121,8 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
         <div>
           <p className="text-sm font-medium text-white/70">Ready for your next session?</p>
           <p className="mt-1 font-display text-xl font-semibold text-white">
-            Your next paper adapts to your Zone of Proximal Development (target P ≈ 70%).
+            Your next paper adapts to your Zone of Proximal Development (target P ≈{" "}
+            {Math.round((v2Insights?.zpd_target_success_prob ?? 0.7) * 100)}%).
           </p>
         </div>
         <Button
@@ -529,7 +530,10 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
                 {v2Insights.monte_carlo_conformal_simulator.negative_marking_optimizer.optimal_skip_expected_score_720} / 720
               </p>
               <p className="text-xs text-midnight-700/70">
-                +{v2Insights.monte_carlo_conformal_simulator.negative_marking_optimizer.expected_marks_gained_by_skipping} marks gained by skipping P &lt; 23%
+                +{v2Insights.monte_carlo_conformal_simulator.negative_marking_optimizer.expected_marks_gained_by_skipping} marks gained by skipping P &lt;{" "}
+                {Math.round(
+                  v2Insights.monte_carlo_conformal_simulator.negative_marking_optimizer.optimal_skip_threshold_prob * 100
+                )}%
               </p>
             </Card>
 

@@ -279,4 +279,21 @@ with urllib.request.urlopen(relogin_req, timeout=15) as res:
     assert bool(relogged.get("access_token")) and bool(relogged.get("vault_token"))
     print(f"[PASS] 12. Serverless Switch-Account Vault Re-Login: 401 rejected wrong password, 200 restored {sid} (onboarded={relogged['onboarded']})")
 
-print("\n>>> ALL 12 END-TO-END LIVE PRODUCTION INTEGRATION GATES PASSED (100%) <<<")
+req_paper2 = urllib.request.Request(f"{BASE}/students/{sid}/next_paper", headers=full_sync_headers)
+with urllib.request.urlopen(req_paper2, timeout=15) as res:
+    paper2 = json.loads(res.read())
+    assert len(paper2) >= 40
+    attempted_p1_ids = {q1["question_id"], q2["question_id"]}
+    paper2_ids = {item["question_id"] for item in paper2}
+    assert attempted_p1_ids.isdisjoint(paper2_ids), f"Attempted items repeated in Paper 2: {attempted_p1_ids & paper2_ids}"
+    print(f"[PASS] 13. Non-Repeating Adaptive Paper 2 Verification: {len(paper2)} fresh questions, 0 overlap with attempted Paper 1 items")
+
+drift_block = audit["health_and_drift"]["drift_and_calibration"]
+fstore_block = audit["health_and_drift"]["feature_store"]
+for k in ("drift_status", "effective_psi", "psi_difficulty", "psi_response_time", "brier_score", "expected_calibration_error", "sample_size"):
+    assert k in drift_block, f"Missing live drift schema key: {k}"
+for k in ("p50_ms", "p95_ms", "p99_ms", "cache_hit_rate", "cached_students"):
+    assert k in fstore_block, f"Missing live feature_store schema key: {k}"
+print(f"[PASS] 14. Frontend-Backend MLOps UI Contract Verified: status={drift_block['drift_status']}, effective_psi={drift_block['effective_psi']}, cache_hit={fstore_block['cache_hit_rate']}")
+
+print("\n>>> ALL 14 END-TO-END LIVE PRODUCTION INTEGRATION GATES PASSED (100%) <<<")

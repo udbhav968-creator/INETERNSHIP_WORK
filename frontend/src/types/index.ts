@@ -285,18 +285,18 @@ export interface MlopsHealthAndDrift {
     p50_ms: number;
     p95_ms: number;
     p99_ms: number;
+    cache_hit_rate: number;
     cached_students: number;
-    total_ops: number;
   };
   drift_and_calibration: {
-    status: string;
-    psi_difficulty_drift: number;
+    psi_difficulty: number;
+    psi_response_time: number;
+    effective_psi: number;
     brier_score: number;
     expected_calibration_error: number;
-    mean_predicted_prob: number;
-    empirical_accuracy: number;
+    drift_status: string;
+    recalibration_required: boolean;
     sample_size: number;
-    retraining_recommended: boolean;
   };
   models_loaded: Record<string, boolean | number>;
 }

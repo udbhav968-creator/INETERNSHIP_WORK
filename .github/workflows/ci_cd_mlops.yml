@@ -9,7 +9,7 @@ on:
 
 jobs:
   mlops-training-validation-and-harness:
-    name: ML Training, 5-Fold CV, Psychometric Harness & 18-Suite Gate
+    name: ML Training, 5-Fold CV, Psychometric Harness & 25-Suite Gate
     runs-on: ubuntu-24.04
 
     steps:
@@ -41,7 +41,7 @@ jobs:
         run: |
           python -m model.evaluation_harness
 
-      - name: Stage 4 — 24 Deep Unit, Integration, Security & Concurrency Test Suites
+      - name: Stage 4 — 25 Deep Unit, Integration, Security & Concurrency Test Suites
         run: |
           python backend/tests/test_v2_engine.py
 
