@@ -88,7 +88,7 @@ class CompactRandomForestRuntime:
         marks: float = 4.0,
         negative_marks: float = -1.0,
     ) -> np.ndarray:
-        x = np.zeros(self.n_features, dtype=np.float64)
+        x = np.zeros(self.n_features, dtype=np.float32)
         for idx, val in enumerate((subject, chapter, topic_tag, question_type)):
             col = self.cat_maps[idx].get(str(val))
             if col is not None:
@@ -108,7 +108,7 @@ class CompactRandomForestRuntime:
         base = self.numeric_offset
         for j, fn in enumerate(self.numeric_features):
             x[base + j] = num_lookup.get(fn, 0.0)
-        return x
+        return x.astype(np.float64)
 
     def predict_proba_single(
         self,
@@ -201,7 +201,7 @@ def export_rf_compact_forest(
         c_left_parts.append(tr.children_left.astype(np.int16))
         c_right_parts.append(tr.children_right.astype(np.int16))
         feat_parts.append(tr.feature.astype(np.int16))
-        thresh_parts.append(tr.threshold.astype(np.float32))
+        thresh_parts.append(tr.threshold.astype(np.float64))
 
         vals = tr.value[:, 0, :].astype(np.float64)
         sums = np.sum(vals, axis=1, keepdims=True)

@@ -21,10 +21,10 @@
   "ece_improvement_percent": 98.35,
   "serverless_compression_benchmark": {
     "sklearn_joblib_size_bytes": 5080266,
-    "compact_npz_forest_bytes": 259585,
+    "compact_npz_forest_bytes": 267580,
     "compact_vocab_meta_bytes": 13329,
-    "serverless_bundle_total_bytes": 272914,
-    "compression_ratio_x": 18.61,
-    "size_reduction_percent": 94.63
+    "serverless_bundle_total_bytes": 280909,
+    "compression_ratio_x": 18.09,
+    "size_reduction_percent": 94.47
   }
 }

@@ -10,8 +10,8 @@
     },
     "model/rf_difficulty_forest.npz": {
       "exists": true,
-      "size_bytes": 259585,
-      "sha256": "9630133f389a77cc2b86164c612a97756c581da88c9fa737beb559194a5aa2e0"
+      "size_bytes": 267580,
+      "sha256": "6e0aa986cda484d180d772bc4aad8f004562e3cf48d398daaf0eb72c8512cc0d"
     },
     "model/rf_difficulty_meta.json": {
       "exists": true,
@@ -66,7 +66,7 @@
     "model/rf_temperature_calibration.json": {
       "exists": true,
       "size_bytes": 786,
-      "sha256": "6de888449604c8b84dffb268d5e873aaa9be0f128c68148a48ef3f677da653fc"
+      "sha256": "c123bdb8c0ee427b84f2c5bb528c2b6e97429399b4b36ef8100467e21f0fc2df"
     },
     "model/tier_recalibration_proposal.json": {
       "exists": true,
