@@ -11,6 +11,7 @@ import numpy as np
 
 from model.irt_3pl_model import CALIBRATED_ITEMS
 from model.knowledge_graph_dag import DAG_NODES
+from model.national_rank_simulator import simulate_national_rank_and_college_cutoffs
 from model.state_machine.bkt_model import get_chapter_bkt_prior
 
 MODEL_DIR = Path(__file__).resolve().parent
@@ -291,6 +292,12 @@ def run_monte_carlo_conformal_neet_simulation(
         global_theta=global_theta,
     )
 
+    national_rank_sim = simulate_national_rank_and_college_cutoffs(
+        total_scores_trials=total_scores_optimal_skip,
+        conformal_score_interval=[ci_90_low, ci_90_high],
+        mean_score=mean_score_skip,
+    )
+
     return {
         "model_type": "MonteCarlo_500_SplitConformal_and_GraphLaplacian_Diffusion",
         "n_trials": n_trials,
@@ -311,5 +318,6 @@ def run_monte_carlo_conformal_neet_simulation(
             "state_govt_mbbs_550_percent": prob_govt_550,
             "top_aiims_650_percent": prob_aiims_650,
         },
+        "national_air_projection": national_rank_sim,
         "high_yield_leverage_chapters": leverage_chapters,
     }

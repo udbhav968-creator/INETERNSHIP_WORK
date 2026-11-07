@@ -1,6 +1,6 @@
 {
   "pipeline_status": "PASSED",
-  "execution_time_seconds": 67.697,
+  "execution_time_seconds": 72.583,
   "data_validation_gates": {
     "question_bank_schema_valid": true,
     "weightage_schema_valid": true,

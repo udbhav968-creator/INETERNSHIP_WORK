@@ -1,0 +1,22 @@
+{
+  "drift_detected": false,
+  "metrics_monitored": {
+    "psi": {
+      "value": 0.02,
+      "threshold": 0.2,
+      "alert": false
+    },
+    "brier": {
+      "value": 0.0078,
+      "threshold": 0.05,
+      "alert": false
+    },
+    "ece": {
+      "value": 0.0011,
+      "threshold": 0.04,
+      "alert": false
+    }
+  },
+  "retrain_triggered": false,
+  "action_taken": "NOOP_STABLE"
+}

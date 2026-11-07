@@ -1,6 +1,6 @@
 {
   "audit_status": "PASSED",
-  "execution_time_seconds": 0.0944,
+  "execution_time_seconds": 0.1097,
   "corpus_totals": {
     "total_verified_questions": 2400,
     "total_canonical_chapters": 65,
@@ -40,7 +40,7 @@
       "continuous_irt_b_mid_zpd": 58,
       "continuous_irt_b_high_gt_055": 348,
       "mean_irt_discrimination_a": 1.6363,
-      "mean_irt_difficulty_b": 0.6921,
+      "mean_irt_difficulty_b": 0.6926,
       "non_repeating_45q_papers_supported": 49,
       "non_repeating_180q_papers_supported": 12
     },
@@ -489,7 +489,7 @@
       "has_adjacent_fallback_coverage": true,
       "irt_b_min": -1.4436,
       "irt_b_max": 2.5136,
-      "irt_mean_fisher_at_theta0": 0.2239,
+      "irt_mean_fisher_at_theta0": 0.2244,
       "blueprint_slots_45q": 1,
       "blueprint_slots_180q": 3,
       "shortfall_for_180q": 0
@@ -615,7 +615,7 @@
       "has_adjacent_fallback_coverage": true,
       "irt_b_min": -1.2075,
       "irt_b_max": 2.5691,
-      "irt_mean_fisher_at_theta0": 0.2763,
+      "irt_mean_fisher_at_theta0": 0.2761,
       "blueprint_slots_45q": 1,
       "blueprint_slots_180q": 2,
       "shortfall_for_180q": 0
@@ -705,7 +705,7 @@
       "has_adjacent_fallback_coverage": true,
       "irt_b_min": -1.3236,
       "irt_b_max": 2.6773,
-      "irt_mean_fisher_at_theta0": 0.2197,
+      "irt_mean_fisher_at_theta0": 0.2201,
       "blueprint_slots_45q": 2,
       "blueprint_slots_180q": 6,
       "shortfall_for_180q": 0
@@ -723,7 +723,7 @@
       "has_adjacent_fallback_coverage": true,
       "irt_b_min": -1.2518,
       "irt_b_max": 2.6691,
-      "irt_mean_fisher_at_theta0": 0.1925,
+      "irt_mean_fisher_at_theta0": 0.1935,
       "blueprint_slots_45q": 1,
       "blueprint_slots_180q": 2,
       "shortfall_for_180q": 0
@@ -831,7 +831,7 @@
       "has_adjacent_fallback_coverage": true,
       "irt_b_min": -1.3482,
       "irt_b_max": 2.6855,
-      "irt_mean_fisher_at_theta0": 0.2291,
+      "irt_mean_fisher_at_theta0": 0.2297,
       "blueprint_slots_45q": 1,
       "blueprint_slots_180q": 3,
       "shortfall_for_180q": 0
@@ -1171,9 +1171,9 @@
       "total": 10,
       "missing_tiers": [],
       "has_adjacent_fallback_coverage": true,
-      "irt_b_min": -0.9273,
+      "irt_b_min": -0.8868,
       "irt_b_max": 2.3564,
-      "irt_mean_fisher_at_theta0": 0.2874,
+      "irt_mean_fisher_at_theta0": 0.2922,
       "blueprint_slots_45q": 0,
       "blueprint_slots_180q": 1,
       "shortfall_for_180q": 0
@@ -1189,9 +1189,9 @@
       "total": 34,
       "missing_tiers": [],
       "has_adjacent_fallback_coverage": true,
-      "irt_b_min": -1.1975,
+      "irt_b_min": -1.2025,
       "irt_b_max": 2.5136,
-      "irt_mean_fisher_at_theta0": 0.1796,
+      "irt_mean_fisher_at_theta0": 0.1795,
       "blueprint_slots_45q": 1,
       "blueprint_slots_180q": 2,
       "shortfall_for_180q": 0

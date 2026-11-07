@@ -572,6 +572,57 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
             </Card>
           </div>
 
+          {v2Insights.monte_carlo_conformal_simulator.national_air_projection && (
+            <Card className="flex flex-col gap-3 p-4 bg-midnight-50/50">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-midnight-100 pb-2.5">
+                <div>
+                  <h3 className="font-display text-sm font-semibold text-midnight-950">
+                    24-Lakh All-India Rank (AIR) & Top Medical College Projections
+                  </h3>
+                  <p className="text-xs text-midnight-700/70">
+                    Calibrated on official NTA score-percentile curves with 90% conformal uncertainty intervals.
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="text-right">
+                    <p className="text-[11px] uppercase tracking-wide text-midnight-700/60 font-medium">90% Conformal AIR Range</p>
+                    <p className="font-display text-base font-semibold text-midnight-950">
+                      AIR {v2Insights.monte_carlo_conformal_simulator.national_air_projection.conformal_air_interval[0].toLocaleString()} – {v2Insights.monte_carlo_conformal_simulator.national_air_projection.conformal_air_interval[1].toLocaleString()}
+                    </p>
+                  </div>
+                  <div className="text-right border-l border-midnight-200 pl-3">
+                    <p className="text-[11px] uppercase tracking-wide text-midnight-700/60 font-medium">Projected Percentile</p>
+                    <p className="font-display text-base font-semibold text-midnight-950">
+                      {v2Insights.monte_carlo_conformal_simulator.national_air_projection.projected_percentile_median}%ile
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
+                {v2Insights.monte_carlo_conformal_simulator.national_air_projection.college_admission_probabilities.map((col) => (
+                  <div key={col.college_id} className="flex flex-col justify-between rounded-lg border border-midnight-100 bg-white p-2.5 text-center">
+                    <p className="text-[11px] font-medium text-midnight-900 leading-tight truncate" title={col.college_tier}>
+                      {col.college_tier}
+                    </p>
+                    <div className="my-1">
+                      <span className={`inline-block rounded px-1.5 py-0.5 text-xs font-semibold ${
+                        col.status === "SECURE" ? "bg-emerald-100 text-emerald-800" :
+                        col.status === "COMPETITIVE" ? "bg-sky-100 text-sky-800" :
+                        col.status === "REACH" ? "bg-amber-100 text-amber-800" :
+                        "bg-midnight-100 text-midnight-600"
+                      }`}>
+                        {col.admission_probability_percent}%
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-midnight-500">
+                      Cutoff: {col.target_score_720}+
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          )}
+
           {v2Insights.monte_carlo_conformal_simulator.high_yield_leverage_chapters.length > 0 && (
             <div>
               <h3 className="mb-2.5 font-display text-sm font-semibold text-midnight-950">

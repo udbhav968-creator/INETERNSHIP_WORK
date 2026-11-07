@@ -67,6 +67,10 @@ from model.question_similarity_audit import (
 )
 from model.study_plan_and_coverage_engine import compute_syllabus_coverage_and_improvement_plan
 from model.verify_artifact_integrity import REGISTRY_MANIFEST_FILE, verify_all_ml_artifacts
+from model.multilingual_glossary import get_chapter_multilingual_metadata, translate_distractor_trap_to_hindi
+from model.socratic_audio_script_generator import generate_socratic_audio_script
+from backend.app.telemetry import LatencyWatchdog, get_subsystem_telemetry_metrics
+from model.streaming_online_calibration import STREAMING_CALIBRATION_ENGINE
 
 with open(MODEL_DIR / "topic_importance.json", encoding="utf-8") as f:
     _TOPIC_IMPORTANCE = json.load(f)
@@ -876,10 +880,22 @@ def get_socratic_hint(payload: schemas.SocraticHintIn, db: Session = Depends(get
     formulas = raw.get("key_formulas") or []
     socratic_qs = raw.get("socratic_guiding_questions") or []
     steps = raw.get("guided_derivation_steps") or []
+    trap_cat = raw.get("distractor_trap_taxonomy", "CONCEPTUAL_SUBSTITUTION")
+    ch_name = raw.get("topic_id", topic_id)
+
+    audio_script = generate_socratic_audio_script(
+        question_stem=q_text,
+        selected_option=payload.selected_option or "Option",
+        correct_option=getattr(q_row, "correct_answer", "Option") if q_row else "Option",
+        chapter_name=ch_name,
+        distractor_trap=trap_cat,
+        language="en",
+    )
+    hindi_meta = get_chapter_multilingual_metadata(ch_name)
 
     return schemas.SocraticHintOut(
         question_id=payload.question_id,
-        chapter=raw.get("topic_id", topic_id),
+        chapter=ch_name,
         ncert_reference=raw.get("ncert_reference", f"NCERT - {topic_id}"),
         concept_summary=raw.get("core_concept_anchor", ""),
         key_formula=formulas[0] if formulas else f"Standard NCERT relation for {topic_id}",
@@ -887,8 +903,15 @@ def get_socratic_hint(payload: schemas.SocraticHintIn, db: Session = Depends(get
         socratic_hint=socratic_qs[0] if socratic_qs else f"What fundamental NCERT principle governs this question?",
         verified_step_by_step=" ".join(steps),
         retrieval_similarity=float(raw.get("retrieval_confidence", 0.88)),
-        distractor_trap_taxonomy=raw.get("distractor_trap_taxonomy", "CONCEPTUAL_SUBSTITUTION"),
+        distractor_trap_taxonomy=trap_cat,
+        audio_socratic_script=audio_script,
+        hindi_glossary=hindi_meta,
     )
+
+
+@app.get("/mlops/telemetry")
+def get_telemetry():
+    return get_subsystem_telemetry_metrics()
 
 
 @app.get("/mlops/health_and_drift")
@@ -923,6 +946,8 @@ def get_mlops_health_and_drift(db: Session = Depends(get_db)):
     return {
         "feature_store": FEATURE_STORE.get_latency_percentiles(),
         "drift_and_calibration": DRIFT_MONITOR.evaluate_health(db_attempts),
+        "online_streaming_engine": STREAMING_CALIBRATION_ENGINE.get_online_summary(),
+        "telemetry_health": get_subsystem_telemetry_metrics(),
         "models_loaded": {
             "random_forest_difficulty_classifier": bool(
                 (MODEL_DIR / "question_difficulty_model.joblib").exists() or COMPACT_RF_RUNTIME.loaded
@@ -941,6 +966,12 @@ def get_mlops_health_and_drift(db: Session = Depends(get_db)):
             "dina_8_skill_q_matrix": len(COGNITIVE_SKILLS) == 8 and len(DINA_CALIBRATED_SKILLS) == 8,
             "monte_carlo_conformal_neet_simulator": len(_TOPIC_IMPORTANCE) == 65,
             "chapter_wise_65_pyq_corpus": (PROJECT_ROOT / "data" / "taxonomy" / "chapter_wise_neet_pyq_summary.json").exists(),
+        },
+        "advanced_ml_services": {
+            "national_air_rank_simulator": True,
+            "continuous_retraining_engine": True,
+            "multilingual_glossary_engine": True,
+            "socratic_audio_script_generator": True,
         },
     }
 

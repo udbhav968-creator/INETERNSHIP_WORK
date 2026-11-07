@@ -151,6 +151,8 @@ class SocraticHintOut(BaseModel):
     verified_step_by_step: str
     retrieval_similarity: float
     distractor_trap_taxonomy: Optional[str] = "CONCEPTUAL_SUBSTITUTION"
+    audio_socratic_script: Optional[dict[str, Any]] = None
+    hindi_glossary: Optional[dict[str, Any]] = None
 
 
 class ColdStartItemIn(BaseModel):

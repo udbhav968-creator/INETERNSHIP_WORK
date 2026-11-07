@@ -564,6 +564,100 @@ def ml_suite_21_cognitive_entropy_kl_information_and_sem_stopping_gate():
     assert classify_distractor_trap_taxonomy("Which statement is NOT correct", "Which statement is correct") == "NEGATION_LOGIC"
 
 
+def ml_suite_22_national_rank_and_college_cutoff_simulation():
+    from model.national_rank_simulator import (
+        score_to_neet_percentile,
+        score_to_all_india_rank,
+        simulate_national_rank_and_college_cutoffs,
+    )
+    import numpy as np
+
+    p_720 = score_to_neet_percentile(720)
+    p_650 = score_to_neet_percentile(650)
+    p_500 = score_to_neet_percentile(500)
+    p_165 = score_to_neet_percentile(165)
+    assert p_720 == 100.0
+    assert p_650 >= 99.5
+    assert p_650 > p_500 > p_165 > 0.0
+
+    rk_720 = score_to_all_india_rank(720)
+    rk_650 = score_to_all_india_rank(650)
+    rk_165 = score_to_all_india_rank(165)
+    assert rk_720 == 1
+    assert 1 < rk_650 < 15000
+    assert rk_165 > 1000000
+
+    sim = simulate_national_rank_and_college_cutoffs(
+        total_scores_trials=np.array([350, 360, 380, 400, 420], dtype=np.float64),
+        conformal_score_interval=[320, 410],
+        mean_score=380,
+    )
+    assert sim["total_national_candidates"] == 2400000
+    assert sim["conformal_air_interval"][0] < sim["conformal_air_interval"][1]
+    assert len(sim["college_admission_probabilities"]) >= 7
+    assert any(col["college_id"] == "aiims_delhi" for col in sim["college_admission_probabilities"])
+
+
+def ml_suite_23_online_streaming_calibration_and_continuous_retraining():
+    from model.streaming_online_calibration import STREAMING_CALIBRATION_ENGINE
+    from model.continuous_retraining_engine import evaluate_drift_and_retrain_if_needed
+
+    new_a, new_b, new_c = STREAMING_CALIBRATION_ENGINE.update_item_parameters_online(
+        question_id="test_q_stream",
+        student_theta=0.0,
+        is_correct=False,
+        current_a=1.5,
+        current_b=0.0,
+        current_c=0.2,
+    )
+    assert new_b > 0.0
+    assert 0.8 <= new_a <= 2.5
+
+    trans = STREAMING_CALIBRATION_ENGINE.update_graph_edge_transfer(
+        parent_topic="Mole Concept / Stoichiometry",
+        child_topic="Biomolecules",
+        parent_mastery=0.85,
+        child_success=True,
+    )
+    assert 0.05 <= trans <= 0.95
+
+    elbo = STREAMING_CALIBRATION_ENGINE.record_online_elbo([0.8, 0.9], [0.5, 0.5])
+    assert isinstance(elbo, float)
+
+    drift_report = evaluate_drift_and_retrain_if_needed(
+        current_psi=0.02,
+        current_brier=0.0078,
+        current_ece=0.0011,
+        force_retrain=False,
+    )
+    assert drift_report["drift_detected"] is False
+    assert drift_report["retrain_triggered"] is False
+
+
+def ml_suite_24_multilingual_hindi_glossary_and_socratic_audio_script():
+    from model.multilingual_glossary import get_chapter_multilingual_metadata, translate_distractor_trap_to_hindi
+    from model.socratic_audio_script_generator import generate_socratic_audio_script
+
+    mole_meta = get_chapter_multilingual_metadata("Mole Concept / Stoichiometry")
+    assert "मोल" in mole_meta["chapter_hi"]
+    assert len(mole_meta["core_terms"]) > 0
+
+    trap_hi = translate_distractor_trap_to_hindi("SIGN_INVERSION")
+    assert "चिह्न" in trap_hi["label_hi"]
+
+    audio = generate_socratic_audio_script(
+        question_stem="Calculate the change in internal energy...",
+        selected_option="-120 J",
+        correct_option="+120 J",
+        chapter_name="Mole Concept / Stoichiometry",
+        distractor_trap="SIGN_INVERSION",
+        language="en",
+    )
+    assert audio["duration_seconds_est"] >= 4.0
+    assert "<speak>" in audio["ssml_payload"]
+    assert "</speak>" in audio["ssml_payload"]
+
+
 if __name__ == "__main__":
     suites = [
         ml_suite_01_question_bank_and_weightage_schema_validators,
@@ -587,6 +681,9 @@ if __name__ == "__main__":
         ml_suite_19_all_trained_auxiliary_models_and_chapter_datasets,
         ml_suite_20_pipeline_deep_invariants_and_statistical_drift_gate,
         ml_suite_21_cognitive_entropy_kl_information_and_sem_stopping_gate,
+        ml_suite_22_national_rank_and_college_cutoff_simulation,
+        ml_suite_23_online_streaming_calibration_and_continuous_retraining,
+        ml_suite_24_multilingual_hindi_glossary_and_socratic_audio_script,
     ]
     for fn in suites:
         fn()

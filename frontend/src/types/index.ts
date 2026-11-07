@@ -164,6 +164,21 @@ export interface MonteCarloConformalSimulator {
     state_govt_mbbs_550_percent: number;
     top_aiims_650_percent: number;
   };
+  national_air_projection?: {
+    total_national_candidates: number;
+    conformal_air_interval: [number, number];
+    projected_air_median: number;
+    conformal_percentile_interval: [number, number];
+    projected_percentile_median: number;
+    college_admission_probabilities: Array<{
+      college_id: string;
+      college_tier: string;
+      target_score_720: number;
+      target_air_cutoff: number;
+      admission_probability_percent: number;
+      status: string;
+    }>;
+  };
   high_yield_leverage_chapters: Array<{
     topic_id: string;
     subject: string;
