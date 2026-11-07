@@ -1,20 +1,65 @@
+import json
 import math
 from dataclasses import dataclass
+from pathlib import Path
+
+_BKT_JSON_PATH = Path(__file__).resolve().parent.parent / "bkt_chapter_parameters.json"
 
 
 @dataclass
 class BKTParams:
-    p_init: float = 0.35
+    p_init: float = 0.38
     p_transit: float = 0.15
     p_guess: float = 0.22
     p_slip: float = 0.10
+    half_life_hours: float = 24.0
 
 
 DIFFICULTY_BKT_PRESETS: dict[str, BKTParams] = {
-    "basic": BKTParams(p_init=0.40, p_transit=0.18, p_guess=0.25, p_slip=0.08),
-    "medium": BKTParams(p_init=0.35, p_transit=0.15, p_guess=0.22, p_slip=0.10),
-    "advanced": BKTParams(p_init=0.28, p_transit=0.12, p_guess=0.18, p_slip=0.12),
+    "basic": BKTParams(p_init=0.42, p_transit=0.18, p_guess=0.25, p_slip=0.08, half_life_hours=26.0),
+    "medium": BKTParams(p_init=0.38, p_transit=0.15, p_guess=0.22, p_slip=0.10, half_life_hours=24.0),
+    "advanced": BKTParams(p_init=0.29, p_transit=0.12, p_guess=0.18, p_slip=0.12, half_life_hours=20.0),
 }
+
+CHAPTER_BKT_REGISTRY: dict[str, dict] = {}
+WEIGHTED_GLOBAL_PRIOR: float = 0.38
+
+
+def reload_chapter_bkt_registry() -> dict[str, dict]:
+    global CHAPTER_BKT_REGISTRY, WEIGHTED_GLOBAL_PRIOR
+    if _BKT_JSON_PATH.exists():
+        raw = json.loads(_BKT_JSON_PATH.read_text(encoding="utf-8"))
+        CHAPTER_BKT_REGISTRY = raw.get("chapters", {})
+        WEIGHTED_GLOBAL_PRIOR = float(raw.get("weighted_global_prior", 0.38))
+    return CHAPTER_BKT_REGISTRY
+
+
+reload_chapter_bkt_parameters = reload_chapter_bkt_registry
+reload_chapter_bkt_registry()
+
+
+def get_chapter_bkt_prior(topic_id: str | None = None) -> float:
+    if topic_id and topic_id in CHAPTER_BKT_REGISTRY:
+        return float(CHAPTER_BKT_REGISTRY[topic_id]["p_init"])
+    return WEIGHTED_GLOBAL_PRIOR
+
+
+def get_chapter_bkt_params(topic_id: str | None = None, difficulty: str = "medium") -> BKTParams:
+    preset = DIFFICULTY_BKT_PRESETS.get(difficulty, DIFFICULTY_BKT_PRESETS["medium"])
+    if not topic_id or topic_id not in CHAPTER_BKT_REGISTRY:
+        return preset
+    ch = CHAPTER_BKT_REGISTRY[topic_id]
+    diff_g_mod = 0.025 if difficulty == "basic" else (-0.025 if difficulty == "advanced" else 0.0)
+    diff_s_mod = -0.015 if difficulty == "basic" else (0.020 if difficulty == "advanced" else 0.0)
+    diff_t_mod = 0.020 if difficulty == "basic" else (-0.020 if difficulty == "advanced" else 0.0)
+    return BKTParams(
+        p_init=float(ch["p_init"]),
+        p_transit=max(0.06, min(0.28, float(ch["p_transit"]) + diff_t_mod)),
+        p_guess=max(0.14, min(0.30, float(ch["p_guess"]) + diff_g_mod)),
+        p_slip=max(0.05, min(0.20, float(ch["p_slip"]) + diff_s_mod)),
+        half_life_hours=float(ch.get("half_life_base_hours", 24.0)),
+    )
+
 
 PROMOTE_TO_MEDIUM_THRESHOLD = 0.52
 DEMOTE_TO_BASIC_THRESHOLD = 0.40
@@ -52,24 +97,36 @@ def compute_ebbinghaus_forgetting_prior(
     prior_mastery: float,
     elapsed_hours: float = 0.0,
     streak: int = 0,
-    base_prior: float = 0.35,
+    base_prior: float | None = None,
+    topic_id: str | None = None,
 ) -> float:
-    p_prev = max(0.01, min(0.99, prior_mastery if prior_mastery is not None else base_prior))
-    if elapsed_hours <= 0.5 or p_prev <= base_prior:
+    resolved_base = base_prior if base_prior is not None else get_chapter_bkt_prior(topic_id)
+    p_prev = max(0.01, min(0.99, prior_mastery if prior_mastery is not None else resolved_base))
+    if elapsed_hours <= 0.5 or p_prev <= resolved_base:
         return p_prev
-    half_life_hours = 24.0 * (1.0 + 0.85 * max(0, int(streak))) * (1.0 + p_prev)
+    ch_hl = (
+        float(CHAPTER_BKT_REGISTRY[topic_id].get("half_life_base_hours", 24.0))
+        if topic_id and topic_id in CHAPTER_BKT_REGISTRY
+        else 24.0
+    )
+    half_life_hours = ch_hl * (1.0 + 0.85 * max(0, int(streak))) * (1.0 + p_prev)
     retention_factor = math.pow(2.0, -float(elapsed_hours) / max(1.0, half_life_hours))
-    decayed = base_prior + (p_prev - base_prior) * retention_factor
+    decayed = resolved_base + (p_prev - resolved_base) * retention_factor
     return round(max(0.05, min(0.99, decayed)), 4)
 
 
 def compute_retention_urgency(
-    prior_mastery: float, elapsed_hours: float = 0.0, streak: int = 0, base_prior: float = 0.35
+    prior_mastery: float,
+    elapsed_hours: float = 0.0,
+    streak: int = 0,
+    base_prior: float | None = None,
+    topic_id: str | None = None,
 ) -> float:
-    peak = max(0.01, min(0.99, prior_mastery if prior_mastery is not None else base_prior))
+    resolved_base = base_prior if base_prior is not None else get_chapter_bkt_prior(topic_id)
+    peak = max(0.01, min(0.99, prior_mastery if prior_mastery is not None else resolved_base))
     if elapsed_hours <= 0.5:
         return 0.0
-    decayed = compute_ebbinghaus_forgetting_prior(peak, elapsed_hours, streak, base_prior)
+    decayed = compute_ebbinghaus_forgetting_prior(peak, elapsed_hours, streak, resolved_base, topic_id=topic_id)
     decay_drop = max(0.0, peak - decayed)
     forgetting_urgency = decay_drop * 3.5
     remediation_urgency = (
@@ -89,13 +146,17 @@ def compute_bkt_update(
     attempts_count: int = 1,
     elapsed_hours: float = 0.0,
     streak: int = 0,
+    topic_id: str | None = None,
 ) -> tuple[float, float]:
+    ch_prior = get_chapter_bkt_prior(topic_id)
     p_prev = compute_ebbinghaus_forgetting_prior(
-        prior_mastery=prior_mastery if prior_mastery is not None else 0.35,
+        prior_mastery=prior_mastery if prior_mastery is not None else ch_prior,
         elapsed_hours=elapsed_hours,
         streak=streak,
+        base_prior=ch_prior,
+        topic_id=topic_id,
     )
-    base_params = DIFFICULTY_BKT_PRESETS.get(difficulty, DIFFICULTY_BKT_PRESETS["medium"])
+    base_params = get_chapter_bkt_params(topic_id=topic_id, difficulty=difficulty)
     p_transit, p_guess, p_slip = modulate_params_with_telemetry(
         base_params,
         time_taken_seconds=time_taken_seconds,
@@ -121,6 +182,12 @@ def compute_bkt_update(
     ci_95 = round(min(0.35, 1.96 * std_err), 4)
 
     return p_next, ci_95
+
+
+def get_credible_bounds(mastery_prob: float, ci_half_width: float) -> tuple[float, float]:
+    lower = round(max(0.0, mastery_prob - ci_half_width), 4)
+    upper = round(min(1.0, mastery_prob + ci_half_width), 4)
+    return lower, upper
 
 
 def resolve_level_with_hysteresis(

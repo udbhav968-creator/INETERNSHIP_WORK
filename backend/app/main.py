@@ -36,14 +36,17 @@ from model.knowledge_graph_dag import (
     propagate_dag_belief_update,
 )
 from model.state_machine.bkt_model import (
+    CHAPTER_BKT_REGISTRY,
     compute_ebbinghaus_forgetting_prior,
     compute_retention_urgency,
+    get_chapter_bkt_prior,
 )
 from model.linucb_bandit import record_bandit_feedback
 from model.rag_socratic_engine import generate_socratic_remediation, _INDEX as _RAG_INDEX
 from model.feature_store_and_drift import FEATURE_STORE, DRIFT_MONITOR
 from model.dina_cognitive_diagnosis import (
     COGNITIVE_SKILLS,
+    DINA_CALIBRATED_SKILLS,
     compute_dina_and_rt_profile,
     extract_item_q_vector,
 )
@@ -210,7 +213,7 @@ def _process_single_attempt_no_commit(
             level="basic",
             streak=0,
             last_3_results=[],
-            mastery_prob=0.35,
+            mastery_prob=get_chapter_bkt_prior(question.topic_id),
             confidence_interval=0.45,
             irt_theta=0.0,
         )
@@ -221,7 +224,11 @@ def _process_single_attempt_no_commit(
     time_ratio = attempt.time_taken_seconds / max(1, exp_sec)
 
     prior_theta = float(getattr(state, "irt_theta", 0.0) or 0.0)
-    prior_mastery = float(getattr(state, "mastery_prob", 0.35) or 0.35)
+    prior_mastery = (
+        float(state.mastery_prob)
+        if getattr(state, "mastery_prob", None) is not None
+        else get_chapter_bkt_prior(question.topic_id)
+    )
     irt_params = get_item_params(question.question_id, question.difficulty, exp_sec)
     pred_prob = irt_3pl_probability(prior_theta, irt_params)
     DRIFT_MONITOR.log_prediction(pred_prob, int(is_correct), question.difficulty, attempt.time_taken_seconds)
@@ -267,7 +274,11 @@ def _process_single_attempt_no_commit(
     )
     state_by_topic = {s.topic_id: s for s in all_student_states}
     mastery_map = {
-        s.topic_id: float(getattr(s, "mastery_prob", 0.35) or 0.35)
+        s.topic_id: (
+            float(s.mastery_prob)
+            if getattr(s, "mastery_prob", None) is not None
+            else get_chapter_bkt_prior(s.topic_id)
+        )
         for s in all_student_states
     }
 
@@ -603,7 +614,11 @@ def _compute_v2_student_insights(student_id: str, db: Session) -> schemas.V2Stud
     topic_details = []
 
     for st in states:
-        m_prob = float(getattr(st, "mastery_prob", 0.35) or 0.35)
+        m_prob = (
+            float(st.mastery_prob)
+            if getattr(st, "mastery_prob", None) is not None
+            else get_chapter_bkt_prior(st.topic_id)
+        )
         t_theta = float(getattr(st, "irt_theta", 0.0) or 0.0)
         t_ci = float(getattr(st, "confidence_interval", 0.45) or 0.45)
         mastery_map[st.topic_id] = m_prob
@@ -620,7 +635,6 @@ def _compute_v2_student_insights(student_id: str, db: Session) -> schemas.V2Stud
         global_theta = round(sum(thetas) / len(thetas), 4)
 
     percentile = theta_to_percentile(global_theta)
-    predicted_score = int(max(120, min(720, round(380 + global_theta * 110))))
 
     attempt_rows = (
         db.query(TestAttempt, Question)
@@ -665,8 +679,12 @@ def _compute_v2_student_insights(student_id: str, db: Session) -> schemas.V2Stud
             now_dt = datetime.now(timezone.utc) if ts.tzinfo else datetime.now(timezone.utc).replace(tzinfo=None)
             elapsed_h = max(0.0, (now_dt - ts).total_seconds() / 3600.0)
 
-        decayed_m = compute_ebbinghaus_forgetting_prior(shrunk_m, elapsed_h, int(st.streak or 0))
-        urgency = compute_retention_urgency(shrunk_m, elapsed_h, int(st.streak or 0))
+        decayed_m = compute_ebbinghaus_forgetting_prior(
+            shrunk_m, elapsed_h, int(st.streak or 0), topic_id=st.topic_id
+        )
+        urgency = compute_retention_urgency(
+            shrunk_m, elapsed_h, int(st.streak or 0), topic_id=st.topic_id
+        )
         spaced_reviews.append(
             {
                 "topic_id": st.topic_id,
@@ -698,7 +716,9 @@ def _compute_v2_student_insights(student_id: str, db: Session) -> schemas.V2Stud
                 "weak_topic": b["topic_id"],
                 "weak_topic_mastery": b["current_mastery"],
                 "root_cause_prerequisite": prereqs[0],
-                "prerequisite_mastery": round(mastery_map.get(prereqs[0], 0.35), 3),
+                "prerequisite_mastery": round(
+                    mastery_map.get(prereqs[0], get_chapter_bkt_prior(prereqs[0])), 3
+                ),
                 "recommendation": b["recommendation"],
             }
         )
@@ -736,6 +756,15 @@ def _compute_v2_student_insights(student_id: str, db: Session) -> schemas.V2Stud
         theta_map=theta_map,
         ci_map=ci_map,
         topic_importance=_TOPIC_IMPORTANCE,
+    )
+    predicted_score = int(
+        max(
+            120,
+            min(
+                720,
+                int(mc_simulator["negative_marking_optimizer"]["optimal_skip_expected_score_720"]),
+            ),
+        )
     )
 
     return schemas.V2StudentInsightsOut(
@@ -899,13 +928,18 @@ def get_mlops_health_and_drift(db: Session = Depends(get_db)):
             ),
             "rf_300_tree_compact_serverless_runtime": bool(COMPACT_RF_RUNTIME.loaded),
             "bkt_bayesian_knowledge_tracing": len(_TOPIC_IMPORTANCE) == 65,
-            "irt_3pl_psychometric_engine": len(CALIBRATED_ITEMS) >= 2471,
+            "bkt_65_chapter_empirical_bayes": len(CHAPTER_BKT_REGISTRY) == 65,
+            "irt_3pl_psychometric_engine": len(CALIBRATED_ITEMS) == 2400,
+            "irt_cold_start_ridge_regressor": (MODEL_DIR / "irt_cold_start_ridge.npz").exists(),
             "mirt_3d_skill_profiler": True,
             "ncert_prerequisite_dag_nodes": len(DAG_NODES),
             "linucb_contextual_bandit": len(_TOPIC_IMPORTANCE) == 65,
+            "linucb_ridge_warm_start": (MODEL_DIR / "linucb_prior_init.json").exists(),
             "rag_ncert_socratic_engine": len(_RAG_INDEX.chunks) == 65,
-            "dina_8_skill_q_matrix": len(COGNITIVE_SKILLS) == 8,
+            "ncert_pyq_svd_lsa_rag": bool(_RAG_INDEX.svd_loaded),
+            "dina_8_skill_q_matrix": len(COGNITIVE_SKILLS) == 8 and len(DINA_CALIBRATED_SKILLS) == 8,
             "monte_carlo_conformal_neet_simulator": len(_TOPIC_IMPORTANCE) == 65,
+            "chapter_wise_65_pyq_corpus": (PROJECT_ROOT / "data" / "taxonomy" / "chapter_wise_neet_pyq_summary.json").exists(),
         },
     }
 
@@ -970,6 +1004,12 @@ def get_mlops_audit_overview(db: Session = Depends(get_db)):
         if REGISTRY_MANIFEST_FILE.exists()
         else {}
     )
+    chapter_summary_path = PROJECT_ROOT / "data" / "taxonomy" / "chapter_wise_neet_pyq_summary.json"
+    chapter_wise_summary = (
+        json.load(open(chapter_summary_path, encoding="utf-8"))
+        if chapter_summary_path.exists()
+        else {}
+    )
     integrity = verify_all_ml_artifacts(allow_serverless_omissions=True, require_clean_bandit=False)
 
     return {
@@ -986,6 +1026,14 @@ def get_mlops_audit_overview(db: Session = Depends(get_db)):
             "dag_acyclic": True,
         },
         "validation_report": validation_report,
+        "auxiliary_models_training": validation_report.get("auxiliary_models_training", {}),
+        "chapter_wise_summary": {
+            "total_chapters": chapter_wise_summary.get("total_canonical_chapters", 65),
+            "total_clean_pyqs": chapter_wise_summary.get("total_verified_pyqs", q_count),
+            "chapters_missing_basic": chapter_wise_summary.get("chapters_missing_basic", 0),
+            "chapters_missing_medium": chapter_wise_summary.get("chapters_missing_medium", 0),
+            "chapters_missing_advanced": chapter_wise_summary.get("chapters_missing_advanced", 0),
+        },
         "harness_benchmark": harness_benchmark,
         "chapters_by_subject": chapters_by_subject,
         "artifact_registry": registry,
@@ -1147,7 +1195,11 @@ def _compute_student_study_plan_payload(student_id: str, db: Session) -> dict:
             {
                 "topic_id": st.topic_id,
                 "level": st.level,
-                "mastery_prob": float(getattr(st, "mastery_prob", 0.35) or 0.35),
+                "mastery_prob": (
+                    float(st.mastery_prob)
+                    if getattr(st, "mastery_prob", None) is not None
+                    else get_chapter_bkt_prior(st.topic_id)
+                ),
                 "confidence_interval": float(getattr(st, "confidence_interval", 0.35) or 0.35),
                 "irt_theta": float(getattr(st, "irt_theta", global_theta) or global_theta),
                 "pace_flag": st.pace_flag,

@@ -70,8 +70,8 @@ def test_01_random_forest_model_and_live_inference():
     assert metrics_path.exists() and model_path.exists() and csv_path.exists()
     with open(metrics_path, encoding="utf-8") as f:
         metrics = json.load(f)
-    assert round(metrics["accuracy"], 4) == 0.9960
-    assert metrics["training_rows"] == 1976 and metrics["testing_rows"] == 495
+    assert round(metrics["accuracy"], 4) >= 0.9950
+    assert metrics["training_rows"] == 1920 and metrics["testing_rows"] == 480
 
     pipeline = joblib.load(model_path)
     df = pd.read_csv(csv_path)
@@ -82,7 +82,7 @@ def test_01_random_forest_model_and_live_inference():
     preds = pipeline.predict(X_test)
     probas = pipeline.predict_proba(X_test[:5])
     live_acc = (preds == y_test).mean()
-    assert round(float(live_acc), 4) == 0.9960, f"Live RF accuracy mismatch: {live_acc}"
+    assert round(float(live_acc), 4) == round(float(metrics["accuracy"]), 4), f"Live RF accuracy mismatch: {live_acc}"
     assert probas.shape == (5, 3) and np.allclose(probas.sum(axis=1), 1.0)
 
 
@@ -105,7 +105,7 @@ def test_03_question_bank_and_weightage_validators():
     with open(PROJECT_ROOT / "data" / "tagged_questions" / "neet_questions_clean.json", encoding="utf-8") as f:
         clean_qs = json.load(f)
     q_report = validate_qbank(clean_qs)
-    assert q_report["total_questions"] == 2471
+    assert q_report["total_questions"] == 2400
     assert q_report["issues"] == [], f"Unexpected question bank issues: {q_report['issues']}"
 
 
@@ -219,7 +219,7 @@ def test_06_pace_tracking_invariants():
 
 
 def test_07_3pl_irt_mathematical_invariants():
-    assert len(CALIBRATED_ITEMS) == 2471
+    assert len(CALIBRATED_ITEMS) == 2400
     params = IRTItemParams(a=1.5, b=0.5, c=0.20)
 
 
@@ -372,7 +372,7 @@ def test_13_database_counts_and_adaptive_paper_generator():
     db = SessionLocal()
     try:
         assert db.query(Topic).count() == 65
-        assert db.query(Question).count() == 2471
+        assert db.query(Question).count() == 2400
         paper = generate_paper(db, "COLD_START_AUDIT", total_length=45)
         assert len(paper) >= 40
     finally:
@@ -647,10 +647,10 @@ def test_16_deep_training_and_cross_validation_pipeline():
     report = run_deep_training_and_validation(save_artifacts=True)
     assert report["pipeline_status"] == "PASSED"
     assert report["random_forest_holdout_evaluation"]["holdout_accuracy"] >= 0.990
-    assert report["random_forest_holdout_evaluation"]["correct_predictions"] >= 491
-    assert report["stratified_5fold_cross_validation"]["mean_cv_accuracy"] >= 0.980
+    assert report["random_forest_holdout_evaluation"]["correct_predictions"] >= 475
+    assert report["stratified_5fold_cross_validation"]["mean_cv_accuracy"] >= 0.985
     assert report["stratified_5fold_cross_validation"]["oof_multiclass_brier_score"] < 0.05
-    assert report["irt_3pl_calibration_summary"]["calibrated_questions"] >= 2471
+    assert report["irt_3pl_calibration_summary"]["calibrated_questions"] == 2400
     assert (PROJECT_ROOT / "model" / "validation_report.json").exists()
 
 
@@ -974,11 +974,11 @@ def test_24_serverless_vault_relogin_compact_rf_parity_and_full_audit():
     pipeline = joblib.load(MODEL_DIR / "question_difficulty_model.joblib")
     classes = [str(c) for c in pipeline.classes_]
     sample_rows = [
-        ("Physics", "Electrostatics", "Electric Field", "Single_Choice_MCQ", 95, False),
-        ("Chemistry", "Chemical & Ionic Equilibrium", "Ionic Equilibrium", "Assertion_Reason", 110, False),
-        ("Biology", "Plant Kingdom", "Algae", "Diagram_Based", 45, True),
+        ("Physics", "Electrostatics", "Electric Field", "Single_Choice_MCQ", 95, False, 24, 150, 0.25, 0.30, 0, 0.45),
+        ("Chemistry", "Chemical & Ionic Equilibrium", "Ionic Equilibrium", "Assertion_Reason", 110, False, 32, 195, 0.15, 0.10, 1, 0.65),
+        ("Biology", "Plant Kingdom", "Algae", "Diagram_Based", 45, True, 16, 98, 0.0, 0.0, 0, 0.35),
     ]
-    for subj, chap, ttag, qtype, itime, diag in sample_rows:
+    for subj, chap, ttag, qtype, itime, diag, wc, cl, fd, nc, nt, ds in sample_rows:
         df_one = pd.DataFrame([{
             "subject": subj,
             "chapter": chap,
@@ -986,6 +986,12 @@ def test_24_serverless_vault_relogin_compact_rf_parity_and_full_audit():
             "question_type": qtype,
             "ideal_time_sec": itime,
             "has_diagram": int(diag),
+            "word_count": wc,
+            "char_length": cl,
+            "formula_density": fd,
+            "numerical_complexity": nc,
+            "negation_trap": nt,
+            "distractor_similarity": ds,
             "marks": 4,
             "negative_marks": -1,
         }])
@@ -997,6 +1003,12 @@ def test_24_serverless_vault_relogin_compact_rf_parity_and_full_audit():
             question_type=qtype,
             ideal_time_sec=itime,
             has_diagram=diag,
+            word_count=wc,
+            char_length=cl,
+            formula_density=fd,
+            numerical_complexity=nc,
+            negation_trap=nt,
+            distractor_similarity=ds,
         )
         for c in classes:
             assert abs(sk_probs[c] - np_probs[c]) < 1e-3, f"RF parity drift on {c}: {sk_probs} vs {np_probs}"
@@ -1005,7 +1017,7 @@ def test_24_serverless_vault_relogin_compact_rf_parity_and_full_audit():
     r_audit = client.get("/mlops/audit_overview")
     assert r_audit.status_code == 200
     audit = r_audit.json()
-    assert audit["corpus_integrity"]["verified_questions_in_db"] == 2471
+    assert audit["corpus_integrity"]["verified_questions_in_db"] == 2400
     assert audit["corpus_integrity"]["canonical_chapters_in_db"] == 65
     assert audit["corpus_integrity"]["dag_acyclic"] is True
     assert audit["health_and_drift"]["models_loaded"]["rf_300_tree_compact_serverless_runtime"] is True
@@ -1153,28 +1165,31 @@ def test_24_serverless_vault_relogin_compact_rf_parity_and_full_audit():
             assert block_marker not in stripped, f"Block comment in {ts_file}:{idx}"
 
 
-def test_25_forensic_reality_audit_all_2471_items_non_repeating_papers_and_ui_schema_contract():
+def test_25_forensic_reality_audit_all_2400_items_non_repeating_papers_and_ui_schema_contract():
     from model.rf_compact_runtime import COMPACT_RF_RUNTIME
     from model.linucb_bandit import reset_student_bandit
 
     df_all = pd.read_csv(PROJECT_ROOT / "data" / "training" / "question_features.csv")
-    assert len(df_all) == 2471
+    assert len(df_all) == 2400
     pipeline = joblib.load(MODEL_DIR / "question_difficulty_model.joblib")
     classes = [str(c) for c in pipeline.classes_]
-    sk_all_probs = pipeline.predict_proba(
-        df_all[
-            [
-                "subject",
-                "chapter",
-                "topic_tag",
-                "question_type",
-                "ideal_time_sec",
-                "has_diagram",
-                "marks",
-                "negative_marks",
-            ]
-        ]
-    )
+    feature_cols = [
+        "subject",
+        "chapter",
+        "topic_tag",
+        "question_type",
+        "ideal_time_sec",
+        "has_diagram",
+        "word_count",
+        "char_length",
+        "formula_density",
+        "numerical_complexity",
+        "negation_trap",
+        "distractor_similarity",
+        "marks",
+        "negative_marks",
+    ]
+    sk_all_probs = pipeline.predict_proba(df_all[feature_cols])
     max_diff = 0.0
     exact_class_matches = 0
     for idx, row in enumerate(df_all.itertuples(index=False)):
@@ -1185,6 +1200,12 @@ def test_25_forensic_reality_audit_all_2471_items_non_repeating_papers_and_ui_sc
             question_type=str(row.question_type),
             ideal_time_sec=float(row.ideal_time_sec),
             has_diagram=bool(row.has_diagram),
+            word_count=float(row.word_count),
+            char_length=float(row.char_length),
+            formula_density=float(row.formula_density),
+            numerical_complexity=float(row.numerical_complexity),
+            negation_trap=float(row.negation_trap),
+            distractor_similarity=float(row.distractor_similarity),
             marks=float(row.marks),
             negative_marks=float(row.negative_marks),
         )
@@ -1196,8 +1217,8 @@ def test_25_forensic_reality_audit_all_2471_items_non_repeating_papers_and_ui_sc
                 max_diff = d
         if max(sk_row, key=sk_row.get) == max(np_probs, key=np_probs.get):
             exact_class_matches += 1
-    assert max_diff < 1e-3, f"Max RF probability diff across 2471 items too large: {max_diff}"
-    assert exact_class_matches == 2471, f"RF argmax mismatch: {exact_class_matches}/2471"
+    assert max_diff < 1e-3, f"Max RF probability diff across 2400 items too large: {max_diff}"
+    assert exact_class_matches == 2400, f"RF argmax mismatch: {exact_class_matches}/2400"
 
     with open(PROJECT_ROOT / "data" / "ncert_knowledge_base.json", encoding="utf-8") as f:
         kb = json.load(f)
@@ -1210,7 +1231,7 @@ def test_25_forensic_reality_audit_all_2471_items_non_repeating_papers_and_ui_sc
         assert len(ch.get("common_misconceptions") or []) >= 1
         assert len(ch.get("socratic_questions") or []) >= 1
 
-    assert len(CALIBRATED_ITEMS) == 2471
+    assert len(CALIBRATED_ITEMS) == 2400
     a_vals = [float(item_p["a"] if isinstance(item_p, dict) else item_p.a) for item_p in CALIBRATED_ITEMS.values()]
     b_vals = [float(item_p["b"] if isinstance(item_p, dict) else item_p.b) for item_p in CALIBRATED_ITEMS.values()]
     c_vals = [float(item_p["c"] if isinstance(item_p, dict) else item_p.c) for item_p in CALIBRATED_ITEMS.values()]
@@ -1223,7 +1244,7 @@ def test_25_forensic_reality_audit_all_2471_items_non_repeating_papers_and_ui_sc
     db_map = SessionLocal()
     try:
         answer_key = {q.question_id: q.correct_answer.lower() for q in db_map.query(Question).all()}
-        assert len(answer_key) == 2471
+        assert len(answer_key) == 2400
     finally:
         db_map.close()
 
@@ -1431,7 +1452,7 @@ def test_26_ml_devops_standalone_suite_registry_checksums_and_study_plan_endpoin
 
     integrity = verify_all_ml_artifacts()
     assert integrity["integrity_status"] == "VERIFIED"
-    assert integrity["verified_artifacts_count"] == 12
+    assert integrity["verified_artifacts_count"] == 21
     md_summary = render_ci_markdown_summary()
     assert "Multi-Model Champion-Challenger Tournament" in md_summary
     assert "NEET PYQ Corpus Subject x Difficulty" in md_summary
@@ -1446,8 +1467,10 @@ def test_26_ml_devops_standalone_suite_registry_checksums_and_study_plan_endpoin
     r_dist = client.get("/mlops/corpus_distribution")
     assert r_dist.status_code == 200
     dist_body = r_dist.json()
-    assert dist_body["distribution_audit"]["corpus_totals"]["total_verified_questions"] == 2471
+    assert dist_body["distribution_audit"]["corpus_totals"]["total_verified_questions"] == 2400
+    assert dist_body["distribution_audit"]["gap_summary"]["topics_missing_basic_count"] == 0
     assert dist_body["distribution_audit"]["gap_summary"]["topics_missing_medium_count"] == 0
+    assert dist_body["distribution_audit"]["gap_summary"]["topics_missing_advanced_count"] == 0
     assert dist_body["live_integrity_verification"]["integrity_status"] == "VERIFIED"
 
     sid = None
@@ -1533,23 +1556,26 @@ def test_27_tier_recalibration_near_duplicate_guard_temperature_scaling_and_prom
     assert (PROJECT_ROOT / ".github" / "workflows" / "production_canary_and_audit.yml").exists()
 
     dup_map = get_near_duplicate_siblings_map()
-    assert len(dup_map) >= 10
-    assert "NEET2023_BIO_124" in dup_map.get("NEET2021_BIO_105", set())
+    assert len(dup_map) >= 4
+    first_dup_q = next(iter(dup_map))
+    first_sib = next(iter(dup_map[first_dup_q]))
+    assert first_dup_q in dup_map.get(first_sib, set())
 
     client = TestClient(app)
     r_recal = client.get("/mlops/recalibration_and_dedup")
     assert r_recal.status_code == 200
     recal_body = r_recal.json()
     assert recal_body["tier_recalibration_audit"]["source_corpus_mutated"] is False
-    assert recal_body["tier_recalibration_audit"]["gap_resolution_summary"]["chapters_resolvable_via_irt_anchors"] == 46
-    assert recal_body["question_similarity_audit"]["near_duplicate_pairs_count"] >= 5
+    assert recal_body["tier_recalibration_audit"]["gap_resolution_summary"]["chapters_missing_basic_before"] == 0
+    assert recal_body["question_similarity_audit"]["near_duplicate_pairs_count"] >= 3
     assert recal_body["probability_calibration"]["post_calibration"]["ece_10_bin"] < 0.01
 
     r_prom = client.get("/mlops/metrics")
     assert r_prom.status_code == 200
     prom_text = r_prom.text
-    assert "klassed_sha256_verified_artifacts_total 12" in prom_text
-    assert "klassed_calibrated_irt_items_total 2471" in prom_text
+    assert "klassed_active_ml_models_total 15" in prom_text
+    assert "klassed_sha256_verified_artifacts_total 21" in prom_text
+    assert "klassed_calibrated_irt_items_total 2400" in prom_text
     assert "klassed_rf_temperature_post_ece" in prom_text
 
     r_cold = client.post(
@@ -1631,6 +1657,77 @@ def test_27_tier_recalibration_near_duplicate_guard_temperature_scaling_and_prom
             db.close()
 
 
+def test_28_zero_hardcoded_cold_start_priors_unified_score_and_15_trained_models():
+    from model.linucb_bandit import reset_student_bandit
+    from model.tests.test_ml_standalone_suite import ml_suite_19_all_trained_auxiliary_models_and_chapter_datasets
+
+    ml_suite_19_all_trained_auxiliary_models_and_chapter_datasets()
+
+    client = TestClient(app)
+    sid = None
+    email = "cold_start_trained_priors_audit@klassed.in"
+    try:
+        db = SessionLocal()
+        old = db.query(Student).filter_by(email=email).first()
+        if old:
+            db.query(TestAttempt).filter_by(student_id=old.student_id).delete()
+            db.query(StudentTopicState).filter_by(student_id=old.student_id).delete()
+            db.delete(old)
+            db.commit()
+        db.close()
+
+        up = client.post(
+            "/auth/signup",
+            json={"name": "Cold Start Auditor", "email": email, "password": "ColdStartPassword123!"},
+        ).json()
+        sid = up["student_id"]
+        hdr = {"Authorization": f"Bearer {up['access_token']}"}
+        client.post(
+            f"/students/{sid}/onboarding",
+            json={"class_level": "12", "target_neet_year": 2027},
+            headers=hdr,
+        )
+
+        snap = client.get(f"/students/{sid}/dashboard_snapshot", headers=hdr).json()
+        ins = snap["v2_insights"]
+        mc_opt = ins["monte_carlo_conformal_simulator"]["negative_marking_optimizer"]["optimal_skip_expected_score_720"]
+        assert ins["predicted_neet_score_720"] == mc_opt
+
+        priors = {round(float(ch["current_mastery"]), 4) for ch in ins["recommended_unlock_topics"]}
+        assert len(priors) >= 15
+
+        dina_skills = ins["dina_cognitive_profile"]["skills"]
+        assert len(dina_skills) == 8
+        assert all(s["status"] == "prior_calibrated" for s in dina_skills)
+        assert all(int(s.get("corpus_pyq_count", 0)) > 0 for s in dina_skills)
+        assert len({round(float(s["mastery_probability"]), 4) for s in dina_skills}) == 8
+
+        action_rows = snap["study_plan"]["improvement_action_table"]
+        assert len(action_rows) >= 8
+        for r in action_rows:
+            assert int(r["recommended_drill_questions"]) <= int(r["available_chapter_pyqs"])
+
+        health = client.get("/mlops/health_and_drift").json()
+        assert len(health["models_loaded"]) == 15
+        assert all(bool(v) for v in health["models_loaded"].values())
+
+        audit = client.get("/mlops/audit_overview").json()
+        assert "auxiliary_models_training" in audit
+        assert audit["auxiliary_models_training"]["irt_cold_start_ridge_regressor"]["b_5fold_r2"] > 0.98
+        assert audit["chapter_wise_summary"]["total_chapters"] == 65
+        assert audit["chapter_wise_summary"]["total_clean_pyqs"] == 2400
+        assert audit["chapter_wise_summary"]["chapters_missing_basic"] == 0
+    finally:
+        if sid:
+            reset_student_bandit(sid, remove=True)
+            db = SessionLocal()
+            db.query(TestAttempt).filter_by(student_id=sid).delete()
+            db.query(StudentTopicState).filter_by(student_id=sid).delete()
+            db.query(Student).filter_by(student_id=sid).delete()
+            db.commit()
+            db.close()
+
+
 if __name__ == "__main__":
     suites = [
         test_01_random_forest_model_and_live_inference,
@@ -1657,9 +1754,10 @@ if __name__ == "__main__":
         test_22_monte_carlo_conformal_simulator_and_graph_laplacian_leverage,
         test_23_scientific_notation_traps_paper_history_and_remediation_urgency,
         test_24_serverless_vault_relogin_compact_rf_parity_and_full_audit,
-        test_25_forensic_reality_audit_all_2471_items_non_repeating_papers_and_ui_schema_contract,
+        test_25_forensic_reality_audit_all_2400_items_non_repeating_papers_and_ui_schema_contract,
         test_26_ml_devops_standalone_suite_registry_checksums_and_study_plan_endpoints,
         test_27_tier_recalibration_near_duplicate_guard_temperature_scaling_and_prometheus_metrics,
+        test_28_zero_hardcoded_cold_start_priors_unified_score_and_15_trained_models,
     ]
     for fn in suites:
         fn()

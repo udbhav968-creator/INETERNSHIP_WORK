@@ -1,12 +1,54 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import math
+from collections import defaultdict
+from pathlib import Path
 from typing import Any
 
 import numpy as np
 
+from model.irt_3pl_model import CALIBRATED_ITEMS
 from model.knowledge_graph_dag import DAG_NODES
+from model.state_machine.bkt_model import get_chapter_bkt_prior
+
+MODEL_DIR = Path(__file__).resolve().parent
+PROJECT_ROOT = MODEL_DIR.parent
+_CLEAN_QS_PATH = PROJECT_ROOT / "data" / "tagged_questions" / "neet_questions_clean.json"
+_CONFORMAL_LAPLACIAN_PATH = MODEL_DIR / "conformal_laplacian_model.json"
+
+
+def _load_chapter_irt_pools() -> dict[str, list[tuple[float, float, float]]]:
+    pools: dict[str, list[tuple[float, float, float]]] = defaultdict(list)
+    if not _CLEAN_QS_PATH.exists():
+        return pools
+    try:
+        questions = json.loads(_CLEAN_QS_PATH.read_text(encoding="utf-8"))
+        for q in questions:
+            qid = str(q.get("question_id", ""))
+            ch = str(q.get("chapter", ""))
+            ip = CALIBRATED_ITEMS.get(qid)
+            if ch and isinstance(ip, dict):
+                pools[ch].append((float(ip["a"]), float(ip["b"]), float(ip["c"])))
+    except Exception:
+        pass
+    return pools
+
+
+_CHAPTER_IRT_POOLS: dict[str, list[tuple[float, float, float]]] = _load_chapter_irt_pools()
+
+
+def _load_conformal_laplacian_meta() -> dict[str, Any]:
+    if _CONFORMAL_LAPLACIAN_PATH.exists():
+        try:
+            return json.loads(_CONFORMAL_LAPLACIAN_PATH.read_text(encoding="utf-8"))
+        except Exception:
+            pass
+    return {}
+
+
+CONFORMAL_LAPLACIAN_META: dict[str, Any] = _load_conformal_laplacian_meta()
 
 
 def _allocate_180_neet_questions(topic_importance: dict[str, float]) -> list[tuple[str, str, int]]:
@@ -69,7 +111,7 @@ def compute_graph_laplacian_leverage(
                 i = idx_map[prereq]
                 adj[i, j] = 1.0
 
-    beta = 0.38
+    beta = float(CONFORMAL_LAPLACIAN_META.get("heat_beta", 0.38)) * 0.70
     adj_2hop = adj @ adj
     heat_kernel = np.eye(n) + beta * adj + 0.5 * (beta ** 2) * adj_2hop
 
@@ -83,11 +125,17 @@ def compute_graph_laplacian_leverage(
     current_masteries = np.zeros(n, dtype=np.float64)
 
     for i, t_name in enumerate(topics):
-        m_c = float(mastery_map.get(t_name, 0.35))
+        m_c = float(mastery_map.get(t_name, get_chapter_bkt_prior(t_name)))
         th_c = float(theta_map.get(t_name, global_theta))
         current_masteries[i] = m_c
 
-        p_curr = 0.22 + 0.78 / (1.0 + math.exp(-1.702 * 1.15 * (th_c - 0.10)))
+        ch_pool = _CHAPTER_IRT_POOLS.get(t_name)
+        mean_a = float(np.mean([p[0] for p in ch_pool])) if ch_pool else 1.15
+        mean_b = float(np.mean([p[1] for p in ch_pool])) if ch_pool else 0.10
+        mean_c = float(np.mean([p[2] for p in ch_pool])) if ch_pool else 0.22
+
+        th_eff = th_c + 0.45 * (m_c - 0.40)
+        p_curr = mean_c + (1.0 - mean_c) / (1.0 + math.exp(-1.702 * mean_a * (th_eff - mean_b)))
         p_target = max(p_curr, 0.89)
 
         ev_curr = 5.0 * p_curr - 1.0
@@ -143,39 +191,52 @@ def run_monte_carlo_conformal_neet_simulation(
 ) -> dict[str, Any]:
     allocation = _allocate_180_neet_questions(topic_importance)
 
+    state_fingerprint = (
+        f"{student_id}:{round(global_theta, 4)}:{len(theta_map)}:"
+        f"{round(sum(theta_map.values()), 4)}:{round(sum(mastery_map.values()), 4)}"
+    )
+    seed_int = int(hashlib.sha256(state_fingerprint.encode("utf-8")).hexdigest()[:8], 16)
+    rng = np.random.default_rng(seed_int)
+
     item_thetas = np.zeros(180, dtype=np.float64)
     item_ses = np.zeros(180, dtype=np.float64)
     item_masteries = np.zeros(180, dtype=np.float64)
+    item_a = np.zeros(180, dtype=np.float64)
+    tier_b = np.zeros(180, dtype=np.float64)
+    item_c = np.zeros(180, dtype=np.float64)
 
     q_cursor = 0
     for topic_id, _, q_cnt in allocation:
         th_c = float(theta_map.get(topic_id, global_theta))
-        m_c = float(mastery_map.get(topic_id, 0.35))
-        ci_c = float(ci_map.get(topic_id, 0.38))
+        m_c = float(mastery_map.get(topic_id, get_chapter_bkt_prior(topic_id)))
+        ci_c = float(ci_map.get(topic_id, 0.36))
         se_c = max(0.12, min(0.55, ci_c * 0.75))
 
         end_cursor = min(180, q_cursor + q_cnt)
-        item_thetas[q_cursor:end_cursor] = th_c
+        slot_len = end_cursor - q_cursor
+        if slot_len <= 0:
+            break
+
+        item_thetas[q_cursor:end_cursor] = th_c + 0.35 * (m_c - 0.40)
         item_ses[q_cursor:end_cursor] = se_c
         item_masteries[q_cursor:end_cursor] = m_c
+
+        ch_pool = _CHAPTER_IRT_POOLS.get(topic_id)
+        if ch_pool:
+            pick_idx = rng.integers(0, len(ch_pool), size=slot_len)
+            for k_local, p_idx in enumerate(pick_idx):
+                a_v, b_v, c_v = ch_pool[int(p_idx)]
+                item_a[q_cursor + k_local] = a_v
+                tier_b[q_cursor + k_local] = b_v * 0.55
+                item_c[q_cursor + k_local] = c_v
+        else:
+            item_a[q_cursor:end_cursor] = rng.uniform(0.95, 1.45, size=slot_len)
+            tier_b[q_cursor:end_cursor] = rng.uniform(-0.45, 0.55, size=slot_len)
+            item_c[q_cursor:end_cursor] = rng.uniform(0.18, 0.24, size=slot_len)
+
         q_cursor = end_cursor
         if q_cursor >= 180:
             break
-
-    state_fingerprint = f"{student_id}:{round(global_theta, 4)}:{len(theta_map)}:{round(sum(theta_map.values()), 4)}"
-    seed_int = int(hashlib.sha256(state_fingerprint.encode("utf-8")).hexdigest()[:8], 16)
-    rng = np.random.default_rng(seed_int)
-
-    tier_b = np.concatenate(
-        [
-            np.linspace(-0.85, -0.25, 63),
-            np.linspace(-0.20, 0.45, 81),
-            np.linspace(0.50, 1.25, 36),
-        ]
-    )
-    rng.shuffle(tier_b)
-    item_a = rng.uniform(0.95, 1.45, size=180)
-    item_c = rng.uniform(0.18, 0.24, size=180)
 
     sampled_thetas = rng.normal(
         loc=item_thetas[None, :],

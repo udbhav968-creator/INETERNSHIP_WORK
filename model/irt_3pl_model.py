@@ -5,6 +5,8 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
+import numpy as np
+
 from .rf_compact_runtime import COMPACT_RF_RUNTIME
 
 MODEL_DIR = Path(__file__).resolve().parent
@@ -13,6 +15,7 @@ QUESTIONS_PATH = PROJECT_ROOT / "data" / "tagged_questions" / "neet_questions_cl
 ATTEMPTS_CSV_PATH = PROJECT_ROOT / "data" / "training" / "student_attempts.csv"
 IMPORTANCE_PATH = MODEL_DIR / "topic_importance.json"
 IRT_PARAMS_PATH = MODEL_DIR / "irt_item_parameters.json"
+IRT_RIDGE_PATH = MODEL_DIR / "irt_cold_start_ridge.npz"
 
 D_SCALING = 1.702
 
@@ -35,10 +38,15 @@ _DEFAULT_DIFFICULTY_B: dict[str, IRTItemParams] = {
 QUESTION_TYPE_MODIFIERS: dict[str, tuple[float, float]] = {
     "Numerical": (0.18, 0.22),
     "Statement-Based": (0.14, 0.16),
+    "Statement_Based": (0.14, 0.16),
     "Match-the-Column": (0.10, 0.08),
+    "Match_The_Column": (0.10, 0.08),
     "Assertion-Reason": (0.16, 0.20),
+    "Assertion_Reason": (0.16, 0.20),
     "Diagram-Based": (0.15, 0.18),
+    "Diagram_Based": (0.15, 0.18),
     "Conceptual": (0.04, 0.00),
+    "Single_Choice_MCQ": (0.04, 0.00),
     "Direct Formula": (-0.05, -0.12),
 }
 
@@ -171,6 +179,28 @@ else:
     CALIBRATED_ITEMS = calibrate_question_bank()
 
 
+_IRT_RIDGE_WEIGHTS: np.ndarray | None = None
+_IRT_RIDGE_MEAN: np.ndarray | None = None
+_IRT_RIDGE_STD: np.ndarray | None = None
+
+
+def reload_irt_ridge_model() -> bool:
+    global _IRT_RIDGE_WEIGHTS, _IRT_RIDGE_MEAN, _IRT_RIDGE_STD
+    if not IRT_RIDGE_PATH.exists():
+        return False
+    try:
+        arrs = np.load(IRT_RIDGE_PATH)
+        _IRT_RIDGE_WEIGHTS = arrs["weights"].astype(np.float64)
+        _IRT_RIDGE_MEAN = arrs["feature_mean"].astype(np.float64)
+        _IRT_RIDGE_STD = arrs["feature_std"].astype(np.float64)
+        return True
+    except Exception:
+        return False
+
+
+reload_irt_ridge_model()
+
+
 def get_item_params(
     question_id: str, difficulty: str = "medium", expected_time_seconds: int = 90
 ) -> IRTItemParams:
@@ -272,14 +302,21 @@ def extract_cold_start_nlp_features(question_text: str, options: list[str] | Non
 
 
 _RF_PIPELINE = None
-try:
-    import joblib
-    import pandas as pd
-    _RF_PATH = MODEL_DIR / "question_difficulty_model.joblib"
-    if _RF_PATH.exists():
-        _RF_PIPELINE = joblib.load(_RF_PATH)
-except Exception:
-    _RF_PIPELINE = None
+
+
+def reload_sklearn_rf_pipeline() -> None:
+    global _RF_PIPELINE
+    try:
+        import joblib
+
+        rf_path = MODEL_DIR / "question_difficulty_model.joblib"
+        if rf_path.exists():
+            _RF_PIPELINE = joblib.load(rf_path)
+    except Exception:
+        _RF_PIPELINE = None
+
+
+reload_sklearn_rf_pipeline()
 
 
 def predict_cold_start_difficulty_and_irt(
@@ -293,6 +330,7 @@ def predict_cold_start_difficulty_and_irt(
     ideal_time_sec: int | None = None,
 ) -> dict:
     feats = extract_cold_start_nlp_features(question_text, options)
+    char_len = float(len(str(question_text or "")))
     length_norm = min(1.0, feats["word_count"] / 55.0)
     diag_bonus = 0.20 if has_diagram else 0.0
 
@@ -329,6 +367,8 @@ def predict_cold_start_difficulty_and_irt(
 
     if _RF_PIPELINE is not None:
         try:
+            import pandas as pd
+
             row_df = pd.DataFrame(
                 [
                     {
@@ -338,6 +378,12 @@ def predict_cold_start_difficulty_and_irt(
                         "question_type": resolved_qtype,
                         "ideal_time_sec": resolved_time,
                         "has_diagram": int(bool(has_diagram)),
+                        "word_count": feats["word_count"],
+                        "char_length": char_len,
+                        "formula_density": feats["formula_density"],
+                        "numerical_complexity": feats["numerical_complexity"],
+                        "negation_trap": feats["negation_trap"],
+                        "distractor_similarity": feats["distractor_similarity"],
                         "marks": 4,
                         "negative_marks": -1,
                     }
@@ -358,6 +404,12 @@ def predict_cold_start_difficulty_and_irt(
             question_type=resolved_qtype,
             ideal_time_sec=resolved_time,
             has_diagram=bool(has_diagram),
+            word_count=feats["word_count"],
+            char_length=char_len,
+            formula_density=feats["formula_density"],
+            numerical_complexity=feats["numerical_complexity"],
+            negation_trap=feats["negation_trap"],
+            distractor_similarity=feats["distractor_similarity"],
             marks=4.0,
             negative_marks=-1.0,
         )
@@ -382,9 +434,36 @@ def predict_cold_start_difficulty_and_irt(
     else:
         tier = "advanced"
 
-    b_est = round(max(-2.5, min(2.5, (complexity_score - 0.42) * 3.8)), 4)
-    a_est = round(max(0.75, min(2.35, 1.05 + 0.65 * complexity_score + 0.25 * feats["distractor_similarity"])), 4)
-    c_est = round(max(0.14, min(0.26, 0.25 - 0.06 * feats["distractor_similarity"] - 0.04 * feats["numerical_complexity"])), 4)
+    if _IRT_RIDGE_WEIGHTS is not None and _IRT_RIDGE_MEAN is not None and _IRT_RIDGE_STD is not None:
+        expl_steps_est = max(1.0, round(1.0 + 3.0 * complexity_score))
+        tier_num = {"basic": 0.0, "medium": 0.5, "advanced": 1.0}.get(tier, 0.5)
+        x_raw = np.array(
+            [
+                feats["word_count"],
+                char_len,
+                feats["formula_density"],
+                feats["numerical_complexity"],
+                feats["negation_trap"],
+                feats["distractor_similarity"],
+                expl_steps_est,
+                1.0 if has_diagram else 0.0,
+                float(resolved_time),
+                1.0 if subject == "Biology" else 0.0,
+                1.0 if subject == "Chemistry" else 0.0,
+                1.0 if subject == "Physics" else 0.0,
+                tier_num,
+            ],
+            dtype=np.float64,
+        )
+        x_aug = np.concatenate([[1.0], (x_raw - _IRT_RIDGE_MEAN) / _IRT_RIDGE_STD])
+        pred_abc = x_aug @ _IRT_RIDGE_WEIGHTS
+        a_est = round(float(np.clip(pred_abc[0], 0.65, 2.40)), 4)
+        b_est = round(float(np.clip(pred_abc[1], -2.85, 2.85)), 4)
+        c_est = round(float(np.clip(pred_abc[2], 0.12, 0.28)), 4)
+    else:
+        b_est = round(max(-2.5, min(2.5, (complexity_score - 0.42) * 3.8)), 4)
+        a_est = round(max(0.75, min(2.35, 1.05 + 0.65 * complexity_score + 0.25 * feats["distractor_similarity"])), 4)
+        c_est = round(max(0.14, min(0.26, 0.25 - 0.06 * feats["distractor_similarity"] - 0.04 * feats["numerical_complexity"])), 4)
 
     from .probability_calibrator import calibrate_rf_probabilities
     calibrated_probs, cal_temp = calibrate_rf_probabilities(rf_probs)
@@ -393,6 +472,7 @@ def predict_cold_start_difficulty_and_irt(
         "predicted_difficulty": tier,
         "rf_predicted_difficulty": rf_predicted_tier,
         "rf_engine": rf_engine,
+        "irt_estimator": "multi_output_ridge_npz" if _IRT_RIDGE_WEIGHTS is not None else "analytic_fallback",
         "complexity_score": round(complexity_score, 4),
         "irt_params": {"a": a_est, "b": b_est, "c": c_est},
         "nlp_features": feats,

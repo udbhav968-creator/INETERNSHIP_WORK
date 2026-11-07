@@ -1,32 +1,22 @@
 {
-  "total_audited_questions": 2471,
+  "total_audited_questions": 2400,
   "near_duplicate_threshold": 0.85,
   "high_overlap_threshold": 0.78,
-  "near_duplicate_pairs_count": 6,
-  "near_duplicate_clusters_count": 6,
-  "questions_with_near_duplicates_count": 12,
-  "unique_effective_question_clusters": 2465,
+  "near_duplicate_pairs_count": 4,
+  "near_duplicate_clusters_count": 4,
+  "questions_with_near_duplicates_count": 8,
+  "unique_effective_question_clusters": 2396,
   "high_concept_overlap_pairs_count": 7,
   "top_near_duplicate_pairs": [
     {
-      "question_id_a": "NEET2021_BIO_105",
-      "question_id_b": "NEET2023_BIO_124",
-      "subject": "Biology",
-      "chapter_a": "Cell Cycle & Cell Division",
-      "chapter_b": "Cell Cycle & Cell Division",
-      "cosine_similarity": 1.0,
-      "snippet_a": "Which of the following stages of meiosis involves\ndivision of centromere?",
-      "snippet_b": "Which of the following stages of meiosis involves division of centromere?"
-    },
-    {
-      "question_id_a": "NEET2021_BIO_130",
-      "question_id_b": "NEET2023_BIO_128",
-      "subject": "Biology",
-      "chapter_a": "Biomolecules",
-      "chapter_b": "Biotechnology",
-      "cosine_similarity": 1.0,
-      "snippet_a": "During the purification process for recombinant DNA\ntechnology, addition of chilled ethanol pre",
-      "snippet_b": "During the purification process for recombinant DNA technology, addition of chilled ethanol pre"
+      "question_id_a": "NEET2021_CHEM_063",
+      "question_id_b": "NEET2021_CHEM_086",
+      "subject": "Chemistry",
+      "chapter_a": "Chemical Bonding",
+      "chapter_b": "Coordination Chemistry",
+      "cosine_similarity": 0.8638,
+      "snippet_a": "Match List-I with List-II for General Chemistry (Chemistry Core Concepts) and select the correc",
+      "snippet_b": "Match List-I with List-II for General Chemistry (Chemistry Core Concepts) and select the correc"
     },
     {
       "question_id_a": "NEET2021_BIO_145",
@@ -35,18 +25,8 @@
       "chapter_a": "Genetics & Molecular Inheritance",
       "chapter_b": "Genetics & Molecular Inheritance",
       "cosine_similarity": 0.8636,
-      "snippet_a": "What is the role of RNA polymerase III in the\nprocess of transcription in eukaryotes?",
+      "snippet_a": "What is the role of RNA polymerase III in the process of transcription in eukaryotes?",
       "snippet_b": "What is the role of RNA polymerase III in the process of transcription in Eukaryotes?"
-    },
-    {
-      "question_id_a": "NEET2021_CHEM_063",
-      "question_id_b": "NEET2021_CHEM_086",
-      "subject": "Chemistry",
-      "chapter_a": "Chemical Bonding",
-      "chapter_b": "Coordination Chemistry",
-      "cosine_similarity": 0.8625,
-      "snippet_a": "Match List-I with List-II for General Chemistry (Chemistry Core Concepts) and select the correc",
-      "snippet_b": "Match List-I with List-II for General Chemistry (Chemistry Core Concepts) and select the correc"
     },
     {
       "question_id_a": "NEET2021_BIO_148",
@@ -54,7 +34,7 @@
       "subject": "Biology",
       "chapter_a": "Biomolecules",
       "chapter_b": "Evolution",
-      "cosine_similarity": 0.8562,
+      "cosine_similarity": 0.8558,
       "snippet_a": "Match List-I with List-II.\nList-I",
       "snippet_b": "Match List - I with List - II\nList - I\nList - II"
     },
@@ -64,23 +44,17 @@
       "subject": "Biology",
       "chapter_a": "The Living World & Taxonomy",
       "chapter_b": "Biomolecules",
-      "cosine_similarity": 0.8539,
-      "snippet_a": "The correct order of steps in Polymerase\nChain Reaction (PCR) is",
-      "snippet_b": "Which of the following is a correct sequence of\nsteps in a PCR (Polymerase Chain Reaction)?"
+      "cosine_similarity": 0.8533,
+      "snippet_a": "The correct order of steps in Polymerase Chain Reaction (PCR) is",
+      "snippet_b": "Which of the following is a correct sequence of steps in a PCR (Polymerase Chain Reaction)?"
     }
   ],
   "near_duplicate_siblings": {
     "NEET2018_BIO_101": [
       "NEET2021_BIO_127"
     ],
-    "NEET2021_BIO_105": [
-      "NEET2023_BIO_124"
-    ],
     "NEET2021_BIO_127": [
       "NEET2018_BIO_101"
-    ],
-    "NEET2021_BIO_130": [
-      "NEET2023_BIO_128"
     ],
     "NEET2021_BIO_145": [
       "NEET2023_BIO_129"
@@ -96,12 +70,6 @@
     ],
     "NEET2021_CHEM_086": [
       "NEET2021_CHEM_063"
-    ],
-    "NEET2023_BIO_124": [
-      "NEET2021_BIO_105"
-    ],
-    "NEET2023_BIO_128": [
-      "NEET2021_BIO_130"
     ],
     "NEET2023_BIO_129": [
       "NEET2021_BIO_145"

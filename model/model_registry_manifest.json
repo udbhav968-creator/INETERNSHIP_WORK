@@ -1,27 +1,62 @@
 {
-  "registry_version": "2.2.0",
-  "champion_classifier": "RandomForestClassifier_300_Balanced",
-  "serverless_runtime": "CompactNumPyForest_300_Trees",
+  "registry_version": "2.3.0",
+  "champion_classifier": "RandomForestClassifier_300_Balanced_14Features",
+  "serverless_runtime": "CompactNumPyForest_300_Trees_Plus_RidgeIRT_Plus_SVD_RAG",
   "artifacts": {
     "model/question_difficulty_model.joblib": {
       "exists": true,
-      "size_bytes": 7852154,
-      "sha256": "26543b2289112e95eceb394a6da7652ff2f9253c77e9cc2c103ee8182a1ea948"
+      "size_bytes": 5080266,
+      "sha256": "ff235f11498e77e1a3170e777b1b0e9b0bf0563b61a3e47ecbb0a770f3121bc0"
     },
     "model/rf_difficulty_forest.npz": {
       "exists": true,
-      "size_bytes": 332706,
-      "sha256": "ecb2276be4012c9981204a4e16c7ef24df2befa1820f4cbf2bfac780b2f01dbd"
+      "size_bytes": 259585,
+      "sha256": "9630133f389a77cc2b86164c612a97756c581da88c9fa737beb559194a5aa2e0"
     },
     "model/rf_difficulty_meta.json": {
       "exists": true,
-      "size_bytes": 12015,
-      "sha256": "3f0fef117097401bf254cf3901f1598f8504ff15151d0e002c18f9d4709433c0"
+      "size_bytes": 13002,
+      "sha256": "bf399b787c43624580db9db96b20e0b74191650db0220849d8466e97e4146311"
     },
     "model/irt_item_parameters.json": {
       "exists": true,
-      "size_bytes": 194249,
-      "sha256": "7227ab51016eee4ca7164cdb733e53d3129f9caa5c9ea2d6012c08417c250348"
+      "size_bytes": 188620,
+      "sha256": "4294c0ac9d7aaf88177424160c5adde089507778dd499407a67d73ef5f4529b8"
+    },
+    "model/irt_cold_start_ridge.npz": {
+      "exists": true,
+      "size_bytes": 1171,
+      "sha256": "1dbf987baedf42b257785384434978a7bbd7caf7d3e19946675d9865c88773b6"
+    },
+    "model/bkt_chapter_parameters.json": {
+      "exists": true,
+      "size_bytes": 25924,
+      "sha256": "1e9231b08844bfcd89c6e93622c614cfd4964b9f0975e827b2a0a3c1c2599278"
+    },
+    "model/dina_calibrated_parameters.json": {
+      "exists": true,
+      "size_bytes": 2622,
+      "sha256": "a658c0d56980a09b5ca99dd64c24029ce70bdf35c286196a2f7fc332b30c5c2b"
+    },
+    "model/ncert_rag_svd_index.npz": {
+      "exists": true,
+      "size_bytes": 288623,
+      "sha256": "7d063ac55c12d9f71bb06167352365654cefbc757e4e6624dc3b97881ad3545d"
+    },
+    "model/ncert_rag_svd_meta.json": {
+      "exists": true,
+      "size_bytes": 104468,
+      "sha256": "991253b5b4a8117c8b111a6666b3f0a00a822b034cca9c9eebb8428bd602bf00"
+    },
+    "model/linucb_prior_init.json": {
+      "exists": true,
+      "size_bytes": 1018,
+      "sha256": "0932e55047cae4dfc776e3979be87adc2b76c9de24b2b99e77bfa37b5bb40751"
+    },
+    "model/conformal_laplacian_model.json": {
+      "exists": true,
+      "size_bytes": 7759,
+      "sha256": "f9b18eb3e87979b383a541263cf669ad5c3724a4c35918e57a54273c92d25031"
     },
     "model/topic_importance.json": {
       "exists": true,
@@ -31,22 +66,22 @@
     "model/rf_temperature_calibration.json": {
       "exists": true,
       "size_bytes": 786,
-      "sha256": "71c36cd294bc528a8ad4c4a7c59cebf7b6fec01273c2d8f17a26ef8c65324b9c"
+      "sha256": "6de888449604c8b84dffb268d5e873aaa9be0f128c68148a48ef3f677da653fc"
     },
     "model/tier_recalibration_proposal.json": {
       "exists": true,
-      "size_bytes": 35404,
-      "sha256": "b48826b3e76b853eaf7dab846f46dba70ee643d41e86019aa55f0c883196e494"
+      "size_bytes": 15164,
+      "sha256": "716dd1970853bc3f210c8a27ce39b608f4465c1e73b6b3be71c0439c271390d6"
     },
     "model/question_similarity_report.json": {
       "exists": true,
-      "size_bytes": 3779,
-      "sha256": "78e3a1f20ec5daf68ea62728060137e40eb775becc4d564680de8fcc46a85d78"
+      "size_bytes": 2628,
+      "sha256": "8e0b82a10f9f82d86b3310c8fd6882651633f691c5f589c5252cc28948a45c1a"
     },
     "data/tagged_questions/neet_questions_clean.json": {
       "exists": true,
-      "size_bytes": 3189713,
-      "sha256": "44e113d7f648e395e3000deea2a4e4d19f0b2ff33244d0caf496977c346c97e9"
+      "size_bytes": 3051783,
+      "sha256": "44933dd0fc49e423ed31d64af2425c5a39e0dd4051569bd37584010a59095f15"
     },
     "data/ncert_knowledge_base.json": {
       "exists": true,
@@ -58,10 +93,20 @@
       "size_bytes": 664016,
       "sha256": "c8ece0b8ba786a1ddee16bc0fe243c30f4345700caaa49f82785818cb66e8be5"
     },
+    "data/taxonomy/chapter_wise_neet_pyq_summary.json": {
+      "exists": true,
+      "size_bytes": 72201,
+      "sha256": "af2c89513732fa7044cae3a010133acff431e742751ff86acea10ed2c305be4e"
+    },
+    "data/training/chapter_wise_features.csv": {
+      "exists": true,
+      "size_bytes": 7756,
+      "sha256": "c0362d5e3ea5ed493fd71559024a5f111980f5d3cc0046b02f0a400f43a5d7c9"
+    },
     "data/training/question_features.csv": {
       "exists": true,
-      "size_bytes": 544848,
-      "sha256": "2284895761bad08864c0f8e41ed3484991ebe1e7bd8e15866db76af9761c1107"
+      "size_bytes": 339327,
+      "sha256": "32c422b078894056ef0b3e2c017102dae956e94818baf86ac949a3b936a58753"
     }
   }
 }

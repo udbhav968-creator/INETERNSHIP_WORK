@@ -1,0 +1,94 @@
+{
+  "model_type": "DINA_8Skill_MarginalIRT_Calibrated",
+  "total_corpus_items": 2400,
+  "skills": {
+    "dimensional_unit_analysis": {
+      "name": "Dimensional & Unit Conversion",
+      "corpus_pyq_count": 300,
+      "prior_mastery": 0.4052,
+      "prior_alpha": 2.4312,
+      "prior_beta": 3.5688,
+      "prior_sd": 0.1856,
+      "slip": 0.1366,
+      "guess": 0.1929,
+      "mean_irt_b": 0.5846
+    },
+    "algebraic_numerical_computation": {
+      "name": "Multi-Step Numerical Computation",
+      "corpus_pyq_count": 740,
+      "prior_mastery": 0.2839,
+      "prior_alpha": 1.7034,
+      "prior_beta": 4.2966,
+      "prior_sd": 0.1704,
+      "slip": 0.1426,
+      "guess": 0.1781,
+      "mean_irt_b": 1.1352
+    },
+    "log_exp_calculus_reasoning": {
+      "name": "Logarithmic, Exponential & Rate Calculus",
+      "corpus_pyq_count": 162,
+      "prior_mastery": 0.4009,
+      "prior_alpha": 2.4054,
+      "prior_beta": 3.5946,
+      "prior_sd": 0.1852,
+      "slip": 0.1375,
+      "guess": 0.1942,
+      "mean_irt_b": 0.6112
+    },
+    "sign_vector_convention": {
+      "name": "Sign, Vector & Convention Mastery",
+      "corpus_pyq_count": 297,
+      "prior_mastery": 0.3858,
+      "prior_alpha": 2.3148,
+      "prior_beta": 3.6852,
+      "prior_sd": 0.184,
+      "slip": 0.1397,
+      "guess": 0.1862,
+      "mean_irt_b": 0.7113
+    },
+    "mechanism_electronic_flow": {
+      "name": "Reaction Mechanism & Equilibrium Logic",
+      "corpus_pyq_count": 344,
+      "prior_mastery": 0.4765,
+      "prior_alpha": 2.859,
+      "prior_beta": 3.141,
+      "prior_sd": 0.1888,
+      "slip": 0.1351,
+      "guess": 0.1962,
+      "mean_irt_b": 0.2738
+    },
+    "ncert_exception_trend_recall": {
+      "name": "NCERT Exceptions & Taxonomic Recall",
+      "corpus_pyq_count": 1362,
+      "prior_mastery": 0.56,
+      "prior_alpha": 3.36,
+      "prior_beta": 2.64,
+      "prior_sd": 0.1876,
+      "slip": 0.1318,
+      "guess": 0.1986,
+      "mean_irt_b": -0.0917
+    },
+    "diagram_circuit_graph_reading": {
+      "name": "Circuit, Graph & Structural Interpretation",
+      "corpus_pyq_count": 348,
+      "prior_mastery": 0.4487,
+      "prior_alpha": 2.6922,
+      "prior_beta": 3.3078,
+      "prior_sd": 0.188,
+      "slip": 0.1352,
+      "guess": 0.1903,
+      "mean_irt_b": 0.4174
+    },
+    "assertion_deductive_logic": {
+      "name": "Assertion\u2013Reason & Multi-Statement Deduction",
+      "corpus_pyq_count": 1837,
+      "prior_mastery": 0.4857,
+      "prior_alpha": 2.9142,
+      "prior_beta": 3.0858,
+      "prior_sd": 0.1889,
+      "slip": 0.134,
+      "guess": 0.1912,
+      "mean_irt_b": 0.2636
+    }
+  }
+}

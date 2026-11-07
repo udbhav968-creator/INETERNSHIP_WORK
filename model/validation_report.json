@@ -1,23 +1,24 @@
 {
   "pipeline_status": "PASSED",
-  "execution_time_seconds": 37.908,
+  "execution_time_seconds": 38.408,
   "data_validation_gates": {
     "question_bank_schema_valid": true,
     "weightage_schema_valid": true,
-    "total_verified_questions": 2471,
+    "total_verified_questions": 2400,
     "ncert_dag_nodes": 65,
     "ncert_dag_acyclic": true,
     "rag_knowledge_base_chapters": 65,
     "topic_importance_chapters": 65,
+    "all_65_chapters_have_all_three_tiers": true,
     "adjacent_fallback_covers_all_65_chapters": true
   },
   "random_forest_holdout_evaluation": {
-    "training_rows": 1976,
-    "testing_rows": 495,
-    "correct_predictions": 493,
-    "holdout_accuracy": 0.9959595959595959,
-    "macro_f1": 0.9923,
-    "weighted_f1": 0.996,
+    "training_rows": 1920,
+    "testing_rows": 480,
+    "correct_predictions": 480,
+    "holdout_accuracy": 1.0,
+    "macro_f1": 1.0,
+    "weighted_f1": 1.0,
     "confusion_matrix_labels": [
       "advanced",
       "basic",
@@ -25,96 +26,120 @@
     ],
     "confusion_matrix": [
       [
-        47,
+        125,
         0,
-        1
-      ],
-      [
-        0,
-        8,
         0
       ],
       [
-        1,
         0,
-        438
+        124,
+        0
+      ],
+      [
+        0,
+        0,
+        231
       ]
     ],
     "per_class_metrics": {
       "advanced": {
-        "precision": 0.9792,
-        "recall": 0.9792,
-        "f1_score": 0.9792,
-        "support": 48
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "support": 125
       },
       "basic": {
         "precision": 1.0,
         "recall": 1.0,
         "f1_score": 1.0,
-        "support": 8
+        "support": 124
       },
       "medium": {
-        "precision": 0.9977,
-        "recall": 0.9977,
-        "f1_score": 0.9977,
-        "support": 439
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1_score": 1.0,
+        "support": 231
       }
     }
   },
   "stratified_5fold_cross_validation": {
     "n_splits": 5,
     "fold_accuracies": [
-      0.9859,
-      0.9899,
-      0.9879,
-      0.9879,
-      0.9818
+      0.9979,
+      1.0,
+      0.9979,
+      1.0,
+      0.9979
     ],
-    "mean_cv_accuracy": 0.9866,
-    "std_cv_accuracy": 0.0027,
-    "mean_cv_macro_f1": 0.9733,
-    "mean_cv_log_loss": 0.0398,
-    "oof_multiclass_brier_score": 0.02185
+    "mean_cv_accuracy": 0.9988,
+    "std_cv_accuracy": 0.001,
+    "mean_cv_macro_f1": 0.9988,
+    "mean_cv_log_loss": 0.0463,
+    "oof_multiclass_brier_score": 0.01131
   },
   "champion_challenger_tournament": {
     "random_forest_300_balanced": {
-      "holdout_accuracy": 0.996,
-      "macro_f1": 0.9923,
-      "log_loss": 0.0317
+      "holdout_accuracy": 1.0,
+      "macro_f1": 1.0,
+      "log_loss": 0.0413
     },
     "extra_trees_300_balanced": {
-      "holdout_accuracy": 0.9919,
-      "macro_f1": 0.9843,
-      "log_loss": 0.0287
+      "holdout_accuracy": 0.9771,
+      "macro_f1": 0.9773,
+      "log_loss": 0.1704
     },
     "multinomial_logistic_l2": {
-      "holdout_accuracy": 0.998,
-      "macro_f1": 0.9962,
-      "log_loss": 0.0372
+      "holdout_accuracy": 1.0,
+      "macro_f1": 1.0,
+      "log_loss": 0.052
     }
   },
   "permutation_feature_importance": {
     "subject": {
-      "mean_accuracy_drop": 0.23152,
-      "std_accuracy_drop": 0.01791
+      "mean_accuracy_drop": 0.3925,
+      "std_accuracy_drop": 0.00775
     },
     "chapter": {
-      "mean_accuracy_drop": -0.00162,
-      "std_accuracy_drop": 0.00081
+      "mean_accuracy_drop": 0.00042,
+      "std_accuracy_drop": 0.00083
     },
     "topic_tag": {
-      "mean_accuracy_drop": 0.0,
-      "std_accuracy_drop": 0.00128
+      "mean_accuracy_drop": 0.00042,
+      "std_accuracy_drop": 0.00083
     },
     "question_type": {
-      "mean_accuracy_drop": 0.00566,
-      "std_accuracy_drop": 0.00297
+      "mean_accuracy_drop": 0.00125,
+      "std_accuracy_drop": 0.00102
     },
     "ideal_time_sec": {
-      "mean_accuracy_drop": 0.32323,
-      "std_accuracy_drop": 0.01157
+      "mean_accuracy_drop": 0.64167,
+      "std_accuracy_drop": 0.00823
     },
     "has_diagram": {
+      "mean_accuracy_drop": 0.0,
+      "std_accuracy_drop": 0.0
+    },
+    "word_count": {
+      "mean_accuracy_drop": 0.0,
+      "std_accuracy_drop": 0.0
+    },
+    "char_length": {
+      "mean_accuracy_drop": 0.0,
+      "std_accuracy_drop": 0.0
+    },
+    "formula_density": {
+      "mean_accuracy_drop": 0.0,
+      "std_accuracy_drop": 0.0
+    },
+    "numerical_complexity": {
+      "mean_accuracy_drop": 0.0,
+      "std_accuracy_drop": 0.0
+    },
+    "negation_trap": {
+      "mean_accuracy_drop": 0.0,
+      "std_accuracy_drop": 0.0
+    },
+    "distractor_similarity": {
       "mean_accuracy_drop": 0.0,
       "std_accuracy_drop": 0.0
     },
@@ -128,46 +153,88 @@
     }
   },
   "serverless_compact_rf_parity": {
-    "verified_rows": 2471,
-    "exact_class_matches": 2471,
-    "max_abs_probability_diff": 3.8e-05
+    "verified_rows": 2400,
+    "exact_class_matches": 2400,
+    "max_abs_probability_diff": 3.3e-05
   },
   "temperature_calibration_summary": {
-    "optimal_temperature": 0.39,
-    "pre_ece": 0.01723,
-    "post_ece": 0.0023,
-    "pre_nll": 0.03976,
-    "post_nll": 0.02721,
-    "compression_ratio_x": 22.76
+    "optimal_temperature": 0.15,
+    "pre_ece": 0.04139,
+    "post_ece": 0.00068,
+    "pre_nll": 0.04629,
+    "post_nll": 0.00242,
+    "compression_ratio_x": 18.61
   },
   "tier_recalibration_summary": {
-    "chapters_missing_basic_before": 46,
-    "chapters_resolvable_via_irt_anchors": 46,
-    "physics_chapters_missing_basic_before": 22,
-    "physics_chapters_resolvable_via_irt_anchors": 22,
-    "chapters_missing_advanced_before": 6,
-    "advanced_chapters_resolvable_via_irt_anchors": 6,
-    "strict_global_basic_candidates_count": 1517,
-    "strict_global_advanced_candidates_count": 18
+    "chapters_missing_basic_before": 0,
+    "chapters_resolvable_via_irt_anchors": 0,
+    "physics_chapters_missing_basic_before": 0,
+    "physics_chapters_resolvable_via_irt_anchors": 0,
+    "chapters_missing_advanced_before": 0,
+    "advanced_chapters_resolvable_via_irt_anchors": 0,
+    "strict_global_basic_candidates_count": 547,
+    "strict_global_advanced_candidates_count": 136
   },
   "question_similarity_summary": {
-    "near_duplicate_pairs_count": 6,
-    "near_duplicate_clusters_count": 6,
-    "unique_effective_question_clusters": 2465
+    "near_duplicate_pairs_count": 4,
+    "near_duplicate_clusters_count": 4,
+    "unique_effective_question_clusters": 2396
   },
   "irt_3pl_calibration_summary": {
-    "calibrated_questions": 2471,
+    "calibrated_questions": 2400,
     "discrimination_a_range": [
-      1.1428,
-      2.094
+      1.0608,
+      2.224
     ],
     "difficulty_b_range": [
-      -1.7291,
-      2.2364
+      -1.5855,
+      2.6855
     ],
     "guessing_c_range": [
       0.12,
       0.25
     ]
+  },
+  "auxiliary_models_training": {
+    "irt_cold_start_ridge_regressor": {
+      "n_samples": 2400,
+      "ridge_alpha": 2.5,
+      "a_5fold_rmse": 0.06482,
+      "a_5fold_r2": 0.94875,
+      "b_5fold_rmse": 0.08909,
+      "b_5fold_r2": 0.99488,
+      "c_5fold_rmse": 0.01318,
+      "c_5fold_r2": 0.81897
+    },
+    "bkt_65_chapter_empirical_bayes": {
+      "total_chapters": 65,
+      "weighted_global_prior": 0.4054,
+      "min_chapter_prior": 0.22,
+      "max_chapter_prior": 0.54
+    },
+    "dina_8_skill_calibrated": {
+      "total_corpus_items": 2400,
+      "skill_priors": {
+        "dimensional_unit_analysis": 0.4052,
+        "algebraic_numerical_computation": 0.2839,
+        "log_exp_calculus_reasoning": 0.4009,
+        "sign_vector_convention": 0.3858,
+        "mechanism_electronic_flow": 0.4765,
+        "ncert_exception_trend_recall": 0.56,
+        "diagram_circuit_graph_reading": 0.4487,
+        "assertion_deductive_logic": 0.4857
+      }
+    },
+    "ncert_pyq_svd_rag": {
+      "model_type": "Hybrid_SublinearTFIDF_TruncatedSVD_LSA",
+      "n_chapters_indexed": 65,
+      "vocab_size": 6000,
+      "lsa_dimensions": 32,
+      "lsa_explained_variance_ratio": 0.5613
+    },
+    "linucb_and_laplacian": {
+      "linucb_prior_r2": 0.99968,
+      "laplacian_spectral_gap": 0.0449
+    }
   }
 }

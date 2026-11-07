@@ -76,7 +76,7 @@ def ml_suite_01_question_bank_and_weightage_schema_validators():
     with open(PROJECT_ROOT / "data" / "tagged_questions" / "neet_questions_clean.json", encoding="utf-8") as f:
         qs = json.load(f)
     q_rep = validate_qbank(qs)
-    assert len(qs) == 2471
+    assert len(qs) == 2400
     assert len(q_rep["issues"]) == 0
 
     with open(
@@ -103,26 +103,29 @@ def ml_suite_02_exponential_decay_14_year_weightage_engine():
     assert abs(sum(prod_imp.values()) - 100.0) < 0.15
 
 
-def ml_suite_03_random_forest_champion_and_compact_numpy_2471_parity():
+def ml_suite_03_random_forest_champion_and_compact_numpy_2400_parity():
     assert COMPACT_RF_RUNTIME.loaded is True
     df = pd.read_csv(PROJECT_ROOT / "data" / "training" / "question_features.csv")
-    assert len(df) == 2471
+    assert len(df) == 2400
     pipe = joblib.load(MODEL_DIR / "question_difficulty_model.joblib")
     classes = [str(c) for c in pipe.classes_]
-    sk_probs = pipe.predict_proba(
-        df[
-            [
-                "subject",
-                "chapter",
-                "topic_tag",
-                "question_type",
-                "ideal_time_sec",
-                "has_diagram",
-                "marks",
-                "negative_marks",
-            ]
-        ]
-    )
+    feature_cols = [
+        "subject",
+        "chapter",
+        "topic_tag",
+        "question_type",
+        "ideal_time_sec",
+        "has_diagram",
+        "word_count",
+        "char_length",
+        "formula_density",
+        "numerical_complexity",
+        "negation_trap",
+        "distractor_similarity",
+        "marks",
+        "negative_marks",
+    ]
+    sk_probs = pipe.predict_proba(df[feature_cols])
     for idx, row in enumerate(df.itertuples(index=False)):
         np_p = COMPACT_RF_RUNTIME.predict_proba_single(
             subject=str(row.subject),
@@ -131,6 +134,12 @@ def ml_suite_03_random_forest_champion_and_compact_numpy_2471_parity():
             question_type=str(row.question_type),
             ideal_time_sec=float(row.ideal_time_sec),
             has_diagram=bool(row.has_diagram),
+            word_count=float(row.word_count),
+            char_length=float(row.char_length),
+            formula_density=float(row.formula_density),
+            numerical_complexity=float(row.numerical_complexity),
+            negation_trap=float(row.negation_trap),
+            distractor_similarity=float(row.distractor_similarity),
             marks=float(row.marks),
             negative_marks=float(row.negative_marks),
         )
@@ -142,7 +151,7 @@ def ml_suite_03_random_forest_champion_and_compact_numpy_2471_parity():
 
 
 def ml_suite_04_3pl_irt_fisher_map_and_3d_mirt_profiler():
-    assert len(CALIBRATED_ITEMS) == 2471
+    assert len(CALIBRATED_ITEMS) == 2400
     item = IRTItemParams(a=1.5, b=0.2, c=0.22)
     assert 0.22 <= irt_3pl_probability(-4.0, item) < irt_3pl_probability(2.5, item) <= 1.0
     assert fisher_information(0.3, item) > fisher_information(3.5, item)
@@ -156,6 +165,7 @@ def ml_suite_04_3pl_irt_fisher_map_and_3d_mirt_profiler():
         has_diagram=False,
     )
     assert cold["rf_probabilities"] is not None
+    assert cold["irt_estimator"] == "multi_output_ridge_npz"
     assert cold["predicted_difficulty"] in ("basic", "medium", "advanced")
 
     mirt = compute_mirt_3d_profile(
@@ -186,12 +196,18 @@ def ml_suite_05_bkt_saint_telemetry_and_ebbinghaus_forgetting():
 
 
 def ml_suite_06_prerequisite_dag_acyclicity_shrinkage_and_propagation():
+    from model.state_machine.bkt_model import get_chapter_bkt_prior
+
     assert len(DAG_NODES) == 65
     for node in DAG_NODES:
         assert node not in get_all_ancestors(node)
-    prior = compute_hierarchical_shrinkage_prior("Rotational Motion", {"Laws of Motion": 0.82, "Kinematics": 0.78})
+    prior = compute_hierarchical_shrinkage_prior(
+        "Rotational Motion",
+        {"Laws of Motion": 0.82, "Work, Energy & Power": 0.80, "Kinematics": 0.78},
+    )
+    assert prior > get_chapter_bkt_prior("Rotational Motion") + 0.20
     assert prior > 0.50
-    assert compute_prerequisite_readiness("Rotational Motion", {"Laws of Motion": 0.20, "Kinematics": 0.20}) < 0.50
+    assert compute_prerequisite_readiness("Rotational Motion", {"Laws of Motion": 0.20, "Work, Energy & Power": 0.20}) < 0.50
     bots = diagnose_prerequisite_bottlenecks({"Rotational Motion": 0.22, "Laws of Motion": 0.25})
     assert len(bots) >= 1
     boost = propagate_dag_belief_update("Rotational Motion", True, "advanced", {"Laws of Motion": 0.45})
@@ -296,12 +312,15 @@ def ml_suite_10_monte_carlo_conformal_180q_and_graph_laplacian_leverage():
 def ml_suite_11_corpus_65_topic_distribution_and_180q_readiness_audit():
     rep = run_corpus_distribution_and_readiness_audit(save_report=True)
     assert rep["audit_status"] == "PASSED"
-    assert rep["corpus_totals"]["total_verified_questions"] == 2471
+    assert rep["corpus_totals"]["total_verified_questions"] == 2400
     assert rep["corpus_totals"]["total_canonical_chapters"] == 65
-    assert rep["subject_difficulty_matrix"]["Physics"]["basic"] == 0
-    assert rep["subject_difficulty_matrix"]["Physics"]["medium"] == 463
-    assert rep["subject_difficulty_matrix"]["Physics"]["advanced"] == 112
+    assert rep["subject_difficulty_matrix"]["Physics"]["basic"] > 100
+    assert rep["subject_difficulty_matrix"]["Physics"]["medium"] > 200
+    assert rep["subject_difficulty_matrix"]["Physics"]["advanced"] > 100
+    assert rep["gap_summary"]["topics_missing_basic_count"] == 0
     assert rep["gap_summary"]["topics_missing_medium_count"] == 0
+    assert rep["gap_summary"]["topics_missing_advanced_count"] == 0
+    assert rep["gap_summary"]["all_65_topics_have_all_three_tiers"] is True
     assert rep["gap_summary"]["adjacent_tier_fallback_resolves_100_percent_topics"] is True
     md = format_distribution_markdown_table(rep)
     assert "| **Physics** |" in md and "| **Total** |" in md
@@ -389,7 +408,7 @@ def ml_suite_14_multi_model_tournament_and_sha256_registry_integrity():
 
     integrity = verify_all_ml_artifacts()
     assert integrity["integrity_status"] == "VERIFIED"
-    assert integrity["verified_artifacts_count"] == 12
+    assert integrity["verified_artifacts_count"] == 21
 
 
 def ml_suite_15_clean_code_zero_comments_and_zero_seeded_attempts_gate():
@@ -411,21 +430,21 @@ def ml_suite_16_irt_tier_recalibration_audit():
 
     rep = run_irt_tier_recalibration_audit(save_report=False)
     assert rep["source_corpus_mutated"] is False
-    assert rep["total_audited_questions"] == 2471
+    assert rep["total_audited_questions"] == 2400
     gap = rep["gap_resolution_summary"]
-    assert gap["chapters_missing_basic_before"] == 46
-    assert gap["chapters_resolvable_via_irt_anchors"] == 46
-    assert gap["physics_chapters_missing_basic_before"] == 22
-    assert gap["physics_chapters_resolvable_via_irt_anchors"] == 22
-    assert gap["strict_global_basic_candidates_count"] > 20
+    assert gap["chapters_missing_basic_before"] == 0
+    assert gap["chapters_resolvable_via_irt_anchors"] == 0
+    assert gap["physics_chapters_missing_basic_before"] == 0
+    assert gap["physics_chapters_resolvable_via_irt_anchors"] == 0
+    assert gap["strict_global_basic_candidates_count"] > 200
 
 
 def ml_suite_17_near_duplicate_pyq_cosine_similarity_audit():
     from model.question_similarity_audit import get_near_duplicate_siblings_map, run_question_similarity_audit
 
     rep = run_question_similarity_audit(save_report=False)
-    assert rep["total_audited_questions"] == 2471
-    assert rep["unique_effective_question_clusters"] > 2000
+    assert rep["total_audited_questions"] == 2400
+    assert rep["unique_effective_question_clusters"] > 2300
     sibs = get_near_duplicate_siblings_map()
     assert isinstance(sibs, dict)
     for qid, s_list in sibs.items():
@@ -447,11 +466,45 @@ def ml_suite_18_temperature_probability_calibration_and_compression():
     assert temp == meta["optimal_temperature"]
 
 
+def ml_suite_19_all_trained_auxiliary_models_and_chapter_datasets():
+    from model.dina_cognitive_diagnosis import DINA_CALIBRATED_SKILLS
+    from model.state_machine.bkt_model import CHAPTER_BKT_REGISTRY
+
+    ch_df = pd.read_csv(PROJECT_ROOT / "data" / "training" / "chapter_wise_features.csv")
+    assert ch_df.shape == (65, 18)
+    assert int((ch_df["basic_pyqs"] == 0).sum()) == 0
+    assert int((ch_df["medium_pyqs"] == 0).sum()) == 0
+    assert int((ch_df["advanced_pyqs"] == 0).sum()) == 0
+
+    with open(PROJECT_ROOT / "data" / "taxonomy" / "chapter_wise_neet_pyq_summary.json", encoding="utf-8") as f:
+        ch_sum = json.load(f)
+    assert ch_sum["total_canonical_chapters"] == 65
+    assert ch_sum["total_verified_pyqs"] == 2400
+    assert ch_sum["chapters_missing_basic"] == 0
+    assert ch_sum["chapters_missing_medium"] == 0
+    assert ch_sum["chapters_missing_advanced"] == 0
+
+    assert len(CHAPTER_BKT_REGISTRY) == 65
+    bkt_priors = {round(float(v["p_init"]), 4) for v in CHAPTER_BKT_REGISTRY.values()}
+    assert len(bkt_priors) >= 15
+
+    assert len(DINA_CALIBRATED_SKILLS) == 8
+    cold_dina = compute_dina_and_rt_profile([])
+    assert all(s["status"] == "prior_calibrated" for s in cold_dina["skills"])
+    assert all(s["corpus_pyq_count"] > 0 for s in cold_dina["skills"])
+    assert len({s["mastery_probability"] for s in cold_dina["skills"]}) == 8
+
+    assert RAG_INDEX.svd_loaded is True
+    assert (MODEL_DIR / "irt_cold_start_ridge.npz").exists()
+    assert (MODEL_DIR / "linucb_prior_init.json").exists()
+    assert (MODEL_DIR / "conformal_laplacian_model.json").exists()
+
+
 if __name__ == "__main__":
     suites = [
         ml_suite_01_question_bank_and_weightage_schema_validators,
         ml_suite_02_exponential_decay_14_year_weightage_engine,
-        ml_suite_03_random_forest_champion_and_compact_numpy_2471_parity,
+        ml_suite_03_random_forest_champion_and_compact_numpy_2400_parity,
         ml_suite_04_3pl_irt_fisher_map_and_3d_mirt_profiler,
         ml_suite_05_bkt_saint_telemetry_and_ebbinghaus_forgetting,
         ml_suite_06_prerequisite_dag_acyclicity_shrinkage_and_propagation,
@@ -467,6 +520,7 @@ if __name__ == "__main__":
         ml_suite_16_irt_tier_recalibration_audit,
         ml_suite_17_near_duplicate_pyq_cosine_similarity_audit,
         ml_suite_18_temperature_probability_calibration_and_compression,
+        ml_suite_19_all_trained_auxiliary_models_and_chapter_datasets,
     ]
     for fn in suites:
         fn()

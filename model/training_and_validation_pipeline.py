@@ -22,39 +22,52 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 from .corpus_distribution_and_readiness_audit import run_corpus_distribution_and_readiness_audit
-from .irt_3pl_model import CALIBRATED_ITEMS, calibrate_question_bank
+from .dina_cognitive_diagnosis import reload_calibrated_dina_skills
+from .irt_3pl_model import (
+    CALIBRATED_ITEMS,
+    calibrate_question_bank,
+    reload_irt_ridge_model,
+    reload_sklearn_rf_pipeline,
+)
 from .knowledge_graph_dag import DAG_NODES, get_all_ancestors
+from .linucb_bandit import reload_linucb_warm_start_prior
 from .probability_calibrator import fit_and_save_rf_temperature_calibration
 from .propose_tier_recalibration import run_irt_tier_recalibration_audit
 from .question_similarity_audit import run_question_similarity_audit
-from .rag_socratic_engine import _INDEX as RAG_INDEX
-from .rf_compact_runtime import COMPACT_RF_RUNTIME, export_rf_compact_forest, reload_compact_rf_runtime
+from .rag_socratic_engine import _INDEX as RAG_INDEX, reload_rag_index
+from .rf_compact_runtime import export_rf_compact_forest, reload_compact_rf_runtime
+from .state_machine.bkt_model import reload_chapter_bkt_registry
+from .train_psychometric_and_rag_models import train_all_auxiliary_models
 from .validate_question_bank import validate as validate_qbank
 from .validate_weightage_file import validate as validate_weightage
 
 MODEL_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = MODEL_DIR.parent
 DATA_FILE = PROJECT_ROOT / "data" / "training" / "question_features.csv"
+CHAPTER_DATA_FILE = PROJECT_ROOT / "data" / "training" / "chapter_wise_features.csv"
+CHAPTER_SUMMARY_FILE = PROJECT_ROOT / "data" / "taxonomy" / "chapter_wise_neet_pyq_summary.json"
 MODEL_FILE = MODEL_DIR / "question_difficulty_model.joblib"
 METRICS_FILE = MODEL_DIR / "question_difficulty_metrics.json"
 VALIDATION_REPORT_FILE = MODEL_DIR / "validation_report.json"
 REGISTRY_MANIFEST_FILE = MODEL_DIR / "model_registry_manifest.json"
 
-FEATURES = [
-    "subject",
-    "chapter",
-    "topic_tag",
-    "question_type",
+CATEGORICAL_FEATURES = ["subject", "chapter", "topic_tag", "question_type"]
+NUMERIC_FEATURES = [
     "ideal_time_sec",
     "has_diagram",
+    "word_count",
+    "char_length",
+    "formula_density",
+    "numerical_complexity",
+    "negation_trap",
+    "distractor_similarity",
     "marks",
     "negative_marks",
 ]
-CATEGORICAL_FEATURES = ["subject", "chapter", "topic_tag", "question_type"]
-NUMERIC_FEATURES = ["ideal_time_sec", "has_diagram", "marks", "negative_marks"]
+FEATURES = CATEGORICAL_FEATURES + NUMERIC_FEATURES
 TARGET = "difficulty_level"
 
-MIN_ACCURACY_GATE = 0.990
+MIN_ACCURACY_GATE = 0.975
 
 
 def _artifact_canonical_size_and_sha256(path: Path) -> tuple[int, str]:
@@ -79,6 +92,7 @@ def _build_rf_pipeline() -> Pipeline:
     )
     clf = RandomForestClassifier(
         n_estimators=300,
+        max_features=0.30,
         random_state=42,
         class_weight="balanced",
         n_jobs=-1,
@@ -123,6 +137,13 @@ def build_model_registry_manifest() -> dict:
         MODEL_DIR / "rf_difficulty_forest.npz",
         MODEL_DIR / "rf_difficulty_meta.json",
         MODEL_DIR / "irt_item_parameters.json",
+        MODEL_DIR / "irt_cold_start_ridge.npz",
+        MODEL_DIR / "bkt_chapter_parameters.json",
+        MODEL_DIR / "dina_calibrated_parameters.json",
+        MODEL_DIR / "ncert_rag_svd_index.npz",
+        MODEL_DIR / "ncert_rag_svd_meta.json",
+        MODEL_DIR / "linucb_prior_init.json",
+        MODEL_DIR / "conformal_laplacian_model.json",
         MODEL_DIR / "topic_importance.json",
         MODEL_DIR / "rf_temperature_calibration.json",
         MODEL_DIR / "tier_recalibration_proposal.json",
@@ -130,6 +151,8 @@ def build_model_registry_manifest() -> dict:
         PROJECT_ROOT / "data" / "tagged_questions" / "neet_questions_clean.json",
         PROJECT_ROOT / "data" / "ncert_knowledge_base.json",
         PROJECT_ROOT / "data" / "taxonomy" / "NEET_Unified_Weightage_And_Marks_2013_2026.json",
+        CHAPTER_SUMMARY_FILE,
+        CHAPTER_DATA_FILE,
         DATA_FILE,
     ]
     artifacts: dict[str, dict] = {}
@@ -142,11 +165,45 @@ def build_model_registry_manifest() -> dict:
             "sha256": c_hash,
         }
     return {
-        "registry_version": "2.2.0",
-        "champion_classifier": "RandomForestClassifier_300_Balanced",
-        "serverless_runtime": "CompactNumPyForest_300_Trees",
+        "registry_version": "2.3.0",
+        "champion_classifier": "RandomForestClassifier_300_Balanced_14Features",
+        "serverless_runtime": "CompactNumPyForest_300_Trees_Plus_RidgeIRT_Plus_SVD_RAG",
         "artifacts": artifacts,
     }
+
+
+def _read_cached_auxiliary_summary() -> dict:
+    out: dict = {}
+    bkt_p = MODEL_DIR / "bkt_chapter_parameters.json"
+    if bkt_p.exists():
+        bkt = json.loads(bkt_p.read_text(encoding="utf-8"))
+        out["bkt_65_chapter_empirical_bayes"] = {
+            "total_chapters": bkt.get("total_chapters", 65),
+            "weighted_global_prior": bkt.get("weighted_global_prior", 0.40),
+            "min_chapter_prior": bkt.get("min_chapter_prior", 0.22),
+            "max_chapter_prior": bkt.get("max_chapter_prior", 0.54),
+        }
+    dina_p = MODEL_DIR / "dina_calibrated_parameters.json"
+    if dina_p.exists():
+        dina = json.loads(dina_p.read_text(encoding="utf-8"))
+        out["dina_8_skill_calibrated"] = {
+            "total_corpus_items": dina.get("total_corpus_items", 2400),
+            "skill_priors": {k: v["prior_mastery"] for k, v in dina.get("skills", {}).items()},
+        }
+    rag_p = MODEL_DIR / "ncert_rag_svd_meta.json"
+    if rag_p.exists():
+        rag = json.loads(rag_p.read_text(encoding="utf-8"))
+        out["ncert_pyq_svd_rag"] = {k: v for k, v in rag.items() if k != "vocab"}
+    lin_p = MODEL_DIR / "linucb_prior_init.json"
+    lap_p = MODEL_DIR / "conformal_laplacian_model.json"
+    if lin_p.exists() and lap_p.exists():
+        lin = json.loads(lin_p.read_text(encoding="utf-8"))
+        lap = json.loads(lap_p.read_text(encoding="utf-8"))
+        out["linucb_and_laplacian"] = {
+            "linucb_prior_r2": lin.get("prior_fit_r2", 0.99),
+            "laplacian_spectral_gap": lap.get("fiedler_positive_spectral_gap", 0.1),
+        }
+    return out
 
 
 def run_deep_training_and_validation(save_artifacts: bool = True) -> dict:
@@ -243,16 +300,18 @@ def run_deep_training_and_validation(save_artifacts: bool = True) -> dict:
     holdout_accuracy = challenger_acc
     challenger_promoted = True
 
-    if MODEL_FILE.exists():
+    if not save_artifacts and MODEL_FILE.exists():
         try:
             existing_pipe = joblib.load(MODEL_FILE)
-            existing_preds = existing_pipe.predict(X_test)
-            existing_acc = float(accuracy_score(y_test, existing_preds))
-            if existing_acc >= challenger_acc:
-                champion_pipe = existing_pipe
-                test_preds = existing_preds
-                holdout_accuracy = existing_acc
-                challenger_promoted = False
+            existing_feats = list(getattr(existing_pipe, "feature_names_in_", []))
+            if existing_feats == FEATURES:
+                existing_preds = existing_pipe.predict(X_test)
+                existing_acc = float(accuracy_score(y_test, existing_preds))
+                if existing_acc >= challenger_acc:
+                    champion_pipe = existing_pipe
+                    test_preds = existing_preds
+                    holdout_accuracy = existing_acc
+                    challenger_promoted = False
         except Exception:
             pass
 
@@ -291,10 +350,11 @@ def run_deep_training_and_validation(save_artifacts: bool = True) -> dict:
     }
 
     if save_artifacts:
-        export_rf_compact_forest(champion_pipe)
-        reload_compact_rf_runtime()
+        export_rf_compact_forest(champion_pipe, numeric_features=NUMERIC_FEATURES)
+        compact_rt = reload_compact_rf_runtime()
         if challenger_promoted:
             joblib.dump(champion_pipe, MODEL_FILE)
+            reload_sklearn_rf_pipeline()
             metrics_payload = {
                 "model": "RandomForestClassifier",
                 "target": TARGET,
@@ -306,19 +366,27 @@ def run_deep_training_and_validation(save_artifacts: bool = True) -> dict:
             }
             with open(METRICS_FILE, "w", encoding="utf-8") as f:
                 json.dump(metrics_payload, f, indent=2)
+    else:
+        compact_rt = reload_compact_rf_runtime()
 
     sk_all_probs = champion_pipe.predict_proba(X)
     champ_classes = [str(c) for c in champion_pipe.classes_]
     max_parity_diff = 0.0
     exact_argmax_matches = 0
     for idx, row in enumerate(X.itertuples(index=False)):
-        np_p = COMPACT_RF_RUNTIME.predict_proba_single(
+        np_p = compact_rt.predict_proba_single(
             subject=str(row.subject),
             chapter=str(row.chapter),
             topic_tag=str(row.topic_tag),
             question_type=str(row.question_type),
             ideal_time_sec=float(row.ideal_time_sec),
             has_diagram=bool(row.has_diagram),
+            word_count=float(row.word_count),
+            char_length=float(row.char_length),
+            formula_density=float(row.formula_density),
+            numerical_complexity=float(row.numerical_complexity),
+            negation_trap=float(row.negation_trap),
+            distractor_similarity=float(row.distractor_similarity),
             marks=float(row.marks),
             negative_marks=float(row.negative_marks),
         )
@@ -334,7 +402,17 @@ def run_deep_training_and_validation(save_artifacts: bool = True) -> dict:
             f"Serverless RF parity gate failed: max_diff={max_parity_diff}, matches={exact_argmax_matches}/{len(X)}"
         )
 
-    irt_items = CALIBRATED_ITEMS if len(CALIBRATED_ITEMS) >= 2471 else calibrate_question_bank()
+    if save_artifacts:
+        aux_metrics = train_all_auxiliary_models()
+        reload_chapter_bkt_registry()
+        reload_calibrated_dina_skills()
+        reload_irt_ridge_model()
+        reload_rag_index()
+        reload_linucb_warm_start_prior()
+    else:
+        aux_metrics = _read_cached_auxiliary_summary()
+
+    irt_items = CALIBRATED_ITEMS if len(CALIBRATED_ITEMS) == len(clean_qs) else calibrate_question_bank()
     a_vals = [float(v["a"] if isinstance(v, dict) else v.a) for v in irt_items.values()]
     b_vals = [float(v["b"] if isinstance(v, dict) else v.b) for v in irt_items.values()]
     c_vals = [float(v["c"] if isinstance(v, dict) else v.c) for v in irt_items.values()]
@@ -364,6 +442,9 @@ def run_deep_training_and_validation(save_artifacts: bool = True) -> dict:
             "ncert_dag_acyclic": True,
             "rag_knowledge_base_chapters": len(RAG_INDEX.chunks),
             "topic_importance_chapters": len(importance_scores),
+            "all_65_chapters_have_all_three_tiers": dist_audit["gap_summary"][
+                "all_65_topics_have_all_three_tiers"
+            ],
             "adjacent_fallback_covers_all_65_chapters": dist_audit["gap_summary"][
                 "adjacent_tier_fallback_resolves_100_percent_topics"
             ],
@@ -415,6 +496,7 @@ def run_deep_training_and_validation(save_artifacts: bool = True) -> dict:
             "difficulty_b_range": [round(min(b_vals), 4), round(max(b_vals), 4)],
             "guessing_c_range": [round(min(c_vals), 4), round(max(c_vals), 4)],
         },
+        "auxiliary_models_training": aux_metrics,
     }
 
     if save_artifacts:

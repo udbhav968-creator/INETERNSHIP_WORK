@@ -1,166 +1,121 @@
 {
   "audit_mode": "NON_DESTRUCTIVE_PROPOSAL_ONLY",
   "source_corpus_mutated": false,
-  "total_audited_questions": 2471,
+  "total_audited_questions": 2400,
   "gap_resolution_summary": {
-    "chapters_missing_basic_before": 46,
-    "chapters_resolvable_via_irt_anchors": 46,
-    "physics_chapters_missing_basic_before": 22,
-    "physics_chapters_resolvable_via_irt_anchors": 22,
-    "chapters_missing_advanced_before": 6,
-    "advanced_chapters_resolvable_via_irt_anchors": 6,
-    "strict_global_basic_candidates_count": 1517,
-    "strict_global_advanced_candidates_count": 18
+    "chapters_missing_basic_before": 0,
+    "chapters_resolvable_via_irt_anchors": 0,
+    "physics_chapters_missing_basic_before": 0,
+    "physics_chapters_resolvable_via_irt_anchors": 0,
+    "chapters_missing_advanced_before": 0,
+    "advanced_chapters_resolvable_via_irt_anchors": 0,
+    "strict_global_basic_candidates_count": 547,
+    "strict_global_advanced_candidates_count": 136
   },
   "top_basic_recalibration_candidates": [
     {
-      "question_id": "NEET2019_BIO_134",
-      "topic_id": "Anatomy of Flowering Plants",
-      "subject": "Biology",
-      "current_tier": "medium",
-      "irt_a": 1.4408,
-      "irt_b": -0.4064,
-      "irt_c": 0.18,
-      "ideal_time_sec": 50,
-      "word_count": 2,
-      "question_type": "Single_Choice_MCQ",
-      "has_diagram": false,
-      "foundational_score": 1.0564,
-      "proposed_tier": "basic"
-    },
-    {
-      "question_id": "RENEET2026_BIO_134",
-      "topic_id": "The Living World & Taxonomy",
-      "subject": "Biology",
-      "current_tier": "medium",
-      "irt_a": 1.5012,
-      "irt_b": -0.4064,
-      "irt_c": 0.2106,
-      "ideal_time_sec": 50,
-      "word_count": 2,
-      "question_type": "Single_Choice_MCQ",
-      "has_diagram": false,
-      "foundational_score": 1.0564,
-      "proposed_tier": "basic"
-    },
-    {
-      "question_id": "NEET2014_BIO_114",
-      "topic_id": "Reproduction & Human Development",
-      "subject": "Biology",
-      "current_tier": "medium",
-      "irt_a": 1.5748,
-      "irt_b": -0.4064,
-      "irt_c": 0.18,
-      "ideal_time_sec": 50,
-      "word_count": 3,
-      "question_type": "Single_Choice_MCQ",
-      "has_diagram": false,
-      "foundational_score": 1.0481,
-      "proposed_tier": "basic"
-    },
-    {
-      "question_id": "NEET2015_BIO_090",
-      "topic_id": "Biological Classification",
-      "subject": "Biology",
-      "current_tier": "medium",
-      "irt_a": 1.538,
-      "irt_b": -0.4064,
-      "irt_c": 0.1885,
-      "ideal_time_sec": 50,
-      "word_count": 3,
-      "question_type": "Single_Choice_MCQ",
-      "has_diagram": false,
-      "foundational_score": 1.0481,
-      "proposed_tier": "basic"
-    },
-    {
-      "question_id": "NEET2015_BIO_122",
-      "topic_id": "The Living World & Taxonomy",
-      "subject": "Biology",
-      "current_tier": "medium",
-      "irt_a": 1.5012,
-      "irt_b": -0.4064,
-      "irt_c": 0.18,
-      "ideal_time_sec": 50,
-      "word_count": 3,
-      "question_type": "Single_Choice_MCQ",
-      "has_diagram": false,
-      "foundational_score": 1.0481,
-      "proposed_tier": "basic"
-    },
-    {
-      "question_id": "NEET2017_BIO_125",
-      "topic_id": "Biological Classification",
-      "subject": "Biology",
-      "current_tier": "medium",
-      "irt_a": 1.538,
-      "irt_b": -0.4064,
-      "irt_c": 0.18,
-      "ideal_time_sec": 50,
-      "word_count": 3,
-      "question_type": "Single_Choice_MCQ",
-      "has_diagram": false,
-      "foundational_score": 1.0481,
-      "proposed_tier": "basic"
-    },
-    {
-      "question_id": "NEET2018_BIO_111",
+      "question_id": "NEET2021_BIO_122",
       "topic_id": "Ecology & Environment",
       "subject": "Biology",
       "current_tier": "medium",
-      "irt_a": 1.512,
-      "irt_b": -0.4064,
-      "irt_c": 0.18,
-      "ideal_time_sec": 50,
-      "word_count": 3,
-      "question_type": "Single_Choice_MCQ",
+      "irt_a": 1.412,
+      "irt_b": -0.3745,
+      "irt_c": 0.2113,
+      "ideal_time_sec": 71,
+      "word_count": 11,
+      "question_type": "Direct Formula",
       "has_diagram": false,
-      "foundational_score": 1.0481,
+      "foundational_score": 0.5995,
       "proposed_tier": "basic"
     },
     {
-      "question_id": "RENEET2026_BIO_113",
-      "topic_id": "Cell: The Unit of Life",
+      "question_id": "NEET2014_BIO_116",
+      "topic_id": "Morphology of Flowering Plants",
       "subject": "Biology",
       "current_tier": "medium",
-      "irt_a": 1.5108,
-      "irt_b": -0.4064,
-      "irt_c": 0.2049,
-      "ideal_time_sec": 50,
-      "word_count": 3,
-      "question_type": "Single_Choice_MCQ",
+      "irt_a": 1.484,
+      "irt_b": -0.2709,
+      "irt_c": 0.1978,
+      "ideal_time_sec": 69,
+      "word_count": 8,
+      "question_type": "Conceptual",
       "has_diagram": false,
-      "foundational_score": 1.0481,
+      "foundational_score": 0.5542,
       "proposed_tier": "basic"
     },
     {
-      "question_id": "NEET2013_BIO_100",
-      "topic_id": "Plant Physiology",
-      "subject": "Biology",
-      "current_tier": "medium",
-      "irt_a": 1.5172,
-      "irt_b": -0.4064,
-      "irt_c": 0.2156,
-      "ideal_time_sec": 50,
-      "word_count": 4,
-      "question_type": "Single_Choice_MCQ",
-      "has_diagram": false,
-      "foundational_score": 1.0397,
-      "proposed_tier": "basic"
-    },
-    {
-      "question_id": "NEET2013_BIO_164",
+      "question_id": "NEET2016_BIO_133",
       "topic_id": "Reproduction & Human Development",
       "subject": "Biology",
       "current_tier": "medium",
-      "irt_a": 1.5748,
-      "irt_b": -0.4064,
-      "irt_c": 0.206,
-      "ideal_time_sec": 50,
-      "word_count": 4,
-      "question_type": "Single_Choice_MCQ",
+      "irt_a": 1.5648,
+      "irt_b": -0.2627,
+      "irt_c": 0.18,
+      "ideal_time_sec": 70,
+      "word_count": 6,
+      "question_type": "Conceptual",
       "has_diagram": false,
-      "foundational_score": 1.0397,
+      "foundational_score": 0.546,
+      "proposed_tier": "basic"
+    },
+    {
+      "question_id": "NEET2017_BIO_107",
+      "topic_id": "Morphology of Flowering Plants",
+      "subject": "Biology",
+      "current_tier": "medium",
+      "irt_a": 1.484,
+      "irt_b": -0.2627,
+      "irt_c": 0.2148,
+      "ideal_time_sec": 70,
+      "word_count": 6,
+      "question_type": "Conceptual",
+      "has_diagram": false,
+      "foundational_score": 0.546,
+      "proposed_tier": "basic"
+    },
+    {
+      "question_id": "NEET2018_BIO_112",
+      "topic_id": "Reproduction & Human Development",
+      "subject": "Biology",
+      "current_tier": "medium",
+      "irt_a": 1.5648,
+      "irt_b": -0.2627,
+      "irt_c": 0.2113,
+      "ideal_time_sec": 70,
+      "word_count": 6,
+      "question_type": "Conceptual",
+      "has_diagram": false,
+      "foundational_score": 0.546,
+      "proposed_tier": "basic"
+    },
+    {
+      "question_id": "NEET2019_BIO_149",
+      "topic_id": "Biological Classification",
+      "subject": "Biology",
+      "current_tier": "medium",
+      "irt_a": 1.528,
+      "irt_b": -0.2627,
+      "irt_c": 0.2143,
+      "ideal_time_sec": 70,
+      "word_count": 6,
+      "question_type": "Conceptual",
+      "has_diagram": false,
+      "foundational_score": 0.546,
+      "proposed_tier": "basic"
+    },
+    {
+      "question_id": "NEET2014_BIO_123",
+      "topic_id": "Morphology of Flowering Plants",
+      "subject": "Biology",
+      "current_tier": "medium",
+      "irt_a": 1.484,
+      "irt_b": -0.2709,
+      "irt_c": 0.2151,
+      "ideal_time_sec": 69,
+      "word_count": 9,
+      "question_type": "Conceptual",
+      "has_diagram": false,
+      "foundational_score": 0.5459,
       "proposed_tier": "basic"
     },
     {
@@ -168,29 +123,14 @@
       "topic_id": "The Living World & Taxonomy",
       "subject": "Biology",
       "current_tier": "medium",
-      "irt_a": 1.5012,
-      "irt_b": -0.4064,
+      "irt_a": 1.4912,
+      "irt_b": -0.2545,
       "irt_c": 0.2009,
-      "ideal_time_sec": 50,
+      "ideal_time_sec": 71,
       "word_count": 4,
-      "question_type": "Single_Choice_MCQ",
+      "question_type": "Conceptual",
       "has_diagram": false,
-      "foundational_score": 1.0397,
-      "proposed_tier": "basic"
-    },
-    {
-      "question_id": "NEET2015_BIO_111",
-      "topic_id": "The Living World & Taxonomy",
-      "subject": "Biology",
-      "current_tier": "medium",
-      "irt_a": 1.5012,
-      "irt_b": -0.4064,
-      "irt_c": 0.2092,
-      "ideal_time_sec": 50,
-      "word_count": 4,
-      "question_type": "Single_Choice_MCQ",
-      "has_diagram": false,
-      "foundational_score": 1.0397,
+      "foundational_score": 0.5378,
       "proposed_tier": "basic"
     },
     {
@@ -198,316 +138,211 @@
       "topic_id": "Reproduction & Human Development",
       "subject": "Biology",
       "current_tier": "medium",
-      "irt_a": 1.5748,
-      "irt_b": -0.4064,
+      "irt_a": 1.5648,
+      "irt_b": -0.2545,
       "irt_c": 0.18,
-      "ideal_time_sec": 50,
+      "ideal_time_sec": 71,
       "word_count": 4,
-      "question_type": "Single_Choice_MCQ",
+      "question_type": "Conceptual",
       "has_diagram": false,
-      "foundational_score": 1.0397,
+      "foundational_score": 0.5378,
       "proposed_tier": "basic"
     },
     {
-      "question_id": "NEET2016_BIO_140",
-      "topic_id": "Plant Kingdom",
+      "question_id": "NEET2017_BIO_117",
+      "topic_id": "Biological Classification",
       "subject": "Biology",
       "current_tier": "medium",
-      "irt_a": 1.4872,
-      "irt_b": -0.4064,
+      "irt_a": 1.528,
+      "irt_b": -0.2627,
+      "irt_c": 0.214,
+      "ideal_time_sec": 70,
+      "word_count": 7,
+      "question_type": "Conceptual",
+      "has_diagram": false,
+      "foundational_score": 0.5377,
+      "proposed_tier": "basic"
+    },
+    {
+      "question_id": "NEET2018_BIO_145",
+      "topic_id": "Reproduction & Human Development",
+      "subject": "Biology",
+      "current_tier": "medium",
+      "irt_a": 1.5648,
+      "irt_b": -0.2627,
       "irt_c": 0.18,
-      "ideal_time_sec": 50,
-      "word_count": 4,
-      "question_type": "Single_Choice_MCQ",
+      "ideal_time_sec": 70,
+      "word_count": 7,
+      "question_type": "Conceptual",
       "has_diagram": false,
-      "foundational_score": 1.0397,
+      "foundational_score": 0.5377,
       "proposed_tier": "basic"
     },
     {
-      "question_id": "RENEET2026_BIO_121",
-      "topic_id": "Cell: The Unit of Life",
+      "question_id": "NEET2018_BIO_156",
+      "topic_id": "Biological Classification",
       "subject": "Biology",
       "current_tier": "medium",
-      "irt_a": 1.5108,
-      "irt_b": -0.4064,
-      "irt_c": 0.2076,
-      "ideal_time_sec": 50,
-      "word_count": 4,
-      "question_type": "Single_Choice_MCQ",
+      "irt_a": 1.528,
+      "irt_b": -0.2627,
+      "irt_c": 0.2089,
+      "ideal_time_sec": 70,
+      "word_count": 7,
+      "question_type": "Conceptual",
       "has_diagram": false,
-      "foundational_score": 1.0397,
+      "foundational_score": 0.5377,
       "proposed_tier": "basic"
     },
     {
-      "question_id": "RENEET2026_BIO_130",
-      "topic_id": "Plant Kingdom",
-      "subject": "Biology",
-      "current_tier": "medium",
-      "irt_a": 1.4872,
-      "irt_b": -0.4064,
-      "irt_c": 0.2123,
-      "ideal_time_sec": 50,
-      "word_count": 4,
-      "question_type": "Single_Choice_MCQ",
-      "has_diagram": false,
-      "foundational_score": 1.0397,
-      "proposed_tier": "basic"
-    },
-    {
-      "question_id": "NEET2013_BIO_095",
+      "question_id": "NEET2017_BIO_120",
       "topic_id": "Morphology of Flowering Plants",
       "subject": "Biology",
       "current_tier": "medium",
-      "irt_a": 1.494,
-      "irt_b": -0.4064,
-      "irt_c": 0.2115,
-      "ideal_time_sec": 50,
-      "word_count": 5,
-      "question_type": "Single_Choice_MCQ",
-      "has_diagram": false,
-      "foundational_score": 1.0314,
-      "proposed_tier": "basic"
-    },
-    {
-      "question_id": "NEET2013_BIO_116",
-      "topic_id": "Cell Cycle & Cell Division",
-      "subject": "Biology",
-      "current_tier": "medium",
-      "irt_a": 1.4648,
-      "irt_b": -0.4064,
+      "irt_a": 1.484,
+      "irt_b": -0.2709,
       "irt_c": 0.2167,
-      "ideal_time_sec": 50,
-      "word_count": 5,
-      "question_type": "Single_Choice_MCQ",
+      "ideal_time_sec": 69,
+      "word_count": 10,
+      "question_type": "Conceptual",
       "has_diagram": false,
-      "foundational_score": 1.0314,
+      "foundational_score": 0.5376,
       "proposed_tier": "basic"
     },
     {
-      "question_id": "NEET2013_BIO_117",
-      "topic_id": "Morphology of Flowering Plants",
+      "question_id": "NEET2019_BIO_126",
+      "topic_id": "Anatomy of Flowering Plants",
       "subject": "Biology",
       "current_tier": "medium",
-      "irt_a": 1.494,
-      "irt_b": -0.4064,
-      "irt_c": 0.1886,
-      "ideal_time_sec": 50,
-      "word_count": 5,
-      "question_type": "Single_Choice_MCQ",
+      "irt_a": 1.4308,
+      "irt_b": -0.2709,
+      "irt_c": 0.1981,
+      "ideal_time_sec": 69,
+      "word_count": 10,
+      "question_type": "Conceptual",
       "has_diagram": false,
-      "foundational_score": 1.0314,
+      "foundational_score": 0.5376,
       "proposed_tier": "basic"
     },
     {
-      "question_id": "NEET2013_BIO_144",
+      "question_id": "NEET2015_BIO_062",
+      "topic_id": "Biological Classification",
+      "subject": "Biology",
+      "current_tier": "medium",
+      "irt_a": 1.528,
+      "irt_b": -0.2545,
+      "irt_c": 0.2118,
+      "ideal_time_sec": 71,
+      "word_count": 5,
+      "question_type": "Conceptual",
+      "has_diagram": false,
+      "foundational_score": 0.5295,
+      "proposed_tier": "basic"
+    },
+    {
+      "question_id": "NEET2018_BIO_171",
       "topic_id": "The Living World & Taxonomy",
       "subject": "Biology",
       "current_tier": "medium",
-      "irt_a": 1.5012,
-      "irt_b": -0.4064,
-      "irt_c": 0.1965,
-      "ideal_time_sec": 50,
+      "irt_a": 1.4912,
+      "irt_b": -0.2545,
+      "irt_c": 0.187,
+      "ideal_time_sec": 71,
       "word_count": 5,
-      "question_type": "Single_Choice_MCQ",
+      "question_type": "Conceptual",
       "has_diagram": false,
-      "foundational_score": 1.0314,
+      "foundational_score": 0.5295,
+      "proposed_tier": "basic"
+    },
+    {
+      "question_id": "NEET2019_BIO_150",
+      "topic_id": "Reproduction & Human Development",
+      "subject": "Biology",
+      "current_tier": "medium",
+      "irt_a": 1.5648,
+      "irt_b": -0.2545,
+      "irt_c": 0.1991,
+      "ideal_time_sec": 71,
+      "word_count": 5,
+      "question_type": "Conceptual",
+      "has_diagram": false,
+      "foundational_score": 0.5295,
+      "proposed_tier": "basic"
+    },
+    {
+      "question_id": "NEET2024_BIO_113",
+      "topic_id": "Plant Kingdom",
+      "subject": "Biology",
+      "current_tier": "medium",
+      "irt_a": 1.4772,
+      "irt_b": -0.2545,
+      "irt_c": 0.2167,
+      "ideal_time_sec": 71,
+      "word_count": 5,
+      "question_type": "Conceptual",
+      "has_diagram": false,
+      "foundational_score": 0.5295,
+      "proposed_tier": "basic"
+    },
+    {
+      "question_id": "NEET2013_BIO_118",
+      "topic_id": "The Living World & Taxonomy",
+      "subject": "Biology",
+      "current_tier": "medium",
+      "irt_a": 1.4912,
+      "irt_b": -0.2627,
+      "irt_c": 0.1876,
+      "ideal_time_sec": 70,
+      "word_count": 8,
+      "question_type": "Conceptual",
+      "has_diagram": false,
+      "foundational_score": 0.5294,
+      "proposed_tier": "basic"
+    },
+    {
+      "question_id": "NEET2016_BIO_180",
+      "topic_id": "Biomolecules",
+      "subject": "Biology",
+      "current_tier": "medium",
+      "irt_a": 1.552,
+      "irt_b": -0.2627,
+      "irt_c": 0.2007,
+      "ideal_time_sec": 70,
+      "word_count": 8,
+      "question_type": "Conceptual",
+      "has_diagram": false,
+      "foundational_score": 0.5294,
       "proposed_tier": "basic"
     }
   ],
   "top_advanced_recalibration_candidates": [
     {
-      "question_id": "NEET2015_PHY_144",
-      "topic_id": "Oscillations & Waves",
+      "question_id": "NEET2017_PHY_008",
+      "topic_id": "Current Electricity",
       "subject": "Physics",
       "current_tier": "medium",
-      "irt_a": 1.6692,
-      "irt_b": 0.72,
-      "irt_c": 0.2183,
-      "ideal_time_sec": 85,
-      "word_count": 68,
-      "question_type": "Diagram_Based",
+      "irt_a": 1.778,
+      "irt_b": 1.0736,
+      "irt_c": 0.189,
+      "ideal_time_sec": 116,
+      "word_count": 56,
+      "question_type": "Numerical",
       "has_diagram": true,
-      "foundational_score": -1.4533,
+      "foundational_score": -2.2236,
       "proposed_tier": "advanced"
     },
     {
-      "question_id": "NEET2017_PHY_036",
-      "topic_id": "Laws of Motion",
+      "question_id": "NEET2025_PHY_036",
+      "topic_id": "Current Electricity",
       "subject": "Physics",
       "current_tier": "medium",
-      "irt_a": 1.6424,
-      "irt_b": 0.72,
-      "irt_c": 0.2155,
-      "ideal_time_sec": 85,
-      "word_count": 52,
-      "question_type": "Single_Choice_MCQ",
+      "irt_a": 1.798,
+      "irt_b": 1.0461,
+      "irt_c": 0.1972,
+      "ideal_time_sec": 116,
+      "word_count": 39,
+      "question_type": "Numerical",
       "has_diagram": true,
-      "foundational_score": -1.32,
-      "proposed_tier": "advanced"
-    },
-    {
-      "question_id": "NEET2022_PHY_002",
-      "topic_id": "Thermodynamics",
-      "subject": "Physics",
-      "current_tier": "medium",
-      "irt_a": 1.6612,
-      "irt_b": 0.72,
-      "irt_c": 0.2137,
-      "ideal_time_sec": 85,
-      "word_count": 40,
-      "question_type": "Diagram_Based",
-      "has_diagram": true,
-      "foundational_score": -1.22,
-      "proposed_tier": "advanced"
-    },
-    {
-      "question_id": "RENEET2026_PHY_003",
-      "topic_id": "Semiconductor Electronics",
-      "subject": "Physics",
-      "current_tier": "medium",
-      "irt_a": 1.6392,
-      "irt_b": 0.72,
-      "irt_c": 0.2015,
-      "ideal_time_sec": 85,
-      "word_count": 53,
-      "question_type": "Diagram_Based",
-      "has_diagram": true,
-      "foundational_score": -1.3283,
-      "proposed_tier": "advanced"
-    },
-    {
-      "question_id": "RENEET2026_PHY_044",
-      "topic_id": "Kinematics",
-      "subject": "Physics",
-      "current_tier": "medium",
-      "irt_a": 1.734,
-      "irt_b": 0.72,
-      "irt_c": 0.22,
-      "ideal_time_sec": 85,
-      "word_count": 65,
-      "question_type": "Diagram_Based",
-      "has_diagram": true,
-      "foundational_score": -1.4283,
-      "proposed_tier": "advanced"
-    },
-    {
-      "question_id": "RENEET2026_PHY_008",
-      "topic_id": "Ray Optics",
-      "subject": "Physics",
-      "current_tier": "medium",
-      "irt_a": 1.644,
-      "irt_b": 0.6875,
-      "irt_c": 0.2131,
-      "ideal_time_sec": 85,
-      "word_count": 48,
-      "question_type": "Diagram_Based",
-      "has_diagram": true,
-      "foundational_score": -1.2542,
-      "proposed_tier": "advanced"
-    },
-    {
-      "question_id": "NEET2017_PHY_029",
-      "topic_id": "Magnetic Effects of Current",
-      "subject": "Physics",
-      "current_tier": "medium",
-      "irt_a": 1.6296,
-      "irt_b": 0.66,
-      "irt_c": 0.22,
-      "ideal_time_sec": 85,
-      "word_count": 73,
-      "question_type": "Single_Choice_MCQ",
-      "has_diagram": true,
-      "foundational_score": -1.435,
-      "proposed_tier": "advanced"
-    },
-    {
-      "question_id": "RENEET2026_PHY_016",
-      "topic_id": "Work, Energy & Power",
-      "subject": "Physics",
-      "current_tier": "medium",
-      "irt_a": 1.648,
-      "irt_b": 0.66,
-      "irt_c": 0.2053,
-      "ideal_time_sec": 85,
-      "word_count": 72,
-      "question_type": "Diagram_Based",
-      "has_diagram": true,
-      "foundational_score": -1.4267,
-      "proposed_tier": "advanced"
-    },
-    {
-      "question_id": "RENEET2026_PHY_028",
-      "topic_id": "Ray Optics",
-      "subject": "Physics",
-      "current_tier": "medium",
-      "irt_a": 1.644,
-      "irt_b": 0.645,
-      "irt_c": 0.18,
-      "ideal_time_sec": 85,
-      "word_count": 45,
-      "question_type": "Diagram_Based",
-      "has_diagram": true,
-      "foundational_score": -1.1867,
-      "proposed_tier": "advanced"
-    },
-    {
-      "question_id": "RENEET2026_PHY_042",
-      "topic_id": "Electromagnetic Induction",
-      "subject": "Physics",
-      "current_tier": "medium",
-      "irt_a": 1.6028,
-      "irt_b": 0.63,
-      "irt_c": 0.22,
-      "ideal_time_sec": 85,
-      "word_count": 40,
-      "question_type": "Diagram_Based",
-      "has_diagram": true,
-      "foundational_score": -1.13,
-      "proposed_tier": "advanced"
-    },
-    {
-      "question_id": "NEET2025_PHY_039",
-      "topic_id": "Rotational Motion",
-      "subject": "Physics",
-      "current_tier": "medium",
-      "irt_a": 1.6108,
-      "irt_b": 0.62,
-      "irt_c": 0.2183,
-      "ideal_time_sec": 85,
-      "word_count": 54,
-      "question_type": "Diagram_Based",
-      "has_diagram": true,
-      "foundational_score": -1.2367,
-      "proposed_tier": "advanced"
-    },
-    {
-      "question_id": "RENEET2026_PHY_030",
-      "topic_id": "Electrostatics",
-      "subject": "Physics",
-      "current_tier": "medium",
-      "irt_a": 1.6456,
-      "irt_b": 0.62,
-      "irt_c": 0.22,
-      "ideal_time_sec": 85,
-      "word_count": 50,
-      "question_type": "Diagram_Based",
-      "has_diagram": true,
-      "foundational_score": -1.2033,
-      "proposed_tier": "advanced"
-    },
-    {
-      "question_id": "NEET2024_PHY_015",
-      "topic_id": "Rotational Motion",
-      "subject": "Physics",
-      "current_tier": "medium",
-      "irt_a": 1.6308,
-      "irt_b": 0.58,
-      "irt_c": 0.218,
-      "ideal_time_sec": 85,
-      "word_count": 36,
-      "question_type": "Single_Choice_MCQ",
-      "has_diagram": true,
-      "foundational_score": -1.0467,
+      "foundational_score": -2.0544,
       "proposed_tier": "advanced"
     },
     {
@@ -515,747 +350,197 @@
       "topic_id": "Magnetic Effects of Current",
       "subject": "Physics",
       "current_tier": "medium",
-      "irt_a": 1.6096,
-      "irt_b": 0.575,
-      "irt_c": 0.2156,
-      "ideal_time_sec": 85,
+      "irt_a": 1.7396,
+      "irt_b": 1.0286,
+      "irt_c": 0.1956,
+      "ideal_time_sec": 116,
       "word_count": 46,
-      "question_type": "Diagram_Based",
+      "question_type": "Numerical",
       "has_diagram": true,
-      "foundational_score": -1.125,
+      "foundational_score": -2.0953,
       "proposed_tier": "advanced"
     },
     {
-      "question_id": "NEET2020_PHY_160",
+      "question_id": "NEET2024_PHY_010",
+      "topic_id": "Current Electricity",
+      "subject": "Physics",
+      "current_tier": "medium",
+      "irt_a": 1.768,
+      "irt_b": 1.0261,
+      "irt_c": 0.16,
+      "ideal_time_sec": 116,
+      "word_count": 42,
+      "question_type": "Diagram-Based",
+      "has_diagram": true,
+      "foundational_score": -2.0594,
+      "proposed_tier": "advanced"
+    },
+    {
+      "question_id": "NEET2024_PHY_015",
+      "topic_id": "Rotational Motion",
+      "subject": "Physics",
+      "current_tier": "medium",
+      "irt_a": 1.7608,
+      "irt_b": 1.0173,
+      "irt_c": 0.198,
+      "ideal_time_sec": 114,
+      "word_count": 36,
+      "question_type": "Numerical",
+      "has_diagram": true,
+      "foundational_score": -1.9673,
+      "proposed_tier": "advanced"
+    },
+    {
+      "question_id": "RENEET2026_PHY_030",
+      "topic_id": "Electrostatics",
+      "subject": "Physics",
+      "current_tier": "medium",
+      "irt_a": 1.7456,
+      "irt_b": 1.0173,
+      "irt_c": 0.2,
+      "ideal_time_sec": 114,
+      "word_count": 50,
+      "question_type": "Diagram-Based",
+      "has_diagram": true,
+      "foundational_score": -2.084,
+      "proposed_tier": "advanced"
+    },
+    {
+      "question_id": "NEET2024_PHY_050",
+      "topic_id": "Current Electricity",
+      "subject": "Physics",
+      "current_tier": "medium",
+      "irt_a": 1.798,
+      "irt_b": 1.008,
+      "irt_c": 0.1941,
+      "ideal_time_sec": 115,
+      "word_count": 37,
+      "question_type": "Numerical",
+      "has_diagram": true,
+      "foundational_score": -1.983,
+      "proposed_tier": "advanced"
+    },
+    {
+      "question_id": "NEET2021_PHY_040",
+      "topic_id": "Alternating Current",
+      "subject": "Physics",
+      "current_tier": "medium",
+      "irt_a": 1.6356,
+      "irt_b": 1.0018,
+      "irt_c": 0.2,
+      "ideal_time_sec": 117,
+      "word_count": 50,
+      "question_type": "Numerical",
+      "has_diagram": false,
+      "foundational_score": -1.8685,
+      "proposed_tier": "advanced"
+    },
+    {
+      "question_id": "NEET2014_PHY_002",
+      "topic_id": "Kinematics",
+      "subject": "Physics",
+      "current_tier": "medium",
+      "irt_a": 1.764,
+      "irt_b": 0.9936,
+      "irt_c": 0.1941,
+      "ideal_time_sec": 116,
+      "word_count": 74,
+      "question_type": "Numerical",
+      "has_diagram": false,
+      "foundational_score": -2.0436,
+      "proposed_tier": "advanced"
+    },
+    {
+      "question_id": "NEET2025_PHY_021",
+      "topic_id": "Kinematics",
+      "subject": "Physics",
+      "current_tier": "medium",
+      "irt_a": 1.764,
+      "irt_b": 0.9936,
+      "irt_c": 0.1776,
+      "ideal_time_sec": 116,
+      "word_count": 86,
+      "question_type": "Numerical",
+      "has_diagram": false,
+      "foundational_score": -2.1436,
+      "proposed_tier": "advanced"
+    },
+    {
+      "question_id": "NEET2013_PHY_022",
+      "topic_id": "Oscillations & Waves",
+      "subject": "Physics",
+      "current_tier": "medium",
+      "irt_a": 1.6992,
+      "irt_b": 0.9855,
+      "irt_c": 0.2,
+      "ideal_time_sec": 115,
+      "word_count": 46,
+      "question_type": "Numerical",
+      "has_diagram": false,
+      "foundational_score": -1.7855,
+      "proposed_tier": "advanced"
+    },
+    {
+      "question_id": "NEET2022_PHY_024",
+      "topic_id": "Oscillations & Waves",
+      "subject": "Physics",
+      "current_tier": "medium",
+      "irt_a": 1.6992,
+      "irt_b": 0.9855,
+      "irt_c": 0.1983,
+      "ideal_time_sec": 115,
+      "word_count": 53,
+      "question_type": "Numerical",
+      "has_diagram": false,
+      "foundational_score": -1.8438,
+      "proposed_tier": "advanced"
+    },
+    {
+      "question_id": "RENEET2026_PHY_002",
+      "topic_id": "Units & Dimensions",
+      "subject": "Physics",
+      "current_tier": "medium",
+      "irt_a": 1.6588,
+      "irt_b": 0.9855,
+      "irt_c": 0.16,
+      "ideal_time_sec": 115,
+      "word_count": 59,
+      "question_type": "Numerical",
+      "has_diagram": false,
+      "foundational_score": -1.8938,
+      "proposed_tier": "advanced"
+    },
+    {
+      "question_id": "NEET2013_PHY_028",
+      "topic_id": "Magnetic Effects of Current",
+      "subject": "Physics",
+      "current_tier": "medium",
+      "irt_a": 1.6596,
+      "irt_b": 0.9773,
+      "irt_c": 0.196,
+      "ideal_time_sec": 114,
+      "word_count": 48,
+      "question_type": "Numerical",
+      "has_diagram": false,
+      "foundational_score": -1.7773,
+      "proposed_tier": "advanced"
+    },
+    {
+      "question_id": "NEET2015_PHY_168",
       "topic_id": "Laws of Motion",
       "subject": "Physics",
       "current_tier": "medium",
-      "irt_a": 1.6024,
-      "irt_b": 0.5625,
-      "irt_c": 0.2156,
-      "ideal_time_sec": 85,
-      "word_count": 48,
-      "question_type": "Single_Choice_MCQ",
-      "has_diagram": true,
-      "foundational_score": -1.1292,
+      "irt_a": 1.6724,
+      "irt_b": 0.9773,
+      "irt_c": 0.188,
+      "ideal_time_sec": 114,
+      "word_count": 52,
+      "question_type": "Numerical",
+      "has_diagram": false,
+      "foundational_score": -1.8106,
       "proposed_tier": "advanced"
     }
   ],
-  "per_chapter_basic_gap_anchors": [
-    {
-      "topic_id": "Alcohols, Phenols & Ethers",
-      "subject": "Chemistry",
-      "current_basic_count": 0,
-      "current_medium_count": 22,
-      "proposed_basic_anchors_count": 3,
-      "top_anchor_question_ids": [
-        "NEET2020_CHEM_135",
-        "NEET2020_CHEM_093",
-        "NEET2019_CHEM_069"
-      ],
-      "lowest_irt_b_in_chapter": -0.2427,
-      "fastest_ideal_time_sec": 70
-    },
-    {
-      "topic_id": "Aldehydes, Ketones & Carboxylic Acids",
-      "subject": "Chemistry",
-      "current_basic_count": 0,
-      "current_medium_count": 13,
-      "proposed_basic_anchors_count": 3,
-      "top_anchor_question_ids": [
-        "NEET2017_CHEM_089",
-        "NEET2025_CHEM_070",
-        "NEET2014_CHEM_088"
-      ],
-      "lowest_irt_b_in_chapter": -0.2427,
-      "fastest_ideal_time_sec": 70
-    },
-    {
-      "topic_id": "Alternating Current",
-      "subject": "Physics",
-      "current_basic_count": 0,
-      "current_medium_count": 1,
-      "proposed_basic_anchors_count": 1,
-      "top_anchor_question_ids": [
-        "NEET2023_PHY_008"
-      ],
-      "lowest_irt_b_in_chapter": 0.3175,
-      "fastest_ideal_time_sec": 85
-    },
-    {
-      "topic_id": "Amines & Nitrogen Compounds",
-      "subject": "Chemistry",
-      "current_basic_count": 0,
-      "current_medium_count": 13,
-      "proposed_basic_anchors_count": 3,
-      "top_anchor_question_ids": [
-        "NEET2015_CHEM_030",
-        "NEET2020_CHEM_102",
-        "NEET2018_CHEM_055"
-      ],
-      "lowest_irt_b_in_chapter": -0.2427,
-      "fastest_ideal_time_sec": 70
-    },
-    {
-      "topic_id": "Atoms & Nuclei",
-      "subject": "Physics",
-      "current_basic_count": 0,
-      "current_medium_count": 21,
-      "proposed_basic_anchors_count": 3,
-      "top_anchor_question_ids": [
-        "NEET2020_PHY_136",
-        "NEET2020_PHY_158",
-        "NEET2017_PHY_013"
-      ],
-      "lowest_irt_b_in_chapter": -0.04,
-      "fastest_ideal_time_sec": 85
-    },
-    {
-      "topic_id": "Cell Cycle & Cell Division",
-      "subject": "Biology",
-      "current_basic_count": 0,
-      "current_medium_count": 43,
-      "proposed_basic_anchors_count": 3,
-      "top_anchor_question_ids": [
-        "NEET2013_BIO_116",
-        "NEET2016_BIO_105",
-        "NEET2017_BIO_135"
-      ],
-      "lowest_irt_b_in_chapter": -0.4064,
-      "fastest_ideal_time_sec": 50
-    },
-    {
-      "topic_id": "Cell: The Unit of Life",
-      "subject": "Biology",
-      "current_basic_count": 0,
-      "current_medium_count": 70,
-      "proposed_basic_anchors_count": 3,
-      "top_anchor_question_ids": [
-        "RENEET2026_BIO_113",
-        "RENEET2026_BIO_121",
-        "NEET2015_BIO_061"
-      ],
-      "lowest_irt_b_in_chapter": -0.4064,
-      "fastest_ideal_time_sec": 50
-    },
-    {
-      "topic_id": "Chemical Kinetics",
-      "subject": "Chemistry",
-      "current_basic_count": 0,
-      "current_medium_count": 21,
-      "proposed_basic_anchors_count": 3,
-      "top_anchor_question_ids": [
-        "NEET2022_CHEM_057",
-        "NEET2020_CHEM_109",
-        "NEET2013_CHEM_050"
-      ],
-      "lowest_irt_b_in_chapter": -0.1627,
-      "fastest_ideal_time_sec": 70
-    },
-    {
-      "topic_id": "Circulation & Excretion",
-      "subject": "Biology",
-      "current_basic_count": 0,
-      "current_medium_count": 25,
-      "proposed_basic_anchors_count": 3,
-      "top_anchor_question_ids": [
-        "NEET2020_BIO_075",
-        "NEET2020_BIO_068",
-        "NEET2017_BIO_154"
-      ],
-      "lowest_irt_b_in_chapter": -0.4064,
-      "fastest_ideal_time_sec": 50
-    },
-    {
-      "topic_id": "Current Electricity",
-      "subject": "Physics",
-      "current_basic_count": 0,
-      "current_medium_count": 27,
-      "proposed_basic_anchors_count": 3,
-      "top_anchor_question_ids": [
-        "NEET2020_PHY_144",
-        "NEET2022_PHY_007",
-        "NEET2020_PHY_164"
-      ],
-      "lowest_irt_b_in_chapter": -0.12,
-      "fastest_ideal_time_sec": 85
-    },
-    {
-      "topic_id": "Dual Nature of Matter",
-      "subject": "Physics",
-      "current_basic_count": 0,
-      "current_medium_count": 8,
-      "proposed_basic_anchors_count": 3,
-      "top_anchor_question_ids": [
-        "NEET2013_PHY_038",
-        "NEET2025_PHY_037",
-        "NEET2015_PHY_160"
-      ],
-      "lowest_irt_b_in_chapter": 0.0125,
-      "fastest_ideal_time_sec": 85
-    },
-    {
-      "topic_id": "Ecology & Environment",
-      "subject": "Biology",
-      "current_basic_count": 0,
-      "current_medium_count": 70,
-      "proposed_basic_anchors_count": 3,
-      "top_anchor_question_ids": [
-        "NEET2018_BIO_111",
-        "NEET2017_BIO_116",
-        "NEET2017_BIO_127"
-      ],
-      "lowest_irt_b_in_chapter": -0.4064,
-      "fastest_ideal_time_sec": 50
-    },
-    {
-      "topic_id": "Electromagnetic Induction",
-      "subject": "Physics",
-      "current_basic_count": 0,
-      "current_medium_count": 6,
-      "proposed_basic_anchors_count": 3,
-      "top_anchor_question_ids": [
-        "NEET2022_PHY_009",
-        "NEET2019_PHY_006",
-        "NEET2023_PHY_034"
-      ],
-      "lowest_irt_b_in_chapter": -0.12,
-      "fastest_ideal_time_sec": 85
-    },
-    {
-      "topic_id": "Electromagnetic Waves",
-      "subject": "Physics",
-      "current_basic_count": 0,
-      "current_medium_count": 7,
-      "proposed_basic_anchors_count": 3,
-      "top_anchor_question_ids": [
-        "NEET2024_PHY_032",
-        "NEET2016_PHY_008",
-        "NEET2015_PHY_137"
-      ],
-      "lowest_irt_b_in_chapter": -0.12,
-      "fastest_ideal_time_sec": 85
-    },
-    {
-      "topic_id": "Electrostatics",
-      "subject": "Physics",
-      "current_basic_count": 0,
-      "current_medium_count": 36,
-      "proposed_basic_anchors_count": 3,
-      "top_anchor_question_ids": [
-        "NEET2021_PHY_020",
-        "NEET2016_PHY_043",
-        "NEET2024_PHY_019"
-      ],
-      "lowest_irt_b_in_chapter": -0.08,
-      "fastest_ideal_time_sec": 85
-    },
-    {
-      "topic_id": "Environmental Chemistry",
-      "subject": "Chemistry",
-      "current_basic_count": 0,
-      "current_medium_count": 2,
-      "proposed_basic_anchors_count": 2,
-      "top_anchor_question_ids": [
-        "NEET2014_CHEM_082",
-        "NEET2022_CHEM_091"
-      ],
-      "lowest_irt_b_in_chapter": -0.2027,
-      "fastest_ideal_time_sec": 70
-    },
-    {
-      "topic_id": "Equilibrium",
-      "subject": "Chemistry",
-      "current_basic_count": 0,
-      "current_medium_count": 29,
-      "proposed_basic_anchors_count": 3,
-      "top_anchor_question_ids": [
-        "NEET2013_CHEM_061",
-        "NEET2013_CHEM_068",
-        "NEET2017_CHEM_058"
-      ],
-      "lowest_irt_b_in_chapter": -0.2427,
-      "fastest_ideal_time_sec": 70
-    },
-    {
-      "topic_id": "Evolution",
-      "subject": "Biology",
-      "current_basic_count": 0,
-      "current_medium_count": 29,
-      "proposed_basic_anchors_count": 3,
-      "top_anchor_question_ids": [
-        "NEET2015_BIO_128",
-        "NEET2016_BIO_150",
-        "NEET2013_BIO_179"
-      ],
-      "lowest_irt_b_in_chapter": -0.4064,
-      "fastest_ideal_time_sec": 50
-    },
-    {
-      "topic_id": "Genetics & Molecular Inheritance",
-      "subject": "Biology",
-      "current_basic_count": 0,
-      "current_medium_count": 68,
-      "proposed_basic_anchors_count": 3,
-      "top_anchor_question_ids": [
-        "NEET2014_BIO_122",
-        "NEET2023_BIO_120",
-        "NEET2022_BIO_117"
-      ],
-      "lowest_irt_b_in_chapter": -0.4064,
-      "fastest_ideal_time_sec": 50
-    },
-    {
-      "topic_id": "Gravitation",
-      "subject": "Physics",
-      "current_basic_count": 0,
-      "current_medium_count": 22,
-      "proposed_basic_anchors_count": 3,
-      "top_anchor_question_ids": [
-        "NEET2017_PHY_030",
-        "NEET2024_PHY_006",
-        "NEET2023_PHY_016"
-      ],
-      "lowest_irt_b_in_chapter": 0.0125,
-      "fastest_ideal_time_sec": 85
-    },
-    {
-      "topic_id": "Haloalkanes & Haloarenes",
-      "subject": "Chemistry",
-      "current_basic_count": 0,
-      "current_medium_count": 6,
-      "proposed_basic_anchors_count": 3,
-      "top_anchor_question_ids": [
-        "NEET2022_CHEM_066",
-        "RENEET2026_CHEM_083",
-        "NEET2015_CHEM_033"
-      ],
-      "lowest_irt_b_in_chapter": -0.2427,
-      "fastest_ideal_time_sec": 70
-    },
-    {
-      "topic_id": "Human Health, Disease & Microbes",
-      "subject": "Biology",
-      "current_basic_count": 0,
-      "current_medium_count": 43,
-      "proposed_basic_anchors_count": 3,
-      "top_anchor_question_ids": [
-        "NEET2013_BIO_172",
-        "NEET2013_BIO_126",
-        "NEET2013_BIO_175"
-      ],
-      "lowest_irt_b_in_chapter": -0.4064,
-      "fastest_ideal_time_sec": 50
-    },
-    {
-      "topic_id": "Hydrocarbons",
-      "subject": "Chemistry",
-      "current_basic_count": 0,
-      "current_medium_count": 18,
-      "proposed_basic_anchors_count": 3,
-      "top_anchor_question_ids": [
-        "NEET2015_CHEM_042",
-        "NEET2020_CHEM_113",
-        "NEET2022_CHEM_053"
-      ],
-      "lowest_irt_b_in_chapter": -0.2427,
-      "fastest_ideal_time_sec": 70
-    },
-    {
-      "topic_id": "Kinematics",
-      "subject": "Physics",
-      "current_basic_count": 0,
-      "current_medium_count": 58,
-      "proposed_basic_anchors_count": 3,
-      "top_anchor_question_ids": [
-        "NEET2022_PHY_023",
-        "NEET2023_PHY_038",
-        "NEET2019_PHY_019"
-      ],
-      "lowest_irt_b_in_chapter": -0.04,
-      "fastest_ideal_time_sec": 85
-    },
-    {
-      "topic_id": "Laws of Motion",
-      "subject": "Physics",
-      "current_basic_count": 0,
-      "current_medium_count": 31,
-      "proposed_basic_anchors_count": 3,
-      "top_anchor_question_ids": [
-        "NEET2018_PHY_033",
-        "NEET2015_PHY_158",
-        "RENEET2026_PHY_045"
-      ],
-      "lowest_irt_b_in_chapter": -0.04,
-      "fastest_ideal_time_sec": 85
-    },
-    {
-      "topic_id": "Locomotion & Neuro-Endocrine Control",
-      "subject": "Biology",
-      "current_basic_count": 0,
-      "current_medium_count": 55,
-      "proposed_basic_anchors_count": 3,
-      "top_anchor_question_ids": [
-        "NEET2017_BIO_171",
-        "NEET2014_BIO_158",
-        "NEET2020_BIO_035"
-      ],
-      "lowest_irt_b_in_chapter": -0.4064,
-      "fastest_ideal_time_sec": 50
-    },
-    {
-      "topic_id": "Magnetic Effects of Current",
-      "subject": "Physics",
-      "current_basic_count": 0,
-      "current_medium_count": 15,
-      "proposed_basic_anchors_count": 3,
-      "top_anchor_question_ids": [
-        "NEET2024_PHY_001",
-        "NEET2025_PHY_012",
-        "NEET2024_PHY_018"
-      ],
-      "lowest_irt_b_in_chapter": 0.0675,
-      "fastest_ideal_time_sec": 85
-    },
-    {
-      "topic_id": "Magnetism & Matter",
-      "subject": "Physics",
-      "current_basic_count": 0,
-      "current_medium_count": 5,
-      "proposed_basic_anchors_count": 3,
-      "top_anchor_question_ids": [
-        "NEET2016_PHY_003",
-        "NEET2024_PHY_004",
-        "NEET2017_PHY_028"
-      ],
-      "lowest_irt_b_in_chapter": -0.12,
-      "fastest_ideal_time_sec": 85
-    },
-    {
-      "topic_id": "Oscillations & Waves",
-      "subject": "Physics",
-      "current_basic_count": 0,
-      "current_medium_count": 47,
-      "proposed_basic_anchors_count": 3,
-      "top_anchor_question_ids": [
-        "NEET2019_PHY_008",
-        "NEET2022_PHY_010",
-        "NEET2013_PHY_033"
-      ],
-      "lowest_irt_b_in_chapter": -0.12,
-      "fastest_ideal_time_sec": 85
-    },
-    {
-      "topic_id": "Periodic Table",
-      "subject": "Chemistry",
-      "current_basic_count": 0,
-      "current_medium_count": 12,
-      "proposed_basic_anchors_count": 3,
-      "top_anchor_question_ids": [
-        "NEET2018_CHEM_049",
-        "NEET2014_CHEM_061",
-        "NEET2015_CHEM_010"
-      ],
-      "lowest_irt_b_in_chapter": -0.2427,
-      "fastest_ideal_time_sec": 70
-    },
-    {
-      "topic_id": "Plant Physiology",
-      "subject": "Biology",
-      "current_basic_count": 0,
-      "current_medium_count": 72,
-      "proposed_basic_anchors_count": 3,
-      "top_anchor_question_ids": [
-        "NEET2013_BIO_100",
-        "NEET2014_BIO_111",
-        "NEET2015_BIO_088"
-      ],
-      "lowest_irt_b_in_chapter": -0.4064,
-      "fastest_ideal_time_sec": 50
-    },
-    {
-      "topic_id": "Properties of Matter",
-      "subject": "Physics",
-      "current_basic_count": 0,
-      "current_medium_count": 14,
-      "proposed_basic_anchors_count": 3,
-      "top_anchor_question_ids": [
-        "NEET2013_PHY_013",
-        "NEET2022_PHY_014",
-        "NEET2023_PHY_030"
-      ],
-      "lowest_irt_b_in_chapter": -0.12,
-      "fastest_ideal_time_sec": 85
-    },
-    {
-      "topic_id": "Ray Optics",
-      "subject": "Physics",
-      "current_basic_count": 0,
-      "current_medium_count": 27,
-      "proposed_basic_anchors_count": 3,
-      "top_anchor_question_ids": [
-        "NEET2019_PHY_015",
-        "NEET2014_PHY_037",
-        "NEET2025_PHY_002"
-      ],
-      "lowest_irt_b_in_chapter": -0.12,
-      "fastest_ideal_time_sec": 85
-    },
-    {
-      "topic_id": "Redox Reactions & Electrochemistry",
-      "subject": "Chemistry",
-      "current_basic_count": 0,
-      "current_medium_count": 25,
-      "proposed_basic_anchors_count": 3,
-      "top_anchor_question_ids": [
-        "NEET2022_CHEM_071",
-        "NEET2013_CHEM_087",
-        "NEET2024_CHEM_084"
-      ],
-      "lowest_irt_b_in_chapter": -0.2027,
-      "fastest_ideal_time_sec": 70
-    },
-    {
-      "topic_id": "Rotational Motion",
-      "subject": "Physics",
-      "current_basic_count": 0,
-      "current_medium_count": 22,
-      "proposed_basic_anchors_count": 3,
-      "top_anchor_question_ids": [
-        "NEET2013_PHY_029",
-        "NEET2023_PHY_014",
-        "NEET2022_PHY_031"
-      ],
-      "lowest_irt_b_in_chapter": -0.08,
-      "fastest_ideal_time_sec": 85
-    },
-    {
-      "topic_id": "Semiconductor Electronics",
-      "subject": "Physics",
-      "current_basic_count": 0,
-      "current_medium_count": 18,
-      "proposed_basic_anchors_count": 3,
-      "top_anchor_question_ids": [
-        "NEET2020_PHY_156",
-        "NEET2013_PHY_043",
-        "NEET2019_PHY_018"
-      ],
-      "lowest_irt_b_in_chapter": -0.12,
-      "fastest_ideal_time_sec": 85
-    },
-    {
-      "topic_id": "States of Matter",
-      "subject": "Chemistry",
-      "current_basic_count": 0,
-      "current_medium_count": 18,
-      "proposed_basic_anchors_count": 3,
-      "top_anchor_question_ids": [
-        "RENEET2026_CHEM_096",
-        "NEET2018_CHEM_086",
-        "NEET2015_CHEM_022"
-      ],
-      "lowest_irt_b_in_chapter": -0.1627,
-      "fastest_ideal_time_sec": 70
-    },
-    {
-      "topic_id": "Structure of Atom",
-      "subject": "Chemistry",
-      "current_basic_count": 0,
-      "current_medium_count": 58,
-      "proposed_basic_anchors_count": 3,
-      "top_anchor_question_ids": [
-        "RENEET2026_CHEM_065",
-        "NEET2019_CHEM_081",
-        "NEET2016_CHEM_053"
-      ],
-      "lowest_irt_b_in_chapter": -0.2427,
-      "fastest_ideal_time_sec": 70
-    },
-    {
-      "topic_id": "Surface Chemistry",
-      "subject": "Chemistry",
-      "current_basic_count": 0,
-      "current_medium_count": 8,
-      "proposed_basic_anchors_count": 3,
-      "top_anchor_question_ids": [
-        "NEET2016_CHEM_079",
-        "NEET2020_CHEM_108",
-        "NEET2014_CHEM_057"
-      ],
-      "lowest_irt_b_in_chapter": -0.2427,
-      "fastest_ideal_time_sec": 70
-    },
-    {
-      "topic_id": "Thermal Physics",
-      "subject": "Physics",
-      "current_basic_count": 0,
-      "current_medium_count": 15,
-      "proposed_basic_anchors_count": 3,
-      "top_anchor_question_ids": [
-        "NEET2024_PHY_026",
-        "NEET2013_PHY_019",
-        "NEET2024_PHY_047"
-      ],
-      "lowest_irt_b_in_chapter": -0.12,
-      "fastest_ideal_time_sec": 85
-    },
-    {
-      "topic_id": "Thermodynamics",
-      "subject": "Physics",
-      "current_basic_count": 0,
-      "current_medium_count": 40,
-      "proposed_basic_anchors_count": 3,
-      "top_anchor_question_ids": [
-        "NEET2019_CHEM_086",
-        "NEET2016_CHEM_050",
-        "NEET2016_CHEM_064"
-      ],
-      "lowest_irt_b_in_chapter": -0.2427,
-      "fastest_ideal_time_sec": 70
-    },
-    {
-      "topic_id": "Units & Dimensions",
-      "subject": "Physics",
-      "current_basic_count": 0,
-      "current_medium_count": 20,
-      "proposed_basic_anchors_count": 3,
-      "top_anchor_question_ids": [
-        "NEET2022_PHY_034",
-        "NEET2020_PHY_167",
-        "NEET2019_PHY_020"
-      ],
-      "lowest_irt_b_in_chapter": -0.12,
-      "fastest_ideal_time_sec": 85
-    },
-    {
-      "topic_id": "Wave Optics",
-      "subject": "Physics",
-      "current_basic_count": 0,
-      "current_medium_count": 9,
-      "proposed_basic_anchors_count": 3,
-      "top_anchor_question_ids": [
-        "NEET2020_PHY_138",
-        "NEET2015_PHY_170",
-        "NEET2020_PHY_165"
-      ],
-      "lowest_irt_b_in_chapter": 0.04,
-      "fastest_ideal_time_sec": 85
-    },
-    {
-      "topic_id": "Work, Energy & Power",
-      "subject": "Physics",
-      "current_basic_count": 0,
-      "current_medium_count": 33,
-      "proposed_basic_anchors_count": 3,
-      "top_anchor_question_ids": [
-        "NEET2019_PHY_012",
-        "NEET2024_PHY_033",
-        "NEET2024_PHY_024"
-      ],
-      "lowest_irt_b_in_chapter": 0.0225,
-      "fastest_ideal_time_sec": 85
-    },
-    {
-      "topic_id": "d- and f-Block Elements",
-      "subject": "Chemistry",
-      "current_basic_count": 0,
-      "current_medium_count": 22,
-      "proposed_basic_anchors_count": 3,
-      "top_anchor_question_ids": [
-        "NEET2024_CHEM_054",
-        "NEET2021_CHEM_055",
-        "NEET2014_CHEM_075"
-      ],
-      "lowest_irt_b_in_chapter": -0.2427,
-      "fastest_ideal_time_sec": 70
-    },
-    {
-      "topic_id": "s-Block Elements",
-      "subject": "Chemistry",
-      "current_basic_count": 0,
-      "current_medium_count": 8,
-      "proposed_basic_anchors_count": 3,
-      "top_anchor_question_ids": [
-        "NEET2019_CHEM_058",
-        "NEET2019_CHEM_088",
-        "NEET2016_CHEM_052"
-      ],
-      "lowest_irt_b_in_chapter": -0.2427,
-      "fastest_ideal_time_sec": 70
-    }
-  ],
-  "per_chapter_advanced_gap_anchors": [
-    {
-      "topic_id": "Atoms & Nuclei",
-      "subject": "Physics",
-      "current_advanced_count": 0,
-      "current_medium_count": 21,
-      "proposed_advanced_anchors_count": 2,
-      "top_anchor_question_ids": [
-        "NEET2013_PHY_035",
-        "NEET2021_PHY_007"
-      ],
-      "highest_irt_b_in_chapter": 0.54
-    },
-    {
-      "topic_id": "Coordination Chemistry",
-      "subject": "Chemistry",
-      "current_advanced_count": 0,
-      "current_medium_count": 14,
-      "proposed_advanced_anchors_count": 2,
-      "top_anchor_question_ids": [
-        "NEET2025_CHEM_057",
-        "NEET2014_CHEM_072"
-      ],
-      "highest_irt_b_in_chapter": 0.2348
-    },
-    {
-      "topic_id": "Environmental Chemistry",
-      "subject": "Chemistry",
-      "current_advanced_count": 0,
-      "current_medium_count": 2,
-      "proposed_advanced_anchors_count": 2,
-      "top_anchor_question_ids": [
-        "NEET2022_CHEM_091",
-        "NEET2014_CHEM_082"
-      ],
-      "highest_irt_b_in_chapter": -0.2027
-    },
-    {
-      "topic_id": "Haloalkanes & Haloarenes",
-      "subject": "Chemistry",
-      "current_advanced_count": 0,
-      "current_medium_count": 6,
-      "proposed_advanced_anchors_count": 2,
-      "top_anchor_question_ids": [
-        "NEET2015_CHEM_032",
-        "NEET2023_CHEM_058"
-      ],
-      "highest_irt_b_in_chapter": -0.0352
-    },
-    {
-      "topic_id": "Hydrocarbons",
-      "subject": "Chemistry",
-      "current_advanced_count": 0,
-      "current_medium_count": 18,
-      "proposed_advanced_anchors_count": 2,
-      "top_anchor_question_ids": [
-        "NEET2019_CHEM_074",
-        "NEET2015_CHEM_014"
-      ],
-      "highest_irt_b_in_chapter": 0.1448
-    },
-    {
-      "topic_id": "Magnetism & Matter",
-      "subject": "Physics",
-      "current_advanced_count": 0,
-      "current_medium_count": 5,
-      "proposed_advanced_anchors_count": 2,
-      "top_anchor_question_ids": [
-        "NEET2020_PHY_171",
-        "NEET2022_PHY_030"
-      ],
-      "highest_irt_b_in_chapter": 0.335
-    }
-  ]
+  "per_chapter_basic_gap_anchors": [],
+  "per_chapter_advanced_gap_anchors": []
 }

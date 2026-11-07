@@ -112,10 +112,12 @@ export interface DinaSkillItem {
   name: string;
   description: string;
   mastery_probability: number;
+  prior_mastery?: number;
+  corpus_pyq_count?: number;
   posterior_sd: number;
   attempts_count: number;
   correct_count: number;
-  status: "uncalibrated" | "mastered" | "developing" | "bottleneck";
+  status: "prior_calibrated" | "uncalibrated" | "mastered" | "developing" | "bottleneck";
 }
 
 export interface DinaCognitiveProfile {
@@ -267,6 +269,7 @@ export interface ImprovementActionRow {
   blocking_prerequisites: string[];
   recommended_start_tier: Difficulty;
   recommended_drill_questions: number;
+  available_chapter_pyqs?: number;
   remediation_priority_score: number;
   what_to_improve: string;
 }
@@ -330,6 +333,7 @@ export interface ColdStartItemPrediction {
   predicted_difficulty: Difficulty;
   rf_predicted_difficulty: Difficulty | null;
   rf_engine: string;
+  irt_estimator?: string;
   complexity_score: number;
   irt_params: {
     a: number;
@@ -448,6 +452,46 @@ export interface MlopsAuditOverview {
       guessing_c_range: [number, number];
     };
   };
+  auxiliary_models_training?: {
+    irt_cold_start_ridge_regressor?: {
+      n_samples: number;
+      ridge_alpha: number;
+      a_5fold_rmse: number;
+      a_5fold_r2: number;
+      b_5fold_rmse: number;
+      b_5fold_r2: number;
+      c_5fold_rmse: number;
+      c_5fold_r2: number;
+    };
+    bkt_65_chapter_empirical_bayes?: {
+      total_chapters: number;
+      weighted_global_prior: number;
+      min_chapter_prior: number;
+      max_chapter_prior: number;
+    };
+    dina_8_skill_calibrated?: {
+      total_corpus_items: number;
+      skill_priors: Record<string, number>;
+    };
+    ncert_pyq_svd_rag?: {
+      model_type: string;
+      n_chapters_indexed: number;
+      vocab_size: number;
+      lsa_dimensions: number;
+      lsa_explained_variance_ratio: number;
+    };
+    linucb_and_laplacian?: {
+      linucb_prior_r2: number;
+      laplacian_spectral_gap: number;
+    };
+  };
+  chapter_wise_summary?: {
+    total_chapters: number;
+    total_clean_pyqs: number;
+    chapters_missing_basic: number;
+    chapters_missing_medium: number;
+    chapters_missing_advanced: number;
+  };
   harness_benchmark: {
     harness_status?: string;
     execution_time_seconds?: number;
@@ -538,10 +582,12 @@ export interface MlopsAuditOverview {
       adjacent_tier_fallback_resolves_100_percent_topics: boolean;
     };
     blueprint_readiness: {
-      current_adaptive_45q_blueprint: {
+      max_non_repeating_45q_mocks?: number;
+      max_non_repeating_180q_mocks?: number;
+      current_adaptive_45q_blueprint?: {
         max_full_non_repeating_mocks: number;
       };
-      target_neet_180q_blueprint: {
+      target_neet_180q_blueprint?: {
         max_full_non_repeating_mocks: number;
       };
     };

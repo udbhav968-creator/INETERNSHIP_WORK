@@ -10,11 +10,12 @@ from .corpus_distribution_and_readiness_audit import (
     format_distribution_markdown_table,
     run_corpus_distribution_and_readiness_audit,
 )
-from .dina_cognitive_diagnosis import COGNITIVE_SKILLS
+from .dina_cognitive_diagnosis import COGNITIVE_SKILLS, DINA_CALIBRATED_SKILLS
 from .irt_3pl_model import CALIBRATED_ITEMS, predict_cold_start_difficulty_and_irt
 from .knowledge_graph_dag import DAG_NODES
 from .rag_socratic_engine import _INDEX as RAG_INDEX
 from .rf_compact_runtime import COMPACT_RF_RUNTIME
+from .state_machine.bkt_model import CHAPTER_BKT_REGISTRY
 
 MODEL_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = MODEL_DIR.parent
@@ -85,10 +86,16 @@ def verify_all_ml_artifacts(
 
     if not COMPACT_RF_RUNTIME.loaded:
         raise RuntimeError("Compact 300-tree serverless RF runtime failed to load")
-    if len(CALIBRATED_ITEMS) != 2471:
-        raise RuntimeError(f"Expected 2471 calibrated 3PL IRT items, got {len(CALIBRATED_ITEMS)}")
+    if len(CALIBRATED_ITEMS) != 2400:
+        raise RuntimeError(f"Expected 2400 calibrated 3PL IRT items, got {len(CALIBRATED_ITEMS)}")
     if len(DAG_NODES) != 65 or len(RAG_INDEX.chunks) != 65 or len(COGNITIVE_SKILLS) != 8:
         raise RuntimeError("Curriculum graph / RAG / DINA skill count mismatch")
+    if len(CHAPTER_BKT_REGISTRY) != 65:
+        raise RuntimeError(f"Expected 65 trained chapter BKT priors, got {len(CHAPTER_BKT_REGISTRY)}")
+    if len(DINA_CALIBRATED_SKILLS) != 8:
+        raise RuntimeError(f"Expected 8 trained DINA skill priors, got {len(DINA_CALIBRATED_SKILLS)}")
+    if not RAG_INDEX.svd_loaded:
+        raise RuntimeError("Hybrid TF-IDF + 32D Truncated-SVD LSA RAG index failed to load")
 
     smoke = predict_cold_start_difficulty_and_irt(
         question_text="Two point charges +4 uC and -9 uC are separated by 0.30 m in vacuum. Find electric field E.",
@@ -100,6 +107,8 @@ def verify_all_ml_artifacts(
     )
     if smoke.get("rf_probabilities") is None:
         raise RuntimeError("Compact RF smoke inference returned None probabilities")
+    if smoke.get("irt_estimator") != "multi_output_ridge_npz":
+        raise RuntimeError("Cold-start 3PL IRT Ridge Regressor (.npz) failed to load")
 
     boot_ms = round((time.perf_counter() - t0) * 1000.0, 2)
     if boot_ms > 2500.0:
@@ -110,6 +119,9 @@ def verify_all_ml_artifacts(
         "verified_artifacts_count": verified_count,
         "calibrated_irt_items": len(CALIBRATED_ITEMS),
         "canonical_chapters": len(DAG_NODES),
+        "trained_bkt_chapters": len(CHAPTER_BKT_REGISTRY),
+        "trained_dina_skills": len(DINA_CALIBRATED_SKILLS),
+        "svd_rag_loaded": RAG_INDEX.svd_loaded,
         "cold_start_verification_ms": boot_ms,
     }
 
@@ -128,6 +140,7 @@ def render_ci_markdown_summary() -> str:
     cv = val_report["stratified_5fold_cross_validation"]
     tourn = val_report.get("champion_challenger_tournament", {})
     abl = har_report["linucb_vs_random_ablation"]
+    parity = val_report["serverless_compact_rf_parity"]
 
     lines = [
         "## Klassed Enterprise v2 — MLOps & Psychometric CI Governance Report",
@@ -137,7 +150,7 @@ def render_ci_markdown_summary() -> str:
         f"| **Cryptographic Artifact Registry** | `{integrity['verified_artifacts_count']}` SHA-256 checksums verified in `{integrity['cold_start_verification_ms']} ms` | PASSED |",
         f"| **Champion 300-Tree RF Holdout** | `{rf_h['holdout_accuracy']*100:.2f}%` (`{rf_h['correct_predictions']}/{rf_h['testing_rows']}`), Macro-F1 `{rf_h['macro_f1']}` | PASSED |",
         f"| **Stratified 5-Fold Cross-Validation** | `{cv['mean_cv_accuracy']*100:.2f}% +/- {cv['std_cv_accuracy']*100:.2f}%`, Brier `{cv['oof_multiclass_brier_score']}` | PASSED |",
-        f"| **Serverless Compact RF Parity** | `2471 / 2471` exact matches (`max_diff = {val_report['serverless_compact_rf_parity']['max_abs_probability_diff']}`) | PASSED |",
+        f"| **Serverless Compact RF Parity** | `{parity['exact_class_matches']} / {parity['verified_rows']}` exact matches (`max_diff = {parity['max_abs_probability_diff']}`) | PASSED |",
         f"| **120-Round LinUCB Bandit Regret** | Regret `{abl['linucb_cumulative_regret']}` vs Random `{abl['random_cumulative_regret']}` (ZPD `{abl['linucb_mean_zpd_alignment']*100:.1f}%`) | PASSED |",
         "",
         "### Multi-Model Champion-Challenger Tournament",

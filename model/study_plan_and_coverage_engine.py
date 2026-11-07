@@ -10,11 +10,35 @@ from .knowledge_graph_dag import (
     get_direct_prerequisites,
 )
 from .monte_carlo_conformal_neet import run_monte_carlo_conformal_neet_simulation
-from .state_machine.bkt_model import compute_ebbinghaus_forgetting_prior, compute_retention_urgency
+from .state_machine.bkt_model import (
+    compute_ebbinghaus_forgetting_prior,
+    compute_retention_urgency,
+    get_chapter_bkt_prior,
+)
 
 MODEL_DIR = Path(__file__).resolve().parent
+PROJECT_ROOT = MODEL_DIR.parent
+_CHAPTER_SUMMARY_PATH = PROJECT_ROOT / "data" / "taxonomy" / "chapter_wise_neet_pyq_summary.json"
+
 with open(MODEL_DIR / "topic_importance.json", encoding="utf-8") as f:
     _TOPIC_IMPORTANCE: dict[str, float] = json.load(f)
+
+
+def _load_chapter_pyq_counts() -> dict[str, int]:
+    if _CHAPTER_SUMMARY_PATH.exists():
+        try:
+            payload = json.loads(_CHAPTER_SUMMARY_PATH.read_text(encoding="utf-8"))
+            return {
+                str(row["chapter"]): int(row["total_pyqs"])
+                for row in payload.get("chapters", [])
+                if "chapter" in row and "total_pyqs" in row
+            }
+        except Exception:
+            pass
+    return {}
+
+
+_CHAPTER_PYQ_COUNTS: dict[str, int] = _load_chapter_pyq_counts()
 
 
 def compute_syllabus_coverage_and_improvement_plan(
@@ -40,11 +64,16 @@ def compute_syllabus_coverage_and_improvement_plan(
     for st in states:
         tid = str(st["topic_id"])
         practiced_set.add(tid)
-        m_prob = float(st.get("mastery_prob", 0.35) or 0.35)
+        ch_prior = get_chapter_bkt_prior(tid)
+        m_prob = float(st.get("mastery_prob") if st.get("mastery_prob") is not None else ch_prior)
         elapsed_h = float(st.get("elapsed_hours", 0.0) or 0.0)
         streak = int(st.get("streak", 0) or 0)
-        decayed_m = compute_ebbinghaus_forgetting_prior(m_prob, elapsed_hours=elapsed_h, streak=streak)
-        urg = compute_retention_urgency(m_prob, elapsed_hours=elapsed_h, streak=streak)
+        decayed_m = compute_ebbinghaus_forgetting_prior(
+            m_prob, elapsed_hours=elapsed_h, streak=streak, topic_id=tid
+        )
+        urg = compute_retention_urgency(
+            m_prob, elapsed_hours=elapsed_h, streak=streak, topic_id=tid
+        )
 
         raw_mastery_map[tid] = m_prob
         decayed_mastery_map[tid] = decayed_m
@@ -112,9 +141,10 @@ def compute_syllabus_coverage_and_improvement_plan(
         peak_m = raw_mastery_map.get(tid, eff_m)
         urg = urgency_map.get(tid, 0.0)
         prereqs = get_direct_prerequisites(tid)
-        weak_prereqs = [p for p in prereqs if effective_mastery_all.get(p, 0.35) < 0.45]
+        weak_prereqs = [p for p in prereqs if effective_mastery_all.get(p, get_chapter_bkt_prior(p)) < 0.45]
         dependents = get_dependents(tid)
         readiness = compute_prerequisite_readiness(tid, effective_mastery_all)
+        avail_pyqs = int(_CHAPTER_PYQ_COUNTS.get(tid, 15))
 
         sb = subject_buckets[subj]
         sb["total_chapters"] += 1
@@ -169,7 +199,7 @@ def compute_syllabus_coverage_and_improvement_plan(
             directive = (
                 f"Remediate foundational prerequisite(s) {', '.join(weak_prereqs)} first, then re-drill {tid}."
             )
-            drill_q = 12
+            drill_q = min(12, avail_pyqs)
         elif is_practiced and eff_m < 0.45:
             diag_cat = "LESS_LEARNED_CRITICAL"
             pace_note = " with untimed step-by-step derivation" if pace_map.get(tid) == "slow" else ""
@@ -177,7 +207,7 @@ def compute_syllabus_coverage_and_improvement_plan(
             directive = (
                 f"Drill {tid} ({level_map.get(tid, 'basic')} tier){pace_note}; focus on {weakest_skill['name']}."
             )
-            drill_q = 15 if pace_map.get(tid) == "slow" else 12
+            drill_q = min(15 if pace_map.get(tid) == "slow" else 12, avail_pyqs)
         elif is_practiced and urg >= 0.25:
             diag_cat = "SPACED_REPETITION_DECAY"
             priority = urg * imp * 1.85 + (peak_m - eff_m) * 4.0
@@ -185,15 +215,15 @@ def compute_syllabus_coverage_and_improvement_plan(
                 f"Memory retention decayed from {round(peak_m * 100)}% to {round(eff_m * 100)}% over "
                 f"{round(elapsed_map.get(tid, 0.0), 1)}h; run spaced-repetition review."
             )
-            drill_q = 10
+            drill_q = min(10, avail_pyqs)
         elif eff_m < 0.75:
             diag_cat = "HIGH_YIELD_UNLOCK"
             priority = (1.0 - eff_m) * imp * readiness * (1.0 + 0.08 * len(dependents))
             directive = (
-                f"High-yield ZPD chapter (readiness {round(readiness * 100)}%, unlocks {len(dependents)} downstream); "
-                f"complete adaptive chapter drill."
+                f"High-yield ZPD chapter (readiness {round(readiness * 100)}%, unlocks {len(dependents)} downstream, "
+                f"{avail_pyqs} verified PYQs); complete adaptive chapter drill."
             )
-            drill_q = 15
+            drill_q = min(15, avail_pyqs)
         else:
             continue
 
@@ -211,7 +241,8 @@ def compute_syllabus_coverage_and_improvement_plan(
                 "expected_marks_gain_720": round(max(0.5, est_marks_gain), 1),
                 "blocking_prerequisites": weak_prereqs,
                 "recommended_start_tier": level_map.get(tid, "basic"),
-                "recommended_drill_questions": drill_q,
+                "recommended_drill_questions": max(3, drill_q),
+                "available_chapter_pyqs": avail_pyqs,
                 "remediation_priority_score": round(priority, 4),
                 "what_to_improve": directive,
             }
@@ -237,7 +268,7 @@ def compute_syllabus_coverage_and_improvement_plan(
         subj = str((DAG_NODES.get(tid) or {}).get("subject", "Physics"))
         t_taken = int(att.get("time_taken_seconds") or 60)
         exp_t = int(att.get("expected_time_seconds") or 90)
-        m_cur = effective_mastery_all.get(tid, 0.35)
+        m_cur = effective_mastery_all.get(tid, get_chapter_bkt_prior(tid))
         interval_h = 24 if m_cur < 0.45 else (72 if m_cur < 0.70 else 168)
         error_mode = (
             "impulsive_guess"

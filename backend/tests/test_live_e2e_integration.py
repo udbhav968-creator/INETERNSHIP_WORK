@@ -76,9 +76,12 @@ with urllib.request.urlopen(req_ins, timeout=15) as res:
     insights = json.loads(res.read())
     assert insights["global_theta"] == 0.0
     assert insights["estimated_neet_percentile"] == 50.0
-    assert insights["predicted_neet_score_720"] == 380
+    mc_opt_score = insights["monte_carlo_conformal_simulator"]["negative_marking_optimizer"]["optimal_skip_expected_score_720"]
+    assert insights["predicted_neet_score_720"] == mc_opt_score
     assert len(insights["recommended_unlock_topics"]) == 65
-    print(f"[PASS] 3c. Initial Psychometric Priors: theta=0.00, percentile=50.0%ile, score=380/720, 65 chapters loaded")
+    assert len({round(c["current_mastery"], 3) for c in insights["recommended_unlock_topics"]}) >= 15
+    assert all(s["status"] == "prior_calibrated" for s in insights["dina_cognitive_profile"]["skills"])
+    print(f"[PASS] 3c. Trained Cold-Start Psychometric Priors: theta=0.00, unified_score={mc_opt_score}/720, 65 Empirical Bayes chapter priors & 8 calibrated DINA skills")
 
 req_paper = urllib.request.Request(f"{BASE}/students/{sid}/next_paper", headers=auth_headers)
 with urllib.request.urlopen(req_paper, timeout=15) as res:
@@ -211,23 +214,18 @@ with urllib.request.urlopen(snap_req, timeout=15) as res:
 
 with urllib.request.urlopen(f"{BASE}/mlops/health_and_drift", timeout=15) as res:
     health = json.loads(res.read())
-    assert health["models_loaded"]["irt_3pl_psychometric_engine"] is True
-    assert health["models_loaded"]["rf_300_tree_compact_serverless_runtime"] is True
-    assert health["models_loaded"]["bkt_bayesian_knowledge_tracing"] is True
-    assert health["models_loaded"]["linucb_contextual_bandit"] is True
-    assert health["models_loaded"]["rag_ncert_socratic_engine"] is True
-    assert health["models_loaded"]["dina_8_skill_q_matrix"] is True
-    assert health["models_loaded"]["monte_carlo_conformal_neet_simulator"] is True
-    print(f"[PASS] 9. MLOps Observability & Drift Gate: All 10 production models active, feature store p50={health['feature_store']['p50_ms']}ms")
+    assert len(health["models_loaded"]) == 15
+    assert all(bool(v) for v in health["models_loaded"].values())
+    print(f"[PASS] 9. MLOps Observability & Drift Gate: All 15 trained models active, feature store p50={health['feature_store']['p50_ms']}ms")
 
 with urllib.request.urlopen(f"{BASE}/mlops/audit_overview", timeout=15) as res:
     audit = json.loads(res.read())
-    assert audit["corpus_integrity"]["verified_questions_in_db"] == 2471
+    assert audit["corpus_integrity"]["verified_questions_in_db"] == 2400
     assert audit["corpus_integrity"]["canonical_chapters_in_db"] == 65
     assert audit["corpus_integrity"]["dag_acyclic"] is True
     assert audit["validation_report"]["pipeline_status"] == "PASSED"
     assert audit["harness_benchmark"]["harness_status"] == "PASSED"
-    print(f"[PASS] 10. Full MLOps Audit Overview: 2471 PYQs, 65 chapters, CV={audit['validation_report']['stratified_5fold_cross_validation']['mean_cv_accuracy']}, Harness=PASSED")
+    print(f"[PASS] 10. Full MLOps Audit Overview: 2400 clean PYQs, 65 chapters, CV={audit['validation_report']['stratified_5fold_cross_validation']['mean_cv_accuracy']}, Harness=PASSED")
 
 cold_payload = json.dumps({
     "question_text": "Two point charges +4 uC and -9 uC are separated in vacuum by 0.30 m. Calculate electric field intensity E = k*q/r^2 at midpoint.",
@@ -298,10 +296,12 @@ print(f"[PASS] 14. Frontend-Backend MLOps UI Contract Verified: status={drift_bl
 
 with urllib.request.urlopen(f"{BASE}/mlops/corpus_distribution", timeout=15) as res:
     dist_payload = json.loads(res.read())
-    assert dist_payload["distribution_audit"]["corpus_totals"]["total_verified_questions"] == 2471
+    assert dist_payload["distribution_audit"]["corpus_totals"]["total_verified_questions"] == 2400
+    assert dist_payload["distribution_audit"]["gap_summary"]["topics_missing_basic_count"] == 0
     assert dist_payload["distribution_audit"]["gap_summary"]["topics_missing_medium_count"] == 0
+    assert dist_payload["distribution_audit"]["gap_summary"]["topics_missing_advanced_count"] == 0
     assert dist_payload["live_integrity_verification"]["integrity_status"] == "VERIFIED"
-    print(f"[PASS] 15. MLOps 65-Chapter Distribution & SHA-256 Registry Gate: 2471 PYQs, 0 medium gaps, integrity={dist_payload['live_integrity_verification']['integrity_status']}")
+    print(f"[PASS] 15. MLOps 65-Chapter Complete 3-Tier Distribution & SHA-256 Registry Gate: 2400 PYQs, 0 missing tiers across 65 chapters, integrity={dist_payload['live_integrity_verification']['integrity_status']}")
 
 req_plan = urllib.request.Request(f"{BASE}/students/{sid}/study_plan", headers=full_sync_headers)
 with urllib.request.urlopen(req_plan, timeout=15) as res:
@@ -315,25 +315,38 @@ with urllib.request.urlopen(req_plan, timeout=15) as res:
 with urllib.request.urlopen(f"{BASE}/mlops/recalibration_and_dedup", timeout=15) as res:
     recal_payload = json.loads(res.read())
     assert recal_payload["tier_recalibration_audit"]["source_corpus_mutated"] is False
-    assert recal_payload["tier_recalibration_audit"]["gap_resolution_summary"]["chapters_resolvable_via_irt_anchors"] == 46
-    assert recal_payload["question_similarity_audit"]["near_duplicate_pairs_count"] >= 5
+    assert recal_payload["tier_recalibration_audit"]["gap_resolution_summary"]["chapters_missing_basic_before"] == 0
+    assert recal_payload["question_similarity_audit"]["near_duplicate_pairs_count"] >= 3
     assert recal_payload["probability_calibration"]["post_calibration"]["ece_10_bin"] < 0.01
-    assert audit["live_integrity_verification"]["verified_artifacts_count"] >= 11
+    assert audit["live_integrity_verification"]["verified_artifacts_count"] >= 19
     assert "calibrated_probabilities" in cold and cold["calibrated_probabilities"] is not None
     print(
-        f"[PASS] 17. Live Tier Recalibration (46/46), Cross-Year Dedup ({recal_payload['question_similarity_audit']['near_duplicate_pairs_count']} pairs) & Temperature Scaling (T*={recal_payload['probability_calibration']['optimal_temperature']}, {audit['live_integrity_verification']['verified_artifacts_count']} SHA-256 artifacts)"
+        f"[PASS] 17. Complete 3-Tier Audit (0/65 missing), Cross-Year Dedup ({recal_payload['question_similarity_audit']['near_duplicate_pairs_count']} pairs) & Temperature Scaling (T*={recal_payload['probability_calibration']['optimal_temperature']}, {audit['live_integrity_verification']['verified_artifacts_count']} SHA-256 artifacts)"
     )
 
 with urllib.request.urlopen(f"{BASE}/mlops/metrics", timeout=15) as res:
     prom_body = res.read().decode("utf-8")
-    assert "klassed_calibrated_irt_items_total 2471" in prom_body
+    assert "klassed_active_ml_models_total 15" in prom_body
+    assert "klassed_calibrated_irt_items_total 2400" in prom_body
     assert "klassed_rf_temperature_post_ece" in prom_body
 
 with urllib.request.urlopen(f"{BASE}/assets/index.js", timeout=15) as res:
     bundle_js = res.read().decode("utf-8")
     assert "ML Syllabus Coverage, Less-Learned Diagnostics & Improvement Plan" in bundle_js
-    assert "3-Model Tournament & Temperature Probability Calibration" in bundle_js
+    assert "Trained Psychometric, Bandit, Graph Laplacian & 32D SVD LSA RAG Telemetry" in bundle_js
     assert "Inspect Live Prometheus Metrics" in bundle_js
-    print(f"[PASS] 18. Live Prometheus /mlops/metrics & Rebuilt Vercel SPA Bundle Verified ({len(bundle_js)} bytes JS with Dashboard + MLOps UI cards)")
+    print(f"[PASS] 18. Live Prometheus /mlops/metrics & Rebuilt Vercel SPA Bundle Verified ({len(bundle_js)} bytes JS with 15-Model UI cards)")
 
-print("\n>>> ALL 18 END-TO-END LIVE PRODUCTION INTEGRATION GATES PASSED (100%) <<<")
+aux = audit["auxiliary_models_training"]
+ch_sum = audit["chapter_wise_summary"]
+assert aux["irt_cold_start_ridge_regressor"]["b_5fold_r2"] > 0.98
+assert aux["bkt_65_chapter_empirical_bayes"]["total_chapters"] == 65
+assert aux["ncert_pyq_svd_rag"]["lsa_dimensions"] == 32
+assert aux["linucb_and_laplacian"]["linucb_prior_r2"] > 0.99
+assert ch_sum["total_chapters"] == 65 and ch_sum["total_clean_pyqs"] == 2400
+assert ch_sum["chapters_missing_basic"] == 0 and ch_sum["chapters_missing_advanced"] == 0
+print(
+    f"[PASS] 19. Trained Auxiliary Models & 65-Chapter Dataset Telemetry Verified: Ridge b_R2={aux['irt_cold_start_ridge_regressor']['b_5fold_r2']}, SVD={aux['ncert_pyq_svd_rag']['lsa_dimensions']}D, LinUCB_R2={aux['linucb_and_laplacian']['linucb_prior_r2']}"
+)
+
+print("\n>>> ALL 19 END-TO-END LIVE PRODUCTION INTEGRATION GATES PASSED (100%) <<<")

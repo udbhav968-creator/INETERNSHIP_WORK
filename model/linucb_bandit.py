@@ -4,16 +4,43 @@ import os
 import tempfile
 import threading
 from pathlib import Path
+
 import numpy as np
-from .irt_3pl_model import get_item_params, irt_3pl_probability, fisher_information
+
+from .irt_3pl_model import fisher_information, get_item_params, irt_3pl_probability
 
 CONTEXT_DIM = 6
 DEFAULT_ALPHA = 0.35
 ZPD_TARGET_PROB = 0.70
 
-_PRIOR_B = np.array([0.45, 0.30, 0.25, 0.20, 0.25, 0.15], dtype=np.float64)
 _BANDIT_LOCK = threading.RLock()
 _MODEL_DIR = Path(__file__).resolve().parent
+_PRIOR_INIT_PATH = _MODEL_DIR / "linucb_prior_init.json"
+
+
+def _load_warm_start_prior() -> tuple[np.ndarray, np.ndarray]:
+    if _PRIOR_INIT_PATH.exists():
+        try:
+            payload = json.loads(_PRIOR_INIT_PATH.read_text(encoding="utf-8"))
+            a_mat = np.array(payload["A_init"], dtype=np.float64)
+            b_vec = np.array(payload["b_init"], dtype=np.float64)
+            if a_mat.shape == (CONTEXT_DIM, CONTEXT_DIM) and b_vec.shape == (CONTEXT_DIM,):
+                return a_mat, b_vec
+        except Exception:
+            pass
+    return (
+        np.eye(CONTEXT_DIM, dtype=np.float64),
+        np.array([0.45, 0.30, 0.25, 0.20, 0.25, 0.15], dtype=np.float64),
+    )
+
+
+_PRIOR_A, _PRIOR_B = _load_warm_start_prior()
+
+
+def reload_linucb_warm_start_prior() -> tuple[np.ndarray, np.ndarray]:
+    global _PRIOR_A, _PRIOR_B
+    _PRIOR_A, _PRIOR_B = _load_warm_start_prior()
+    return _PRIOR_A, _PRIOR_B
 
 
 def _resolve_checkpoint_path() -> Path:
@@ -28,8 +55,8 @@ _CHECKPOINT_PATH = _resolve_checkpoint_path()
 class LinUCBStudentState:
     def __init__(self, alpha: float = DEFAULT_ALPHA):
         self.alpha = alpha
-        self.A = np.eye(CONTEXT_DIM, dtype=np.float64)
-        self.A_inv = np.eye(CONTEXT_DIM, dtype=np.float64)
+        self.A = _PRIOR_A.copy()
+        self.A_inv = np.linalg.inv(self.A)
         self.b = _PRIOR_B.copy()
         self.total_updates = 0
 

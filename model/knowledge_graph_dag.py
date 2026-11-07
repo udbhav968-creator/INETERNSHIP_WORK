@@ -2,6 +2,8 @@ import json
 from collections import deque
 from pathlib import Path
 
+from .state_machine.bkt_model import get_chapter_bkt_prior
+
 MODEL_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = MODEL_DIR.parent
 _DAG_PATH = PROJECT_ROOT / "data" / "taxonomy" / "prerequisite_dag.json"
@@ -48,12 +50,15 @@ def get_dependents(topic_id: str) -> list[str]:
 
 
 def compute_prerequisite_readiness(
-    topic_id: str, student_mastery_map: dict[str, float], default_prior: float = 0.35
+    topic_id: str, student_mastery_map: dict[str, float], default_prior: float | None = None
 ) -> float:
     prereqs = get_direct_prerequisites(topic_id)
     if not prereqs:
         return 1.0
-    scores = [student_mastery_map.get(p, default_prior) for p in prereqs]
+    scores = [
+        student_mastery_map.get(p, default_prior if default_prior is not None else get_chapter_bkt_prior(p))
+        for p in prereqs
+    ]
     return round(sum(scores) / len(scores), 4)
 
 
@@ -61,9 +66,10 @@ def compute_hierarchical_shrinkage_prior(
     topic_id: str,
     student_mastery_map: dict[str, float],
     attempts_count: int = 0,
-    global_prior: float = 0.35,
+    global_prior: float | None = None,
     shrinkage_strength: float = 2.0,
 ) -> float:
+    base_prior = global_prior if global_prior is not None else get_chapter_bkt_prior(topic_id)
     node = DAG_NODES.get(topic_id, {})
     prereqs = node.get("prerequisites", [])
     cluster = node.get("cluster")
@@ -76,10 +82,10 @@ def compute_hierarchical_shrinkage_prior(
     ]
     m = len(related_scores)
     if m == 0:
-        cluster_prior = global_prior
+        cluster_prior = base_prior
     else:
         sample_mean = sum(related_scores) / m
-        cluster_prior = (m * sample_mean + shrinkage_strength * global_prior) / (m + shrinkage_strength)
+        cluster_prior = (m * sample_mean + shrinkage_strength * base_prior) / (m + shrinkage_strength)
 
     if topic_id not in student_mastery_map:
         return round(max(0.05, min(0.95, cluster_prior)), 4)
@@ -98,7 +104,7 @@ def diagnose_prerequisite_bottlenecks(
     for topic_id, mastery in student_mastery_map.items():
         prereqs = get_direct_prerequisites(topic_id)
         weak_prereqs = [
-            p for p in prereqs if student_mastery_map.get(p, 0.35) < threshold
+            p for p in prereqs if student_mastery_map.get(p, get_chapter_bkt_prior(p)) < threshold
         ]
         dependents = get_dependents(topic_id)
 
@@ -136,7 +142,7 @@ def propagate_dag_belief_update(
     if is_correct and diff in ("medium", "advanced"):
         boost_rate = 0.08 if diff == "advanced" else 0.05
         for prereq in get_direct_prerequisites(topic_id):
-            curr = float(student_mastery_map.get(prereq, 0.35))
+            curr = float(student_mastery_map.get(prereq, get_chapter_bkt_prior(prereq)))
             if curr < 0.88:
                 new_m = round(min(0.92, curr + boost_rate * (1.0 - curr)), 4)
                 updates[prereq] = new_m

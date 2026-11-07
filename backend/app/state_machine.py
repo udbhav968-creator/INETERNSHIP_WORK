@@ -1,6 +1,9 @@
 from .db_models import StudentTopicState
-from .paths import PROJECT_ROOT
-from model.state_machine.bkt_model import compute_bkt_update, resolve_level_with_hysteresis
+from model.state_machine.bkt_model import (
+    compute_bkt_update,
+    get_chapter_bkt_prior,
+    resolve_level_with_hysteresis,
+)
 
 WINDOW_SIZE = 3
 
@@ -21,7 +24,8 @@ def process_answer(
 
     current_mastery = getattr(state, "mastery_prob", None)
     if current_mastery is None:
-        current_mastery = 0.35 if state.level == "basic" else (0.62 if state.level == "medium" else 0.85)
+        ch_prior = get_chapter_bkt_prior(getattr(state, "topic_id", None))
+        current_mastery = ch_prior if state.level == "basic" else (0.62 if state.level == "medium" else 0.85)
     attempts_so_far = (getattr(state, "attempts_counted", 0) or 0) + len(results)
 
     sim_time_taken = max(1, int(round(float(time_ratio) * 90)))
@@ -36,6 +40,7 @@ def process_answer(
         attempts_count=int(attempts_so_far),
         elapsed_hours=float(elapsed_hours),
         streak=int(state.streak or 0),
+        topic_id=getattr(state, "topic_id", None),
     )
     state.mastery_prob = p_next
     state.confidence_interval = ci_95

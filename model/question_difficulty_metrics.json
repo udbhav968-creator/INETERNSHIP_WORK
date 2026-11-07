@@ -1,9 +1,9 @@
 {
   "model": "RandomForestClassifier",
   "target": "difficulty_level",
-  "training_rows": 1976,
-  "testing_rows": 495,
-  "accuracy": 0.9959595959595959,
+  "training_rows": 1920,
+  "testing_rows": 480,
+  "accuracy": 1.0,
   "classes": [
     "advanced",
     "basic",
@@ -16,6 +16,12 @@
     "question_type",
     "ideal_time_sec",
     "has_diagram",
+    "word_count",
+    "char_length",
+    "formula_density",
+    "numerical_complexity",
+    "negation_trap",
+    "distractor_similarity",
     "marks",
     "negative_marks"
   ]

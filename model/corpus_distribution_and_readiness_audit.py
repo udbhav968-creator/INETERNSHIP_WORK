@@ -2,6 +2,7 @@ import json
 import time
 from collections import defaultdict
 from pathlib import Path
+
 import numpy as np
 
 from .irt_3pl_model import CALIBRATED_ITEMS, IRTItemParams, fisher_information, get_item_params
@@ -160,7 +161,14 @@ def run_corpus_distribution_and_readiness_audit(save_report: bool = True) -> dic
     total_all = total_basic + total_medium + total_adv
 
     report = {
-        "audit_status": "PASSED" if len(missing_medium) == 0 and total_all == 2471 else "WARNING",
+        "audit_status": (
+            "PASSED"
+            if len(missing_medium) == 0
+            and len(missing_basic) == 0
+            and len(missing_advanced) == 0
+            and total_all == 2400
+            else "WARNING"
+        ),
         "execution_time_seconds": round(time.perf_counter() - t0, 4),
         "corpus_totals": {
             "total_verified_questions": total_all,
@@ -174,6 +182,7 @@ def run_corpus_distribution_and_readiness_audit(save_report: bool = True) -> dic
             "topics_missing_medium_count": len(missing_medium),
             "topics_missing_advanced_count": len(missing_advanced),
             "topics_with_any_zero_tier_count": len(any_zero_tier),
+            "all_65_topics_have_all_three_tiers": len(any_zero_tier) == 0,
             "all_65_topics_have_medium_pool": len(missing_medium) == 0,
             "adjacent_tier_fallback_resolves_100_percent_topics": all(
                 r["has_adjacent_fallback_coverage"] for r in topic_rows
@@ -209,7 +218,7 @@ def format_distribution_markdown_table(report: dict) -> str:
     lines = [
         "### NEET PYQ Corpus Subject x Difficulty & 3PL IRT Coverage Matrix",
         "",
-        "| Subject | Chapters | Basic | Medium | Advanced | Total | Missing Basic | IRT Low-b | IRT Mid-b | IRT High-b | 45-Q Depth | 180-Q Depth |",
+        "| Subject | Chapters | Basic | Medium | Advanced | Total | Missing Tiers | IRT Low-b | IRT Mid-b | IRT High-b | 45-Q Depth | 180-Q Depth |",
         "| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |",
     ]
     for subj, m in report["subject_difficulty_matrix"].items():
@@ -225,7 +234,7 @@ def format_distribution_markdown_table(report: dict) -> str:
     lines.append(
         f"| **Total** | **{tot['total_canonical_chapters']}** | **{tot['basic']}** | "
         f"**{tot['medium']}** | **{tot['advanced']}** | **{tot['total_verified_questions']}** | "
-        f"**{gaps['topics_missing_basic_count']}/{tot['total_canonical_chapters']}** | - | - | - | "
+        f"**{gaps['topics_with_any_zero_tier_count']}/{tot['total_canonical_chapters']}** | - | - | - | "
         f"**{report['blueprint_readiness']['max_non_repeating_45q_mocks']} papers** | "
         f"**{report['blueprint_readiness']['max_non_repeating_180q_mocks']} papers** |"
     )

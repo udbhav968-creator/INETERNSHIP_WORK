@@ -1,10 +1,15 @@
 from __future__ import annotations
 
+import json
 import math
 import re
+from pathlib import Path
 from typing import Any
 
 import numpy as np
+
+MODEL_DIR = Path(__file__).resolve().parent
+DINA_CALIBRATED_PATH = MODEL_DIR / "dina_calibrated_parameters.json"
 
 COGNITIVE_SKILLS: list[dict[str, str]] = [
     {
@@ -50,6 +55,27 @@ COGNITIVE_SKILLS: list[dict[str, str]] = [
 ]
 
 SKILL_IDS: list[str] = [s["skill_id"] for s in COGNITIVE_SKILLS]
+
+
+def _load_calibrated_dina_skills() -> dict[str, dict[str, Any]]:
+    if DINA_CALIBRATED_PATH.exists():
+        try:
+            payload = json.loads(DINA_CALIBRATED_PATH.read_text(encoding="utf-8"))
+            skills = payload.get("skills", {})
+            if isinstance(skills, dict) and skills:
+                return skills
+        except Exception:
+            pass
+    return {}
+
+
+DINA_CALIBRATED_SKILLS: dict[str, dict[str, Any]] = _load_calibrated_dina_skills()
+
+
+def reload_calibrated_dina_skills() -> dict[str, dict[str, Any]]:
+    global DINA_CALIBRATED_SKILLS
+    DINA_CALIBRATED_SKILLS = _load_calibrated_dina_skills()
+    return DINA_CALIBRATED_SKILLS
 
 
 def extract_item_q_vector(
@@ -159,17 +185,22 @@ def extract_item_q_vector(
     return q_vec
 
 
-def get_dina_slip_and_guess(difficulty: str) -> tuple[float, float]:
+def get_dina_slip_and_guess(difficulty: str, skill_id: str | None = None) -> tuple[float, float]:
     diff = (difficulty or "medium").lower()
+    cal = DINA_CALIBRATED_SKILLS.get(skill_id or "", {})
+    base_s = float(cal.get("slip", 0.12))
+    base_g = float(cal.get("guess", 0.22))
     if diff == "basic":
-        return 0.08, 0.27
+        return round(max(0.05, base_s - 0.035), 4), round(min(0.30, base_g + 0.035), 4)
     if diff == "advanced":
-        return 0.16, 0.19
-    return 0.12, 0.23
+        return round(min(0.24, base_s + 0.040), 4), round(max(0.14, base_g - 0.035), 4)
+    return round(base_s, 4), round(base_g, 4)
 
 
 def compute_dina_and_rt_profile(attempt_records: list[dict[str, Any]]) -> dict[str, Any]:
-    skill_posteriors: dict[str, float] = {k: 0.50 for k in SKILL_IDS}
+    skill_posteriors: dict[str, float] = {
+        k: float(DINA_CALIBRATED_SKILLS.get(k, {}).get("prior_mastery", 0.42)) for k in SKILL_IDS
+    }
     skill_attempts: dict[str, int] = {k: 0 for k in SKILL_IDS}
     skill_correct: dict[str, int] = {k: 0 for k in SKILL_IDS}
 
@@ -232,10 +263,10 @@ def compute_dina_and_rt_profile(attempt_records: list[dict[str, Any]]) -> dict[s
             tau_precision += obs_precision
             tau_mean = float(np.clip(tau_mean, -2.0, 2.0))
 
-        s_i, g_i = get_dina_slip_and_guess(diff)
         old_posteriors = dict(skill_posteriors)
 
         for k in active_skills:
+            s_i, g_i = get_dina_slip_and_guess(diff, skill_id=k)
             skill_attempts[k] += 1
             if is_corr:
                 skill_correct[k] += 1
@@ -266,17 +297,20 @@ def compute_dina_and_rt_profile(attempt_records: list[dict[str, Any]]) -> dict[s
     skills_out: list[dict[str, Any]] = []
     for meta in COGNITIVE_SKILLS:
         k = meta["skill_id"]
+        cal = DINA_CALIBRATED_SKILLS.get(k, {})
         n_att = skill_attempts[k]
         p_val = skill_posteriors[k]
-        post_sd = math.sqrt(p_val * (1.0 - p_val) / (n_att + 3.0))
         if n_att == 0:
-            status = "uncalibrated"
-        elif p_val >= 0.72:
-            status = "mastered"
-        elif p_val >= 0.45:
-            status = "developing"
+            post_sd = float(cal.get("prior_sd", math.sqrt(p_val * (1.0 - p_val) / 7.0)))
+            status = "prior_calibrated"
         else:
-            status = "bottleneck"
+            post_sd = math.sqrt(p_val * (1.0 - p_val) / (n_att + 6.0))
+            if p_val >= 0.72:
+                status = "mastered"
+            elif p_val >= 0.45:
+                status = "developing"
+            else:
+                status = "bottleneck"
 
         skills_out.append(
             {
@@ -287,6 +321,7 @@ def compute_dina_and_rt_profile(attempt_records: list[dict[str, Any]]) -> dict[s
                 "posterior_sd": round(post_sd, 4),
                 "attempts_count": n_att,
                 "correct_count": skill_correct[k],
+                "corpus_pyq_count": int(cal.get("corpus_pyq_count", 0)),
                 "status": status,
             }
         )
@@ -304,11 +339,16 @@ def compute_dina_and_rt_profile(attempt_records: list[dict[str, Any]]) -> dict[s
             ),
         }
     else:
+        weakest_prior = min(skills_out, key=lambda s: s["mastery_probability"])
         primary_bottleneck = {
-            "skill_id": "dimensional_unit_analysis",
-            "name": "Dimensional & Unit Conversion",
-            "mastery_probability": 0.50,
-            "diagnosis": "Attempt questions to calibrate cognitive profile.",
+            "skill_id": weakest_prior["skill_id"],
+            "name": weakest_prior["name"],
+            "mastery_probability": weakest_prior["mastery_probability"],
+            "diagnosis": (
+                f"Corpus prior bottleneck: {weakest_prior['name']} "
+                f"({round(weakest_prior['mastery_probability'] * 100, 1)}% NEET baseline across {weakest_prior['corpus_pyq_count']} PYQs) - "
+                f"complete an adaptive paper to personalize."
+            ),
         }
 
     speed_z = tau_mean / 0.55

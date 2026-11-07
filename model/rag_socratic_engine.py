@@ -4,14 +4,8 @@ import re
 import time
 from collections import Counter
 from pathlib import Path
-import numpy as np
 
-try:
-    from sklearn.feature_extraction.text import TfidfVectorizer
-    from sklearn.metrics.pairwise import cosine_similarity
-    _HAS_SKLEARN = True
-except ImportError:
-    _HAS_SKLEARN = False
+import numpy as np
 
 from .knowledge_graph_dag import get_direct_prerequisites
 
@@ -19,6 +13,7 @@ _STOP_WORDS = {
     "the", "and", "for", "with", "that", "this", "from", "are", "was", "were",
     "into", "which", "when", "where", "what", "how", "why", "who", "will", "can",
     "not", "but", "have", "has", "had", "between", "under", "over", "their", "its",
+    "given", "below", "following", "correct", "option", "choose", "statement", "statements",
 }
 
 
@@ -57,7 +52,7 @@ class _NumpyTfidfVectorizer:
             for term, cnt in counts.items():
                 col_idx = self.vocab.get(term)
                 if col_idx is not None:
-                    mat[row_idx, col_idx] = cnt * self.idf[col_idx]
+                    mat[row_idx, col_idx] = (1.0 + math.log(cnt)) * self.idf[col_idx]
             norm = np.linalg.norm(mat[row_idx])
             if norm > 0.0:
                 mat[row_idx] /= norm
@@ -68,14 +63,22 @@ MODEL_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = MODEL_DIR.parent
 _NCERT_KB_PATH = PROJECT_ROOT / "data" / "ncert_knowledge_base.json"
 _CLEAN_QUESTIONS_PATH = PROJECT_ROOT / "data" / "tagged_questions" / "neet_questions_clean.json"
+_RAG_SVD_NPZ_PATH = MODEL_DIR / "ncert_rag_svd_index.npz"
+_RAG_SVD_META_PATH = MODEL_DIR / "ncert_rag_svd_meta.json"
 
 
 class NCERTVectorIndex:
     def __init__(self):
         self.chunks: list[dict] = []
         self.question_lookup: dict[str, dict] = {}
-        self.vectorizer: TfidfVectorizer | _NumpyTfidfVectorizer | None = None
-        self.chunk_matrix = None
+        self.svd_loaded: bool = False
+        self.vocab: dict[str, int] = {}
+        self.idf: np.ndarray | None = None
+        self.tfidf_matrix: np.ndarray | None = None
+        self.svd_vt: np.ndarray | None = None
+        self.doc_lsa: np.ndarray | None = None
+        self.vectorizer: _NumpyTfidfVectorizer | None = None
+        self.chunk_matrix: np.ndarray | None = None
         self._build_index()
 
     def _build_index(self) -> None:
@@ -92,26 +95,51 @@ class NCERTVectorIndex:
         if not self.chunks:
             return
 
+        if _RAG_SVD_NPZ_PATH.exists() and _RAG_SVD_META_PATH.exists():
+            try:
+                meta = json.loads(_RAG_SVD_META_PATH.read_text(encoding="utf-8"))
+                arrays = np.load(_RAG_SVD_NPZ_PATH)
+                if int(meta.get("n_chapters_indexed", 0)) == len(self.chunks):
+                    self.vocab = {str(k): int(v) for k, v in meta["vocab"].items()}
+                    self.idf = arrays["idf"].astype(np.float32)
+                    self.tfidf_matrix = arrays["tfidf_matrix"].astype(np.float32)
+                    self.svd_vt = arrays["svd_vt"].astype(np.float32)
+                    self.doc_lsa = arrays["doc_lsa"].astype(np.float32)
+                    self.svd_loaded = True
+                    return
+            except Exception:
+                self.svd_loaded = False
+
         corpus = [
             f"{c['subject']} {c['chapter']} {c['core_concept']} {' '.join(c.get('formulas', []))} {' '.join(c.get('common_misconceptions', []))}"
             for c in self.chunks
         ]
-        if _HAS_SKLEARN:
-            self.vectorizer = TfidfVectorizer(stop_words="english", ngram_range=(1, 2))
-            self.chunk_matrix = self.vectorizer.fit_transform(corpus)
-        else:
-            self.vectorizer = _NumpyTfidfVectorizer()
-            self.chunk_matrix = self.vectorizer.fit_transform(corpus)
+        self.vectorizer = _NumpyTfidfVectorizer()
+        self.chunk_matrix = self.vectorizer.fit_transform(corpus)
 
     def retrieve(self, query_text: str, chapter_hint: str | None = None, top_k: int = 2) -> list[tuple[dict, float]]:
-        if not self.vectorizer or self.chunk_matrix is None:
-            return []
-
-        q_vec = self.vectorizer.transform([query_text])
-        if _HAS_SKLEARN:
-            sims = cosine_similarity(q_vec, self.chunk_matrix).flatten()
-        else:
+        if self.svd_loaded and self.idf is not None and self.tfidf_matrix is not None and self.svd_vt is not None and self.doc_lsa is not None:
+            tokens = _NumpyTfidfVectorizer._tokenize(query_text)
+            q_tfidf = np.zeros(len(self.vocab), dtype=np.float32)
+            for term, cnt in Counter(tokens).items():
+                col_i = self.vocab.get(term)
+                if col_i is not None:
+                    q_tfidf[col_i] = (1.0 + math.log(cnt)) * self.idf[col_i]
+            q_norm = float(np.linalg.norm(q_tfidf))
+            if q_norm > 0.0:
+                q_tfidf /= q_norm
+            tfidf_sims = (self.tfidf_matrix @ q_tfidf).astype(np.float64)
+            q_lsa = self.svd_vt @ q_tfidf
+            lsa_norm = float(np.linalg.norm(q_lsa))
+            if lsa_norm > 0.0:
+                q_lsa /= lsa_norm
+            lsa_sims = (self.doc_lsa @ q_lsa).astype(np.float64)
+            sims = 0.65 * tfidf_sims + 0.35 * np.maximum(0.0, lsa_sims)
+        elif self.vectorizer is not None and self.chunk_matrix is not None:
+            q_vec = self.vectorizer.transform([query_text])
             sims = (self.chunk_matrix @ q_vec.T).flatten()
+        else:
+            return []
 
         if chapter_hint:
             for idx, chunk in enumerate(self.chunks):
@@ -123,6 +151,12 @@ class NCERTVectorIndex:
 
 
 _INDEX = NCERTVectorIndex()
+
+
+def reload_rag_index() -> NCERTVectorIndex:
+    global _INDEX
+    _INDEX = NCERTVectorIndex()
+    return _INDEX
 
 
 _SUPERSCRIPT_MAP = str.maketrans("⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻", "0123456789+-")

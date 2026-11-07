@@ -9,7 +9,7 @@ on:
 
 jobs:
   standalone-mlops-governance-and-training:
-    name: Pure ML Training, 5-Fold CV, Checksum Registry & 15-Suite ML Gate
+    name: Pure ML Training, 5-Fold CV, 21-Artifact Checksum Registry & 19-Suite ML Gate
     runs-on: ubuntu-24.04
 
     steps:
@@ -46,7 +46,7 @@ jobs:
         run: |
           python -m model.evaluation_harness
 
-      - name: Stage 5 — 18 Standalone Pure-ML & MLOps Verification Suites
+      - name: Stage 5 — 19 Standalone Pure-ML & MLOps Verification Suites
         run: |
           python -m model.tests.test_ml_standalone_suite
 
@@ -67,9 +67,13 @@ jobs:
             model/tier_recalibration_proposal.json
             model/question_similarity_report.json
             model/rf_temperature_calibration.json
+            model/bkt_chapter_parameters.json
+            model/dina_calibrated_parameters.json
+            model/linucb_prior_init.json
+            model/conformal_laplacian_model.json
 
   fullstack-integration-and-security-gate:
-    name: Full-Stack Psychometric, Concurrency, Security & 27-Suite Gate
+    name: Full-Stack Psychometric, Concurrency, Security & 28-Suite Gate
     needs: standalone-mlops-governance-and-training
     runs-on: ubuntu-24.04
 
@@ -89,7 +93,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r backend/requirements.txt
 
-      - name: Run All 27 Deep Unit, Integration, Concurrency & Forensic Suites
+      - name: Run All 28 Deep Unit, Integration, Concurrency & Forensic Suites
         run: |
           python backend/tests/test_v2_engine.py
 

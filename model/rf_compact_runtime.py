@@ -10,12 +10,26 @@ MODEL_DIR = Path(__file__).resolve().parent
 COMPACT_FOREST_NPZ = MODEL_DIR / "rf_difficulty_forest.npz"
 COMPACT_FOREST_META = MODEL_DIR / "rf_difficulty_meta.json"
 
+DEFAULT_NUMERIC_FEATURES = [
+    "ideal_time_sec",
+    "has_diagram",
+    "word_count",
+    "char_length",
+    "formula_density",
+    "numerical_complexity",
+    "negation_trap",
+    "distractor_similarity",
+    "marks",
+    "negative_marks",
+]
+
 
 class CompactRandomForestRuntime:
     def __init__(self, npz_path: Path = COMPACT_FOREST_NPZ, meta_path: Path = COMPACT_FOREST_META) -> None:
         self.loaded = False
         self.classes: list[str] = []
         self.cat_maps: list[dict[str, int]] = []
+        self.numeric_features: list[str] = list(DEFAULT_NUMERIC_FEATURES)
         self.numeric_offset = 0
         self.n_features = 0
         self.tree_offsets: np.ndarray | None = None
@@ -32,6 +46,13 @@ class CompactRandomForestRuntime:
         with open(meta_path, encoding="utf-8") as f:
             meta = json.load(f)
         self.classes = [str(c) for c in meta["classes"]]
+        self.numeric_features = [
+            str(fn)
+            for fn in meta.get(
+                "numeric_features",
+                ["ideal_time_sec", "has_diagram", "marks", "negative_marks"],
+            )
+        ]
         offset = 0
         self.cat_maps = []
         for cats in meta["categories"]:
@@ -39,7 +60,7 @@ class CompactRandomForestRuntime:
             self.cat_maps.append(mapping)
             offset += len(cats)
         self.numeric_offset = offset
-        self.n_features = offset + 4
+        self.n_features = offset + len(self.numeric_features)
 
         arrays = np.load(npz_path)
         self.tree_offsets = arrays["tree_offsets"]
@@ -58,6 +79,12 @@ class CompactRandomForestRuntime:
         question_type: str,
         ideal_time_sec: float,
         has_diagram: bool,
+        word_count: float = 26.0,
+        char_length: float = 165.0,
+        formula_density: float = 0.12,
+        numerical_complexity: float = 0.25,
+        negation_trap: float = 0.0,
+        distractor_similarity: float = 0.24,
         marks: float = 4.0,
         negative_marks: float = -1.0,
     ) -> np.ndarray:
@@ -66,11 +93,21 @@ class CompactRandomForestRuntime:
             col = self.cat_maps[idx].get(str(val))
             if col is not None:
                 x[col] = 1.0
+        num_lookup = {
+            "ideal_time_sec": float(ideal_time_sec),
+            "has_diagram": 1.0 if has_diagram else 0.0,
+            "word_count": float(word_count),
+            "char_length": float(char_length),
+            "formula_density": float(formula_density),
+            "numerical_complexity": float(numerical_complexity),
+            "negation_trap": float(negation_trap),
+            "distractor_similarity": float(distractor_similarity),
+            "marks": float(marks),
+            "negative_marks": float(negative_marks),
+        }
         base = self.numeric_offset
-        x[base] = float(ideal_time_sec)
-        x[base + 1] = 1.0 if has_diagram else 0.0
-        x[base + 2] = float(marks)
-        x[base + 3] = float(negative_marks)
+        for j, fn in enumerate(self.numeric_features):
+            x[base + j] = num_lookup.get(fn, 0.0)
         return x
 
     def predict_proba_single(
@@ -81,6 +118,12 @@ class CompactRandomForestRuntime:
         question_type: str,
         ideal_time_sec: float,
         has_diagram: bool,
+        word_count: float = 26.0,
+        char_length: float = 165.0,
+        formula_density: float = 0.12,
+        numerical_complexity: float = 0.25,
+        negation_trap: float = 0.0,
+        distractor_similarity: float = 0.24,
         marks: float = 4.0,
         negative_marks: float = -1.0,
     ) -> dict[str, float]:
@@ -93,6 +136,12 @@ class CompactRandomForestRuntime:
             question_type=question_type,
             ideal_time_sec=ideal_time_sec,
             has_diagram=has_diagram,
+            word_count=word_count,
+            char_length=char_length,
+            formula_density=formula_density,
+            numerical_complexity=numerical_complexity,
+            negation_trap=negation_trap,
+            distractor_similarity=distractor_similarity,
             marks=marks,
             negative_marks=negative_marks,
         )
@@ -128,6 +177,7 @@ class CompactRandomForestRuntime:
 
 def export_rf_compact_forest(
     pipeline: Any,
+    numeric_features: list[str] | None = None,
     npz_path: Path = COMPACT_FOREST_NPZ,
     meta_path: Path = COMPACT_FOREST_META,
 ) -> dict[str, Any]:
@@ -135,6 +185,7 @@ def export_rf_compact_forest(
     rf = pipeline.named_steps["model"]
     classes = [str(c) for c in rf.classes_]
     categories = [[str(v) for v in cat_arr.tolist()] for cat_arr in ohe.categories_]
+    resolved_numeric = list(numeric_features) if numeric_features else list(DEFAULT_NUMERIC_FEATURES)
 
     offsets = [0]
     c_left_parts = []
@@ -174,6 +225,7 @@ def export_rf_compact_forest(
         "total_nodes": int(offsets[-1]),
         "classes": classes,
         "categories": categories,
+        "numeric_features": resolved_numeric,
     }
     with open(meta_path, "w", encoding="utf-8") as f:
         json.dump(meta, f, indent=2)

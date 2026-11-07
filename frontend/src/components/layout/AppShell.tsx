@@ -64,7 +64,7 @@ export function AppShell({ children, activeView, onNavigate, studentId, onSwitch
         <div className="rounded-xl border border-midnight-900/[0.06] bg-midnight-900/[0.03] px-3 py-3">
           <p className="text-xs font-medium text-midnight-700/60">Signed in as</p>
           <p className="truncate text-sm font-semibold text-midnight-900">{studentId}</p>
-          <p className="mt-1 text-[11px] text-midnight-700/60">Enterprise v2 · 10-Model Adaptive Stack</p>
+          <p className="mt-1 text-[11px] text-midnight-700/60">Enterprise v2 · 15-Model Trained Stack</p>
           {onSwitchAccount && (
             <button
               type="button"

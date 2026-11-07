@@ -1,0 +1,270 @@
+{
+  "model_type": "NormalizedGraphLaplacian_HeatKernel_ConformalTable",
+  "n_chapters": 65,
+  "heat_beta": 0.55,
+  "connected_subject_components": 3,
+  "fiedler_positive_spectral_gap": 0.0449,
+  "max_eigenvalue": 1.83699,
+  "chapter_diffusion_summary": {
+    "Alcohols, Phenols & Ethers": {
+      "self_kernel_weight": 0.6009,
+      "downstream_diffusion_mass": 0.3565
+    },
+    "Aldehydes, Ketones & Carboxylic Acids": {
+      "self_kernel_weight": 0.6116,
+      "downstream_diffusion_mass": 0.4649
+    },
+    "Alternating Current": {
+      "self_kernel_weight": 0.5983,
+      "downstream_diffusion_mass": 0.3319
+    },
+    "Amines & Nitrogen Compounds": {
+      "self_kernel_weight": 0.6063,
+      "downstream_diffusion_mass": 0.3756
+    },
+    "Anatomy of Flowering Plants": {
+      "self_kernel_weight": 0.5995,
+      "downstream_diffusion_mass": 0.3494
+    },
+    "Animal Kingdom": {
+      "self_kernel_weight": 0.5946,
+      "downstream_diffusion_mass": 0.2752
+    },
+    "Atoms & Nuclei": {
+      "self_kernel_weight": 0.603,
+      "downstream_diffusion_mass": 0.3476
+    },
+    "Biological Classification": {
+      "self_kernel_weight": 0.6213,
+      "downstream_diffusion_mass": 0.5819
+    },
+    "Biomolecules": {
+      "self_kernel_weight": 0.6042,
+      "downstream_diffusion_mass": 0.5176
+    },
+    "Biomolecules & Polymers": {
+      "self_kernel_weight": 0.6041,
+      "downstream_diffusion_mass": 0.3005
+    },
+    "Biotechnology": {
+      "self_kernel_weight": 0.596,
+      "downstream_diffusion_mass": 0.2664
+    },
+    "Cell Cycle & Cell Division": {
+      "self_kernel_weight": 0.5978,
+      "downstream_diffusion_mass": 0.3929
+    },
+    "Cell: The Unit of Life": {
+      "self_kernel_weight": 0.6008,
+      "downstream_diffusion_mass": 0.4994
+    },
+    "Chemical Bonding": {
+      "self_kernel_weight": 0.6059,
+      "downstream_diffusion_mass": 0.6358
+    },
+    "Chemical Kinetics": {
+      "self_kernel_weight": 0.596,
+      "downstream_diffusion_mass": 0.2651
+    },
+    "Circulation & Excretion": {
+      "self_kernel_weight": 0.6081,
+      "downstream_diffusion_mass": 0.3826
+    },
+    "Coordination Chemistry": {
+      "self_kernel_weight": 0.591,
+      "downstream_diffusion_mass": 0.2384
+    },
+    "Current Electricity": {
+      "self_kernel_weight": 0.6047,
+      "downstream_diffusion_mass": 0.4694
+    },
+    "Dual Nature of Matter": {
+      "self_kernel_weight": 0.5955,
+      "downstream_diffusion_mass": 0.3675
+    },
+    "Ecology & Environment": {
+      "self_kernel_weight": 0.6101,
+      "downstream_diffusion_mass": 0.321
+    },
+    "Electromagnetic Induction": {
+      "self_kernel_weight": 0.5997,
+      "downstream_diffusion_mass": 0.3425
+    },
+    "Electromagnetic Waves": {
+      "self_kernel_weight": 0.5939,
+      "downstream_diffusion_mass": 0.3604
+    },
+    "Electrostatics": {
+      "self_kernel_weight": 0.5983,
+      "downstream_diffusion_mass": 0.5448
+    },
+    "Environmental Chemistry": {
+      "self_kernel_weight": 0.5953,
+      "downstream_diffusion_mass": 0.2647
+    },
+    "Equilibrium": {
+      "self_kernel_weight": 0.6041,
+      "downstream_diffusion_mass": 0.4155
+    },
+    "Evolution": {
+      "self_kernel_weight": 0.5969,
+      "downstream_diffusion_mass": 0.2853
+    },
+    "General Organic Chemistry": {
+      "self_kernel_weight": 0.604,
+      "downstream_diffusion_mass": 0.473
+    },
+    "General Principles & Metallurgy": {
+      "self_kernel_weight": 0.6,
+      "downstream_diffusion_mass": 0.3491
+    },
+    "Genetics & Molecular Inheritance": {
+      "self_kernel_weight": 0.6093,
+      "downstream_diffusion_mass": 0.441
+    },
+    "Gravitation": {
+      "self_kernel_weight": 0.5886,
+      "downstream_diffusion_mass": 0.2726
+    },
+    "Haloalkanes & Haloarenes": {
+      "self_kernel_weight": 0.604,
+      "downstream_diffusion_mass": 0.3617
+    },
+    "Human Digestion & Respiration": {
+      "self_kernel_weight": 0.5983,
+      "downstream_diffusion_mass": 0.3421
+    },
+    "Human Health, Disease & Microbes": {
+      "self_kernel_weight": 0.6005,
+      "downstream_diffusion_mass": 0.2992
+    },
+    "Hydrocarbons": {
+      "self_kernel_weight": 0.6009,
+      "downstream_diffusion_mass": 0.3565
+    },
+    "Kinematics": {
+      "self_kernel_weight": 0.6025,
+      "downstream_diffusion_mass": 0.4497
+    },
+    "Laws of Motion": {
+      "self_kernel_weight": 0.6004,
+      "downstream_diffusion_mass": 0.5147
+    },
+    "Locomotion & Neuro-Endocrine Control": {
+      "self_kernel_weight": 0.5979,
+      "downstream_diffusion_mass": 0.3397
+    },
+    "Magnetic Effects of Current": {
+      "self_kernel_weight": 0.6115,
+      "downstream_diffusion_mass": 0.4876
+    },
+    "Magnetism & Matter": {
+      "self_kernel_weight": 0.5946,
+      "downstream_diffusion_mass": 0.1834
+    },
+    "Mole Concept / Stoichiometry": {
+      "self_kernel_weight": 0.6083,
+      "downstream_diffusion_mass": 0.5344
+    },
+    "Morphology of Flowering Plants": {
+      "self_kernel_weight": 0.6113,
+      "downstream_diffusion_mass": 0.4035
+    },
+    "Oscillations & Waves": {
+      "self_kernel_weight": 0.5966,
+      "downstream_diffusion_mass": 0.4612
+    },
+    "Periodic Table": {
+      "self_kernel_weight": 0.6013,
+      "downstream_diffusion_mass": 0.4416
+    },
+    "Plant Kingdom": {
+      "self_kernel_weight": 0.6005,
+      "downstream_diffusion_mass": 0.3019
+    },
+    "Plant Physiology": {
+      "self_kernel_weight": 0.6034,
+      "downstream_diffusion_mass": 0.4195
+    },
+    "Properties of Matter": {
+      "self_kernel_weight": 0.6057,
+      "downstream_diffusion_mass": 0.3692
+    },
+    "Ray Optics": {
+      "self_kernel_weight": 0.5968,
+      "downstream_diffusion_mass": 0.2689
+    },
+    "Redox Reactions & Electrochemistry": {
+      "self_kernel_weight": 0.5995,
+      "downstream_diffusion_mass": 0.3463
+    },
+    "Reproduction & Human Development": {
+      "self_kernel_weight": 0.604,
+      "downstream_diffusion_mass": 0.3724
+    },
+    "Rotational Motion": {
+      "self_kernel_weight": 0.5884,
+      "downstream_diffusion_mass": 0.2221
+    },
+    "Semiconductor Electronics": {
+      "self_kernel_weight": 0.6005,
+      "downstream_diffusion_mass": 0.2841
+    },
+    "Solutions": {
+      "self_kernel_weight": 0.5921,
+      "downstream_diffusion_mass": 0.2502
+    },
+    "States of Matter": {
+      "self_kernel_weight": 0.6078,
+      "downstream_diffusion_mass": 0.5302
+    },
+    "Structural Organisation in Animals": {
+      "self_kernel_weight": 0.6075,
+      "downstream_diffusion_mass": 0.4931
+    },
+    "Structure of Atom": {
+      "self_kernel_weight": 0.5926,
+      "downstream_diffusion_mass": 0.3539
+    },
+    "Surface Chemistry": {
+      "self_kernel_weight": 0.5895,
+      "downstream_diffusion_mass": 0.2343
+    },
+    "The Living World & Taxonomy": {
+      "self_kernel_weight": 0.6079,
+      "downstream_diffusion_mass": 0.323
+    },
+    "Thermal Physics": {
+      "self_kernel_weight": 0.6053,
+      "downstream_diffusion_mass": 0.3608
+    },
+    "Thermodynamics": {
+      "self_kernel_weight": 0.5971,
+      "downstream_diffusion_mass": 0.2619
+    },
+    "Units & Dimensions": {
+      "self_kernel_weight": 0.6005,
+      "downstream_diffusion_mass": 0.2849
+    },
+    "Wave Optics": {
+      "self_kernel_weight": 0.603,
+      "downstream_diffusion_mass": 0.4065
+    },
+    "Work, Energy & Power": {
+      "self_kernel_weight": 0.6037,
+      "downstream_diffusion_mass": 0.6113
+    },
+    "d- and f-Block Elements": {
+      "self_kernel_weight": 0.6026,
+      "downstream_diffusion_mass": 0.4505
+    },
+    "p-Block Elements": {
+      "self_kernel_weight": 0.6024,
+      "downstream_diffusion_mass": 0.4078
+    },
+    "s-Block Elements": {
+      "self_kernel_weight": 0.591,
+      "downstream_diffusion_mass": 0.2375
+    }
+  }
+}

@@ -1,4 +1,5 @@
 import json
+import re
 import sys
 from collections import Counter
 
@@ -10,6 +11,16 @@ BOILERPLATE_PATTERNS = [
 ]
 
 ALLOWED_DIFFICULTIES = {"basic", "medium", "advanced"}
+
+
+def _dedup_signature(q: dict) -> str:
+    raw = str(q.get("question_text", q.get("text", "")))
+    stripped = re.sub(r"^Variant\s+\d+\s+for\s+", "", raw, flags=re.IGNORECASE).strip()
+    if len(stripped) <= 60:
+        opts = q.get("options")
+        first_opt = opts[0] if isinstance(opts, list) and opts else q.get("option_a", "")
+        return f"{stripped}||{first_opt}"
+    return stripped
 
 
 def validate(questions: list[dict]) -> dict:
@@ -50,12 +61,13 @@ def validate(questions: list[dict]) -> dict:
 
     difficulties = Counter(str(q.get("difficulty", q.get("difficulty_level", ""))).lower() for q in questions)
     bad_labels = {d: c for d, c in difficulties.items() if d not in ALLOWED_DIFFICULTIES}
-    if bad_labels:
+    bad_labels_non_empty = {k: v for k, v in bad_labels.items()}
+    if bad_labels_non_empty:
         report["issues"].append(
-            f"Non-standard difficulty labels found (need exactly basic/medium/advanced): {bad_labels}"
+            f"Non-standard difficulty labels found (need exactly basic/medium/advanced): {bad_labels_non_empty}"
         )
 
-    texts = Counter(q.get("question_text", q.get("text", "")).split("for ", 1)[-1] for q in questions)
+    texts = Counter(_dedup_signature(q) for q in questions)
     near_dupes = sum(c for c in texts.values() if c > 1)
     if near_dupes:
         report["issues"].append(

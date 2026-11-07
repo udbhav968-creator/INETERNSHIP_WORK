@@ -1,6 +1,6 @@
 {
   "harness_status": "PASSED",
-  "execution_time_seconds": 0.459,
+  "execution_time_seconds": 0.278,
   "persona_simulations": {
     "strong_master": {
       "final_level": "advanced",
@@ -24,7 +24,7 @@
     },
     "spaced_repetition_learner": {
       "peak_mastery": 0.88,
-      "decayed_mastery_after_168h": 0.4813,
+      "decayed_mastery_after_168h": 0.523,
       "retention_urgency": 1.0,
       "invariants_satisfied": true
     }
@@ -41,44 +41,44 @@
   },
   "latency_sla_benchmarks": {
     "irt_3pl_map_update": {
-      "p50_ms": 0.0153,
-      "p95_ms": 0.0189,
-      "p99_ms": 0.02
+      "p50_ms": 0.012,
+      "p95_ms": 0.0139,
+      "p99_ms": 0.0159
     },
     "bkt_saint_ebbinghaus_update": {
-      "p50_ms": 0.0174,
-      "p95_ms": 0.0216,
-      "p99_ms": 0.0223
+      "p50_ms": 0.0148,
+      "p95_ms": 0.0209,
+      "p99_ms": 0.0294
     },
     "linucb_context_scoring": {
-      "p50_ms": 0.021,
-      "p95_ms": 0.0274,
-      "p99_ms": 0.0399
+      "p50_ms": 0.0159,
+      "p95_ms": 0.0204,
+      "p99_ms": 0.0272
     },
     "compact_rf_300_tree_inference": {
-      "p50_ms": 5.3887,
-      "p95_ms": 6.0735,
-      "p99_ms": 6.8145
+      "p50_ms": 1.1936,
+      "p95_ms": 1.3374,
+      "p99_ms": 1.4471
     },
     "dina_8_skill_cognitive_diagnosis": {
-      "p50_ms": 0.2768,
-      "p95_ms": 0.3507,
-      "p99_ms": 0.4447
+      "p50_ms": 0.2305,
+      "p95_ms": 0.2836,
+      "p99_ms": 0.3103
     },
     "rag_socratic_remediation": {
-      "p50_ms": 1.5831,
-      "p95_ms": 1.7687,
-      "p99_ms": 1.7687
+      "p50_ms": 0.3609,
+      "p95_ms": 0.4708,
+      "p99_ms": 0.4708
     },
     "study_plan_coverage_prescription": {
-      "p50_ms": 12.3691,
-      "p95_ms": 12.8863,
-      "p99_ms": 12.8863
+      "p50_ms": 17.7551,
+      "p95_ms": 19.364,
+      "p99_ms": 19.364
     },
     "in_memory_feature_store": {
-      "p50_ms": 0.0136,
-      "p95_ms": 0.02,
-      "p99_ms": 0.0321
+      "p50_ms": 0.008,
+      "p95_ms": 0.0101,
+      "p99_ms": 0.0187
     },
     "all_slas_met": true
   }

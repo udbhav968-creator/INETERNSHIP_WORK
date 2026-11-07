@@ -157,8 +157,13 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <SummaryStat label="NCERT Chapters Mapped" value={allSyllabusChapters.length} />
             <SummaryStat
-              label="Initial BKT Prior"
-              value={`${Math.round((allSyllabusChapters[0]?.current_mastery ?? 0.35) * 100)}%`}
+              label="Mean Empirical BKT Prior"
+              value={`${Math.round(
+                (allSyllabusChapters.length > 0
+                  ? allSyllabusChapters.reduce((sum, ch) => sum + ch.current_mastery, 0) /
+                    allSyllabusChapters.length
+                  : 0.405) * 100
+              )}%`}
             />
             <SummaryStat
               label="Baseline NEET Projection"
@@ -643,14 +648,16 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
                       {Math.round(sk.mastery_probability * 100)}%
                     </span>
                     <span className="rounded-full bg-midnight-900/5 px-2 py-0.5 text-[11px] font-medium capitalize text-midnight-800">
-                      {sk.status}
+                      {sk.status.replace(/_/g, " ")}
                     </span>
                   </div>
                   <p className="mt-0.5 text-sm font-medium text-midnight-900">{sk.name}</p>
                   <p className="mt-0.5 text-[11px] text-midnight-700/65">{sk.description}</p>
                 </div>
                 <p className="border-t border-midnight-900/[0.06] pt-1.5 text-[11px] text-midnight-700/60">
-                  {sk.correct_count}/{sk.attempts_count} items · ±{Math.round(sk.posterior_sd * 100)}% SD
+                  {sk.attempts_count > 0
+                    ? `${sk.correct_count}/${sk.attempts_count} items · ±${Math.round(sk.posterior_sd * 100)}% SD`
+                    : `${sk.corpus_pyq_count ?? 0} NEET PYQs mapped · ±${Math.round(sk.posterior_sd * 100)}% SD`}
                 </p>
               </Card>
             ))}
@@ -811,6 +818,9 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
                             <p className="font-medium text-midnight-950">{row.topic_id}</p>
                             <p className="text-[11px] text-midnight-700/60">
                               {row.subject} · {row.recommended_drill_questions} Qs ({row.recommended_start_tier})
+                              {typeof row.available_chapter_pyqs === "number"
+                                ? ` · ${row.available_chapter_pyqs} PYQs`
+                                : ""}
                             </p>
                           </td>
                           <td className="py-2.5 pr-3">
