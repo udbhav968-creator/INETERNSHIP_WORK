@@ -53,6 +53,15 @@ from model.corpus_distribution_and_readiness_audit import (
     DISTRIBUTION_REPORT_PATH,
     run_corpus_distribution_and_readiness_audit,
 )
+from model.probability_calibrator import get_calibration_metadata
+from model.propose_tier_recalibration import (
+    RECALIBRATION_REPORT_PATH,
+    run_irt_tier_recalibration_audit,
+)
+from model.question_similarity_audit import (
+    SIMILARITY_REPORT_PATH,
+    run_question_similarity_audit,
+)
 from model.study_plan_and_coverage_engine import compute_syllabus_coverage_and_improvement_plan
 from model.verify_artifact_integrity import REGISTRY_MANIFEST_FILE, verify_all_ml_artifacts
 
@@ -759,11 +768,13 @@ def get_dashboard_snapshot(student_id: str, request: Request, db: Session = Depe
     analytics = build_analytics(db, student_id)
     v2_insights = _compute_v2_student_insights(student_id, db)
     history = _compute_paper_history(student_id, db)
+    study_plan = _compute_student_study_plan_payload(student_id, db)
     return schemas.DashboardSnapshotOut(
         topics=topics,
         analytics=analytics,
         v2_insights=v2_insights,
         paper_history=history,
+        study_plan=study_plan,
     )
 
 
@@ -938,6 +949,29 @@ def get_mlops_audit_overview(db: Session = Depends(get_db)):
         with open(har_path, encoding="utf-8") as f:
             harness_benchmark = json.load(f)
 
+    dist_report = (
+        json.load(open(DISTRIBUTION_REPORT_PATH, encoding="utf-8"))
+        if DISTRIBUTION_REPORT_PATH.exists()
+        else run_corpus_distribution_and_readiness_audit(save_report=False)
+    )
+    recal_report = (
+        json.load(open(RECALIBRATION_REPORT_PATH, encoding="utf-8"))
+        if RECALIBRATION_REPORT_PATH.exists()
+        else run_irt_tier_recalibration_audit(save_report=False)
+    )
+    sim_report = (
+        json.load(open(SIMILARITY_REPORT_PATH, encoding="utf-8"))
+        if SIMILARITY_REPORT_PATH.exists()
+        else run_question_similarity_audit(save_report=False)
+    )
+    prob_cal = get_calibration_metadata()
+    registry = (
+        json.load(open(REGISTRY_MANIFEST_FILE, encoding="utf-8"))
+        if REGISTRY_MANIFEST_FILE.exists()
+        else {}
+    )
+    integrity = verify_all_ml_artifacts(allow_serverless_omissions=True, require_clean_bandit=False)
+
     return {
         "health_and_drift": health,
         "corpus_integrity": {
@@ -954,6 +988,26 @@ def get_mlops_audit_overview(db: Session = Depends(get_db)):
         "validation_report": validation_report,
         "harness_benchmark": harness_benchmark,
         "chapters_by_subject": chapters_by_subject,
+        "artifact_registry": registry,
+        "live_integrity_verification": integrity,
+        "distribution_summary": {
+            "subject_difficulty_matrix": dist_report.get("subject_difficulty_matrix", {}),
+            "gap_summary": dist_report.get("gap_summary", {}),
+            "blueprint_readiness": dist_report.get("blueprint_readiness", {}),
+        },
+        "tier_recalibration_audit": {
+            "gap_resolution_summary": recal_report.get("gap_resolution_summary", {}),
+            "top_basic_recalibration_candidates": recal_report.get("top_basic_recalibration_candidates", [])[:8],
+            "top_advanced_recalibration_candidates": recal_report.get("top_advanced_recalibration_candidates", [])[:6],
+        },
+        "question_similarity_audit": {
+            "near_duplicate_pairs_count": sim_report.get("near_duplicate_pairs_count", 0),
+            "near_duplicate_clusters_count": sim_report.get("near_duplicate_clusters_count", 0),
+            "unique_effective_question_clusters": sim_report.get("unique_effective_question_clusters", q_count),
+            "high_concept_overlap_pairs_count": sim_report.get("high_concept_overlap_pairs_count", 0),
+            "top_near_duplicate_pairs": sim_report.get("top_near_duplicate_pairs", [])[:8],
+        },
+        "probability_calibration": prob_cal,
     }
 
 
@@ -978,9 +1032,82 @@ def get_mlops_corpus_distribution():
     }
 
 
-@app.get("/students/{student_id}/study_plan")
-def get_student_ml_study_plan(student_id: str, request: Request, db: Session = Depends(get_db)):
-    _sync_serverless_context(request, db, student_id)
+@app.get("/mlops/recalibration_and_dedup")
+def get_mlops_recalibration_and_dedup():
+    recal_report = (
+        json.load(open(RECALIBRATION_REPORT_PATH, encoding="utf-8"))
+        if RECALIBRATION_REPORT_PATH.exists()
+        else run_irt_tier_recalibration_audit(save_report=False)
+    )
+    sim_report = (
+        json.load(open(SIMILARITY_REPORT_PATH, encoding="utf-8"))
+        if SIMILARITY_REPORT_PATH.exists()
+        else run_question_similarity_audit(save_report=False)
+    )
+    prob_cal = get_calibration_metadata()
+    return {
+        "tier_recalibration_audit": recal_report,
+        "question_similarity_audit": {
+            k: v for k, v in sim_report.items() if k != "near_duplicate_siblings"
+        },
+        "probability_calibration": prob_cal,
+    }
+
+
+@app.get("/mlops/metrics")
+def get_prometheus_mlops_metrics(db: Session = Depends(get_db)):
+    health = get_mlops_health_and_drift(db)
+    fstore = health["feature_store"]
+    drift = health["drift_and_calibration"]
+    models_loaded = health["models_loaded"]
+    active_cnt = sum(1 for v in models_loaded.values() if bool(v))
+    integrity = verify_all_ml_artifacts(allow_serverless_omissions=True, require_clean_bandit=False)
+    prob_cal = get_calibration_metadata()
+    comp_ratio = prob_cal.get("serverless_compression_benchmark", {}).get("compression_ratio_x", 1.0)
+
+    prefix = chr(35)
+    lines = [
+        f"{prefix} HELP klassed_active_ml_models_total Active production ML and psychometric engines",
+        f"{prefix} TYPE klassed_active_ml_models_total gauge",
+        f"klassed_active_ml_models_total {active_cnt}",
+        f"{prefix} HELP klassed_calibrated_irt_items_total Calibrated 3PL IRT NEET items",
+        f"{prefix} TYPE klassed_calibrated_irt_items_total gauge",
+        f"klassed_calibrated_irt_items_total {integrity['calibrated_irt_items']}",
+        f"{prefix} HELP klassed_sha256_verified_artifacts_total Verified SHA-256 ML and data artifacts",
+        f"{prefix} TYPE klassed_sha256_verified_artifacts_total gauge",
+        f"klassed_sha256_verified_artifacts_total {integrity['verified_artifacts_count']}",
+        f"{prefix} HELP klassed_feature_store_p50_ms Feature store p50 read latency ms",
+        f"{prefix} TYPE klassed_feature_store_p50_ms gauge",
+        f"klassed_feature_store_p50_ms {fstore['p50_ms']}",
+        f"{prefix} HELP klassed_feature_store_p95_ms Feature store p95 read latency ms",
+        f"{prefix} TYPE klassed_feature_store_p95_ms gauge",
+        f"klassed_feature_store_p95_ms {fstore['p95_ms']}",
+        f"{prefix} HELP klassed_feature_store_cache_hit_ratio Feature store cache hit ratio",
+        f"{prefix} TYPE klassed_feature_store_cache_hit_ratio gauge",
+        f"klassed_feature_store_cache_hit_ratio {fstore['cache_hit_rate']}",
+        f"{prefix} HELP klassed_drift_effective_psi Effective population stability index",
+        f"{prefix} TYPE klassed_drift_effective_psi gauge",
+        f"klassed_drift_effective_psi {drift['effective_psi']}",
+        f"{prefix} HELP klassed_drift_brier_score Live 3PL IRT Brier calibration score",
+        f"{prefix} TYPE klassed_drift_brier_score gauge",
+        f"klassed_drift_brier_score {drift['brier_score']}",
+        f"{prefix} HELP klassed_drift_expected_calibration_error Live expected calibration error",
+        f"{prefix} TYPE klassed_drift_expected_calibration_error gauge",
+        f"klassed_drift_expected_calibration_error {drift['expected_calibration_error']}",
+        f"{prefix} HELP klassed_rf_temperature_post_ece Post temperature scaling 10-bin ECE",
+        f"{prefix} TYPE klassed_rf_temperature_post_ece gauge",
+        f"klassed_rf_temperature_post_ece {prob_cal['post_calibration']['ece_10_bin']}",
+        f"{prefix} HELP klassed_compact_rf_compression_ratio Serverless forest compression ratio",
+        f"{prefix} TYPE klassed_compact_rf_compression_ratio gauge",
+        f"klassed_compact_rf_compression_ratio {comp_ratio}",
+    ]
+    return Response(
+        content="\n".join(lines) + "\n",
+        media_type="text/plain; version=0.0.4; charset=utf-8",
+    )
+
+
+def _compute_student_study_plan_payload(student_id: str, db: Session) -> dict:
     student = db.query(Student).filter_by(student_id=student_id).first()
     global_theta = float(getattr(student, "global_theta", 0.0) or 0.0) if student else 0.0
 
@@ -1035,6 +1162,12 @@ def get_student_ml_study_plan(student_id: str, request: Request, db: Session = D
         topic_states=topic_state_dicts,
         attempt_records=attempt_records,
     )
+
+
+@app.get("/students/{student_id}/study_plan")
+def get_student_ml_study_plan(student_id: str, request: Request, db: Session = Depends(get_db)):
+    _sync_serverless_context(request, db, student_id)
+    return _compute_student_study_plan_payload(student_id, db)
 
 
 _FRONTEND_DIST = PROJECT_ROOT / "frontend" / "dist"

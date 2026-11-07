@@ -1,0 +1,35 @@
+name: Klassed Production Canary, Prometheus & SHA-256 Telemetry Audit
+
+on:
+  schedule:
+    - cron: "0 */12 * * *"
+  workflow_dispatch:
+
+jobs:
+  live-production-canary-and-artifact-audit:
+    name: Live Vercel Canary, Prometheus Scrape & 12-Artifact Checksum Gate
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v7
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: "backend/requirements.txt"
+
+      - name: Install Python Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+
+      - name: Verify All 12 Registered SHA-256 Checksums Locally
+        run: |
+          python -m model.verify_artifact_integrity
+
+      - name: Probe Live Production Health, Corpus Audit & Prometheus Metrics
+        run: |
+          python -u backend/tests/test_live_e2e_integration.py https://klassed-neet-adaptive-engine.vercel.app

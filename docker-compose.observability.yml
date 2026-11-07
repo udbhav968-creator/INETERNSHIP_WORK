@@ -1,0 +1,49 @@
+services:
+  klassed-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: klassed-mlops-api
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=4)"]
+      interval: 20s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - mlops-net
+
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    container_name: klassed-prometheus
+    volumes:
+      - ./ops/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
+    depends_on:
+      klassed-api:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - mlops-net
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    container_name: klassed-grafana
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=klassed_mlops
+      - GF_USERS_ALLOW_SIGN_UP=false
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+    networks:
+      - mlops-net
+
+networks:
+  mlops-net:
+    driver: bridge

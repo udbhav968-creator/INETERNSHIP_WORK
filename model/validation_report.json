@@ -1,6 +1,6 @@
 {
   "pipeline_status": "PASSED",
-  "execution_time_seconds": 36.713,
+  "execution_time_seconds": 37.908,
   "data_validation_gates": {
     "question_bank_schema_valid": true,
     "weightage_schema_valid": true,
@@ -131,6 +131,29 @@
     "verified_rows": 2471,
     "exact_class_matches": 2471,
     "max_abs_probability_diff": 3.8e-05
+  },
+  "temperature_calibration_summary": {
+    "optimal_temperature": 0.39,
+    "pre_ece": 0.01723,
+    "post_ece": 0.0023,
+    "pre_nll": 0.03976,
+    "post_nll": 0.02721,
+    "compression_ratio_x": 22.76
+  },
+  "tier_recalibration_summary": {
+    "chapters_missing_basic_before": 46,
+    "chapters_resolvable_via_irt_anchors": 46,
+    "physics_chapters_missing_basic_before": 22,
+    "physics_chapters_resolvable_via_irt_anchors": 22,
+    "chapters_missing_advanced_before": 6,
+    "advanced_chapters_resolvable_via_irt_anchors": 6,
+    "strict_global_basic_candidates_count": 1517,
+    "strict_global_advanced_candidates_count": 18
+  },
+  "question_similarity_summary": {
+    "near_duplicate_pairs_count": 6,
+    "near_duplicate_clusters_count": 6,
+    "unique_effective_question_clusters": 2465
   },
   "irt_3pl_calibration_summary": {
     "calibrated_questions": 2471,

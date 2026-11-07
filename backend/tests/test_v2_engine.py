@@ -1431,7 +1431,7 @@ def test_26_ml_devops_standalone_suite_registry_checksums_and_study_plan_endpoin
 
     integrity = verify_all_ml_artifacts()
     assert integrity["integrity_status"] == "VERIFIED"
-    assert integrity["verified_artifacts_count"] == 9
+    assert integrity["verified_artifacts_count"] == 12
     md_summary = render_ci_markdown_summary()
     assert "Multi-Model Champion-Challenger Tournament" in md_summary
     assert "NEET PYQ Corpus Subject x Difficulty" in md_summary
@@ -1515,6 +1515,122 @@ def test_26_ml_devops_standalone_suite_registry_checksums_and_study_plan_endpoin
             db.close()
 
 
+def test_27_tier_recalibration_near_duplicate_guard_temperature_scaling_and_prometheus_metrics():
+    from model.linucb_bandit import reset_student_bandit
+    from model.question_similarity_audit import get_near_duplicate_siblings_map
+    from model.tests.test_ml_standalone_suite import (
+        ml_suite_16_irt_tier_recalibration_audit,
+        ml_suite_17_near_duplicate_pyq_cosine_similarity_audit,
+        ml_suite_18_temperature_probability_calibration_and_compression,
+    )
+
+    ml_suite_16_irt_tier_recalibration_audit()
+    ml_suite_17_near_duplicate_pyq_cosine_similarity_audit()
+    ml_suite_18_temperature_probability_calibration_and_compression()
+
+    assert (PROJECT_ROOT / "docker-compose.observability.yml").exists()
+    assert (PROJECT_ROOT / "ops" / "prometheus.yml").exists()
+    assert (PROJECT_ROOT / ".github" / "workflows" / "production_canary_and_audit.yml").exists()
+
+    dup_map = get_near_duplicate_siblings_map()
+    assert len(dup_map) >= 10
+    assert "NEET2023_BIO_124" in dup_map.get("NEET2021_BIO_105", set())
+
+    client = TestClient(app)
+    r_recal = client.get("/mlops/recalibration_and_dedup")
+    assert r_recal.status_code == 200
+    recal_body = r_recal.json()
+    assert recal_body["tier_recalibration_audit"]["source_corpus_mutated"] is False
+    assert recal_body["tier_recalibration_audit"]["gap_resolution_summary"]["chapters_resolvable_via_irt_anchors"] == 46
+    assert recal_body["question_similarity_audit"]["near_duplicate_pairs_count"] >= 5
+    assert recal_body["probability_calibration"]["post_calibration"]["ece_10_bin"] < 0.01
+
+    r_prom = client.get("/mlops/metrics")
+    assert r_prom.status_code == 200
+    prom_text = r_prom.text
+    assert "klassed_sha256_verified_artifacts_total 12" in prom_text
+    assert "klassed_calibrated_irt_items_total 2471" in prom_text
+    assert "klassed_rf_temperature_post_ece" in prom_text
+
+    r_cold = client.post(
+        "/mlops/predict_cold_start_item",
+        json={
+            "question_text": "Calculate electric potential at r = 0.25 m due to point charge +5 uC in vacuum.",
+            "options": ["1.8 x 10^5 V", "9.0 x 10^4 V", "3.6 x 10^5 V", "4.5 x 10^4 V"],
+            "subject": "Physics",
+            "chapter": "Electrostatics",
+        },
+    )
+    assert r_cold.status_code == 200
+    cold_body = r_cold.json()
+    assert "calibrated_probabilities" in cold_body and cold_body["calibrated_probabilities"] is not None
+    assert abs(sum(cold_body["calibrated_probabilities"].values()) - 1.0) < 1e-3
+    assert 0.1 < cold_body["calibration_temperature"] <= 2.5
+
+    sid = None
+    email = "ml_wave2_dedup_snapshot@klassed.in"
+    try:
+        db = SessionLocal()
+        old = db.query(Student).filter_by(email=email).first()
+        if old:
+            db.query(TestAttempt).filter_by(student_id=old.student_id).delete()
+            db.query(StudentTopicState).filter_by(student_id=old.student_id).delete()
+            db.delete(old)
+            db.commit()
+        answer_key = {q.question_id: q.correct_answer.lower() for q in db.query(Question).all()}
+        db.close()
+
+        up = client.post(
+            "/auth/signup",
+            json={"name": "Wave2 Tester", "email": email, "password": "Wave2Password123!"},
+        ).json()
+        sid = up["student_id"]
+        hdr = {"Authorization": f"Bearer {up['access_token']}"}
+        client.post(
+            f"/students/{sid}/onboarding",
+            json={"class_level": "12", "target_neet_year": 2027},
+            headers=hdr,
+        )
+
+        p_qs = client.get(f"/students/{sid}/next_paper", headers=hdr).json()
+        p_ids = {q["question_id"] for q in p_qs}
+        for qid in p_ids:
+            assert p_ids.isdisjoint(dup_map.get(qid, set())), f"Near-duplicate sibling included with {qid}"
+
+        wrong_opt = next(o for o in ("a", "b", "c", "d") if o != answer_key[p_qs[0]["question_id"]])
+        client.post(
+            "/submit_paper",
+            headers=hdr,
+            json={
+                "student_id": sid,
+                "paper_number": 1,
+                "attempts": [
+                    {
+                        "student_id": sid,
+                        "question_id": p_qs[0]["question_id"],
+                        "paper_number": 1,
+                        "selected_option": wrong_opt,
+                        "time_taken_seconds": 8,
+                    }
+                ],
+            },
+        )
+        snap = client.get(f"/students/{sid}/dashboard_snapshot", headers=hdr).json()
+        assert "study_plan" in snap and snap["study_plan"] is not None
+        assert snap["study_plan"]["syllabus_coverage"]["total_chapters"] == 65
+        assert len(snap["study_plan"]["mistake_retest_queue"]) >= 1
+        assert snap["study_plan"]["mistake_retest_queue"][0]["error_mode"] == "impulsive_guess"
+    finally:
+        if sid:
+            reset_student_bandit(sid, remove=True)
+            db = SessionLocal()
+            db.query(TestAttempt).filter_by(student_id=sid).delete()
+            db.query(StudentTopicState).filter_by(student_id=sid).delete()
+            db.query(Student).filter_by(student_id=sid).delete()
+            db.commit()
+            db.close()
+
+
 if __name__ == "__main__":
     suites = [
         test_01_random_forest_model_and_live_inference,
@@ -1543,6 +1659,7 @@ if __name__ == "__main__":
         test_24_serverless_vault_relogin_compact_rf_parity_and_full_audit,
         test_25_forensic_reality_audit_all_2471_items_non_repeating_papers_and_ui_schema_contract,
         test_26_ml_devops_standalone_suite_registry_checksums_and_study_plan_endpoints,
+        test_27_tier_recalibration_near_duplicate_guard_temperature_scaling_and_prometheus_metrics,
     ]
     for fn in suites:
         fn()

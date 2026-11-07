@@ -12,6 +12,7 @@ import type {
   PaperReviewOut,
   QuestionOut,
   SocraticHintOut,
+  StudentStudyPlan,
   TopicState,
   V2StudentInsights,
 } from "../types";
@@ -140,6 +141,17 @@ export const api = {
   getMlopsHealthAndDrift: () => request<MlopsHealthAndDrift>("/mlops/health_and_drift"),
 
   getMlopsAuditOverview: () => request<MlopsAuditOverview>("/mlops/audit_overview"),
+
+  getStudyPlan: (studentId: string) =>
+    request<StudentStudyPlan>(`/students/${encodeURIComponent(studentId)}/study_plan`),
+
+  getPrometheusMetricsText: async () => {
+    const res = await fetch(`${API_BASE_URL}/mlops/metrics`);
+    if (!res.ok) {
+      throw new ApiError("Could not fetch Prometheus metrics.", res.status);
+    }
+    return res.text();
+  },
 
   predictColdStartItem: (payload: ColdStartItemInput) =>
     request<ColdStartItemPrediction>("/mlops/predict_cold_start_item", {

@@ -73,6 +73,9 @@ const SLA_LABELS: Record<string, string> = {
   linucb_context_scoring: "LinUCB Ridge Bandit Context Scoring",
   rag_socratic_remediation: "NCERT TF-IDF Vector RAG Remediation",
   in_memory_feature_store: "Low-Latency In-Memory Feature Store",
+  compact_rf_300_tree_inference: "Vectorized NumPy 300-Tree RF Inference",
+  dina_8_skill_cognitive_diagnosis: "8-Skill DINA Cognitive Diagnosis",
+  study_plan_coverage_prescription: "65-Chapter Study Plan & Coverage Engine",
 };
 
 export function ModelAuditView() {
@@ -90,6 +93,9 @@ export function ModelAuditView() {
   const [calibrating, setCalibrating] = useState(false);
   const [prediction, setPrediction] = useState<ColdStartItemPrediction | null>(null);
   const [predError, setPredError] = useState<string | null>(null);
+
+  const [promMetrics, setPromMetrics] = useState<string | null>(null);
+  const [loadingProm, setLoadingProm] = useState(false);
 
   async function fetchAudit(isRefresh = false) {
     if (isRefresh) setRefreshing(true);
@@ -168,6 +174,22 @@ export function ModelAuditView() {
     const list = audit?.chapters_by_subject?.[nextSubj] ?? [];
     if (list.length > 0) {
       setChapter(list[0]);
+    }
+  }
+
+  async function togglePrometheusMetrics() {
+    if (promMetrics !== null) {
+      setPromMetrics(null);
+      return;
+    }
+    setLoadingProm(true);
+    try {
+      const txt = await api.getPrometheusMetricsText();
+      setPromMetrics(txt);
+    } catch {
+      setPromMetrics("Failed to scrape /mlops/metrics.");
+    } finally {
+      setLoadingProm(false);
     }
   }
 
@@ -423,24 +445,30 @@ export function ModelAuditView() {
                 {prediction.rf_probabilities && (
                   <div>
                     <p className="mb-1.5 text-xs font-semibold text-midnight-900">
-                      300-Tree Random Forest Class Probabilities ({prediction.resolved_metadata.question_type} ·{" "}
-                      {prediction.resolved_metadata.ideal_time_sec}s benchmark)
+                      300-Tree RF Raw vs Temperature-Calibrated Probabilities (
+                      {prediction.resolved_metadata.question_type} · {prediction.resolved_metadata.ideal_time_sec}s
+                      {prediction.calibration_temperature
+                        ? ` · T* = ${prediction.calibration_temperature.toFixed(2)}`
+                        : ""}
+                      )
                     </p>
                     <div className="flex flex-col gap-1.5">
                       {(["basic", "medium", "advanced"] as const).map((tierKey) => {
-                        const prob = prediction.rf_probabilities?.[tierKey] ?? 0;
-                        const pct = Math.round(prob * 1000) / 10;
+                        const rawProb = prediction.rf_probabilities?.[tierKey] ?? 0;
+                        const calProb = prediction.calibrated_probabilities?.[tierKey] ?? rawProb;
+                        const rawPct = Math.round(rawProb * 1000) / 10;
+                        const calPct = Math.round(calProb * 1000) / 10;
                         return (
                           <div key={tierKey} className="flex items-center gap-2 text-xs">
-                            <span className="w-20 capitalize text-midnight-700">{tierKey}</span>
+                            <span className="w-16 capitalize text-midnight-700">{tierKey}</span>
                             <div className="h-2 flex-1 overflow-hidden rounded-full bg-midnight-900/10">
                               <div
                                 className="h-full rounded-full bg-midnight-900"
-                                style={{ width: `${Math.min(100, Math.max(1, pct))}%` }}
+                                style={{ width: `${Math.min(100, Math.max(1, calPct))}%` }}
                               />
                             </div>
-                            <span className="w-12 text-right font-mono text-[11px] font-medium text-midnight-900">
-                              {pct.toFixed(1)}%
+                            <span className="w-28 text-right font-mono text-[11px] font-medium text-midnight-900">
+                              {calPct.toFixed(1)}% <span className="text-midnight-700/50">(raw {rawPct.toFixed(1)}%)</span>
                             </span>
                           </div>
                         );
@@ -796,6 +824,270 @@ export function ModelAuditView() {
           </div>
         </Card>
       )}
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <Card className="p-6">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h2 className="font-display text-lg font-semibold text-midnight-950">
+                3-Model Tournament & Temperature Probability Calibration
+              </h2>
+              <p className="mt-0.5 text-xs text-midnight-700/65">
+                Champion–Challenger benchmark across 2,471 NEET PYQs + Post-Hoc Multiclass Temperature Scaling.
+              </p>
+            </div>
+            {audit.probability_calibration && (
+              <Badge>
+                T* = {audit.probability_calibration.optimal_temperature.toFixed(2)} · ECE -
+                {audit.probability_calibration.ece_improvement_percent.toFixed(1)}%
+              </Badge>
+            )}
+          </div>
+
+          {audit.validation_report.champion_challenger_tournament && (
+            <div className="mt-4 overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="border-b border-midnight-900/10 text-midnight-700/60">
+                    <th className="pb-2 font-medium">Candidate Architecture</th>
+                    <th className="pb-2 text-right font-medium">Holdout Acc</th>
+                    <th className="pb-2 text-right font-medium">Macro F1</th>
+                    <th className="pb-2 text-right font-medium">Log-Loss</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-midnight-900/[0.06]">
+                  {Object.entries(audit.validation_report.champion_challenger_tournament).map(([name, m]) => (
+                    <tr key={name}>
+                      <td className="py-2 font-medium text-midnight-900">{name.replace(/_/g, " ")}</td>
+                      <td className="py-2 text-right font-mono">{(m.holdout_accuracy * 100).toFixed(2)}%</td>
+                      <td className="py-2 text-right font-mono">{(m.macro_f1 * 100).toFixed(2)}%</td>
+                      <td className="py-2 text-right font-mono">{m.log_loss.toFixed(4)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {audit.probability_calibration && (
+            <div className="mt-4 grid grid-cols-1 gap-2 rounded-xl bg-midnight-900/[0.03] p-3 text-xs sm:grid-cols-3">
+              <div>
+                <p className="text-[11px] text-midnight-700/60">5-Fold OOF NLL</p>
+                <p className="mt-0.5 font-mono font-semibold text-midnight-950">
+                  {audit.probability_calibration.pre_calibration.multiclass_nll.toFixed(4)} to{" "}
+                  <span className="text-signal-correct">
+                    {audit.probability_calibration.post_calibration.multiclass_nll.toFixed(4)}
+                  </span>
+                </p>
+              </div>
+              <div>
+                <p className="text-[11px] text-midnight-700/60">10-Bin ECE</p>
+                <p className="mt-0.5 font-mono font-semibold text-midnight-950">
+                  {audit.probability_calibration.pre_calibration.ece_10_bin.toFixed(4)} to{" "}
+                  <span className="text-signal-correct">
+                    {audit.probability_calibration.post_calibration.ece_10_bin.toFixed(4)}
+                  </span>
+                </p>
+              </div>
+              <div>
+                <p className="text-[11px] text-midnight-700/60">Serverless RF Compression</p>
+                <p className="mt-0.5 font-mono font-semibold text-midnight-950">
+                  {audit.probability_calibration.serverless_compression_benchmark.compression_ratio_x.toFixed(2)}x (-
+                  {audit.probability_calibration.serverless_compression_benchmark.size_reduction_percent.toFixed(1)}%)
+                </p>
+              </div>
+            </div>
+          )}
+        </Card>
+
+        <Card className="p-6">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h2 className="font-display text-lg font-semibold text-midnight-950">
+                Cryptographic SHA-256 Model & Data Artifact Registry
+              </h2>
+              <p className="mt-0.5 text-xs text-midnight-700/65">
+                Live cryptographic checksum verification preventing silent model tampering or corpus drift.
+              </p>
+            </div>
+            {audit.live_integrity_verification && (
+              <span className="rounded-full bg-signal-correct/10 px-2.5 py-0.5 text-xs font-semibold text-signal-correct">
+                {audit.live_integrity_verification.integrity_status} ·{" "}
+                {audit.live_integrity_verification.verified_artifacts_count} ARTIFACTS
+              </span>
+            )}
+          </div>
+
+          {audit.artifact_registry?.artifacts && (
+            <div className="mt-4 max-h-56 overflow-y-auto pr-1">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="border-b border-midnight-900/10 text-midnight-700/60">
+                    <th className="pb-2 font-medium">Artifact Path</th>
+                    <th className="pb-2 text-right font-medium">Size</th>
+                    <th className="pb-2 text-right font-medium">SHA-256 Prefix</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-midnight-900/[0.06]">
+                  {Object.entries(audit.artifact_registry.artifacts).map(([relPath, meta]) => (
+                    <tr key={relPath}>
+                      <td className="py-1.5 font-mono text-[11px] text-midnight-900">{relPath}</td>
+                      <td className="py-1.5 text-right font-mono text-[11px] text-midnight-700">
+                        {(meta.size_bytes / 1024).toFixed(1)} KB
+                      </td>
+                      <td className="py-1.5 text-right font-mono text-[11px] text-signal-correct">
+                        {meta.sha256.slice(0, 12)}…
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </Card>
+      </div>
+
+      <Card className="p-6">
+        <div className="flex flex-col justify-between gap-3 border-b border-midnight-900/[0.06] pb-4 sm:flex-row sm:items-center">
+          <div>
+            <h2 className="font-display text-lg font-semibold text-midnight-950">
+              65-Chapter Corpus Readiness, Non-Destructive 3PL IRT Tier Recalibration & Cross-Year Dedup Audit
+            </h2>
+            <p className="mt-0.5 text-xs text-midnight-700/65">
+              Subject × difficulty capacity matrix, 45Q / 180Q mock blueprint readiness, 3PL IRT anchor candidates for all 46 missing-Basic chapters, and TF-IDF near-duplicate PYQ exclusion.
+            </p>
+          </div>
+          <Button variant="secondary" size="sm" onClick={togglePrometheusMetrics} disabled={loadingProm}>
+            {loadingProm
+              ? "Scraping…"
+              : promMetrics !== null
+              ? "Hide Prometheus /mlops/metrics"
+              : "Inspect Live Prometheus Metrics"}
+          </Button>
+        </div>
+
+        <div className="mt-4 grid grid-cols-1 gap-6 lg:grid-cols-3">
+          {audit.distribution_summary && (
+            <div className="overflow-x-auto">
+              <p className="mb-2 text-xs font-semibold text-midnight-900">
+                Subject × Difficulty Corpus Matrix & Blueprint Capacity
+              </p>
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="border-b border-midnight-900/10 text-midnight-700/60">
+                    <th className="pb-1.5 font-medium">Subject</th>
+                    <th className="pb-1.5 text-right font-medium">Basic</th>
+                    <th className="pb-1.5 text-right font-medium">Med</th>
+                    <th className="pb-1.5 text-right font-medium">Adv</th>
+                    <th className="pb-1.5 text-right font-medium">Total</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-midnight-900/[0.06]">
+                  {Object.entries(audit.distribution_summary.subject_difficulty_matrix).map(([subj, row]) => (
+                    <tr key={subj}>
+                      <td className="py-1.5 font-medium text-midnight-900">{subj}</td>
+                      <td
+                        className={`py-1.5 text-right font-mono ${
+                          row.basic === 0 ? "font-semibold text-amber-700" : "text-midnight-800"
+                        }`}
+                      >
+                        {row.basic}
+                      </td>
+                      <td className="py-1.5 text-right font-mono text-midnight-800">{row.medium}</td>
+                      <td className="py-1.5 text-right font-mono text-midnight-800">{row.advanced}</td>
+                      <td className="py-1.5 text-right font-mono font-semibold text-midnight-950">{row.total}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <p className="mt-2 text-[11px] text-midnight-700/75">
+                45Q Adaptive Capacity:{" "}
+                <strong className="text-midnight-950">
+                  {audit.distribution_summary.blueprint_readiness.current_adaptive_45q_blueprint.max_full_non_repeating_mocks}{" "}
+                  non-repeating mocks
+                </strong>{" "}
+                · 180Q Full NEET Capacity:{" "}
+                <strong className="text-midnight-950">
+                  {audit.distribution_summary.blueprint_readiness.target_neet_180q_blueprint.max_full_non_repeating_mocks}{" "}
+                  mocks
+                </strong>
+              </p>
+            </div>
+          )}
+
+          {audit.tier_recalibration_audit && (
+            <div className="rounded-xl border border-midnight-900/10 bg-midnight-900/[0.02] p-3.5 text-xs">
+              <p className="font-semibold text-midnight-950">
+                Non-Destructive 3PL IRT Tier Re-Calibration Proposal
+              </p>
+              <p className="mt-1 text-[11px] text-midnight-700/75">
+                Identifies foundational PYQs (b_i &lt;= 0.28) to populate missing Basic pools without mutating source DB.
+              </p>
+              <div className="mt-2.5 grid grid-cols-2 gap-2">
+                <div className="rounded-lg bg-white p-2">
+                  <p className="text-[10px] text-midnight-700/60">Missing Basic Resolved</p>
+                  <p className="mt-0.5 font-mono text-sm font-semibold text-signal-correct">
+                    {audit.tier_recalibration_audit.gap_resolution_summary.chapters_resolvable_via_irt_anchors} /{" "}
+                    {audit.tier_recalibration_audit.gap_resolution_summary.chapters_missing_basic_before} chapters
+                  </p>
+                </div>
+                <div className="rounded-lg bg-white p-2">
+                  <p className="text-[10px] text-midnight-700/60">Physics Chapters Resolved</p>
+                  <p className="mt-0.5 font-mono text-sm font-semibold text-signal-correct">
+                    {audit.tier_recalibration_audit.gap_resolution_summary.physics_chapters_resolvable_via_irt_anchors} /{" "}
+                    {audit.tier_recalibration_audit.gap_resolution_summary.physics_chapters_missing_basic_before} Physics
+                  </p>
+                </div>
+              </div>
+              <p className="mt-2 text-[11px] text-midnight-700/75">
+                Global Foundational Candidates:{" "}
+                <strong className="font-mono text-midnight-950">
+                  {audit.tier_recalibration_audit.gap_resolution_summary.strict_global_basic_candidates_count.toLocaleString()}
+                </strong>{" "}
+                items
+              </p>
+            </div>
+          )}
+
+          {audit.question_similarity_audit && (
+            <div className="rounded-xl border border-midnight-900/10 bg-midnight-900/[0.02] p-3.5 text-xs">
+              <p className="font-semibold text-midnight-950">
+                Cross-Year TF-IDF Near-Duplicate PYQ Guard
+              </p>
+              <p className="mt-1 text-[11px] text-midnight-700/75">
+                Paper generator automatically blocks sibling PYQs with cosine similarity &gt;= 0.82 in the same mock.
+              </p>
+              <div className="mt-2.5 grid grid-cols-2 gap-2">
+                <div className="rounded-lg bg-white p-2">
+                  <p className="text-[10px] text-midnight-700/60">Near-Duplicate Pairs</p>
+                  <p className="mt-0.5 font-mono text-sm font-semibold text-midnight-950">
+                    {audit.question_similarity_audit.near_duplicate_pairs_count} cross-year pairs
+                  </p>
+                </div>
+                <div className="rounded-lg bg-white p-2">
+                  <p className="text-[10px] text-midnight-700/60">Unique Effective Clusters</p>
+                  <p className="mt-0.5 font-mono text-sm font-semibold text-midnight-950">
+                    {audit.question_similarity_audit.unique_effective_question_clusters.toLocaleString()} clusters
+                  </p>
+                </div>
+              </div>
+              {audit.question_similarity_audit.top_near_duplicate_pairs[0] && (
+                <p className="mt-2 font-mono text-[10px] text-midnight-700/75">
+                  Top Pair: {audit.question_similarity_audit.top_near_duplicate_pairs[0].question_id_a} ↔{" "}
+                  {audit.question_similarity_audit.top_near_duplicate_pairs[0].question_id_b} (sim{" "}
+                  {audit.question_similarity_audit.top_near_duplicate_pairs[0].cosine_similarity.toFixed(4)})
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+
+        {promMetrics !== null && (
+          <pre className="mt-4 max-h-64 overflow-auto rounded-xl bg-midnight-950 p-4 font-mono text-[11px] leading-relaxed text-emerald-300">
+            {promMetrics}
+          </pre>
+        )}
+      </Card>
     </div>
   );
 }

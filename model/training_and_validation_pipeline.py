@@ -24,6 +24,9 @@ from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from .corpus_distribution_and_readiness_audit import run_corpus_distribution_and_readiness_audit
 from .irt_3pl_model import CALIBRATED_ITEMS, calibrate_question_bank
 from .knowledge_graph_dag import DAG_NODES, get_all_ancestors
+from .probability_calibrator import fit_and_save_rf_temperature_calibration
+from .propose_tier_recalibration import run_irt_tier_recalibration_audit
+from .question_similarity_audit import run_question_similarity_audit
 from .rag_socratic_engine import _INDEX as RAG_INDEX
 from .rf_compact_runtime import COMPACT_RF_RUNTIME, export_rf_compact_forest, reload_compact_rf_runtime
 from .validate_question_bank import validate as validate_qbank
@@ -121,6 +124,9 @@ def build_model_registry_manifest() -> dict:
         MODEL_DIR / "rf_difficulty_meta.json",
         MODEL_DIR / "irt_item_parameters.json",
         MODEL_DIR / "topic_importance.json",
+        MODEL_DIR / "rf_temperature_calibration.json",
+        MODEL_DIR / "tier_recalibration_proposal.json",
+        MODEL_DIR / "question_similarity_report.json",
         PROJECT_ROOT / "data" / "tagged_questions" / "neet_questions_clean.json",
         PROJECT_ROOT / "data" / "ncert_knowledge_base.json",
         PROJECT_ROOT / "data" / "taxonomy" / "NEET_Unified_Weightage_And_Marks_2013_2026.json",
@@ -136,7 +142,7 @@ def build_model_registry_manifest() -> dict:
             "sha256": c_hash,
         }
     return {
-        "registry_version": "2.1.0",
+        "registry_version": "2.2.0",
         "champion_classifier": "RandomForestClassifier_300_Balanced",
         "serverless_runtime": "CompactNumPyForest_300_Trees",
         "artifacts": artifacts,
@@ -334,6 +340,14 @@ def run_deep_training_and_validation(save_artifacts: bool = True) -> dict:
     c_vals = [float(v["c"] if isinstance(v, dict) else v.c) for v in irt_items.values()]
 
     dist_audit = run_corpus_distribution_and_readiness_audit(save_report=save_artifacts)
+    temp_cal = fit_and_save_rf_temperature_calibration(
+        oof_probs=oof_probs,
+        y_labels=y.tolist(),
+        classes=classes,
+        save_report=save_artifacts,
+    )
+    recal_audit = run_irt_tier_recalibration_audit(save_report=save_artifacts)
+    sim_audit = run_question_similarity_audit(save_report=save_artifacts)
 
     with open(MODEL_DIR / "topic_importance.json", encoding="utf-8") as f:
         importance_scores = json.load(f)
@@ -380,6 +394,20 @@ def run_deep_training_and_validation(save_artifacts: bool = True) -> dict:
             "verified_rows": len(X),
             "exact_class_matches": exact_argmax_matches,
             "max_abs_probability_diff": round(max_parity_diff, 6),
+        },
+        "temperature_calibration_summary": {
+            "optimal_temperature": temp_cal["optimal_temperature"],
+            "pre_ece": temp_cal["pre_calibration"]["ece_10_bin"],
+            "post_ece": temp_cal["post_calibration"]["ece_10_bin"],
+            "pre_nll": temp_cal["pre_calibration"]["multiclass_nll"],
+            "post_nll": temp_cal["post_calibration"]["multiclass_nll"],
+            "compression_ratio_x": temp_cal["serverless_compression_benchmark"]["compression_ratio_x"],
+        },
+        "tier_recalibration_summary": recal_audit["gap_resolution_summary"],
+        "question_similarity_summary": {
+            "near_duplicate_pairs_count": sim_audit["near_duplicate_pairs_count"],
+            "near_duplicate_clusters_count": sim_audit["near_duplicate_clusters_count"],
+            "unique_effective_question_clusters": sim_audit["unique_effective_question_clusters"],
         },
         "irt_3pl_calibration_summary": {
             "calibrated_questions": len(irt_items),

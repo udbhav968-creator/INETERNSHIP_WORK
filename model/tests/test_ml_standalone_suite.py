@@ -389,7 +389,7 @@ def ml_suite_14_multi_model_tournament_and_sha256_registry_integrity():
 
     integrity = verify_all_ml_artifacts()
     assert integrity["integrity_status"] == "VERIFIED"
-    assert integrity["verified_artifacts_count"] >= 9
+    assert integrity["verified_artifacts_count"] == 12
 
 
 def ml_suite_15_clean_code_zero_comments_and_zero_seeded_attempts_gate():
@@ -404,6 +404,47 @@ def ml_suite_15_clean_code_zero_comments_and_zero_seeded_attempts_gate():
         for node in ast.walk(tree):
             if isinstance(node, (ast.Module, ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)):
                 assert ast.get_docstring(node) is None, f"Docstring in {py_file}"
+
+
+def ml_suite_16_irt_tier_recalibration_audit():
+    from model.propose_tier_recalibration import run_irt_tier_recalibration_audit
+
+    rep = run_irt_tier_recalibration_audit(save_report=False)
+    assert rep["source_corpus_mutated"] is False
+    assert rep["total_audited_questions"] == 2471
+    gap = rep["gap_resolution_summary"]
+    assert gap["chapters_missing_basic_before"] == 46
+    assert gap["chapters_resolvable_via_irt_anchors"] == 46
+    assert gap["physics_chapters_missing_basic_before"] == 22
+    assert gap["physics_chapters_resolvable_via_irt_anchors"] == 22
+    assert gap["strict_global_basic_candidates_count"] > 20
+
+
+def ml_suite_17_near_duplicate_pyq_cosine_similarity_audit():
+    from model.question_similarity_audit import get_near_duplicate_siblings_map, run_question_similarity_audit
+
+    rep = run_question_similarity_audit(save_report=False)
+    assert rep["total_audited_questions"] == 2471
+    assert rep["unique_effective_question_clusters"] > 2000
+    sibs = get_near_duplicate_siblings_map()
+    assert isinstance(sibs, dict)
+    for qid, s_list in sibs.items():
+        assert qid not in s_list
+        for s_id in s_list:
+            assert qid in sibs.get(s_id, [])
+
+
+def ml_suite_18_temperature_probability_calibration_and_compression():
+    from model.probability_calibrator import calibrate_rf_probabilities, get_calibration_metadata
+
+    meta = get_calibration_metadata()
+    assert 0.08 <= meta["optimal_temperature"] <= 3.0
+    assert meta["post_calibration"]["multiclass_nll"] <= meta["pre_calibration"]["multiclass_nll"] + 1e-4
+    comp = meta["serverless_compression_benchmark"]
+    assert comp["compression_ratio_x"] >= 15.0
+    cal_p, temp = calibrate_rf_probabilities({"basic": 0.05, "medium": 0.75, "advanced": 0.20})
+    assert cal_p is not None and abs(sum(cal_p.values()) - 1.0) < 0.01
+    assert temp == meta["optimal_temperature"]
 
 
 if __name__ == "__main__":
@@ -423,6 +464,9 @@ if __name__ == "__main__":
         ml_suite_13_feature_store_latency_and_psi_ece_brier_drift_monitor,
         ml_suite_14_multi_model_tournament_and_sha256_registry_integrity,
         ml_suite_15_clean_code_zero_comments_and_zero_seeded_attempts_gate,
+        ml_suite_16_irt_tier_recalibration_audit,
+        ml_suite_17_near_duplicate_pyq_cosine_similarity_audit,
+        ml_suite_18_temperature_probability_calibration_and_compression,
     ]
     for fn in suites:
         fn()

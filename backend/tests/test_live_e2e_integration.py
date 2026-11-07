@@ -312,4 +312,28 @@ with urllib.request.urlopen(req_plan, timeout=15) as res:
     assert len(plan_payload["improvement_action_table"]) >= 5
     print(f"[PASS] 16. ML Syllabus Coverage & Ranked Improvement Plan: practiced={cov['practiced_chapters']}/65 ({cov['coverage_percent']}%), top_action='{plan_payload['improvement_action_table'][0]['topic_id']}'")
 
-print("\n>>> ALL 16 END-TO-END LIVE PRODUCTION INTEGRATION GATES PASSED (100%) <<<")
+with urllib.request.urlopen(f"{BASE}/mlops/recalibration_and_dedup", timeout=15) as res:
+    recal_payload = json.loads(res.read())
+    assert recal_payload["tier_recalibration_audit"]["source_corpus_mutated"] is False
+    assert recal_payload["tier_recalibration_audit"]["gap_resolution_summary"]["chapters_resolvable_via_irt_anchors"] == 46
+    assert recal_payload["question_similarity_audit"]["near_duplicate_pairs_count"] >= 5
+    assert recal_payload["probability_calibration"]["post_calibration"]["ece_10_bin"] < 0.01
+    assert audit["live_integrity_verification"]["verified_artifacts_count"] >= 11
+    assert "calibrated_probabilities" in cold and cold["calibrated_probabilities"] is not None
+    print(
+        f"[PASS] 17. Live Tier Recalibration (46/46), Cross-Year Dedup ({recal_payload['question_similarity_audit']['near_duplicate_pairs_count']} pairs) & Temperature Scaling (T*={recal_payload['probability_calibration']['optimal_temperature']}, {audit['live_integrity_verification']['verified_artifacts_count']} SHA-256 artifacts)"
+    )
+
+with urllib.request.urlopen(f"{BASE}/mlops/metrics", timeout=15) as res:
+    prom_body = res.read().decode("utf-8")
+    assert "klassed_calibrated_irt_items_total 2471" in prom_body
+    assert "klassed_rf_temperature_post_ece" in prom_body
+
+with urllib.request.urlopen(f"{BASE}/assets/index.js", timeout=15) as res:
+    bundle_js = res.read().decode("utf-8")
+    assert "ML Syllabus Coverage, Less-Learned Diagnostics & Improvement Plan" in bundle_js
+    assert "3-Model Tournament & Temperature Probability Calibration" in bundle_js
+    assert "Inspect Live Prometheus Metrics" in bundle_js
+    print(f"[PASS] 18. Live Prometheus /mlops/metrics & Rebuilt Vercel SPA Bundle Verified ({len(bundle_js)} bytes JS with Dashboard + MLOps UI cards)")
+
+print("\n>>> ALL 18 END-TO-END LIVE PRODUCTION INTEGRATION GATES PASSED (100%) <<<")

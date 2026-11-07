@@ -227,11 +227,92 @@ export interface V2StudentInsights {
   }>;
 }
 
+export interface SubjectCoverageItem {
+  total_chapters: number;
+  practiced_chapters: number;
+  coverage_percent: number;
+  mastered_chapters: number;
+  developing_chapters: number;
+  less_learned_chapters: number;
+  untouched_chapters: number;
+  mean_mastery_percent: number;
+}
+
+export interface LessLearnedLessonItem {
+  topic_id: string;
+  subject: string;
+  cluster: string;
+  current_level: Difficulty;
+  peak_mastery_percent: number;
+  decayed_mastery_percent: number;
+  irt_theta: number;
+  neet_weightage_percent: number;
+  pace_flag: PaceFlag;
+  blocking_prerequisites: string[];
+  deficit_severity: number;
+}
+
+export interface ImprovementActionRow {
+  rank: number;
+  topic_id: string;
+  subject: string;
+  cluster: string;
+  lesson_status: string;
+  diagnostic_category: string;
+  current_mastery_percent: number;
+  decayed_mastery_percent: number;
+  readiness_percent: number;
+  neet_weightage_percent: number;
+  expected_marks_gain_720: number;
+  blocking_prerequisites: string[];
+  recommended_start_tier: Difficulty;
+  recommended_drill_questions: number;
+  remediation_priority_score: number;
+  what_to_improve: string;
+}
+
+export interface MistakeRetestItem {
+  question_id: string;
+  topic_id: string;
+  subject: string;
+  difficulty: Difficulty;
+  time_taken_seconds: number;
+  error_mode: string;
+  ebbinghaus_retest_hours: number;
+  chapter_mastery_percent: number;
+}
+
+export interface StudentStudyPlan {
+  student_id: string;
+  syllabus_coverage: {
+    total_chapters: number;
+    practiced_chapters: number;
+    untouched_chapters: number;
+    coverage_percent: number;
+    mastered_chapters: number;
+    developing_chapters: number;
+    less_learned_chapters: number;
+    retention_decay_alerts: number;
+    subject_coverage: Record<string, SubjectCoverageItem>;
+  };
+  primary_cognitive_skill_to_improve: {
+    skill_id: string;
+    name: string;
+    mastery_probability: number;
+    diagnosis: string;
+  };
+  projected_neet_score_interval_90: [number, number];
+  less_learned_lessons: LessLearnedLessonItem[];
+  improvement_action_table: ImprovementActionRow[];
+  mistake_retest_queue?: MistakeRetestItem[];
+}
+
 export interface DashboardSnapshot {
   topics: TopicState[];
   analytics: Analytics;
   v2_insights: V2StudentInsights;
   paper_history: PaperHistorySummary[];
+  study_plan?: StudentStudyPlan;
 }
 
 export interface ColdStartItemInput {
@@ -263,6 +344,8 @@ export interface ColdStartItemPrediction {
     distractor_similarity: number;
   };
   rf_probabilities: Record<string, number> | null;
+  calibrated_probabilities?: Record<string, number> | null;
+  calibration_temperature?: number;
   resolved_metadata: {
     subject: string;
     chapter: string;
@@ -345,6 +428,19 @@ export interface MlopsAuditOverview {
       mean_cv_log_loss: number;
       oof_multiclass_brier_score: number;
     };
+    champion_challenger_tournament?: Record<
+      string,
+      {
+        holdout_accuracy: number;
+        macro_f1: number;
+        log_loss: number;
+      }
+    >;
+    serverless_compact_rf_parity?: {
+      verified_rows: number;
+      exact_class_matches: number;
+      max_abs_probability_diff: number;
+    };
     irt_3pl_calibration_summary?: {
       calibrated_questions: number;
       discrimination_a_range: [number, number];
@@ -404,4 +500,106 @@ export interface MlopsAuditOverview {
     >;
   };
   chapters_by_subject: Record<string, string[]>;
+  artifact_registry?: {
+    registry_version?: string;
+    champion_classifier?: string;
+    serverless_runtime?: string;
+    artifacts?: Record<
+      string,
+      {
+        exists: boolean;
+        size_bytes: number;
+        sha256: string;
+      }
+    >;
+  };
+  live_integrity_verification?: {
+    integrity_status: string;
+    verified_artifacts_count: number;
+    calibrated_irt_items: number;
+    canonical_chapters: number;
+    cold_start_verification_ms: number;
+  };
+  distribution_summary?: {
+    subject_difficulty_matrix: Record<
+      string,
+      {
+        basic: number;
+        medium: number;
+        advanced: number;
+        total: number;
+        chapter_count: number;
+      }
+    >;
+    gap_summary: {
+      topics_missing_basic_count: number;
+      topics_missing_medium_count: number;
+      topics_missing_advanced_count: number;
+      adjacent_tier_fallback_resolves_100_percent_topics: boolean;
+    };
+    blueprint_readiness: {
+      current_adaptive_45q_blueprint: {
+        max_full_non_repeating_mocks: number;
+      };
+      target_neet_180q_blueprint: {
+        max_full_non_repeating_mocks: number;
+      };
+    };
+  };
+  tier_recalibration_audit?: {
+    gap_resolution_summary: {
+      chapters_missing_basic_before: number;
+      chapters_resolvable_via_irt_anchors: number;
+      physics_chapters_missing_basic_before: number;
+      physics_chapters_resolvable_via_irt_anchors: number;
+      chapters_missing_advanced_before: number;
+      advanced_chapters_resolvable_via_irt_anchors: number;
+      strict_global_basic_candidates_count: number;
+      strict_global_advanced_candidates_count: number;
+    };
+    top_basic_recalibration_candidates: Array<{
+      question_id: string;
+      topic_id: string;
+      subject: string;
+      irt_b: number;
+      ideal_time_sec: number;
+      proposed_tier: string;
+    }>;
+  };
+  question_similarity_audit?: {
+    near_duplicate_pairs_count: number;
+    near_duplicate_clusters_count: number;
+    unique_effective_question_clusters: number;
+    high_concept_overlap_pairs_count: number;
+    top_near_duplicate_pairs: Array<{
+      question_id_a: string;
+      question_id_b: string;
+      subject: string;
+      chapter_a: string;
+      chapter_b: string;
+      cosine_similarity: number;
+      snippet_a: string;
+    }>;
+  };
+  probability_calibration?: {
+    optimal_temperature: number;
+    pre_calibration: {
+      multiclass_nll: number;
+      multiclass_brier_score: number;
+      ece_10_bin: number;
+    };
+    post_calibration: {
+      multiclass_nll: number;
+      multiclass_brier_score: number;
+      ece_10_bin: number;
+    };
+    nll_improvement_percent: number;
+    ece_improvement_percent: number;
+    serverless_compression_benchmark: {
+      sklearn_joblib_size_bytes: number;
+      serverless_bundle_total_bytes: number;
+      compression_ratio_x: number;
+      size_reduction_percent: number;
+    };
+  };
 }

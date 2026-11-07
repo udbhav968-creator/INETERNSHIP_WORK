@@ -5,6 +5,7 @@ from .db_models import Question, StudentTopicState, Student, TestAttempt
 from .paths import MODEL_DIR
 from model.linucb_bandit import build_context_vector, score_candidate_ucb
 from model.knowledge_graph_dag import compute_prerequisite_readiness
+from model.question_similarity_audit import get_near_duplicate_siblings_map
 
 with open(MODEL_DIR / "topic_importance.json", encoding="utf-8") as f:
     _TOPIC_IMPORTANCE = json.load(f)
@@ -122,9 +123,10 @@ def _select_topic_questions(
             if not candidates:
                 continue
 
-            picked = _select_with_bandit(
+            siblings_map = get_near_duplicate_siblings_map()
+            ranked_candidates = _select_with_bandit(
                 candidates,
-                min(needed, len(candidates)),
+                len(candidates),
                 student_id,
                 topic_theta,
                 mastery_prob,
@@ -132,8 +134,14 @@ def _select_topic_questions(
                 prereq_ready,
                 pace_flag,
             )
-            for q in picked:
+            for q in ranked_candidates:
+                if len(selected) >= target_count:
+                    break
+                if q.question_id in excluded_ids:
+                    continue
                 excluded_ids.add(q.question_id)
+                for sib_id in siblings_map.get(q.question_id, []):
+                    excluded_ids.add(sib_id)
                 selected.append(q)
 
     return selected
@@ -251,6 +259,8 @@ def generate_paper(
             if probe_candidates and len(paper) < total_length + 5:
                 probe_q = probe_candidates[0]
                 excluded_ids.add(probe_q.question_id)
+                for sib_id in get_near_duplicate_siblings_map().get(probe_q.question_id, []):
+                    excluded_ids.add(sib_id)
                 paper.append(probe_q)
 
     if len(paper) < total_length and fractional_topics:

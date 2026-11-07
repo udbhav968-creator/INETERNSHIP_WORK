@@ -1,5 +1,5 @@
 {
-  "registry_version": "2.1.0",
+  "registry_version": "2.2.0",
   "champion_classifier": "RandomForestClassifier_300_Balanced",
   "serverless_runtime": "CompactNumPyForest_300_Trees",
   "artifacts": {
@@ -27,6 +27,21 @@
       "exists": true,
       "size_bytes": 2110,
       "sha256": "4d0e58c43f195b31dd917b6b7650fb35976959e72ebe191d8bb1e005394e0680"
+    },
+    "model/rf_temperature_calibration.json": {
+      "exists": true,
+      "size_bytes": 786,
+      "sha256": "71c36cd294bc528a8ad4c4a7c59cebf7b6fec01273c2d8f17a26ef8c65324b9c"
+    },
+    "model/tier_recalibration_proposal.json": {
+      "exists": true,
+      "size_bytes": 35404,
+      "sha256": "b48826b3e76b853eaf7dab846f46dba70ee643d41e86019aa55f0c883196e494"
+    },
+    "model/question_similarity_report.json": {
+      "exists": true,
+      "size_bytes": 3779,
+      "sha256": "78e3a1f20ec5daf68ea62728060137e40eb775becc4d564680de8fcc46a85d78"
     },
     "data/tagged_questions/neet_questions_clean.json": {
       "exists": true,

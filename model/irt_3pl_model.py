@@ -386,6 +386,9 @@ def predict_cold_start_difficulty_and_irt(
     a_est = round(max(0.75, min(2.35, 1.05 + 0.65 * complexity_score + 0.25 * feats["distractor_similarity"])), 4)
     c_est = round(max(0.14, min(0.26, 0.25 - 0.06 * feats["distractor_similarity"] - 0.04 * feats["numerical_complexity"])), 4)
 
+    from .probability_calibrator import calibrate_rf_probabilities
+    calibrated_probs, cal_temp = calibrate_rf_probabilities(rf_probs)
+
     return {
         "predicted_difficulty": tier,
         "rf_predicted_difficulty": rf_predicted_tier,
@@ -394,6 +397,8 @@ def predict_cold_start_difficulty_and_irt(
         "irt_params": {"a": a_est, "b": b_est, "c": c_est},
         "nlp_features": feats,
         "rf_probabilities": rf_probs,
+        "calibrated_probabilities": calibrated_probs,
+        "calibration_temperature": cal_temp,
         "resolved_metadata": {
             "subject": subject,
             "chapter": chapter,

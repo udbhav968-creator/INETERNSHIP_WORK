@@ -223,6 +223,41 @@ def compute_syllabus_coverage_and_improvement_plan(
         {"rank": idx + 1, **row} for idx, row in enumerate(action_candidates[:top_k_actions])
     ]
 
+    latest_by_qid: dict[str, dict] = {}
+    for att in attempts:
+        qid = str(att.get("question_id") or "")
+        if qid:
+            latest_by_qid[qid] = att
+
+    mistake_retest_queue: list[dict] = []
+    for qid, att in latest_by_qid.items():
+        if bool(att.get("is_correct", False)):
+            continue
+        tid = str(att.get("topic_id") or "")
+        subj = str((DAG_NODES.get(tid) or {}).get("subject", "Physics"))
+        t_taken = int(att.get("time_taken_seconds") or 60)
+        exp_t = int(att.get("expected_time_seconds") or 90)
+        m_cur = effective_mastery_all.get(tid, 0.35)
+        interval_h = 24 if m_cur < 0.45 else (72 if m_cur < 0.70 else 168)
+        error_mode = (
+            "impulsive_guess"
+            if t_taken <= max(10, int(0.25 * exp_t))
+            else ("slow_struggle" if t_taken >= int(1.35 * exp_t) else "conceptual_or_trap_error")
+        )
+        mistake_retest_queue.append(
+            {
+                "question_id": qid,
+                "topic_id": tid,
+                "subject": subj,
+                "difficulty": str(att.get("difficulty") or "medium"),
+                "time_taken_seconds": t_taken,
+                "error_mode": error_mode,
+                "ebbinghaus_retest_hours": interval_h,
+                "chapter_mastery_percent": round(m_cur * 100.0, 1),
+            }
+        )
+    mistake_retest_queue.sort(key=lambda r: (r["ebbinghaus_retest_hours"], r["chapter_mastery_percent"]))
+
     subject_coverage_out: dict[str, dict] = {}
     for subj, sb in subject_buckets.items():
         tot_c = max(1, sb["total_chapters"])
@@ -255,6 +290,7 @@ def compute_syllabus_coverage_and_improvement_plan(
         "optimal_skip_policy": mc_sim["negative_marking_optimizer"],
         "less_learned_lessons": less_learned_rows,
         "improvement_action_table": ranked_actions,
+        "mistake_retest_queue": mistake_retest_queue[:15],
     }
 
 

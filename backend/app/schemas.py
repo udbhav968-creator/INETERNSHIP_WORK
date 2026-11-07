@@ -183,3 +183,4 @@ class DashboardSnapshotOut(BaseModel):
     analytics: AnalyticsOut
     v2_insights: V2StudentInsightsOut
     paper_history: list[PaperHistorySummaryOut]
+    study_plan: Optional[dict[str, Any]] = None

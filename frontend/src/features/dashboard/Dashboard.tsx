@@ -6,6 +6,7 @@ import {
   type PaperHistorySummary,
   type PaperReviewOut,
   type SocraticHintOut,
+  type StudentStudyPlan,
   type TopicState,
   type V2StudentInsights,
 } from "../../types";
@@ -26,6 +27,7 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
   const [v2Insights, setV2Insights] = useState<V2StudentInsights | null>(null);
   const [paperHistory, setPaperHistory] = useState<PaperHistorySummary[]>([]);
+  const [studyPlan, setStudyPlan] = useState<StudentStudyPlan | null>(null);
   const [reviewModal, setReviewModal] = useState<PaperReviewOut | null>(null);
   const [loadingReview, setLoadingReview] = useState<number | null>(null);
   const [reviewError, setReviewError] = useState("");
@@ -48,6 +50,7 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
         setAnalytics(snapshot.analytics);
         setV2Insights(snapshot.v2_insights);
         setPaperHistory(snapshot.paper_history);
+        setStudyPlan(snapshot.study_plan ?? null);
         setState(snapshot.topics.length === 0 ? "empty" : "ready");
       })
       .catch((err) => {
@@ -652,6 +655,195 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
               </Card>
             ))}
           </div>
+        </div>
+      )}
+
+      {studyPlan && (state === "ready" || state === "empty") && (
+        <div className="flex flex-col gap-5">
+          <Card className="flex flex-col gap-5 p-6">
+            <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-end">
+              <div>
+                <h2 className="font-display text-xl font-semibold text-midnight-950">
+                  ML Syllabus Coverage, Less-Learned Diagnostics & Improvement Plan
+                </h2>
+                <p className="text-xs text-midnight-700/70">
+                  Real-time 65-chapter syllabus progress, Ebbinghaus decay tracking, missed-PYQ retest queue, and Graph Laplacian +Marks prescription.
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
+                <span className="rounded-xl bg-midnight-950 px-3 py-1 text-white">
+                  Covered: {studyPlan.syllabus_coverage.practiced_chapters} / {studyPlan.syllabus_coverage.total_chapters} ({studyPlan.syllabus_coverage.coverage_percent}%)
+                </span>
+                <span className="rounded-xl bg-emerald-500/10 px-2.5 py-1 text-emerald-800">
+                  Mastered (≥75%): {studyPlan.syllabus_coverage.mastered_chapters}
+                </span>
+                <span className="rounded-xl bg-amber-500/10 px-2.5 py-1 text-amber-900">
+                  Developing: {studyPlan.syllabus_coverage.developing_chapters}
+                </span>
+                <span className="rounded-xl bg-signal-incorrect/10 px-2.5 py-1 text-signal-incorrect">
+                  Less-Learned (&lt;45%): {studyPlan.syllabus_coverage.less_learned_chapters}
+                </span>
+              </div>
+            </div>
+
+            <div className="h-2.5 w-full overflow-hidden rounded-full bg-midnight-900/10">
+              <div
+                className="h-full rounded-full bg-midnight-950 transition-all"
+                style={{ width: `${Math.max(2, studyPlan.syllabus_coverage.coverage_percent)}%` }}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              {Object.entries(studyPlan.syllabus_coverage.subject_coverage).map(([subj, sc]) => (
+                <div
+                  key={subj}
+                  className="rounded-xl border border-midnight-900/10 bg-midnight-900/[0.02] p-4"
+                >
+                  <div className="flex items-center justify-between text-xs font-semibold text-midnight-900">
+                    <span>{subj}</span>
+                    <span>
+                      {sc.practiced_chapters}/{sc.total_chapters} chapters ({sc.coverage_percent}%)
+                    </span>
+                  </div>
+                  <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-midnight-900/10">
+                    <div
+                      className="h-full rounded-full bg-accent"
+                      style={{ width: `${Math.max(2, sc.coverage_percent)}%` }}
+                    />
+                  </div>
+                  <p className="mt-2 text-[11px] text-midnight-700/70">
+                    Mean Mastery: <strong>{sc.mean_mastery_percent}%</strong> · Mastered: <strong>{sc.mastered_chapters}</strong> · Less-Learned: <strong>{sc.less_learned_chapters}</strong>
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            {studyPlan.less_learned_lessons.length > 0 && (
+              <div className="flex flex-col gap-2.5 border-t border-midnight-900/[0.06] pt-4">
+                <p className="text-xs font-semibold uppercase tracking-wide text-signal-incorrect">
+                  Less-Learned Practiced Chapters (&lt;45% Decayed BKT Mastery)
+                </p>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {studyPlan.less_learned_lessons.slice(0, 6).map((ll) => (
+                    <div
+                      key={ll.topic_id}
+                      className="flex flex-col justify-between gap-2 rounded-xl border border-signal-incorrect/20 bg-signal-incorrect/[0.04] p-3.5"
+                    >
+                      <div>
+                        <div className="flex items-center justify-between gap-2 text-[11px] font-semibold text-midnight-700/70">
+                          <span>{ll.subject} · {ll.current_level}</span>
+                          <span className="text-signal-incorrect">{ll.decayed_mastery_percent}% mastery</span>
+                        </div>
+                        <p className="mt-1 text-sm font-semibold text-midnight-950">{ll.topic_id}</p>
+                        {ll.blocking_prerequisites.length > 0 && (
+                          <p className="mt-1 text-[11px] text-midnight-700/75">
+                            Blocked by: <strong>{ll.blocking_prerequisites.join(", ")}</strong>
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex items-center justify-between pt-1">
+                        <PaceBadge pace={ll.pace_flag} />
+                        <button
+                          type="button"
+                          onClick={() =>
+                            onStartPaper(
+                              ll.blocking_prerequisites.length > 0 ? ll.blocking_prerequisites[0] : ll.topic_id
+                            )
+                          }
+                          className="text-xs font-semibold text-accent hover:underline"
+                        >
+                          {ll.blocking_prerequisites.length > 0 ? "Fix Prerequisite →" : "Remediate Chapter →"}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {studyPlan.mistake_retest_queue && studyPlan.mistake_retest_queue.length > 0 && (
+              <div className="flex flex-col gap-2 border-t border-midnight-900/[0.06] pt-4">
+                <p className="text-xs font-semibold uppercase tracking-wide text-midnight-800">
+                  Ebbinghaus Spaced Mistake Re-Test Queue ({studyPlan.mistake_retest_queue.length} Missed PYQs)
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {studyPlan.mistake_retest_queue.slice(0, 6).map((mq) => (
+                    <button
+                      key={mq.question_id}
+                      type="button"
+                      onClick={() => onStartPaper(mq.topic_id)}
+                      className="rounded-xl border border-midnight-900/10 bg-white px-3 py-2 text-left text-xs transition hover:border-accent"
+                    >
+                      <span className="font-mono font-semibold text-midnight-950">{mq.question_id}</span>
+                      <span className="ml-2 text-midnight-700/75">{mq.topic_id}</span>
+                      <span className="ml-2 rounded-full bg-midnight-900/5 px-2 py-0.5 text-[10px] font-semibold text-midnight-800">
+                        Retest +{mq.ebbinghaus_retest_hours}h · {mq.error_mode.replace(/_/g, " ")}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {studyPlan.improvement_action_table.length > 0 && (
+              <div className="flex flex-col gap-2.5 border-t border-midnight-900/[0.06] pt-4">
+                <p className="text-xs font-semibold uppercase tracking-wide text-midnight-800">
+                  Ranked Actionable Improvement Table (Top Expected +NEET Marks ROI)
+                </p>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead>
+                      <tr className="border-b border-midnight-900/10 text-[11px] uppercase tracking-wide text-midnight-700/60">
+                        <th className="py-2 pr-3">#</th>
+                        <th className="py-2 pr-3">Chapter</th>
+                        <th className="py-2 pr-3">Diagnosis</th>
+                        <th className="py-2 pr-3 text-right">Mastery</th>
+                        <th className="py-2 pr-3 text-right">+NEET Marks</th>
+                        <th className="py-2 pr-3">Prescription</th>
+                        <th className="py-2 text-right">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-midnight-900/[0.06]">
+                      {studyPlan.improvement_action_table.slice(0, 8).map((row) => (
+                        <tr key={row.topic_id}>
+                          <td className="py-2.5 pr-3 font-mono font-semibold text-midnight-700">{row.rank}</td>
+                          <td className="py-2.5 pr-3">
+                            <p className="font-medium text-midnight-950">{row.topic_id}</p>
+                            <p className="text-[11px] text-midnight-700/60">
+                              {row.subject} · {row.recommended_drill_questions} Qs ({row.recommended_start_tier})
+                            </p>
+                          </td>
+                          <td className="py-2.5 pr-3">
+                            <span className="rounded-md bg-midnight-900/5 px-2 py-0.5 font-mono text-[10px] font-semibold text-midnight-800">
+                              {row.diagnostic_category}
+                            </span>
+                          </td>
+                          <td className="py-2.5 pr-3 text-right font-mono font-medium text-midnight-900">
+                            {row.decayed_mastery_percent.toFixed(1)}%
+                          </td>
+                          <td className="py-2.5 pr-3 text-right font-mono font-semibold text-emerald-700">
+                            +{row.expected_marks_gain_720.toFixed(1)}
+                          </td>
+                          <td className="max-w-xs py-2.5 pr-3 text-[11px] text-midnight-700/80">
+                            {row.what_to_improve}
+                          </td>
+                          <td className="py-2.5 text-right">
+                            <button
+                              type="button"
+                              onClick={() => onStartPaper(row.topic_id)}
+                              className="rounded-lg bg-midnight-950 px-2.5 py-1 text-[11px] font-semibold text-white transition hover:bg-midnight-800"
+                            >
+                              Drill →
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </Card>
         </div>
       )}
 

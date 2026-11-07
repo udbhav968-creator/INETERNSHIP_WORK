@@ -1,0 +1,9 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: "klassed-mlops-api"
+    metrics_path: "/mlops/metrics"
+    static_configs:
+      - targets: ["klassed-api:8000"]

@@ -1,0 +1,30 @@
+{
+  "calibration_method": "Multiclass_Temperature_Scaling_NLL_ECE",
+  "classes": [
+    "advanced",
+    "basic",
+    "medium"
+  ],
+  "sample_count": 2471,
+  "optimal_temperature": 0.39,
+  "pre_calibration": {
+    "multiclass_nll": 0.03976,
+    "multiclass_brier_score": 0.02185,
+    "ece_10_bin": 0.01723
+  },
+  "post_calibration": {
+    "multiclass_nll": 0.02721,
+    "multiclass_brier_score": 0.01723,
+    "ece_10_bin": 0.0023
+  },
+  "nll_improvement_percent": 31.56,
+  "ece_improvement_percent": 86.66,
+  "serverless_compression_benchmark": {
+    "sklearn_joblib_size_bytes": 7852154,
+    "compact_npz_forest_bytes": 332706,
+    "compact_vocab_meta_bytes": 12312,
+    "serverless_bundle_total_bytes": 345018,
+    "compression_ratio_x": 22.76,
+    "size_reduction_percent": 95.61
+  }
+}
