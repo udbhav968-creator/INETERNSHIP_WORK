@@ -51,7 +51,7 @@ def main():
     )
     model = RandomForestClassifier(
         n_estimators=300,
-        max_features=0.30,
+        max_features=0.35,
         random_state=42,
         class_weight="balanced",
         n_jobs=-1,

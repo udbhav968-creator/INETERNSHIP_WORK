@@ -37,7 +37,7 @@ _STOP_WORDS = {
 }
 
 
-def _gauss_hermite_nodes_and_weights(n_pts: int = 21, sigma: float = 0.85) -> tuple[np.ndarray, np.ndarray]:
+def _gauss_hermite_nodes_and_weights(n_pts: int = 31, sigma: float = 0.85) -> tuple[np.ndarray, np.ndarray]:
     raw_x, raw_w = np.polynomial.hermite.hermgauss(n_pts)
     thetas = math.sqrt(2.0) * sigma * raw_x
     weights = raw_w / math.sqrt(math.pi)
@@ -88,20 +88,33 @@ def train_irt_cold_start_ridge_regressor(
     rng = np.random.default_rng(42)
     perm = rng.permutation(n_rows)
     folds = np.array_split(perm, 5)
-    oof_pred = np.zeros_like(Y)
-    ridge_alpha = 2.5
 
-    for k in range(5):
-        val_idx = folds[k]
-        tr_idx = np.concatenate([folds[j] for j in range(5) if j != k])
-        mu = X_raw[tr_idx].mean(axis=0)
-        sd = np.where(X_raw[tr_idx].std(axis=0) < 1e-8, 1.0, X_raw[tr_idx].std(axis=0))
-        X_tr = np.hstack([np.ones((len(tr_idx), 1)), (X_raw[tr_idx] - mu) / sd])
-        X_va = np.hstack([np.ones((len(val_idx), 1)), (X_raw[val_idx] - mu) / sd])
-        reg = ridge_alpha * np.eye(n_feats + 1)
-        reg[0, 0] = 0.0
-        W = np.linalg.solve(X_tr.T @ X_tr + reg, X_tr.T @ Y[tr_idx])
-        oof_pred[val_idx] = X_va @ W
+    candidate_alphas = [0.1, 0.25, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 5.0, 10.0]
+    best_alpha = 1.0
+    best_loss = float("inf")
+    best_oof = np.zeros_like(Y)
+
+    for cand_alpha in candidate_alphas:
+        cand_oof = np.zeros_like(Y)
+        for k in range(5):
+            val_idx = folds[k]
+            tr_idx = np.concatenate([folds[j] for j in range(5) if j != k])
+            mu = X_raw[tr_idx].mean(axis=0)
+            sd = np.where(X_raw[tr_idx].std(axis=0) < 1e-8, 1.0, X_raw[tr_idx].std(axis=0))
+            X_tr = np.hstack([np.ones((len(tr_idx), 1)), (X_raw[tr_idx] - mu) / sd])
+            X_va = np.hstack([np.ones((len(val_idx), 1)), (X_raw[val_idx] - mu) / sd])
+            reg = cand_alpha * np.eye(n_feats + 1)
+            reg[0, 0] = 0.0
+            W = np.linalg.solve(X_tr.T @ X_tr + reg, X_tr.T @ Y[tr_idx])
+            cand_oof[val_idx] = X_va @ W
+        cand_loss = float(sum(np.sqrt(np.mean((Y[:, idx] - cand_oof[:, idx]) ** 2)) for idx in range(3)))
+        if cand_loss < best_loss:
+            best_loss = cand_loss
+            best_alpha = cand_alpha
+            best_oof = cand_oof
+
+    oof_pred = best_oof
+    ridge_alpha = float(best_alpha)
 
     mu_full = X_raw.mean(axis=0)
     sd_full = np.where(X_raw.std(axis=0) < 1e-8, 1.0, X_raw.std(axis=0))
@@ -118,7 +131,12 @@ def train_irt_cold_start_ridge_regressor(
     )
 
     param_names = ("a", "b", "c")
-    metrics: dict[str, Any] = {"n_samples": int(n_rows), "ridge_alpha": ridge_alpha}
+    metrics: dict[str, Any] = {
+        "n_samples": int(n_rows),
+        "ridge_alpha": ridge_alpha,
+        "optimal_alpha": ridge_alpha,
+        "tuning_alphas_searched": candidate_alphas,
+    }
     for idx, p_name in enumerate(param_names):
         rmse = float(np.sqrt(np.mean((Y[:, idx] - oof_pred[:, idx]) ** 2)))
         ss_tot = float(np.sum((Y[:, idx] - np.mean(Y[:, idx])) ** 2))
@@ -273,10 +291,22 @@ def train_dina_8skill_q_matrix_parameters(
             "mean_irt_b": round(mean_b, 4),
         }
 
+    q_mat = np.zeros((len(clean_qs), len(SKILL_IDS)), dtype=np.float64)
+    for idx, q in enumerate(clean_qs):
+        vec = extract_item_q_vector(q["question_text"], q["chapter"], q["difficulty_level"])
+        for s_idx, s_id in enumerate(SKILL_IDS):
+            q_mat[idx, s_idx] = vec.get(s_id, 0)
+    cov_mat = np.corrcoef(q_mat, rowvar=False)
+    corr_dict = {
+        s_a: {s_b: round(float(cov_mat[i, j]), 4) for j, s_b in enumerate(SKILL_IDS)}
+        for i, s_a in enumerate(SKILL_IDS)
+    }
+
     payload = {
         "model_type": "DINA_8Skill_MarginalIRT_Calibrated",
         "total_corpus_items": len(clean_qs),
         "skills": skills_calibrated,
+        "skill_correlation_matrix": corr_dict,
     }
     DINA_CALIBRATED_JSON.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
     return payload
@@ -342,6 +372,11 @@ def train_ncert_and_pyq_svd_rag_index(clean_qs: list[dict[str, Any]]) -> dict[st
 
     total_var = float(np.sum(s_vals ** 2))
     explained_ratio = round(float(np.sum(s_vals[:k_dim] ** 2) / max(1e-12, total_var)), 4)
+    variance_spectrum = {
+        f"rank_{r}": round(float(np.sum(s_vals[:r] ** 2) / max(1e-12, total_var)), 4)
+        for r in (16, 24, 32, 48)
+        if r <= len(s_vals)
+    }
 
     np.savez_compressed(
         RAG_SVD_NPZ,
@@ -356,6 +391,7 @@ def train_ncert_and_pyq_svd_rag_index(clean_qs: list[dict[str, Any]]) -> dict[st
         "vocab_size": len(vocab),
         "lsa_dimensions": k_dim,
         "lsa_explained_variance_ratio": explained_ratio,
+        "svd_variance_spectrum": variance_spectrum,
         "vocab": vocab,
     }
     RAG_SVD_META_JSON.write_text(json.dumps(meta_payload, separators=(",", ":")) + "\n", encoding="utf-8")

@@ -5,18 +5,18 @@
   "artifacts": {
     "model/question_difficulty_model.joblib": {
       "exists": true,
-      "size_bytes": 5080266,
-      "sha256": "ff235f11498e77e1a3170e777b1b0e9b0bf0563b61a3e47ecbb0a770f3121bc0"
+      "size_bytes": 4083930,
+      "sha256": "d5e5fb95c16e0c540a0f00a5da3ca40f7a991476b141dea368e87f4cd8ea972f"
     },
     "model/rf_difficulty_forest.npz": {
       "exists": true,
-      "size_bytes": 267580,
-      "sha256": "6e0aa986cda484d180d772bc4aad8f004562e3cf48d398daaf0eb72c8512cc0d"
+      "size_bytes": 211138,
+      "sha256": "be2e4eb888a8b91ce92d3f0ede68232ca9579ef90a7dbc0cf2961157e816fa17"
     },
     "model/rf_difficulty_meta.json": {
       "exists": true,
       "size_bytes": 13002,
-      "sha256": "bf399b787c43624580db9db96b20e0b74191650db0220849d8466e97e4146311"
+      "sha256": "46a80d41a33264bfd4bce738be66c218fa59316a8b6589b8509106b29300c6f4"
     },
     "model/irt_item_parameters.json": {
       "exists": true,
@@ -26,7 +26,7 @@
     "model/irt_cold_start_ridge.npz": {
       "exists": true,
       "size_bytes": 1171,
-      "sha256": "1dbf987baedf42b257785384434978a7bbd7caf7d3e19946675d9865c88773b6"
+      "sha256": "9bb8e1ecd0e274f36950eb00ebc0298c42f806ebdcb6820660b086848665b952"
     },
     "model/bkt_chapter_parameters.json": {
       "exists": true,
@@ -35,8 +35,8 @@
     },
     "model/dina_calibrated_parameters.json": {
       "exists": true,
-      "size_bytes": 2622,
-      "sha256": "a658c0d56980a09b5ca99dd64c24029ce70bdf35c286196a2f7fc332b30c5c2b"
+      "size_bytes": 5845,
+      "sha256": "7183889c41e86d04a49a33c19dba52c24a61e3e053b669473218d7ec028815e6"
     },
     "model/ncert_rag_svd_index.npz": {
       "exists": true,
@@ -45,8 +45,8 @@
     },
     "model/ncert_rag_svd_meta.json": {
       "exists": true,
-      "size_bytes": 104468,
-      "sha256": "991253b5b4a8117c8b111a6666b3f0a00a822b034cca9c9eebb8428bd602bf00"
+      "size_bytes": 104562,
+      "sha256": "25c4fa4ea0b82d9120d347c782f1485569f2515a984aef1feb3f442ffaf08351"
     },
     "model/linucb_prior_init.json": {
       "exists": true,
@@ -65,8 +65,8 @@
     },
     "model/rf_temperature_calibration.json": {
       "exists": true,
-      "size_bytes": 786,
-      "sha256": "c123bdb8c0ee427b84f2c5bb528c2b6e97429399b4b36ef8100467e21f0fc2df"
+      "size_bytes": 785,
+      "sha256": "e366ff5e5bf70ae42f78ec76fc9e14bf09433859c19459cecda18f7dc0a4ab89"
     },
     "model/tier_recalibration_proposal.json": {
       "exists": true,

@@ -83,7 +83,7 @@ def _artifact_canonical_size_and_sha256(path: Path) -> tuple[int, str]:
     return total, h.hexdigest()
 
 
-def _build_rf_pipeline() -> Pipeline:
+def _build_rf_pipeline(max_features: float = 0.35, criterion: str = "gini") -> Pipeline:
     preprocessor = ColumnTransformer(
         transformers=[
             ("categorical", OneHotEncoder(handle_unknown="ignore"), CATEGORICAL_FEATURES),
@@ -92,7 +92,8 @@ def _build_rf_pipeline() -> Pipeline:
     )
     clf = RandomForestClassifier(
         n_estimators=300,
-        max_features=0.30,
+        max_features=max_features,
+        criterion=criterion,
         random_state=42,
         class_weight="balanced",
         n_jobs=-1,
@@ -233,24 +234,60 @@ def run_deep_training_and_validation(save_artifacts: bool = True) -> dict:
     classes = sorted(y.unique().tolist())
 
     skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
-    fold_accuracies: list[float] = []
-    fold_macro_f1s: list[float] = []
-    fold_log_losses: list[float] = []
-    oof_preds = np.empty(len(df), dtype=object)
-    oof_probs = np.zeros((len(df), len(classes)), dtype=np.float64)
 
-    for _, (train_idx, val_idx) in enumerate(skf.split(X, y)):
-        pipe = _build_rf_pipeline()
-        pipe.fit(X.iloc[train_idx], y.iloc[train_idx])
-        preds = pipe.predict(X.iloc[val_idx])
-        probs = pipe.predict_proba(X.iloc[val_idx])
+    rf_param_grid = [
+        {"max_features": 0.35, "criterion": "gini"},
+        {"max_features": 0.30, "criterion": "gini"},
+        {"max_features": 0.25, "criterion": "gini"},
+        {"max_features": 0.30, "criterion": "entropy"},
+    ]
+    grid_search_records: list[dict] = []
+    best_rf_cfg = rf_param_grid[0]
+    best_rf_f1 = -1.0
+    best_fold_accs: list[float] = []
+    best_fold_f1s: list[float] = []
+    best_fold_losses: list[float] = []
+    best_oof_preds = np.empty(len(df), dtype=object)
+    best_oof_probs = np.zeros((len(df), len(classes)), dtype=np.float64)
 
-        oof_preds[val_idx] = preds
-        oof_probs[val_idx] = probs
+    for cfg in rf_param_grid:
+        cur_accs: list[float] = []
+        cur_f1s: list[float] = []
+        cur_losses: list[float] = []
+        cur_oof_p = np.empty(len(df), dtype=object)
+        cur_oof_pr = np.zeros((len(df), len(classes)), dtype=np.float64)
+        for _, (train_idx, val_idx) in enumerate(skf.split(X, y)):
+            pipe = _build_rf_pipeline(max_features=cfg["max_features"], criterion=cfg["criterion"])
+            pipe.fit(X.iloc[train_idx], y.iloc[train_idx])
+            preds = pipe.predict(X.iloc[val_idx])
+            probs = pipe.predict_proba(X.iloc[val_idx])
+            cur_oof_p[val_idx] = preds
+            cur_oof_pr[val_idx] = probs
+            cur_accs.append(float(accuracy_score(y.iloc[val_idx], preds)))
+            cur_f1s.append(float(f1_score(y.iloc[val_idx], preds, average="macro")))
+            cur_losses.append(float(log_loss(y.iloc[val_idx], probs, labels=classes)))
+        mean_f1 = float(np.mean(cur_f1s))
+        mean_acc = float(np.mean(cur_accs))
+        grid_search_records.append({
+            "hyperparameters": cfg,
+            "mean_cv_accuracy": round(mean_acc, 5),
+            "mean_cv_macro_f1": round(mean_f1, 5),
+            "mean_cv_log_loss": round(float(np.mean(cur_losses)), 5),
+        })
+        if mean_f1 > best_rf_f1:
+            best_rf_f1 = mean_f1
+            best_rf_cfg = cfg
+            best_fold_accs = cur_accs
+            best_fold_f1s = cur_f1s
+            best_fold_losses = cur_losses
+            best_oof_preds = cur_oof_p
+            best_oof_probs = cur_oof_pr
 
-        fold_accuracies.append(float(accuracy_score(y.iloc[val_idx], preds)))
-        fold_macro_f1s.append(float(f1_score(y.iloc[val_idx], preds, average="macro")))
-        fold_log_losses.append(float(log_loss(y.iloc[val_idx], probs, labels=classes)))
+    fold_accuracies = best_fold_accs
+    fold_macro_f1s = best_fold_f1s
+    fold_log_losses = best_fold_losses
+    oof_preds = best_oof_preds
+    oof_probs = best_oof_probs
 
     y_onehot = np.zeros_like(oof_probs)
     class_to_idx = {c: i for i, c in enumerate(classes)}
@@ -261,7 +298,7 @@ def run_deep_training_and_validation(save_artifacts: bool = True) -> dict:
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.20, random_state=42, stratify=y
     )
-    challenger_pipe = _build_rf_pipeline()
+    challenger_pipe = _build_rf_pipeline(max_features=best_rf_cfg["max_features"], criterion=best_rf_cfg["criterion"])
     challenger_pipe.fit(X_train, y_train)
     challenger_preds = challenger_pipe.predict(X_test)
     challenger_probs = challenger_pipe.predict_proba(X_test)
@@ -468,6 +505,11 @@ def run_deep_training_and_validation(save_artifacts: bool = True) -> dict:
             "mean_cv_macro_f1": round(float(np.mean(fold_macro_f1s)), 4),
             "mean_cv_log_loss": round(float(np.mean(fold_log_losses)), 4),
             "oof_multiclass_brier_score": round(multiclass_brier, 5),
+        },
+        "hyperparameter_fine_tuning": {
+            "search_space": rf_param_grid,
+            "optimal_hyperparameters": best_rf_cfg,
+            "grid_evaluation_results": grid_search_records,
         },
         "champion_challenger_tournament": tournament,
         "permutation_feature_importance": perm_importances,

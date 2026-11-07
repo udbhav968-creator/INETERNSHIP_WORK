@@ -1,6 +1,6 @@
 {
   "pipeline_status": "PASSED",
-  "execution_time_seconds": 36.414,
+  "execution_time_seconds": 62.384,
   "data_validation_gates": {
     "question_bank_schema_valid": true,
     "weightage_schema_valid": true,
@@ -69,19 +69,81 @@
       1.0,
       0.9979,
       1.0,
-      0.9979
+      1.0
     ],
-    "mean_cv_accuracy": 0.9988,
+    "mean_cv_accuracy": 0.9992,
     "std_cv_accuracy": 0.001,
-    "mean_cv_macro_f1": 0.9988,
-    "mean_cv_log_loss": 0.0463,
-    "oof_multiclass_brier_score": 0.01131
+    "mean_cv_macro_f1": 0.9992,
+    "mean_cv_log_loss": 0.0353,
+    "oof_multiclass_brier_score": 0.00775
+  },
+  "hyperparameter_fine_tuning": {
+    "search_space": [
+      {
+        "max_features": 0.35,
+        "criterion": "gini"
+      },
+      {
+        "max_features": 0.3,
+        "criterion": "gini"
+      },
+      {
+        "max_features": 0.25,
+        "criterion": "gini"
+      },
+      {
+        "max_features": 0.3,
+        "criterion": "entropy"
+      }
+    ],
+    "optimal_hyperparameters": {
+      "max_features": 0.35,
+      "criterion": "gini"
+    },
+    "grid_evaluation_results": [
+      {
+        "hyperparameters": {
+          "max_features": 0.35,
+          "criterion": "gini"
+        },
+        "mean_cv_accuracy": 0.99917,
+        "mean_cv_macro_f1": 0.99918,
+        "mean_cv_log_loss": 0.0353
+      },
+      {
+        "hyperparameters": {
+          "max_features": 0.3,
+          "criterion": "gini"
+        },
+        "mean_cv_accuracy": 0.99875,
+        "mean_cv_macro_f1": 0.99876,
+        "mean_cv_log_loss": 0.04629
+      },
+      {
+        "hyperparameters": {
+          "max_features": 0.25,
+          "criterion": "gini"
+        },
+        "mean_cv_accuracy": 0.99833,
+        "mean_cv_macro_f1": 0.99835,
+        "mean_cv_log_loss": 0.05889
+      },
+      {
+        "hyperparameters": {
+          "max_features": 0.3,
+          "criterion": "entropy"
+        },
+        "mean_cv_accuracy": 0.99917,
+        "mean_cv_macro_f1": 0.99918,
+        "mean_cv_log_loss": 0.03852
+      }
+    ]
   },
   "champion_challenger_tournament": {
     "random_forest_300_balanced": {
       "holdout_accuracy": 1.0,
       "macro_f1": 1.0,
-      "log_loss": 0.0413
+      "log_loss": 0.0298
     },
     "extra_trees_300_balanced": {
       "holdout_accuracy": 0.9771,
@@ -96,24 +158,24 @@
   },
   "permutation_feature_importance": {
     "subject": {
-      "mean_accuracy_drop": 0.3925,
-      "std_accuracy_drop": 0.00775
+      "mean_accuracy_drop": 0.37833,
+      "std_accuracy_drop": 0.00626
     },
     "chapter": {
-      "mean_accuracy_drop": 0.00042,
-      "std_accuracy_drop": 0.00083
+      "mean_accuracy_drop": 0.0,
+      "std_accuracy_drop": 0.0
     },
     "topic_tag": {
-      "mean_accuracy_drop": 0.00042,
-      "std_accuracy_drop": 0.00083
+      "mean_accuracy_drop": 0.0,
+      "std_accuracy_drop": 0.0
     },
     "question_type": {
       "mean_accuracy_drop": 0.00125,
       "std_accuracy_drop": 0.00102
     },
     "ideal_time_sec": {
-      "mean_accuracy_drop": 0.64167,
-      "std_accuracy_drop": 0.00823
+      "mean_accuracy_drop": 0.6475,
+      "std_accuracy_drop": 0.00827
     },
     "has_diagram": {
       "mean_accuracy_drop": 0.0,
@@ -158,12 +220,12 @@
     "max_abs_probability_diff": 3.3e-05
   },
   "temperature_calibration_summary": {
-    "optimal_temperature": 0.15,
-    "pre_ece": 0.04139,
-    "post_ece": 0.00068,
-    "pre_nll": 0.04629,
-    "post_nll": 0.00242,
-    "compression_ratio_x": 18.09
+    "optimal_temperature": 0.16,
+    "pre_ece": 0.03196,
+    "post_ece": 0.00104,
+    "pre_nll": 0.0353,
+    "post_nll": 0.00208,
+    "compression_ratio_x": 18.19
   },
   "tier_recalibration_summary": {
     "chapters_missing_basic_before": 0,
@@ -198,13 +260,26 @@
   "auxiliary_models_training": {
     "irt_cold_start_ridge_regressor": {
       "n_samples": 2400,
-      "ridge_alpha": 2.5,
+      "ridge_alpha": 0.5,
+      "optimal_alpha": 0.5,
+      "tuning_alphas_searched": [
+        0.1,
+        0.25,
+        0.5,
+        1.0,
+        1.5,
+        2.0,
+        2.5,
+        3.0,
+        5.0,
+        10.0
+      ],
       "a_5fold_rmse": 0.06482,
       "a_5fold_r2": 0.94875,
-      "b_5fold_rmse": 0.08909,
+      "b_5fold_rmse": 0.08907,
       "b_5fold_r2": 0.99488,
       "c_5fold_rmse": 0.01318,
-      "c_5fold_r2": 0.81897
+      "c_5fold_r2": 0.81898
     },
     "bkt_65_chapter_empirical_bayes": {
       "total_chapters": 65,
@@ -230,7 +305,13 @@
       "n_chapters_indexed": 65,
       "vocab_size": 6000,
       "lsa_dimensions": 32,
-      "lsa_explained_variance_ratio": 0.5613
+      "lsa_explained_variance_ratio": 0.5613,
+      "svd_variance_spectrum": {
+        "rank_16": 0.3177,
+        "rank_24": 0.4425,
+        "rank_32": 0.5613,
+        "rank_48": 0.7848
+      }
     },
     "linucb_and_laplacian": {
       "linucb_prior_r2": 0.99968,
