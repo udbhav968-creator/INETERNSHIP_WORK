@@ -234,6 +234,39 @@ def fisher_information(theta: float, params: IRTItemParams) -> float:
     return round(info, 8)
 
 
+def compute_posterior_sem(
+    theta: float, items: list[IRTItemParams], prior_var: float = 1.5
+) -> dict:
+    test_info = (1.0 / prior_var) + sum(fisher_information(theta, it) for it in items)
+    sem = 1.0 / math.sqrt(max(0.05, test_info))
+    ci_95_low = round(theta - 1.96 * sem, 4)
+    ci_95_high = round(theta + 1.96 * sem, 4)
+    is_calibrated = sem <= 0.32
+    return {
+        "theta": round(theta, 4),
+        "test_information": round(test_info, 4),
+        "sem": round(sem, 4),
+        "ci_95_bounds": [ci_95_low, ci_95_high],
+        "precision_status": "HIGH" if sem <= 0.32 else ("MODERATE" if sem <= 0.48 else "EXPLORATORY"),
+        "stopping_criterion_met": is_calibrated,
+    }
+
+
+def kullback_leibler_item_information(
+    theta: float, params: IRTItemParams, delta: float = 0.5, num_points: int = 5
+) -> float:
+    p0 = irt_3pl_probability(theta, params)
+    p0 = max(1e-5, min(1.0 - 1e-5, p0))
+    grid = [theta - delta + (2.0 * delta * i) / max(1, num_points - 1) for i in range(num_points)]
+    total_kl = 0.0
+    for th in grid:
+        pt = irt_3pl_probability(th, params)
+        pt = max(1e-5, min(1.0 - 1e-5, pt))
+        kl = p0 * math.log(p0 / pt) + (1.0 - p0) * math.log((1.0 - p0) / (1.0 - pt))
+        total_kl += kl
+    return round(total_kl / num_points, 6)
+
+
 def update_student_theta_map(
     current_theta: float,
     is_correct: bool,

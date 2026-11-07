@@ -150,6 +150,7 @@ class SocraticHintOut(BaseModel):
     socratic_hint: str
     verified_step_by_step: str
     retrieval_similarity: float
+    distractor_trap_taxonomy: Optional[str] = "CONCEPTUAL_SUBSTITUTION"
 
 
 class ColdStartItemIn(BaseModel):

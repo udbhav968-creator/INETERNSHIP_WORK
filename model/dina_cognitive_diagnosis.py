@@ -355,10 +355,22 @@ def compute_dina_and_rt_profile(attempt_records: list[dict[str, Any]]) -> dict[s
     speed_percentile = round(float(np.clip(50.0 * (1.0 + math.erf(speed_z / math.sqrt(2.0))), 1.0, 99.9)), 1)
     tau_se = round(1.0 / math.sqrt(tau_precision), 3)
 
+    entropy_bits = 0.0
+    pattern_bits = []
+    for s in skills_out:
+        pv = max(1e-5, min(1.0 - 1e-5, float(s["mastery_probability"])))
+        entropy_bits += -(pv * math.log2(pv) + (1.0 - pv) * math.log2(1.0 - pv))
+        pattern_bits.append("1" if pv >= 0.50 else "0")
+    map_pattern = "".join(pattern_bits)
+    certainty_pct = round(max(0.0, min(100.0, (1.0 - (entropy_bits / 8.0)) * 100.0)), 1)
+
     return {
         "model_type": "DINA_8_Skill_Q_Matrix_and_van_der_Linden_LogNormal_RT",
         "skills": skills_out,
         "primary_cognitive_bottleneck": primary_bottleneck,
+        "map_attribute_vector": map_pattern,
+        "cognitive_entropy_bits": round(entropy_bits, 4),
+        "cognitive_profile_certainty_percent": certainty_pct,
         "speed_ability_profile": {
             "latent_speed_tau": round(tau_mean, 4),
             "latent_speed_se": tau_se,

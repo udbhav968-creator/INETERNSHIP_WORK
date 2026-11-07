@@ -887,6 +887,7 @@ def get_socratic_hint(payload: schemas.SocraticHintIn, db: Session = Depends(get
         socratic_hint=socratic_qs[0] if socratic_qs else f"What fundamental NCERT principle governs this question?",
         verified_step_by_step=" ".join(steps),
         retrieval_similarity=float(raw.get("retrieval_confidence", 0.88)),
+        distractor_trap_taxonomy=raw.get("distractor_trap_taxonomy", "CONCEPTUAL_SUBSTITUTION"),
     )
 
 

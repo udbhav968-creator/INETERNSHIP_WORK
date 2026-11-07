@@ -200,6 +200,28 @@ def _detect_distractor_trap(sel_text: str, corr_text: str) -> str:
     return "Typically stems from: "
 
 
+def classify_distractor_trap_taxonomy(sel_text: str, corr_text: str) -> str:
+    v_s = _extract_primary_number(sel_text)
+    v_c = _extract_primary_number(corr_text)
+    if v_s is not None and v_c is not None and abs(v_c) > 1e-35:
+        ratio = v_s / v_c
+        if abs(ratio + 1.0) < 0.05:
+            return "SIGN_INVERSION"
+        if abs(ratio - 2.0) < 0.08 or abs(ratio - 0.5) < 0.05:
+            return "FACTOR_OF_TWO"
+        if abs(v_s * v_c - 1.0) < 0.05:
+            return "RECIPROCAL_INVERSION"
+        if abs(ratio) > 0.0:
+            log10_r = math.log10(abs(ratio))
+            if 1.0 <= abs(log10_r) <= 9.0 and abs(log10_r - round(log10_r)) < 0.04:
+                return "ORDER_OF_MAGNITUDE_UNIT"
+    s_low = str(sel_text).lower()
+    c_low = str(corr_text).lower()
+    if any(k in s_low or k in c_low for k in ("not", "incorrect", "except", "all of", "none")):
+        return "NEGATION_LOGIC"
+    return "CONCEPTUAL_SUBSTITUTION"
+
+
 def generate_socratic_remediation(
     question_id: str,
     topic_id: str,
@@ -277,6 +299,7 @@ def generate_socratic_remediation(
         f"Verify units and eliminate distractors to arrive at Option ({corr_norm.upper()}): {corr_text}.",
     ]
 
+    trap_tax = classify_distractor_trap_taxonomy(str(sel_text), str(corr_text)) if (sel_norm and sel_norm != corr_norm) else "TARGET_CORRECT"
     latency_ms = round((time.perf_counter() - t0) * 1000.0, 3)
 
     return {
@@ -288,6 +311,7 @@ def generate_socratic_remediation(
         "core_concept_anchor": primary_chunk.get("core_concept", ""),
         "key_formulas": primary_chunk.get("formulas", []),
         "misconception_diagnosis": misconception_diagnosis,
+        "distractor_trap_taxonomy": trap_tax,
         "socratic_guiding_questions": socratic_prompts[:3],
         "guided_derivation_steps": derivation_steps,
         "prerequisite_chain": prereqs,

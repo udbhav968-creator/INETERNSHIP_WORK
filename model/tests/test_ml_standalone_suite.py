@@ -531,6 +531,39 @@ def ml_suite_20_pipeline_deep_invariants_and_statistical_drift_gate():
     assert 0.0 <= health["expected_calibration_error"] <= 1.0
 
 
+def ml_suite_21_cognitive_entropy_kl_information_and_sem_stopping_gate():
+    from model.dina_cognitive_diagnosis import compute_dina_and_rt_profile
+    from model.irt_3pl_model import IRTItemParams, compute_posterior_sem, kullback_leibler_item_information
+    from model.rag_socratic_engine import classify_distractor_trap_taxonomy
+
+    diag = compute_dina_and_rt_profile([])
+    assert "map_attribute_vector" in diag
+    assert len(diag["map_attribute_vector"]) == 8
+    assert all(ch in ("0", "1") for ch in diag["map_attribute_vector"])
+    assert 0.0 <= diag["cognitive_entropy_bits"] <= 8.0
+    assert 0.0 <= diag["cognitive_profile_certainty_percent"] <= 100.0
+
+    items_2 = [IRTItemParams(a=1.2, b=0.0, c=0.2), IRTItemParams(a=1.5, b=0.5, c=0.2)]
+    sem_2 = compute_posterior_sem(0.0, items_2)
+    items_10 = items_2 * 5
+    sem_10 = compute_posterior_sem(0.0, items_10)
+    assert sem_10["sem"] < sem_2["sem"]
+    assert sem_10["test_information"] > sem_2["test_information"]
+    assert sem_2["precision_status"] in ("EXPLORATORY", "MODERATE", "HIGH")
+    assert sem_2["ci_95_bounds"][0] < 0.0 < sem_2["ci_95_bounds"][1]
+
+    informative_item = IRTItemParams(a=2.0, b=0.2, c=0.2)
+    uninformative_item = IRTItemParams(a=0.3, b=0.2, c=0.2)
+    kl_info = kullback_leibler_item_information(0.2, informative_item)
+    kl_uninfo = kullback_leibler_item_information(0.2, uninformative_item)
+    assert kl_info > kl_uninfo >= 0.0
+
+    assert classify_distractor_trap_taxonomy("-5.2 x 10^6", "5.2 x 10^6") == "SIGN_INVERSION"
+    assert classify_distractor_trap_taxonomy("5.2 x 10^3", "5.2 x 10^6") == "ORDER_OF_MAGNITUDE_UNIT"
+    assert classify_distractor_trap_taxonomy("0.5", "2.0") == "RECIPROCAL_INVERSION"
+    assert classify_distractor_trap_taxonomy("Which statement is NOT correct", "Which statement is correct") == "NEGATION_LOGIC"
+
+
 if __name__ == "__main__":
     suites = [
         ml_suite_01_question_bank_and_weightage_schema_validators,
@@ -553,6 +586,7 @@ if __name__ == "__main__":
         ml_suite_18_temperature_probability_calibration_and_compression,
         ml_suite_19_all_trained_auxiliary_models_and_chapter_datasets,
         ml_suite_20_pipeline_deep_invariants_and_statistical_drift_gate,
+        ml_suite_21_cognitive_entropy_kl_information_and_sem_stopping_gate,
     ]
     for fn in suites:
         fn()
