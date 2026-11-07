@@ -54,12 +54,17 @@ TARGET = "difficulty_level"
 MIN_ACCURACY_GATE = 0.990
 
 
-def _sha256_file(path: Path) -> str:
+def _artifact_canonical_size_and_sha256(path: Path) -> tuple[int, str]:
+    if path.suffix.lower() in {".json", ".csv"}:
+        canonical = path.read_bytes().replace(b"\r\n", b"\n")
+        return len(canonical), hashlib.sha256(canonical).hexdigest()
     h = hashlib.sha256()
+    total = 0
     with open(path, "rb") as f:
         for chunk in iter(lambda: f.read(65536), b""):
+            total += len(chunk)
             h.update(chunk)
-    return h.hexdigest()
+    return total, h.hexdigest()
 
 
 def _build_rf_pipeline() -> Pipeline:
@@ -124,10 +129,11 @@ def build_model_registry_manifest() -> dict:
     artifacts: dict[str, dict] = {}
     for p in tracked_paths:
         rel_key = p.relative_to(PROJECT_ROOT).as_posix()
+        c_size, c_hash = _artifact_canonical_size_and_sha256(p) if p.exists() else (0, "")
         artifacts[rel_key] = {
             "exists": p.exists(),
-            "size_bytes": p.stat().st_size if p.exists() else 0,
-            "sha256": _sha256_file(p) if p.exists() else "",
+            "size_bytes": c_size,
+            "sha256": c_hash,
         }
     return {
         "registry_version": "2.1.0",

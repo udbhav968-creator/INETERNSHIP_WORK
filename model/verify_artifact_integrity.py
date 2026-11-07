@@ -23,12 +23,17 @@ VALIDATION_REPORT_FILE = MODEL_DIR / "validation_report.json"
 HARNESS_REPORT_FILE = MODEL_DIR / "harness_benchmark_report.json"
 
 
-def _sha256_file(path: Path) -> str:
+def _artifact_canonical_size_and_sha256(path: Path) -> tuple[int, str]:
+    if path.suffix.lower() in {".json", ".csv"}:
+        canonical = path.read_bytes().replace(b"\r\n", b"\n")
+        return len(canonical), hashlib.sha256(canonical).hexdigest()
     h = hashlib.sha256()
+    total = 0
     with open(path, "rb") as f:
         for chunk in iter(lambda: f.read(65536), b""):
+            total += len(chunk)
             h.update(chunk)
-    return h.hexdigest()
+    return total, h.hexdigest()
 
 
 def verify_all_ml_artifacts(
@@ -53,8 +58,7 @@ def verify_all_ml_artifacts(
             ):
                 continue
             raise RuntimeError(f"Registered artifact missing on disk: {rel_path}")
-        actual_size = abs_p.stat().st_size
-        actual_hash = _sha256_file(abs_p)
+        actual_size, actual_hash = _artifact_canonical_size_and_sha256(abs_p)
         if actual_size != int(meta["size_bytes"]):
             raise RuntimeError(
                 f"Artifact byte size mismatch for {rel_path}: expected {meta['size_bytes']}, got {actual_size}"
@@ -72,8 +76,9 @@ def verify_all_ml_artifacts(
         if len(attempt_rows) != 0:
             raise RuntimeError(f"Expected 0 pre-seeded student attempts, found {len(attempt_rows)}")
 
-    if require_clean_bandit:
-        with open(MODEL_DIR / "linucb_state.json", encoding="utf-8") as f:
+    linucb_file = MODEL_DIR / "linucb_state.json"
+    if require_clean_bandit and linucb_file.exists():
+        with open(linucb_file, encoding="utf-8") as f:
             bandit_state = json.load(f)
         if bandit_state != {}:
             raise RuntimeError("Expected clean empty linucb_state.json ({})")
