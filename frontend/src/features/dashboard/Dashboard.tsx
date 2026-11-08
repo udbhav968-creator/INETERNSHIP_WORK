@@ -3,9 +3,12 @@ import { api, ApiError } from "../../lib/api";
 import {
   OPTION_LETTERS,
   type Analytics,
+  type CATAssessment,
   type Difficulty,
+  type FatigueAnalysis,
   type PaperHistorySummary,
   type PaperReviewOut,
+  type RevisionCalendar,
   type SocraticHintOut,
   type StudentStudyPlan,
   type TopicState,
@@ -17,7 +20,7 @@ import { DifficultyBadge, PaceBadge } from "../../components/ui/Badge";
 
 interface DashboardProps {
   studentId: string;
-  onStartPaper: (topicId?: string) => void;
+  onStartPaper: (topicId?: string, totalLength?: number, mode?: "mock_45" | "neet_180" | "diagnostic_15") => void;
 }
 
 type LoadState = "loading" | "ready" | "error" | "empty";
@@ -29,6 +32,9 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
   const [v2Insights, setV2Insights] = useState<V2StudentInsights | null>(null);
   const [paperHistory, setPaperHistory] = useState<PaperHistorySummary[]>([]);
   const [studyPlan, setStudyPlan] = useState<StudentStudyPlan | null>(null);
+  const [catAssessment, setCatAssessment] = useState<CATAssessment | null>(null);
+  const [fatigueAnalysis, setFatigueAnalysis] = useState<FatigueAnalysis | null>(null);
+  const [revisionCalendar, setRevisionCalendar] = useState<RevisionCalendar | null>(null);
   const [reviewModal, setReviewModal] = useState<PaperReviewOut | null>(null);
   const [loadingReview, setLoadingReview] = useState<number | null>(null);
   const [reviewError, setReviewError] = useState("");
@@ -52,6 +58,9 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
         setV2Insights(snapshot.v2_insights);
         setPaperHistory(snapshot.paper_history);
         setStudyPlan(snapshot.study_plan ?? null);
+        setCatAssessment(snapshot.cat_assessment ?? null);
+        setFatigueAnalysis(snapshot.fatigue_analysis ?? null);
+        setRevisionCalendar(snapshot.revision_calendar ?? null);
         setState(snapshot.topics.length === 0 ? "empty" : "ready");
       })
       .catch((err) => {
@@ -129,13 +138,21 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
             {Math.round((v2Insights?.zpd_target_success_prob ?? 0.7) * 100)}%).
           </p>
         </div>
-        <Button
-          variant="secondary"
-          onClick={() => onStartPaper(undefined)}
-          className="shrink-0 font-semibold"
-        >
-          Start sample paper
-        </Button>
+        <div className="flex flex-wrap items-center gap-3">
+          <Button
+            variant="secondary"
+            onClick={() => onStartPaper(undefined, 45, "mock_45")}
+            className="shrink-0 font-semibold"
+          >
+            Start 45-Q Adaptive Mock
+          </Button>
+          <Button
+            onClick={() => onStartPaper(undefined, 180, "neet_180")}
+            className="shrink-0 bg-accent font-semibold text-white hover:bg-accent-dim shadow-md"
+          >
+            Start 180-Q Full NEET Exam
+          </Button>
+        </div>
       </Card>
 
       {state === "loading" && (
@@ -323,7 +340,7 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
                     </p>
                     <button
                       type="button"
-                      onClick={() => onStartPaper(b.root_cause_prerequisite)}
+                      onClick={() => onStartPaper(b.root_cause_prerequisite, 15, "diagnostic_15")}
                       className="shrink-0 self-start rounded-lg bg-midnight-950 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-midnight-800 sm:self-center"
                     >
                       Remediate Prerequisite →
@@ -354,7 +371,7 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
                     </div>
                     <button
                       type="button"
-                      onClick={() => onStartPaper(rev.topic_id)}
+                      onClick={() => onStartPaper(rev.topic_id, 15, "diagnostic_15")}
                       className="self-start text-xs font-semibold text-accent hover:underline"
                     >
                       Review chapter →
@@ -647,7 +664,7 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
                     </div>
                     <button
                       type="button"
-                      onClick={() => onStartPaper(lev.topic_id)}
+                      onClick={() => onStartPaper(lev.topic_id, 15, "diagnostic_15")}
                       className="self-start text-xs font-semibold text-accent hover:underline"
                     >
                       Unlock +{lev.total_expected_marks_gain.toFixed(0)} marks →
@@ -711,6 +728,141 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
                 </p>
               </Card>
             ))}
+          </div>
+        </div>
+      )}
+
+      {catAssessment && (
+        <Card className="flex flex-col gap-4 border border-midnight-900/10 p-6">
+          <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="font-display text-lg font-semibold text-midnight-950">
+                  CAT Computerized Adaptive Testing Assessment & Cognitive Stamina
+                </h2>
+                <span className="rounded-full bg-accent/10 px-2.5 py-0.5 text-xs font-semibold text-accent-dim uppercase">
+                  {catAssessment.assessment_status.replace(/_/g, " ")}
+                </span>
+              </div>
+              <p className="mt-0.5 text-xs text-midnight-700/70">
+                Item-level Fisher Information stopping rule (target SEM ≤ {catAssessment.target_sem_threshold}) with response latency stamina diagnosis.
+              </p>
+            </div>
+            <div className="flex items-center gap-3 text-xs font-medium text-midnight-800">
+              <span className="rounded-xl bg-midnight-900/5 px-3 py-1">
+                Items Evaluated: <strong>{catAssessment.items_administered}</strong>
+              </span>
+              <span className="rounded-xl bg-midnight-900/5 px-3 py-1">
+                Fisher Info: <strong>{catAssessment.cumulative_fisher_information}</strong>
+              </span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="rounded-xl bg-midnight-900/5 p-3.5">
+              <span className="text-[11px] font-medium text-midnight-700/70 uppercase">Standard Error (SEM θ)</span>
+              <p className="font-display text-xl font-bold text-midnight-950">
+                ±{catAssessment.sem_theta.toFixed(3)}
+              </p>
+              <p className="mt-1 text-[11px] text-midnight-700/60">
+                {catAssessment.stopping_rule_met
+                  ? "Confidence stopping threshold met"
+                  : `Needs SEM ≤ ${catAssessment.target_sem_threshold} for 95% certainty`}
+              </p>
+            </div>
+
+            <div className="rounded-xl bg-midnight-900/5 p-3.5">
+              <span className="text-[11px] font-medium text-midnight-700/70 uppercase">95% Latent Ability CI</span>
+              <p className="font-display text-xl font-bold text-midnight-950">
+                [{catAssessment.confidence_interval_95[0].toFixed(2)}, {catAssessment.confidence_interval_95[1].toFixed(2)}]
+              </p>
+              <p className="mt-1 text-[11px] text-midnight-700/60">
+                Estimated θ: {catAssessment.latent_theta >= 0 ? `+${catAssessment.latent_theta.toFixed(2)}` : catAssessment.latent_theta.toFixed(2)}
+              </p>
+            </div>
+
+            <div className="rounded-xl bg-midnight-900/5 p-3.5">
+              <span className="text-[11px] font-medium text-midnight-700/70 uppercase">Cognitive Fatigue Index</span>
+              <p className="font-display text-xl font-bold text-midnight-950">
+                {fatigueAnalysis ? `${Math.round(fatigueAnalysis.fatigue_index * 100)}%` : "0%"}
+              </p>
+              <p className="mt-1 text-[11px] text-midnight-700/60">
+                Pacing Trend: <strong>{fatigueAnalysis?.latency_trend ?? "STABLE"}</strong>
+              </p>
+            </div>
+
+            <div className="rounded-xl bg-midnight-900/5 p-3.5">
+              <span className="text-[11px] font-medium text-midnight-700/70 uppercase">Speed vs Accuracy</span>
+              <p className="font-display text-xl font-bold text-midnight-950">
+                {fatigueAnalysis ? `${fatigueAnalysis.early_accuracy_pct}% → ${fatigueAnalysis.late_accuracy_pct}%` : "0%"}
+              </p>
+              <p className="mt-1 text-[11px] text-midnight-700/60">
+                Rapid Guesses (&lt;15s): <strong>{fatigueAnalysis?.rapid_guess_count ?? 0}</strong>
+              </p>
+            </div>
+          </div>
+
+          {fatigueAnalysis?.pacing_coaching_advice && (
+            <div className="rounded-xl border border-midnight-900/10 bg-white p-3 text-xs text-midnight-800">
+              <strong>Coaching Advice:</strong> {fatigueAnalysis.pacing_coaching_advice}
+            </div>
+          )}
+        </Card>
+      )}
+
+      {revisionCalendar && (
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col justify-between gap-1 sm:flex-row sm:items-end">
+            <div>
+              <h2 className="font-display text-lg font-semibold text-midnight-950">
+                14-Day Adaptive Study Calendar & Revision Roadmap
+              </h2>
+              <p className="text-xs text-midnight-700/70">
+                Synthesized daily drill schedule optimized by Ebbinghaus forgetting urgency, Prerequisite DAG leverage, and NEET blueprint weightage.
+              </p>
+            </div>
+            <span className="rounded-xl bg-midnight-900/5 px-3 py-1 text-xs font-semibold text-midnight-800">
+              14 Actionable Days Planned
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+            {revisionCalendar.daily_schedule.map((item) => {
+              let badgeColor = "bg-accent/10 text-accent-dim";
+              if (item.action_type === "REMEDIATE_PREREQUISITE") badgeColor = "bg-amber-500/10 text-amber-900";
+              if (item.action_type === "SPACED_REPETITION_REVIEW") badgeColor = "bg-purple-500/10 text-purple-900";
+
+              return (
+                <Card key={item.day} className="flex flex-col justify-between gap-2.5 p-4">
+                  <div>
+                    <div className="flex items-center justify-between gap-1">
+                      <span className="font-display text-sm font-bold text-midnight-900">
+                        {item.date_label}
+                      </span>
+                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase ${badgeColor}`}>
+                        {item.action_type.replace(/_/g, " ")}
+                      </span>
+                    </div>
+                    <p className="mt-1.5 font-medium text-midnight-950 text-sm">{item.chapter}</p>
+                    <div className="mt-1 flex items-center justify-between text-[11px] text-midnight-700/70">
+                      <span>{item.subject}</span>
+                      <span className="font-semibold text-emerald-800">+{item.potential_marks_gain} Marks</span>
+                    </div>
+                    <p className="mt-1.5 text-[11px] text-midnight-700/65 line-clamp-2">
+                      {item.reason}
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => onStartPaper(item.chapter, 15, "diagnostic_15")}
+                    className="self-start text-xs font-semibold text-accent hover:underline"
+                  >
+                    Start 15-Q Drill →
+                  </button>
+                </Card>
+              );
+            })}
           </div>
         </div>
       )}
@@ -968,7 +1120,7 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
                   </div>
                   <button
                     type="button"
-                    onClick={() => onStartPaper(ch.topic_id)}
+                    onClick={() => onStartPaper(ch.topic_id, 15, "diagnostic_15")}
                     className="mt-1 self-start text-xs font-semibold text-accent hover:underline"
                   >
                     Practice chapter →

@@ -325,12 +325,61 @@ export interface StudentStudyPlan {
   mistake_retest_queue?: MistakeRetestItem[];
 }
 
+export interface CATAssessment {
+  student_id: string;
+  items_administered: number;
+  latent_theta: number;
+  sem_theta: number;
+  confidence_interval_95: [number, number];
+  cumulative_fisher_information: number;
+  target_sem_threshold: number;
+  stopping_rule_met: boolean;
+  predicted_neet_score: number;
+  assessment_status: string;
+}
+
+export interface RevisionDayPlan {
+  day: number;
+  date_label: string;
+  chapter: string;
+  subject: string;
+  action_type: string;
+  target_questions: number;
+  urgency_score: number;
+  potential_marks_gain: number;
+  reason: string;
+}
+
+export interface RevisionCalendar {
+  student_id: string;
+  generated_at: string;
+  total_days: number;
+  daily_schedule: RevisionDayPlan[];
+}
+
+export interface FatigueAnalysis {
+  student_id: string;
+  total_attempts_analyzed: number;
+  fatigue_index: number;
+  latency_trend: string;
+  mean_early_latency_sec: number;
+  mean_late_latency_sec: number;
+  early_accuracy_pct: number;
+  late_accuracy_pct: number;
+  accuracy_drop_pct: number;
+  rapid_guess_count: number;
+  pacing_coaching_advice: string;
+}
+
 export interface DashboardSnapshot {
   topics: TopicState[];
   analytics: Analytics;
   v2_insights: V2StudentInsights;
   paper_history: PaperHistorySummary[];
   study_plan?: StudentStudyPlan;
+  cat_assessment?: CATAssessment;
+  fatigue_analysis?: FatigueAnalysis;
+  revision_calendar?: RevisionCalendar;
 }
 
 export interface ColdStartItemInput {

@@ -1,7 +1,7 @@
 import json
 import random
 from sqlalchemy.orm import Session, make_transient
-from .db_models import Question, StudentTopicState, Student, TestAttempt
+from .db_models import Question, StudentTopicState, Student, TestAttempt, Topic
 from .paths import MODEL_DIR
 from model.linucb_bandit import build_context_vector, score_candidate_ucb
 from model.knowledge_graph_dag import compute_prerequisite_readiness
@@ -153,6 +153,7 @@ def generate_paper(
     student_id: str,
     total_length: int = 45,
     topic_id: str | None = None,
+    mode: str = "mock_45",
 ) -> list[Question]:
     paper: list[Question] = []
     pools = _get_question_pools(db)
@@ -201,6 +202,75 @@ def generate_paper(
             prereq_ready=prereq_ready,
             pace_flag=pace_flag,
         )
+
+    if mode == "neet_180" or total_length == 180:
+        all_topics = db.query(Topic).all()
+        topic_to_subj = {t.topic_id: t.subject for t in all_topics}
+        subject_quotas = {"Physics": 45, "Chemistry": 45, "Biology": 90}
+        for sub, target_sub_q in subject_quotas.items():
+            sub_topics = [tid for tid, s in topic_to_subj.items() if s == sub]
+            sub_imp_sum = sum(_TOPIC_IMPORTANCE.get(tid, 1.0) for tid in sub_topics) or 1.0
+            sub_paper: list[Question] = []
+            remaining = target_sub_q
+            for tid in sorted(sub_topics, key=lambda t: _TOPIC_IMPORTANCE.get(t, 1.0), reverse=True):
+                raw_target = round((_TOPIC_IMPORTANCE.get(tid, 1.0) / sub_imp_sum) * target_sub_q)
+                q_count = min(remaining, max(1, raw_target))
+                state = state_by_topic.get(tid)
+                mastery_prob = float(state.mastery_prob) if state and getattr(state, "mastery_prob", None) is not None else get_chapter_bkt_prior(tid)
+                level = state.level if state and getattr(state, "level", None) else ("advanced" if mastery_prob >= 0.70 else ("medium" if mastery_prob >= 0.45 else "basic"))
+                topic_theta = float(getattr(state, "irt_theta", global_theta) or global_theta) if state else global_theta
+                pace_flag = state.pace_flag if state else None
+                prereq_ready = compute_prerequisite_readiness(tid, mastery_map)
+                imp_val = float(_TOPIC_IMPORTANCE.get(tid, 1.0))
+                picked = _select_topic_questions(
+                    pools=pools,
+                    topic_id=tid,
+                    level=level,
+                    target_count=q_count,
+                    attempted_all=attempted_all,
+                    mastered_correct=mastered_correct,
+                    excluded_ids=excluded_ids,
+                    student_id=student_id,
+                    topic_theta=topic_theta,
+                    mastery_prob=mastery_prob,
+                    topic_importance=imp_val,
+                    prereq_ready=prereq_ready,
+                    pace_flag=pace_flag,
+                )
+                sub_paper.extend(picked)
+                remaining = target_sub_q - len(sub_paper)
+                if remaining <= 0:
+                    break
+            if remaining > 0:
+                for tid in sub_topics:
+                    state = state_by_topic.get(tid)
+                    mastery_prob = float(state.mastery_prob) if state and getattr(state, "mastery_prob", None) is not None else get_chapter_bkt_prior(tid)
+                    level = state.level if state and getattr(state, "level", None) else ("advanced" if mastery_prob >= 0.70 else ("medium" if mastery_prob >= 0.45 else "basic"))
+                    topic_theta = float(getattr(state, "irt_theta", global_theta) or global_theta) if state else global_theta
+                    pace_flag = state.pace_flag if state else None
+                    prereq_ready = compute_prerequisite_readiness(tid, mastery_map)
+                    imp_val = float(_TOPIC_IMPORTANCE.get(tid, 1.0))
+                    picked = _select_topic_questions(
+                        pools=pools,
+                        topic_id=tid,
+                        level=level,
+                        target_count=remaining,
+                        attempted_all=attempted_all,
+                        mastered_correct=mastered_correct,
+                        excluded_ids=excluded_ids,
+                        student_id=student_id,
+                        topic_theta=topic_theta,
+                        mastery_prob=mastery_prob,
+                        topic_importance=imp_val,
+                        prereq_ready=prereq_ready,
+                        pace_flag=pace_flag,
+                    )
+                    sub_paper.extend(picked)
+                    remaining = target_sub_q - len(sub_paper)
+                    if remaining <= 0:
+                        break
+            paper.extend(sub_paper)
+        return paper
 
     fractional_topics: list[tuple[float, str]] = []
     for cur_topic_id, importance in _TOPIC_IMPORTANCE.items():

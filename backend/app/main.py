@@ -1,5 +1,6 @@
 import base64
 import json
+import math
 import threading
 from datetime import datetime, timezone
 from fastapi import FastAPI, Depends, HTTPException, Request
@@ -19,6 +20,7 @@ from .paths import MODEL_DIR, PROJECT_ROOT
 
 from model.irt_3pl_model import (
     CALIBRATED_ITEMS,
+    fisher_information,
     get_item_params,
     irt_3pl_probability,
     update_student_theta_map,
@@ -506,10 +508,12 @@ def next_paper(
     student_id: str,
     request: Request,
     topic_id: str | None = None,
+    total_length: int = 45,
+    mode: str = "mock_45",
     db: Session = Depends(get_db),
 ):
     _sync_serverless_context(request, db, student_id)
-    return generate_paper(db, student_id, topic_id=topic_id)
+    return generate_paper(db, student_id, total_length=total_length, topic_id=topic_id, mode=mode)
 
 
 @app.get("/students/{student_id}/papers/{paper_number}/review", response_model=schemas.PaperReviewOut)
@@ -799,6 +803,211 @@ def get_v2_student_insights(student_id: str, request: Request, db: Session = Dep
     return _compute_v2_student_insights(student_id, db)
 
 
+def _compute_cat_assessment(student_id: str, db: Session, insights: schemas.V2StudentInsightsOut) -> schemas.CATAssessmentOut:
+    attempt_rows = (
+        db.query(TestAttempt.question_id)
+        .filter(TestAttempt.student_id == student_id)
+        .all()
+    )
+    items_count = len(attempt_rows)
+    theta = float(insights.global_theta)
+    total_info = 0.0
+    for (qid,) in attempt_rows:
+        params = get_item_params(qid)
+        total_info += float(fisher_information(theta, params))
+    sem = 1.0 / (math.sqrt(total_info + 0.15))
+    ci_low = round(theta - 1.96 * sem, 3)
+    ci_high = round(theta + 1.96 * sem, 3)
+    target_sem = 0.25
+    stopping_met = bool(sem <= target_sem or items_count >= 45)
+    status = "CONVERGED_CONFIDENT" if stopping_met and items_count > 0 else ("INITIALIZING" if items_count == 0 else "ADAPTING")
+    return schemas.CATAssessmentOut(
+        student_id=student_id,
+        items_administered=items_count,
+        latent_theta=round(theta, 4),
+        sem_theta=round(sem, 4),
+        confidence_interval_95=[ci_low, ci_high],
+        cumulative_fisher_information=round(total_info, 4),
+        target_sem_threshold=target_sem,
+        stopping_rule_met=stopping_met,
+        predicted_neet_score=insights.predicted_neet_score_720,
+        assessment_status=status,
+    )
+
+
+def _compute_fatigue_analysis(student_id: str, db: Session) -> schemas.FatigueAnalysisOut:
+    attempts = (
+        db.query(TestAttempt)
+        .filter(TestAttempt.student_id == student_id)
+        .order_by(TestAttempt.attempt_id.asc())
+        .all()
+    )
+    n = len(attempts)
+    if n < 4:
+        return schemas.FatigueAnalysisOut(
+            student_id=student_id,
+            total_attempts_analyzed=n,
+            fatigue_index=0.0,
+            latency_trend="STABLE",
+            mean_early_latency_sec=60.0,
+            mean_late_latency_sec=60.0,
+            early_accuracy_pct=0.0,
+            late_accuracy_pct=0.0,
+            accuracy_drop_pct=0.0,
+            rapid_guess_count=0,
+            pacing_coaching_advice="Pacing baseline calibrated. Take regular mock sessions to build cognitive stamina.",
+        )
+    mid = n // 2
+    early = attempts[:mid]
+    late = attempts[mid:]
+    early_lat = [float(a.time_taken_seconds or 60) for a in early]
+    late_lat = [float(a.time_taken_seconds or 60) for a in late]
+    mean_early = sum(early_lat) / len(early_lat)
+    mean_late = sum(late_lat) / len(late_lat)
+    early_corr = sum(1 for a in early if a.is_correct)
+    late_corr = sum(1 for a in late if a.is_correct)
+    early_acc = round(100.0 * early_corr / len(early), 1)
+    late_acc = round(100.0 * late_corr / len(late), 1)
+    acc_drop = max(0.0, round(early_acc - late_acc, 1))
+    rapid_guesses = sum(1 for a in attempts if float(a.time_taken_seconds or 60) < 15 and not a.is_correct)
+    lat_ratio = (mean_late / max(1.0, mean_early)) - 1.0
+    fatigue_raw = max(0.0, min(1.0, (acc_drop / 50.0) * 0.6 + max(0.0, lat_ratio) * 0.4))
+    fatigue_idx = round(fatigue_raw, 3)
+    if lat_ratio > 0.35:
+        lat_trend = "SLAGGING"
+    elif lat_ratio < -0.30:
+        lat_trend = "RUSHING"
+    else:
+        lat_trend = "OPTIMAL"
+    if fatigue_idx > 0.45:
+        advice = "Cognitive fatigue detected: accuracy dropped in the late half. Take a 5-minute break and practice pacing drills."
+    elif rapid_guesses >= 2:
+        advice = "Avoid rash impulsive guesses under 15 seconds. Spend at least 45 seconds on numerical items to avoid -1 traps."
+    else:
+        advice = "Pacing and cognitive stamina are well-calibrated across your exam attempts."
+    return schemas.FatigueAnalysisOut(
+        student_id=student_id,
+        total_attempts_analyzed=n,
+        fatigue_index=fatigue_idx,
+        latency_trend=lat_trend,
+        mean_early_latency_sec=round(mean_early, 1),
+        mean_late_latency_sec=round(mean_late, 1),
+        early_accuracy_pct=early_acc,
+        late_accuracy_pct=late_acc,
+        accuracy_drop_pct=acc_drop,
+        rapid_guess_count=rapid_guesses,
+        pacing_coaching_advice=advice,
+    )
+
+
+def _compute_revision_calendar(
+    student_id: str,
+    db: Session,
+    insights: schemas.V2StudentInsightsOut,
+    study_plan: dict | None,
+) -> schemas.RevisionCalendarOut:
+    all_topics = db.query(Topic).all()
+    topic_meta = {t.topic_id: t.subject for t in all_topics}
+    now_ts = datetime.now(timezone.utc).isoformat()
+    daily_schedule: list[schemas.RevisionDayPlanOut] = []
+    seen_chapters: set[str] = set()
+    decay_candidates = list(insights.spaced_repetition_reviews or [])
+    bottlenecks = list(insights.root_cause_bottlenecks or [])
+    ranked_plan = list((study_plan or {}).get("ranked_improvement_plan", []))
+
+    for day in range(1, 15):
+        chosen_chapter = None
+        action_type = "HIGH_YIELD_DRILL"
+        urgency = 0.50
+        marks_gain = 8.0
+        reason = "Consistent high-yield NEET weightage practice."
+
+        if day % 3 == 1 and bottlenecks:
+            for b in bottlenecks:
+                candidate = b.get("root_cause_prerequisite") or b.get("weak_topic")
+                if candidate and candidate not in seen_chapters:
+                    chosen_chapter = candidate
+                    action_type = "REMEDIATE_PREREQUISITE"
+                    urgency = 0.90
+                    marks_gain = 18.0
+                    reason = f"Remediate foundational bottleneck before drilling dependent topics: {b.get('recommendation', '')}"
+                    break
+        elif day % 2 == 0 and decay_candidates:
+            for d in decay_candidates:
+                candidate = d.get("topic_id")
+                if candidate and candidate not in seen_chapters:
+                    chosen_chapter = candidate
+                    action_type = "SPACED_REPETITION_REVIEW"
+                    urgency = float(d.get("retention_urgency", 0.75))
+                    marks_gain = 12.0
+                    reason = f"Spaced repetition review to prevent Ebbinghaus forgetting decay ({int(float(d.get('decayed_mastery', 0.5)) * 100)}% decayed mastery)."
+                    break
+
+        if not chosen_chapter and ranked_plan:
+            for item in ranked_plan:
+                candidate = item.get("chapter")
+                if candidate and candidate not in seen_chapters:
+                    chosen_chapter = candidate
+                    action_type = "HIGH_YIELD_DRILL"
+                    urgency = 0.65
+                    marks_gain = float(item.get("expected_neet_marks_gain", 10.0))
+                    reason = item.get("strategic_reason", "High NEET blueprint weightage chapter.")
+                    break
+
+        if not chosen_chapter:
+            for t in all_topics:
+                if t.topic_id not in seen_chapters:
+                    chosen_chapter = t.topic_id
+                    break
+
+        if not chosen_chapter:
+            chosen_chapter = all_topics[(day - 1) % len(all_topics)].topic_id
+
+        seen_chapters.add(chosen_chapter)
+        subj = topic_meta.get(chosen_chapter, "Science")
+        daily_schedule.append(
+            schemas.RevisionDayPlanOut(
+                day=day,
+                date_label=f"Day {day}",
+                chapter=chosen_chapter,
+                subject=subj,
+                action_type=action_type,
+                target_questions=15,
+                urgency_score=round(urgency, 2),
+                potential_marks_gain=round(marks_gain, 1),
+                reason=reason,
+            )
+        )
+
+    return schemas.RevisionCalendarOut(
+        student_id=student_id,
+        generated_at=now_ts,
+        total_days=14,
+        daily_schedule=daily_schedule,
+    )
+
+
+@app.get("/students/{student_id}/cat_assessment", response_model=schemas.CATAssessmentOut)
+def get_cat_assessment(student_id: str, request: Request, db: Session = Depends(get_db)):
+    _sync_serverless_context(request, db, student_id)
+    v2_insights = _compute_v2_student_insights(student_id, db)
+    return _compute_cat_assessment(student_id, db, v2_insights)
+
+
+@app.get("/students/{student_id}/fatigue_analysis", response_model=schemas.FatigueAnalysisOut)
+def get_fatigue_analysis(student_id: str, request: Request, db: Session = Depends(get_db)):
+    _sync_serverless_context(request, db, student_id)
+    return _compute_fatigue_analysis(student_id, db)
+
+
+@app.get("/students/{student_id}/revision_calendar", response_model=schemas.RevisionCalendarOut)
+def get_revision_calendar(student_id: str, request: Request, db: Session = Depends(get_db)):
+    _sync_serverless_context(request, db, student_id)
+    v2_insights = _compute_v2_student_insights(student_id, db)
+    study_plan = _compute_student_study_plan_payload(student_id, db)
+    return _compute_revision_calendar(student_id, db, v2_insights, study_plan)
+
+
 @app.get("/students/{student_id}/dashboard_snapshot", response_model=schemas.DashboardSnapshotOut)
 def get_dashboard_snapshot(student_id: str, request: Request, db: Session = Depends(get_db)):
     _sync_serverless_context(request, db, student_id)
@@ -808,12 +1017,18 @@ def get_dashboard_snapshot(student_id: str, request: Request, db: Session = Depe
     v2_insights = _compute_v2_student_insights(student_id, db)
     history = _compute_paper_history(student_id, db)
     study_plan = _compute_student_study_plan_payload(student_id, db)
+    cat_assessment = _compute_cat_assessment(student_id, db, v2_insights)
+    fatigue_analysis = _compute_fatigue_analysis(student_id, db)
+    revision_calendar = _compute_revision_calendar(student_id, db, v2_insights, study_plan)
     return schemas.DashboardSnapshotOut(
         topics=topics,
         analytics=analytics,
         v2_insights=v2_insights,
         paper_history=history,
         study_plan=study_plan,
+        cat_assessment=cat_assessment,
+        fatigue_analysis=fatigue_analysis,
+        revision_calendar=revision_calendar,
     )
 
 

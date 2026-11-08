@@ -3,14 +3,17 @@ import type {
   Analytics,
   AttemptPayload,
   AttemptResult,
+  CATAssessment,
   ColdStartItemInput,
   ColdStartItemPrediction,
   DashboardSnapshot,
+  FatigueAnalysis,
   MlopsAuditOverview,
   MlopsHealthAndDrift,
   PaperHistorySummary,
   PaperReviewOut,
   QuestionOut,
+  RevisionCalendar,
   SocraticHintOut,
   StudentStudyPlan,
   TopicState,
@@ -84,10 +87,23 @@ export const api = {
   getStudentState: (studentId: string) =>
     request<TopicState[]>(`/students/${encodeURIComponent(studentId)}/state`),
 
-  getNextPaper: (studentId: string, topicId?: string) => {
-    const query = topicId ? `?topic_id=${encodeURIComponent(topicId)}` : "";
+  getNextPaper: (studentId: string, topicId?: string, totalLength = 45, mode = "mock_45") => {
+    const params = new URLSearchParams();
+    if (topicId) params.set("topic_id", topicId);
+    if (totalLength) params.set("total_length", totalLength.toString());
+    if (mode) params.set("mode", mode);
+    const query = params.toString() ? `?${params.toString()}` : "";
     return request<QuestionOut[]>(`/students/${encodeURIComponent(studentId)}/next_paper${query}`);
   },
+
+  getCatAssessment: (studentId: string) =>
+    request<CATAssessment>(`/students/${encodeURIComponent(studentId)}/cat_assessment`),
+
+  getFatigueAnalysis: (studentId: string) =>
+    request<FatigueAnalysis>(`/students/${encodeURIComponent(studentId)}/fatigue_analysis`),
+
+  getRevisionCalendar: (studentId: string) =>
+    request<RevisionCalendar>(`/students/${encodeURIComponent(studentId)}/revision_calendar`),
 
   submitAttempt: async (payload: AttemptPayload) => {
     const res = await request<AttemptResult>("/submit_attempt", {

@@ -181,9 +181,58 @@ class V2StudentInsightsOut(BaseModel):
     topic_mastery_details: list[dict[str, Any]]
 
 
+class CATAssessmentOut(BaseModel):
+    student_id: str
+    items_administered: int
+    latent_theta: float
+    sem_theta: float
+    confidence_interval_95: list[float]
+    cumulative_fisher_information: float
+    target_sem_threshold: float
+    stopping_rule_met: bool
+    predicted_neet_score: int
+    assessment_status: str
+
+
+class RevisionDayPlanOut(BaseModel):
+    day: int
+    date_label: str
+    chapter: str
+    subject: str
+    action_type: str
+    target_questions: int
+    urgency_score: float
+    potential_marks_gain: float
+    reason: str
+
+
+class RevisionCalendarOut(BaseModel):
+    student_id: str
+    generated_at: str
+    total_days: int
+    daily_schedule: list[RevisionDayPlanOut]
+
+
+class FatigueAnalysisOut(BaseModel):
+    student_id: str
+    total_attempts_analyzed: int
+    fatigue_index: float
+    latency_trend: str
+    mean_early_latency_sec: float
+    mean_late_latency_sec: float
+    early_accuracy_pct: float
+    late_accuracy_pct: float
+    accuracy_drop_pct: float
+    rapid_guess_count: int
+    pacing_coaching_advice: str
+
+
 class DashboardSnapshotOut(BaseModel):
     topics: list[TopicStateOut]
     analytics: AnalyticsOut
     v2_insights: V2StudentInsightsOut
     paper_history: list[PaperHistorySummaryOut]
     study_plan: Optional[dict[str, Any]] = None
+    cat_assessment: Optional[CATAssessmentOut] = None
+    fatigue_analysis: Optional[FatigueAnalysisOut] = None
+    revision_calendar: Optional[RevisionCalendarOut] = None

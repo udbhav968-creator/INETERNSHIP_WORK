@@ -17,6 +17,8 @@ export default function App() {
   const [paperRunId, setPaperRunId] = useState(0);
   const [nextPaperNumber, setNextPaperNumber] = useState(1);
   const [selectedTopicId, setSelectedTopicId] = useState<string | undefined>(undefined);
+  const [selectedTotalLength, setSelectedTotalLength] = useState<number>(45);
+  const [selectedExamMode, setSelectedExamMode] = useState<"mock_45" | "neet_180" | "diagnostic_15">("mock_45");
 
   useEffect(() => {
     setStudent(loadSession());
@@ -44,15 +46,21 @@ export default function App() {
     };
   }, [student]);
 
-  function handleStartPaper(topicId?: string) {
+  function handleStartPaper(
+    topicId?: string,
+    totalLength = 45,
+    mode: "mock_45" | "neet_180" | "diagnostic_15" = "mock_45"
+  ) {
     setSelectedTopicId(topicId);
+    setSelectedTotalLength(totalLength);
+    setSelectedExamMode(mode);
     setPaperRunId((n) => n + 1);
     setView("exam");
   }
 
   function handleNavigate(nextView: AppView) {
     if (nextView === "exam") {
-      handleStartPaper(undefined);
+      handleStartPaper(undefined, 45, "mock_45");
     } else {
       setView(nextView);
     }
@@ -88,15 +96,17 @@ export default function App() {
       )}
       {view === "exam" && (
         <ExamScreen
-          key={`${paperRunId}-${selectedTopicId ?? "full"}`}
+          key={`${paperRunId}-${selectedTopicId ?? "full"}-${selectedExamMode}`}
           studentId={student.student_id}
           paperNumber={nextPaperNumber}
           topicId={selectedTopicId}
+          totalLength={selectedTotalLength}
+          mode={selectedExamMode}
           onPaperSubmitted={(submittedNumber) => {
             setNextPaperNumber((prev) => Math.max(prev, submittedNumber + 1));
           }}
           onExit={() => setView("dashboard")}
-          onStartNext={() => handleStartPaper(selectedTopicId)}
+          onStartNext={() => handleStartPaper(selectedTopicId, selectedTotalLength, selectedExamMode)}
         />
       )}
       {view === "audit" && <ModelAuditView />}
