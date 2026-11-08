@@ -188,7 +188,7 @@ def _read_cached_auxiliary_summary() -> dict:
     if dina_p.exists():
         dina = json.loads(dina_p.read_text(encoding="utf-8"))
         out["dina_8_skill_calibrated"] = {
-            "total_corpus_items": dina.get("total_corpus_items", 2400),
+            "total_corpus_items": dina.get("total_corpus_items", 3215),
             "skill_priors": {k: v["prior_mastery"] for k, v in dina.get("skills", {}).items()},
         }
     rag_p = MODEL_DIR / "ncert_rag_svd_meta.json"

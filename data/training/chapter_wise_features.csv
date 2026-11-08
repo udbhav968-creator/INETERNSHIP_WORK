@@ -1,66 +1,66 @@
 chapter,subject,cluster,total_pyqs,basic_pyqs,medium_pyqs,advanced_pyqs,distinct_exam_years,earliest_year,latest_year,mean_word_count,mean_formula_density,mean_numerical_complexity,mean_latent_complexity,mean_ideal_time_sec,prerequisite_count,dependent_chapters_count,neet_importance_weight
-"Alcohols, Phenols & Ethers",Chemistry,Organic Chemistry,24,6,12,6,12,2013,2026,20.5,0.0,0.1042,0.2619,92.54,2,1,0.92
-"Aldehydes, Ketones & Carboxylic Acids",Chemistry,Organic Chemistry,17,4,9,4,11,2013,2026,20.82,0.0085,0.1569,0.3058,93.53,2,2,0.7
-Alternating Current,Physics,Electromagnetism,9,2,5,2,7,2013,2026,34.56,0.2291,0.6852,0.6045,115.33,3,0,0.39
-Amines & Nitrogen Compounds,Chemistry,Organic Chemistry,16,4,8,4,11,2014,2026,24.12,0.0232,0.1146,0.3019,93.69,2,1,0.75
-Anatomy of Flowering Plants,Biology,Botany Structure & Physiology,31,8,15,8,12,2013,2025,20.48,0.0,0.0161,0.1945,73.94,2,1,1.27
+"Alcohols, Phenols & Ethers",Chemistry,Organic Chemistry,40,10,20,10,12,2013,2026,20.02,0.0,0.1042,0.2586,92.38,2,1,0.92
+"Aldehydes, Ketones & Carboxylic Acids",Chemistry,Organic Chemistry,40,10,20,10,11,2013,2026,19.2,0.0036,0.0875,0.2644,92.67,2,2,0.7
+Alternating Current,Physics,Electromagnetism,40,10,20,10,7,2013,2026,23.77,0.383,0.4125,0.5565,114.35,3,0,0.39
+Amines & Nitrogen Compounds,Chemistry,Organic Chemistry,40,10,20,10,11,2014,2026,19.8,0.0093,0.1125,0.2678,92.75,2,1,0.75
+Anatomy of Flowering Plants,Biology,Botany Structure & Physiology,40,10,20,10,12,2013,2025,20.77,0.0,0.0125,0.1923,73.83,2,1,1.27
 Animal Kingdom,Biology,Diversity in Living World,44,11,22,11,14,2013,2026,27.34,0.0037,0.072,0.2485,75.14,1,1,1.93
-Atoms & Nuclei,Physics,Modern Physics,21,5,11,5,12,2013,2026,30.86,0.1096,0.6111,0.5451,113.76,2,1,0.73
+Atoms & Nuclei,Physics,Modern Physics,40,10,20,10,12,2013,2026,25.55,0.1959,0.4958,0.5237,113.53,2,1,0.73
 Biological Classification,Biology,Diversity in Living World,102,27,48,27,14,2013,2026,15.4,0.0105,0.0735,0.1553,72.84,1,4,3.7
 Biomolecules,Biology,Cell Biology & Biomolecules,107,28,51,28,14,2013,2026,18.13,0.0047,0.0717,0.1955,73.87,1,5,4.3
-Biomolecules & Polymers,Chemistry,Organic Chemistry,37,10,17,10,13,2013,2026,18.43,0.027,0.1667,0.2918,93.51,2,0,1.51
+Biomolecules & Polymers,Chemistry,Organic Chemistry,40,10,20,10,13,2013,2026,18.12,0.0249,0.1667,0.2854,93.22,2,0,1.51
 Biotechnology,Biology,Applied Biology & Ecology,49,13,23,13,13,2013,2026,22.63,0.0,0.0442,0.22,74.59,2,0,2.38
 Cell Cycle & Cell Division,Biology,Cell Biology & Biomolecules,43,11,21,11,14,2013,2026,20.84,0.0,0.0543,0.2155,74.35,2,2,1.87
 Cell: The Unit of Life,Biology,Cell Biology & Biomolecules,73,19,35,19,14,2013,2026,19.77,0.0,0.0639,0.1895,73.81,0,6,3.02
 Chemical Bonding,Chemistry,Inorganic Chemistry,41,11,19,11,14,2013,2026,21.0,0.0281,0.187,0.3146,93.93,2,7,1.71
-Chemical Kinetics,Chemistry,Physical Chemistry,23,6,11,6,12,2013,2026,25.74,0.1731,0.5797,0.4682,97.3,2,0,0.99
-Circulation & Excretion,Biology,Human & Animal Physiology,30,8,14,8,12,2013,2025,31.93,0.0029,0.0833,0.2937,76.27,2,1,1.25
-Coordination Chemistry,Chemistry,Inorganic Chemistry,15,4,7,4,11,2013,2026,14.87,0.0,0.3,0.3051,93.6,2,0,0.5
+Chemical Kinetics,Chemistry,Physical Chemistry,40,10,20,10,12,2013,2026,23.38,0.1504,0.4333,0.427,96.4,2,0,0.99
+Circulation & Excretion,Biology,Human & Animal Physiology,40,10,20,10,12,2013,2025,29.3,0.0021,0.0958,0.276,75.8,2,1,1.25
+Coordination Chemistry,Chemistry,Inorganic Chemistry,40,10,20,10,11,2013,2026,15.07,0.0977,0.2958,0.3242,94.0,2,0,0.5
 Current Electricity,Physics,Electromagnetism,46,12,22,12,14,2013,2026,39.93,0.1581,0.6268,0.6075,115.5,1,4,1.95
-Dual Nature of Matter,Physics,Modern Physics,9,2,5,2,7,2013,2026,33.56,0.3636,0.5185,0.5985,114.89,3,1,0.35
+Dual Nature of Matter,Physics,Modern Physics,40,10,20,10,7,2013,2026,23.23,0.2479,0.325,0.509,113.25,3,1,0.35
 Ecology & Environment,Biology,Applied Biology & Ecology,73,19,35,19,14,2013,2026,22.34,0.016,0.0731,0.2272,74.7,2,0,3.05
-Electromagnetic Induction,Physics,Electromagnetism,7,2,3,2,6,2015,2026,19.86,0.0,0.1905,0.3481,109.71,2,1,0.32
-Electromagnetic Waves,Physics,Waves & Optics,8,2,4,2,8,2015,2025,23.62,0.1235,0.1667,0.4066,111.0,3,1,0.39
+Electromagnetic Induction,Physics,Electromagnetism,40,10,20,10,6,2015,2026,23.85,0.1774,0.2417,0.4869,112.75,2,1,0.32
+Electromagnetic Waves,Physics,Waves & Optics,40,10,20,10,8,2015,2025,19.05,0.252,0.2083,0.4336,111.67,3,1,0.39
 Electrostatics,Physics,Electromagnetism,41,11,19,11,14,2013,2026,37.9,0.1883,0.435,0.547,114.27,3,5,1.89
-Environmental Chemistry,Chemistry,Inorganic Chemistry,4,1,2,1,4,2014,2023,21.0,0.0,0.0,0.297,93.5,2,0,0.05
-Equilibrium,Chemistry,Physical Chemistry,34,9,16,9,13,2013,2026,27.88,0.2003,0.5294,0.4718,97.59,2,2,1.32
-Evolution,Biology,Reproduction & Genetics,28,7,14,7,13,2013,2026,18.18,0.0,0.0595,0.1886,73.68,2,0,1.26
-General Organic Chemistry,Chemistry,Organic Chemistry,15,4,7,4,12,2013,2026,14.0,0.0325,0.3333,0.2778,92.93,1,4,0.6
-General Principles & Metallurgy,Chemistry,Inorganic Chemistry,35,9,17,9,14,2013,2026,24.37,0.0724,0.2286,0.3467,94.51,3,0,1.52
+Environmental Chemistry,Chemistry,Inorganic Chemistry,40,10,20,10,4,2014,2023,16.25,0.0049,0.0792,0.2294,91.75,2,0,0.05
+Equilibrium,Chemistry,Physical Chemistry,40,10,20,10,13,2013,2026,26.82,0.2105,0.5208,0.4749,97.53,2,2,1.32
+Evolution,Biology,Reproduction & Genetics,40,10,20,10,13,2013,2026,19.25,0.0,0.075,0.2006,73.97,2,0,1.26
+General Organic Chemistry,Chemistry,Organic Chemistry,40,10,20,10,12,2013,2026,15.82,0.0182,0.2292,0.2635,92.5,1,4,0.6
+General Principles & Metallurgy,Chemistry,Inorganic Chemistry,40,10,20,10,14,2013,2026,23.95,0.0633,0.2042,0.3336,94.17,3,0,1.52
 Genetics & Molecular Inheritance,Biology,Reproduction & Genetics,70,18,34,18,14,2013,2026,23.47,0.0,0.0929,0.2225,74.51,2,2,2.96
-Gravitation,Physics,Mechanics Core,24,6,12,6,13,2013,2026,38.75,0.1032,0.5625,0.564,114.5,2,1,1.12
-Haloalkanes & Haloarenes,Chemistry,Organic Chemistry,13,3,7,3,9,2015,2026,17.69,0.0507,0.1667,0.2526,92.15,2,1,0.25
-Human Digestion & Respiration,Biology,Human & Animal Physiology,28,7,14,7,12,2013,2024,20.89,0.0061,0.0774,0.2193,74.5,2,1,1.03
+Gravitation,Physics,Mechanics Core,40,10,20,10,13,2013,2026,33.1,0.1425,0.4333,0.5429,113.95,2,1,1.12
+Haloalkanes & Haloarenes,Chemistry,Organic Chemistry,40,10,20,10,9,2015,2026,17.93,0.0305,0.1042,0.2457,92.1,2,1,0.25
+Human Digestion & Respiration,Biology,Human & Animal Physiology,40,10,20,10,12,2013,2024,21.27,0.0209,0.0917,0.2264,74.72,2,1,1.03
 "Human Health, Disease & Microbes",Biology,Applied Biology & Ecology,43,11,21,11,14,2013,2026,25.0,0.0,0.031,0.2429,75.02,2,0,1.86
-Hydrocarbons,Chemistry,Organic Chemistry,17,4,9,4,9,2013,2026,17.53,0.0337,0.1961,0.2776,92.71,1,2,0.61
+Hydrocarbons,Chemistry,Organic Chemistry,40,10,20,10,9,2013,2026,18.1,0.0183,0.1458,0.2586,92.4,1,2,0.61
 Kinematics,Physics,Mechanics Foundations,68,18,32,18,14,2013,2026,41.15,0.2514,0.7279,0.6361,116.06,1,4,3.6
-Laws of Motion,Physics,Mechanics Foundations,28,7,14,7,13,2013,2026,43.82,0.1252,0.5238,0.592,115.07,1,6,1.31
+Laws of Motion,Physics,Mechanics Foundations,40,10,20,10,13,2013,2026,40.23,0.1301,0.4667,0.5886,115.05,1,6,1.31
 Locomotion & Neuro-Endocrine Control,Biology,Human & Animal Physiology,54,14,26,14,14,2013,2026,21.02,0.0,0.034,0.1864,73.65,2,1,2.2
-Magnetic Effects of Current,Physics,Electromagnetism,20,5,10,5,12,2013,2026,42.4,0.1683,0.6167,0.6164,115.6,2,3,0.99
-Magnetism & Matter,Physics,Electromagnetism,7,2,3,2,7,2014,2022,33.0,0.365,0.3333,0.5385,114.29,1,0,0.2
+Magnetic Effects of Current,Physics,Electromagnetism,40,10,20,10,12,2013,2026,33.05,0.2629,0.4208,0.5693,114.6,2,3,0.99
+Magnetism & Matter,Physics,Electromagnetism,40,10,20,10,7,2014,2022,19.95,0.2394,0.2042,0.4339,111.6,1,0,0.2
 Mole Concept / Stoichiometry,Chemistry,Physical Chemistry,124,32,60,32,14,2013,2026,23.25,0.1113,0.3508,0.3688,95.19,0,6,5.53
 Morphology of Flowering Plants,Biology,Botany Structure & Physiology,65,17,31,17,14,2013,2026,18.74,0.0,0.0487,0.1747,73.45,1,2,2.6
 Oscillations & Waves,Physics,Waves & Optics,49,13,23,13,14,2013,2026,37.16,0.1482,0.585,0.5778,114.94,3,3,1.98
-Periodic Table,Chemistry,Inorganic Chemistry,13,3,7,3,7,2014,2026,19.46,0.0617,0.141,0.2998,93.31,1,4,0.5
+Periodic Table,Chemistry,Inorganic Chemistry,40,10,20,10,7,2014,2026,17.68,0.1076,0.1458,0.2998,93.38,1,4,0.5
 Plant Kingdom,Biology,Diversity in Living World,56,15,26,15,14,2013,2026,18.84,0.0,0.0923,0.1831,73.75,1,1,2.43
 Plant Physiology,Biology,Botany Structure & Physiology,71,18,35,18,14,2013,2026,21.0,0.0,0.0751,0.2057,74.08,3,1,3.18
-Properties of Matter,Physics,Bulk Matter & Thermal,15,4,7,4,8,2013,2023,36.87,0.0997,0.3,0.4808,112.67,2,1,0.6
-Ray Optics,Physics,Waves & Optics,30,8,14,8,14,2013,2026,39.83,0.0934,0.5167,0.5781,114.8,1,1,1.35
-Redox Reactions & Electrochemistry,Chemistry,Physical Chemistry,28,7,14,7,13,2013,2026,30.75,0.0637,0.5893,0.4524,96.96,2,1,1.02
+Properties of Matter,Physics,Bulk Matter & Thermal,40,10,20,10,8,2013,2023,29.32,0.1563,0.2625,0.4793,112.5,2,1,0.6
+Ray Optics,Physics,Waves & Optics,40,10,20,10,14,2013,2026,37.17,0.0917,0.4958,0.5789,114.7,1,1,1.35
+Redox Reactions & Electrochemistry,Chemistry,Physical Chemistry,40,10,20,10,13,2013,2026,28.52,0.1084,0.5167,0.4534,97.03,2,1,1.02
 Reproduction & Human Development,Biology,Reproduction & Genetics,115,30,55,30,14,2013,2026,20.9,0.0,0.0493,0.2097,74.35,3,0,4.62
-Rotational Motion,Physics,Mechanics Core,29,8,13,8,13,2013,2026,43.14,0.0515,0.546,0.5605,114.52,2,0,1.02
-Semiconductor Electronics,Physics,Modern Physics,29,8,13,8,12,2013,2026,22.79,0.1229,0.1782,0.4277,111.55,2,0,1.23
-Solutions,Chemistry,Physical Chemistry,15,4,7,4,11,2014,2026,29.4,0.0999,0.4,0.4105,96.13,2,0,0.57
-States of Matter,Chemistry,Physical Chemistry,19,5,9,5,12,2013,2026,21.68,0.1552,0.4737,0.4019,95.84,2,4,0.79
+Rotational Motion,Physics,Mechanics Core,40,10,20,10,13,2013,2026,38.38,0.0681,0.45,0.5393,113.88,2,0,1.02
+Semiconductor Electronics,Physics,Modern Physics,40,10,20,10,12,2013,2026,21.7,0.1238,0.1667,0.4167,111.15,2,0,1.23
+Solutions,Chemistry,Physical Chemistry,40,10,20,10,11,2014,2026,24.27,0.1093,0.3,0.4076,95.97,2,0,0.57
+States of Matter,Chemistry,Physical Chemistry,40,10,20,10,12,2013,2026,20.8,0.1764,0.3708,0.3981,95.83,2,4,0.79
 Structural Organisation in Animals,Biology,Human & Animal Physiology,67,17,33,17,14,2013,2026,20.39,0.0147,0.0547,0.2229,74.55,2,3,2.79
 Structure of Atom,Chemistry,Physical Chemistry,56,15,26,15,14,2013,2026,19.07,0.1223,0.3214,0.3461,94.61,1,3,2.51
-Surface Chemistry,Chemistry,Physical Chemistry,9,2,5,2,7,2014,2022,19.0,0.0,0.037,0.2499,92.0,2,0,0.31
+Surface Chemistry,Chemistry,Physical Chemistry,40,10,20,10,7,2014,2022,18.2,0.0428,0.0458,0.2421,92.08,2,0,0.31
 The Living World & Taxonomy,Biology,Diversity in Living World,75,20,35,20,13,2013,2026,18.08,0.0,0.0711,0.1776,73.48,0,2,2.78
-Thermal Physics,Physics,Bulk Matter & Thermal,16,4,8,4,9,2013,2026,41.44,0.1214,0.6667,0.5957,115.19,2,1,0.55
+Thermal Physics,Physics,Bulk Matter & Thermal,40,10,20,10,9,2013,2026,29.77,0.19,0.4083,0.5314,113.8,2,1,0.55
 Thermodynamics,Physics,Bulk Matter & Thermal,43,11,21,11,14,2013,2026,31.05,0.0791,0.4108,0.4595,105.53,2,0,1.78
-Units & Dimensions,Physics,Mechanics Foundations,21,5,11,5,13,2013,2026,35.57,0.0619,0.6032,0.5279,113.52,0,2,0.97
-Wave Optics,Physics,Waves & Optics,10,3,4,3,7,2013,2025,35.3,0.1716,0.3833,0.5233,113.9,3,1,0.38
-"Work, Energy & Power",Physics,Mechanics Core,34,9,16,9,13,2013,2026,41.03,0.0684,0.6275,0.5841,114.97,2,7,1.45
-d- and f-Block Elements,Chemistry,Inorganic Chemistry,23,6,11,6,9,2013,2026,21.78,0.1213,0.2609,0.3445,94.57,3,2,1.13
-p-Block Elements,Chemistry,Inorganic Chemistry,27,7,13,7,13,2013,2025,26.3,0.0151,0.1728,0.3661,95.11,2,2,1.1
-s-Block Elements,Chemistry,Inorganic Chemistry,7,2,3,2,5,2016,2022,16.71,0.0,0.0476,0.2544,92.57,2,0,0.05
+Units & Dimensions,Physics,Mechanics Foundations,40,10,20,10,13,2013,2026,29.32,0.2182,0.5042,0.5607,114.4,0,2,0.97
+Wave Optics,Physics,Waves & Optics,40,10,20,10,7,2013,2025,25.12,0.2045,0.2417,0.4774,112.53,3,1,0.38
+"Work, Energy & Power",Physics,Mechanics Core,40,10,20,10,13,2013,2026,40.52,0.0785,0.6,0.5966,115.12,2,7,1.45
+d- and f-Block Elements,Chemistry,Inorganic Chemistry,40,10,20,10,9,2013,2026,19.88,0.1047,0.2542,0.3331,94.22,3,2,1.13
+p-Block Elements,Chemistry,Inorganic Chemistry,40,10,20,10,13,2013,2025,23.93,0.0102,0.15,0.3371,94.4,2,2,1.1
+s-Block Elements,Chemistry,Inorganic Chemistry,40,10,20,10,5,2016,2022,15.4,0.0046,0.0625,0.231,91.83,2,0,0.05

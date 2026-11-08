@@ -743,7 +743,11 @@ def _compute_v2_student_insights(student_id: str, db: Session) -> schemas.V2Stud
                 "topic_id": topic_id,
                 "subject": meta.get("subject", "Science"),
                 "cluster": meta.get("cluster", "General"),
-                "level": st_obj.level if st_obj else "basic",
+                "level": (
+                    st_obj.level
+                    if (st_obj and (st_obj.attempts_counted or 0) > 0)
+                    else ("advanced" if curr_m >= 0.70 else ("medium" if curr_m >= 0.45 else "basic"))
+                ),
                 "current_mastery": round(curr_m, 3),
                 "readiness": readiness,
                 "neet_weightage": round(importance_weight, 2),
@@ -955,7 +959,7 @@ def get_mlops_health_and_drift(db: Session = Depends(get_db)):
             "rf_300_tree_compact_serverless_runtime": bool(COMPACT_RF_RUNTIME.loaded),
             "bkt_bayesian_knowledge_tracing": len(_TOPIC_IMPORTANCE) == 65,
             "bkt_65_chapter_empirical_bayes": len(CHAPTER_BKT_REGISTRY) == 65,
-            "irt_3pl_psychometric_engine": len(CALIBRATED_ITEMS) == 2400,
+            "irt_3pl_psychometric_engine": len(CALIBRATED_ITEMS) == 3215,
             "irt_cold_start_ridge_regressor": (MODEL_DIR / "irt_cold_start_ridge.npz").exists(),
             "mirt_3d_skill_profiler": True,
             "ncert_prerequisite_dag_nodes": len(DAG_NODES),

@@ -166,7 +166,7 @@ def run_corpus_distribution_and_readiness_audit(save_report: bool = True) -> dic
             if len(missing_medium) == 0
             and len(missing_basic) == 0
             and len(missing_advanced) == 0
-            and total_all == 2400
+            and total_all == 3215
             else "WARNING"
         ),
         "execution_time_seconds": round(time.perf_counter() - t0, 4),

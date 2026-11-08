@@ -1,7 +1,7 @@
 {
   "audit_mode": "NON_DESTRUCTIVE_PROPOSAL_ONLY",
   "source_corpus_mutated": false,
-  "total_audited_questions": 2400,
+  "total_audited_questions": 3215,
   "gap_resolution_summary": {
     "chapters_missing_basic_before": 0,
     "chapters_resolvable_via_irt_anchors": 0,
@@ -9,8 +9,8 @@
     "physics_chapters_resolvable_via_irt_anchors": 0,
     "chapters_missing_advanced_before": 0,
     "advanced_chapters_resolvable_via_irt_anchors": 0,
-    "strict_global_basic_candidates_count": 547,
-    "strict_global_advanced_candidates_count": 136
+    "strict_global_basic_candidates_count": 566,
+    "strict_global_advanced_candidates_count": 146
   },
   "top_basic_recalibration_candidates": [
     {
@@ -209,21 +209,6 @@
       "proposed_tier": "basic"
     },
     {
-      "question_id": "NEET2019_BIO_126",
-      "topic_id": "Anatomy of Flowering Plants",
-      "subject": "Biology",
-      "current_tier": "medium",
-      "irt_a": 1.4308,
-      "irt_b": -0.2709,
-      "irt_c": 0.1981,
-      "ideal_time_sec": 69,
-      "word_count": 10,
-      "question_type": "Conceptual",
-      "has_diagram": false,
-      "foundational_score": 0.5376,
-      "proposed_tier": "basic"
-    },
-    {
       "question_id": "NEET2015_BIO_062",
       "topic_id": "Biological Classification",
       "subject": "Biology",
@@ -312,6 +297,21 @@
       "has_diagram": false,
       "foundational_score": 0.5294,
       "proposed_tier": "basic"
+    },
+    {
+      "question_id": "NEET2020_BIO_057",
+      "topic_id": "Biological Classification",
+      "subject": "Biology",
+      "current_tier": "medium",
+      "irt_a": 1.528,
+      "irt_b": -0.2627,
+      "irt_c": 0.204,
+      "ideal_time_sec": 70,
+      "word_count": 8,
+      "question_type": "Conceptual",
+      "has_diagram": false,
+      "foundational_score": 0.5294,
+      "proposed_tier": "basic"
     }
   ],
   "top_advanced_recalibration_candidates": [
@@ -346,21 +346,6 @@
       "proposed_tier": "advanced"
     },
     {
-      "question_id": "RENEET2026_PHY_024",
-      "topic_id": "Magnetic Effects of Current",
-      "subject": "Physics",
-      "current_tier": "medium",
-      "irt_a": 1.7396,
-      "irt_b": 1.0286,
-      "irt_c": 0.1956,
-      "ideal_time_sec": 116,
-      "word_count": 46,
-      "question_type": "Numerical",
-      "has_diagram": true,
-      "foundational_score": -2.0953,
-      "proposed_tier": "advanced"
-    },
-    {
       "question_id": "NEET2024_PHY_010",
       "topic_id": "Current Electricity",
       "subject": "Physics",
@@ -373,6 +358,21 @@
       "question_type": "Diagram-Based",
       "has_diagram": true,
       "foundational_score": -2.0594,
+      "proposed_tier": "advanced"
+    },
+    {
+      "question_id": "RENEET2026_PHY_042",
+      "topic_id": "Electromagnetic Induction",
+      "subject": "Physics",
+      "current_tier": "medium",
+      "irt_a": 1.7028,
+      "irt_b": 1.0191,
+      "irt_c": 0.2,
+      "ideal_time_sec": 113,
+      "word_count": 40,
+      "question_type": "Diagram-Based",
+      "has_diagram": true,
+      "foundational_score": -1.9858,
       "proposed_tier": "advanced"
     },
     {
@@ -421,21 +421,6 @@
       "proposed_tier": "advanced"
     },
     {
-      "question_id": "NEET2021_PHY_040",
-      "topic_id": "Alternating Current",
-      "subject": "Physics",
-      "current_tier": "medium",
-      "irt_a": 1.6356,
-      "irt_b": 1.0018,
-      "irt_c": 0.2,
-      "ideal_time_sec": 117,
-      "word_count": 50,
-      "question_type": "Numerical",
-      "has_diagram": false,
-      "foundational_score": -1.8685,
-      "proposed_tier": "advanced"
-    },
-    {
       "question_id": "NEET2014_PHY_002",
       "topic_id": "Kinematics",
       "subject": "Physics",
@@ -478,6 +463,21 @@
       "question_type": "Numerical",
       "has_diagram": false,
       "foundational_score": -1.7855,
+      "proposed_tier": "advanced"
+    },
+    {
+      "question_id": "NEET2021_PHY_024",
+      "topic_id": "Work, Energy & Power",
+      "subject": "Physics",
+      "current_tier": "medium",
+      "irt_a": 1.678,
+      "irt_b": 0.9855,
+      "irt_c": 0.198,
+      "ideal_time_sec": 115,
+      "word_count": 68,
+      "question_type": "Numerical",
+      "has_diagram": false,
+      "foundational_score": -1.9688,
       "proposed_tier": "advanced"
     },
     {

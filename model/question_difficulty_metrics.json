@@ -1,8 +1,8 @@
 {
   "model": "RandomForestClassifier",
   "target": "difficulty_level",
-  "training_rows": 1920,
-  "testing_rows": 480,
+  "training_rows": 2572,
+  "testing_rows": 643,
   "accuracy": 1.0,
   "classes": [
     "advanced",

@@ -1,32 +1,32 @@
 {
-  "total_audited_questions": 2400,
+  "total_audited_questions": 3215,
   "near_duplicate_threshold": 0.85,
   "high_overlap_threshold": 0.78,
-  "near_duplicate_pairs_count": 4,
-  "near_duplicate_clusters_count": 4,
-  "questions_with_near_duplicates_count": 8,
-  "unique_effective_question_clusters": 2396,
+  "near_duplicate_pairs_count": 5,
+  "near_duplicate_clusters_count": 5,
+  "questions_with_near_duplicates_count": 10,
+  "unique_effective_question_clusters": 3210,
   "high_concept_overlap_pairs_count": 7,
   "top_near_duplicate_pairs": [
-    {
-      "question_id_a": "NEET2021_CHEM_063",
-      "question_id_b": "NEET2021_CHEM_086",
-      "subject": "Chemistry",
-      "chapter_a": "Chemical Bonding",
-      "chapter_b": "Coordination Chemistry",
-      "cosine_similarity": 0.8638,
-      "snippet_a": "Match List-I with List-II for General Chemistry (Chemistry Core Concepts) and select the correc",
-      "snippet_b": "Match List-I with List-II for General Chemistry (Chemistry Core Concepts) and select the correc"
-    },
     {
       "question_id_a": "NEET2021_BIO_145",
       "question_id_b": "NEET2023_BIO_129",
       "subject": "Biology",
       "chapter_a": "Genetics & Molecular Inheritance",
       "chapter_b": "Genetics & Molecular Inheritance",
-      "cosine_similarity": 0.8636,
+      "cosine_similarity": 0.8643,
       "snippet_a": "What is the role of RNA polymerase III in the process of transcription in eukaryotes?",
       "snippet_b": "What is the role of RNA polymerase III in the process of transcription in Eukaryotes?"
+    },
+    {
+      "question_id_a": "NEET2021_CHEM_063",
+      "question_id_b": "NEET2021_CHEM_086",
+      "subject": "Chemistry",
+      "chapter_a": "Chemical Bonding",
+      "chapter_b": "Coordination Chemistry",
+      "cosine_similarity": 0.8568,
+      "snippet_a": "Match List-I with List-II for General Chemistry (Chemistry Core Concepts) and select the correc",
+      "snippet_b": "Match List-I with List-II for General Chemistry (Chemistry Core Concepts) and select the correc"
     },
     {
       "question_id_a": "NEET2021_BIO_148",
@@ -34,7 +34,7 @@
       "subject": "Biology",
       "chapter_a": "Biomolecules",
       "chapter_b": "Evolution",
-      "cosine_similarity": 0.8558,
+      "cosine_similarity": 0.8563,
       "snippet_a": "Match List-I with List-II.\nList-I",
       "snippet_b": "Match List - I with List - II\nList - I\nList - II"
     },
@@ -44,9 +44,19 @@
       "subject": "Biology",
       "chapter_a": "The Living World & Taxonomy",
       "chapter_b": "Biomolecules",
-      "cosine_similarity": 0.8533,
+      "cosine_similarity": 0.8535,
       "snippet_a": "The correct order of steps in Polymerase Chain Reaction (PCR) is",
       "snippet_b": "Which of the following is a correct sequence of steps in a PCR (Polymerase Chain Reaction)?"
+    },
+    {
+      "question_id_a": "NEET2021_CHEM_096",
+      "question_id_b": "NEET2022_CHEM_056",
+      "subject": "Chemistry",
+      "chapter_a": "Aldehydes, Ketones & Carboxylic Acids",
+      "chapter_b": "Chemical Bonding",
+      "cosine_similarity": 0.8516,
+      "snippet_a": "Match List-I with List-II\nList-I\nList-II",
+      "snippet_b": "Match List-I with List-II.\nList \u2013 I\nList \u2013 II (Hydrides) (Nature)"
     }
   ],
   "near_duplicate_siblings": {
@@ -70,6 +80,12 @@
     ],
     "NEET2021_CHEM_086": [
       "NEET2021_CHEM_063"
+    ],
+    "NEET2021_CHEM_096": [
+      "NEET2022_CHEM_056"
+    ],
+    "NEET2022_CHEM_056": [
+      "NEET2021_CHEM_096"
     ],
     "NEET2023_BIO_129": [
       "NEET2021_BIO_145"

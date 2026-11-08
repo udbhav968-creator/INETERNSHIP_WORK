@@ -240,7 +240,11 @@ def compute_syllabus_coverage_and_improvement_plan(
                 "neet_weightage_percent": round(imp, 2),
                 "expected_marks_gain_720": round(max(0.5, est_marks_gain), 1),
                 "blocking_prerequisites": weak_prereqs,
-                "recommended_start_tier": level_map.get(tid, "basic"),
+                "recommended_start_tier": (
+                    level_map[tid]
+                    if tid in level_map
+                    else ("advanced" if eff_m >= 0.70 else ("medium" if eff_m >= 0.45 else "basic"))
+                ),
                 "recommended_drill_questions": max(3, drill_q),
                 "available_chapter_pyqs": avail_pyqs,
                 "remediation_priority_score": round(priority, 4),

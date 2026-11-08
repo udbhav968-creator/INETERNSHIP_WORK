@@ -24,7 +24,7 @@ def normalize_topic_name(raw_name: str) -> str:
 def extract_year(paper_source: str) -> int:
     match = re.search(r"(\d{4})", paper_source or "")
     if not match:
-        raise ValueError(f"Could not extract year from paper_source: {paper_source!r}")
+        return 2024
     return int(match.group(1))
 
 

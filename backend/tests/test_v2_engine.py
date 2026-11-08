@@ -71,7 +71,7 @@ def test_01_random_forest_model_and_live_inference():
     with open(metrics_path, encoding="utf-8") as f:
         metrics = json.load(f)
     assert round(metrics["accuracy"], 4) >= 0.9950
-    assert metrics["training_rows"] == 1920 and metrics["testing_rows"] == 480
+    assert metrics["training_rows"] == 2572 and metrics["testing_rows"] == 643
 
     pipeline = joblib.load(model_path)
     df = pd.read_csv(csv_path)
@@ -105,7 +105,7 @@ def test_03_question_bank_and_weightage_validators():
     with open(PROJECT_ROOT / "data" / "tagged_questions" / "neet_questions_clean.json", encoding="utf-8") as f:
         clean_qs = json.load(f)
     q_report = validate_qbank(clean_qs)
-    assert q_report["total_questions"] == 2400
+    assert q_report["total_questions"] == 3215
     assert q_report["issues"] == [], f"Unexpected question bank issues: {q_report['issues']}"
 
 
@@ -219,7 +219,7 @@ def test_06_pace_tracking_invariants():
 
 
 def test_07_3pl_irt_mathematical_invariants():
-    assert len(CALIBRATED_ITEMS) == 2400
+    assert len(CALIBRATED_ITEMS) == 3215
     params = IRTItemParams(a=1.5, b=0.5, c=0.20)
 
 
@@ -372,7 +372,7 @@ def test_13_database_counts_and_adaptive_paper_generator():
     db = SessionLocal()
     try:
         assert db.query(Topic).count() == 65
-        assert db.query(Question).count() == 2400
+        assert db.query(Question).count() == 3215
         paper = generate_paper(db, "COLD_START_AUDIT", total_length=45)
         assert len(paper) >= 40
     finally:
@@ -650,7 +650,7 @@ def test_16_deep_training_and_cross_validation_pipeline():
     assert report["random_forest_holdout_evaluation"]["correct_predictions"] >= 475
     assert report["stratified_5fold_cross_validation"]["mean_cv_accuracy"] >= 0.985
     assert report["stratified_5fold_cross_validation"]["oof_multiclass_brier_score"] < 0.05
-    assert report["irt_3pl_calibration_summary"]["calibrated_questions"] == 2400
+    assert report["irt_3pl_calibration_summary"]["calibrated_questions"] == 3215
     assert (PROJECT_ROOT / "model" / "validation_report.json").exists()
 
 
@@ -1017,7 +1017,7 @@ def test_24_serverless_vault_relogin_compact_rf_parity_and_full_audit():
     r_audit = client.get("/mlops/audit_overview")
     assert r_audit.status_code == 200
     audit = r_audit.json()
-    assert audit["corpus_integrity"]["verified_questions_in_db"] == 2400
+    assert audit["corpus_integrity"]["verified_questions_in_db"] == 3215
     assert audit["corpus_integrity"]["canonical_chapters_in_db"] == 65
     assert audit["corpus_integrity"]["dag_acyclic"] is True
     assert audit["health_and_drift"]["models_loaded"]["rf_300_tree_compact_serverless_runtime"] is True
@@ -1165,12 +1165,12 @@ def test_24_serverless_vault_relogin_compact_rf_parity_and_full_audit():
             assert block_marker not in stripped, f"Block comment in {ts_file}:{idx}"
 
 
-def test_25_forensic_reality_audit_all_2400_items_non_repeating_papers_and_ui_schema_contract():
+def test_25_forensic_reality_audit_all_3215_items_non_repeating_papers_and_ui_schema_contract():
     from model.rf_compact_runtime import COMPACT_RF_RUNTIME
     from model.linucb_bandit import reset_student_bandit
 
     df_all = pd.read_csv(PROJECT_ROOT / "data" / "training" / "question_features.csv")
-    assert len(df_all) == 2400
+    assert len(df_all) == 3215
     pipeline = joblib.load(MODEL_DIR / "question_difficulty_model.joblib")
     classes = [str(c) for c in pipeline.classes_]
     feature_cols = [
@@ -1217,8 +1217,8 @@ def test_25_forensic_reality_audit_all_2400_items_non_repeating_papers_and_ui_sc
                 max_diff = d
         if max(sk_row, key=sk_row.get) == max(np_probs, key=np_probs.get):
             exact_class_matches += 1
-    assert max_diff < 1.5e-2, f"Max RF probability diff across 2400 items too large: {max_diff}"
-    assert exact_class_matches == 2400, f"RF argmax mismatch: {exact_class_matches}/2400"
+    assert max_diff < 1.5e-2, f"Max RF probability diff across 3215 items too large: {max_diff}"
+    assert exact_class_matches == 3215, f"RF argmax mismatch: {exact_class_matches}/3215"
 
     with open(PROJECT_ROOT / "data" / "ncert_knowledge_base.json", encoding="utf-8") as f:
         kb = json.load(f)
@@ -1231,7 +1231,7 @@ def test_25_forensic_reality_audit_all_2400_items_non_repeating_papers_and_ui_sc
         assert len(ch.get("common_misconceptions") or []) >= 1
         assert len(ch.get("socratic_questions") or []) >= 1
 
-    assert len(CALIBRATED_ITEMS) == 2400
+    assert len(CALIBRATED_ITEMS) == 3215
     a_vals = [float(item_p["a"] if isinstance(item_p, dict) else item_p.a) for item_p in CALIBRATED_ITEMS.values()]
     b_vals = [float(item_p["b"] if isinstance(item_p, dict) else item_p.b) for item_p in CALIBRATED_ITEMS.values()]
     c_vals = [float(item_p["c"] if isinstance(item_p, dict) else item_p.c) for item_p in CALIBRATED_ITEMS.values()]
@@ -1244,7 +1244,7 @@ def test_25_forensic_reality_audit_all_2400_items_non_repeating_papers_and_ui_sc
     db_map = SessionLocal()
     try:
         answer_key = {q.question_id: q.correct_answer.lower() for q in db_map.query(Question).all()}
-        assert len(answer_key) == 2400
+        assert len(answer_key) == 3215
     finally:
         db_map.close()
 
@@ -1467,7 +1467,7 @@ def test_26_ml_devops_standalone_suite_registry_checksums_and_study_plan_endpoin
     r_dist = client.get("/mlops/corpus_distribution")
     assert r_dist.status_code == 200
     dist_body = r_dist.json()
-    assert dist_body["distribution_audit"]["corpus_totals"]["total_verified_questions"] == 2400
+    assert dist_body["distribution_audit"]["corpus_totals"]["total_verified_questions"] == 3215
     assert dist_body["distribution_audit"]["gap_summary"]["topics_missing_basic_count"] == 0
     assert dist_body["distribution_audit"]["gap_summary"]["topics_missing_medium_count"] == 0
     assert dist_body["distribution_audit"]["gap_summary"]["topics_missing_advanced_count"] == 0
@@ -1575,7 +1575,7 @@ def test_27_tier_recalibration_near_duplicate_guard_temperature_scaling_and_prom
     prom_text = r_prom.text
     assert "klassed_active_ml_models_total 15" in prom_text
     assert "klassed_sha256_verified_artifacts_total 21" in prom_text
-    assert "klassed_calibrated_irt_items_total 2400" in prom_text
+    assert "klassed_calibrated_irt_items_total 3215" in prom_text
     assert "klassed_rf_temperature_post_ece" in prom_text
 
     r_cold = client.post(
@@ -1715,7 +1715,7 @@ def test_28_zero_hardcoded_cold_start_priors_unified_score_and_15_trained_models
         assert "auxiliary_models_training" in audit
         assert audit["auxiliary_models_training"]["irt_cold_start_ridge_regressor"]["b_5fold_r2"] > 0.98
         assert audit["chapter_wise_summary"]["total_chapters"] == 65
-        assert audit["chapter_wise_summary"]["total_clean_pyqs"] == 2400
+        assert audit["chapter_wise_summary"]["total_clean_pyqs"] == 3215
         assert audit["chapter_wise_summary"]["chapters_missing_basic"] == 0
     finally:
         if sid:
@@ -1754,7 +1754,7 @@ if __name__ == "__main__":
         test_22_monte_carlo_conformal_simulator_and_graph_laplacian_leverage,
         test_23_scientific_notation_traps_paper_history_and_remediation_urgency,
         test_24_serverless_vault_relogin_compact_rf_parity_and_full_audit,
-        test_25_forensic_reality_audit_all_2400_items_non_repeating_papers_and_ui_schema_contract,
+        test_25_forensic_reality_audit_all_3215_items_non_repeating_papers_and_ui_schema_contract,
         test_26_ml_devops_standalone_suite_registry_checksums_and_study_plan_endpoints,
         test_27_tier_recalibration_near_duplicate_guard_temperature_scaling_and_prometheus_metrics,
         test_28_zero_hardcoded_cold_start_priors_unified_score_and_15_trained_models,

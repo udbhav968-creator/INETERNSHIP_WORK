@@ -1,6 +1,6 @@
 {
   "harness_status": "PASSED",
-  "execution_time_seconds": 0.293,
+  "execution_time_seconds": 0.262,
   "persona_simulations": {
     "strong_master": {
       "final_level": "advanced",
@@ -24,7 +24,7 @@
     },
     "spaced_repetition_learner": {
       "peak_mastery": 0.88,
-      "decayed_mastery_after_168h": 0.523,
+      "decayed_mastery_after_168h": 0.5246,
       "retention_urgency": 1.0,
       "invariants_satisfied": true
     }
@@ -41,44 +41,44 @@
   },
   "latency_sla_benchmarks": {
     "irt_3pl_map_update": {
-      "p50_ms": 0.0118,
-      "p95_ms": 0.015,
-      "p99_ms": 0.0181
+      "p50_ms": 0.0117,
+      "p95_ms": 0.0126,
+      "p99_ms": 0.0141
     },
     "bkt_saint_ebbinghaus_update": {
-      "p50_ms": 0.0152,
-      "p95_ms": 0.025,
-      "p99_ms": 0.0288
+      "p50_ms": 0.0149,
+      "p95_ms": 0.0171,
+      "p99_ms": 0.0175
     },
     "linucb_context_scoring": {
-      "p50_ms": 0.0165,
-      "p95_ms": 0.0201,
-      "p99_ms": 0.0223
+      "p50_ms": 0.016,
+      "p95_ms": 0.0181,
+      "p99_ms": 0.019
     },
     "compact_rf_300_tree_inference": {
-      "p50_ms": 1.3354,
-      "p95_ms": 1.5396,
-      "p99_ms": 1.5796
+      "p50_ms": 1.0832,
+      "p95_ms": 1.1417,
+      "p99_ms": 1.1569
     },
     "dina_8_skill_cognitive_diagnosis": {
-      "p50_ms": 0.2399,
-      "p95_ms": 0.3095,
-      "p99_ms": 0.3785
+      "p50_ms": 0.2343,
+      "p95_ms": 0.2666,
+      "p99_ms": 0.3219
     },
     "rag_socratic_remediation": {
-      "p50_ms": 0.3729,
-      "p95_ms": 0.4657,
-      "p99_ms": 0.4657
+      "p50_ms": 0.358,
+      "p95_ms": 0.4665,
+      "p99_ms": 0.4665
     },
     "study_plan_coverage_prescription": {
-      "p50_ms": 17.8691,
-      "p95_ms": 20.2416,
-      "p99_ms": 20.2416
+      "p50_ms": 17.2265,
+      "p95_ms": 17.8859,
+      "p99_ms": 17.8859
     },
     "in_memory_feature_store": {
-      "p50_ms": 0.0086,
-      "p95_ms": 0.0121,
-      "p99_ms": 0.0155
+      "p50_ms": 0.0084,
+      "p95_ms": 0.0098,
+      "p99_ms": 0.0102
     },
     "all_slas_met": true
   }

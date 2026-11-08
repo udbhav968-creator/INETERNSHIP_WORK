@@ -3,6 +3,7 @@ import { api, ApiError } from "../../lib/api";
 import {
   OPTION_LETTERS,
   type Analytics,
+  type Difficulty,
   type PaperHistorySummary,
   type PaperReviewOut,
   type SocraticHintOut,
@@ -12,7 +13,7 @@ import {
 } from "../../types";
 import { Card } from "../../components/ui/Card";
 import { Button } from "../../components/ui/Button";
-import { PaceBadge } from "../../components/ui/Badge";
+import { DifficultyBadge, PaceBadge } from "../../components/ui/Badge";
 
 interface DashboardProps {
   studentId: string;
@@ -373,9 +374,7 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
                 <Card key={t.topic_id} className="flex flex-col gap-2 p-5">
                   <div className="flex items-center justify-between">
                     <p className="font-medium text-midnight-900">{t.topic_id}</p>
-                    <span className="rounded-full bg-midnight-900/5 px-2.5 py-0.5 text-xs font-medium capitalize text-midnight-800">
-                      {t.level}
-                    </span>
+                    <DifficultyBadge level={t.level} />
                   </div>
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <PaceBadge pace={t.pace_flag} />
@@ -953,9 +952,7 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
                     <span className="text-[11px] font-semibold uppercase tracking-wide text-midnight-700/60">
                       {ch.subject} {ch.cluster ? `· ${ch.cluster}` : ""}
                     </span>
-                    <span className="rounded-full bg-midnight-900/5 px-2 py-0.5 text-[11px] font-medium capitalize text-midnight-800">
-                      {ch.level ?? "basic"}
-                    </span>
+                    <DifficultyBadge level={(ch.level ?? "basic") as Difficulty} />
                   </div>
                   <p className="mt-1 font-medium text-midnight-950">{ch.topic_id}</p>
                 </div>

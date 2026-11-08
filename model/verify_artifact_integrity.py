@@ -86,8 +86,8 @@ def verify_all_ml_artifacts(
 
     if not COMPACT_RF_RUNTIME.loaded:
         raise RuntimeError("Compact 300-tree serverless RF runtime failed to load")
-    if len(CALIBRATED_ITEMS) != 2400:
-        raise RuntimeError(f"Expected 2400 calibrated 3PL IRT items, got {len(CALIBRATED_ITEMS)}")
+    if len(CALIBRATED_ITEMS) != 3215:
+        raise RuntimeError(f"Expected 3215 calibrated 3PL IRT items, got {len(CALIBRATED_ITEMS)}")
     if len(DAG_NODES) != 65 or len(RAG_INDEX.chunks) != 65 or len(COGNITIVE_SKILLS) != 8:
         raise RuntimeError("Curriculum graph / RAG / DINA skill count mismatch")
     if len(CHAPTER_BKT_REGISTRY) != 65:
