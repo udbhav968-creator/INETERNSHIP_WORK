@@ -1,6 +1,6 @@
 {
   "harness_status": "PASSED",
-  "execution_time_seconds": 0.262,
+  "execution_time_seconds": 0.309,
   "persona_simulations": {
     "strong_master": {
       "final_level": "advanced",
@@ -41,44 +41,44 @@
   },
   "latency_sla_benchmarks": {
     "irt_3pl_map_update": {
-      "p50_ms": 0.0117,
-      "p95_ms": 0.0126,
-      "p99_ms": 0.0141
+      "p50_ms": 0.0121,
+      "p95_ms": 0.0152,
+      "p99_ms": 0.0156
     },
     "bkt_saint_ebbinghaus_update": {
-      "p50_ms": 0.0149,
-      "p95_ms": 0.0171,
-      "p99_ms": 0.0175
+      "p50_ms": 0.0153,
+      "p95_ms": 0.0205,
+      "p99_ms": 0.0221
     },
     "linucb_context_scoring": {
-      "p50_ms": 0.016,
-      "p95_ms": 0.0181,
-      "p99_ms": 0.019
+      "p50_ms": 0.0164,
+      "p95_ms": 0.0219,
+      "p99_ms": 0.024
     },
     "compact_rf_300_tree_inference": {
-      "p50_ms": 1.0832,
-      "p95_ms": 1.1417,
-      "p99_ms": 1.1569
+      "p50_ms": 1.0996,
+      "p95_ms": 1.329,
+      "p99_ms": 1.5997
     },
     "dina_8_skill_cognitive_diagnosis": {
-      "p50_ms": 0.2343,
-      "p95_ms": 0.2666,
-      "p99_ms": 0.3219
+      "p50_ms": 0.2415,
+      "p95_ms": 0.3391,
+      "p99_ms": 0.4552
     },
     "rag_socratic_remediation": {
-      "p50_ms": 0.358,
-      "p95_ms": 0.4665,
-      "p99_ms": 0.4665
+      "p50_ms": 0.3532,
+      "p95_ms": 0.4645,
+      "p99_ms": 0.4645
     },
     "study_plan_coverage_prescription": {
-      "p50_ms": 17.2265,
-      "p95_ms": 17.8859,
-      "p99_ms": 17.8859
+      "p50_ms": 20.0964,
+      "p95_ms": 27.3095,
+      "p99_ms": 27.3095
     },
     "in_memory_feature_store": {
-      "p50_ms": 0.0084,
-      "p95_ms": 0.0098,
-      "p99_ms": 0.0102
+      "p50_ms": 0.0082,
+      "p95_ms": 0.0131,
+      "p99_ms": 0.0163
     },
     "all_slas_met": true
   }

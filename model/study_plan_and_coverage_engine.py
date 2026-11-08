@@ -28,11 +28,19 @@ def _load_chapter_pyq_counts() -> dict[str, int]:
     if _CHAPTER_SUMMARY_PATH.exists():
         try:
             payload = json.loads(_CHAPTER_SUMMARY_PATH.read_text(encoding="utf-8"))
-            return {
-                str(row["chapter"]): int(row["total_pyqs"])
-                for row in payload.get("chapters", [])
-                if "chapter" in row and "total_pyqs" in row
-            }
+            raw_ch = payload.get("chapters", {})
+            if isinstance(raw_ch, dict):
+                return {
+                    str(c_name): int(info.get("total_pyqs", 40))
+                    for c_name, info in raw_ch.items()
+                    if isinstance(info, dict)
+                }
+            elif isinstance(raw_ch, list):
+                return {
+                    str(row["chapter"]): int(row["total_pyqs"])
+                    for row in raw_ch
+                    if "chapter" in row and "total_pyqs" in row
+                }
         except Exception:
             pass
     return {}
