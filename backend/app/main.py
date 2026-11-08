@@ -211,13 +211,15 @@ def _process_single_attempt_no_commit(
         .first()
     )
     if not state:
+        init_prior = get_chapter_bkt_prior(question.topic_id)
+        init_level = "advanced" if init_prior >= 0.70 else ("medium" if init_prior >= 0.45 else "basic")
         state = StudentTopicState(
             student_id=attempt.student_id,
             topic_id=question.topic_id,
-            level="basic",
+            level=init_level,
             streak=0,
             last_3_results=[],
-            mastery_prob=get_chapter_bkt_prior(question.topic_id),
+            mastery_prob=init_prior,
             confidence_interval=0.45,
             irt_theta=0.0,
         )

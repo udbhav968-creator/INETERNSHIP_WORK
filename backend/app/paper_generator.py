@@ -6,6 +6,7 @@ from .paths import MODEL_DIR
 from model.linucb_bandit import build_context_vector, score_candidate_ucb
 from model.knowledge_graph_dag import compute_prerequisite_readiness
 from model.question_similarity_audit import get_near_duplicate_siblings_map
+from model.state_machine.bkt_model import get_chapter_bkt_prior
 
 with open(MODEL_DIR / "topic_importance.json", encoding="utf-8") as f:
     _TOPIC_IMPORTANCE = json.load(f)
@@ -161,7 +162,10 @@ def generate_paper(
 
     all_states = db.query(StudentTopicState).filter_by(student_id=student_id).all()
     state_by_topic = {s.topic_id: s for s in all_states}
-    mastery_map = {s.topic_id: float(getattr(s, "mastery_prob", 0.35) or 0.35) for s in all_states}
+    mastery_map = {
+        tid: (float(state_by_topic[tid].mastery_prob) if tid in state_by_topic and getattr(state_by_topic[tid], "mastery_prob", None) is not None else get_chapter_bkt_prior(tid))
+        for tid in _TOPIC_IMPORTANCE
+    }
 
     attempt_rows = (
         db.query(TestAttempt.question_id, TestAttempt.is_correct)
@@ -175,9 +179,9 @@ def generate_paper(
     if topic_id:
         target_count = min(15, total_length)
         state = state_by_topic.get(topic_id)
-        level = state.level if state else "basic"
+        mastery_prob = float(state.mastery_prob) if state and getattr(state, "mastery_prob", None) is not None else get_chapter_bkt_prior(topic_id)
+        level = state.level if state and getattr(state, "level", None) else ("advanced" if mastery_prob >= 0.70 else ("medium" if mastery_prob >= 0.45 else "basic"))
         topic_theta = float(getattr(state, "irt_theta", global_theta) or global_theta) if state else global_theta
-        mastery_prob = float(getattr(state, "mastery_prob", 0.35) or 0.35) if state else 0.35
         pace_flag = state.pace_flag if state else None
         prereq_ready = compute_prerequisite_readiness(topic_id, mastery_map)
         imp_val = float(_TOPIC_IMPORTANCE.get(topic_id, 1.5))
@@ -206,9 +210,9 @@ def generate_paper(
             continue
 
         state = state_by_topic.get(cur_topic_id)
-        level = state.level if state else "basic"
+        mastery_prob = float(state.mastery_prob) if state and getattr(state, "mastery_prob", None) is not None else get_chapter_bkt_prior(cur_topic_id)
+        level = state.level if state and getattr(state, "level", None) else ("advanced" if mastery_prob >= 0.70 else ("medium" if mastery_prob >= 0.45 else "basic"))
         topic_theta = float(getattr(state, "irt_theta", global_theta) or global_theta) if state else global_theta
-        mastery_prob = float(getattr(state, "mastery_prob", 0.35) or 0.35) if state else 0.35
         pace_flag = state.pace_flag if state else None
         prereq_ready = compute_prerequisite_readiness(cur_topic_id, mastery_map)
 
@@ -281,9 +285,9 @@ def generate_paper(
 
         for _, t_id in weighted_candidates[:remaining_slots]:
             state = state_by_topic.get(t_id)
-            level = state.level if state else "basic"
+            mastery_prob = float(state.mastery_prob) if state and getattr(state, "mastery_prob", None) is not None else get_chapter_bkt_prior(t_id)
+            level = state.level if state and getattr(state, "level", None) else ("advanced" if mastery_prob >= 0.70 else ("medium" if mastery_prob >= 0.45 else "basic"))
             topic_theta = float(getattr(state, "irt_theta", global_theta) or global_theta) if state else global_theta
-            mastery_prob = float(getattr(state, "mastery_prob", 0.35) or 0.35) if state else 0.35
             pace_flag = state.pace_flag if state else None
             prereq_ready = compute_prerequisite_readiness(t_id, mastery_map)
             imp_val = float(_TOPIC_IMPORTANCE.get(t_id, 0.5))
