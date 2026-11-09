@@ -815,12 +815,18 @@ def _compute_cat_assessment(student_id: str, db: Session, insights: schemas.V2St
     for (qid,) in attempt_rows:
         params = get_item_params(qid)
         total_info += float(fisher_information(theta, params))
-    sem = 1.0 / (math.sqrt(total_info + 0.15))
+    prior_variance = 1.0
+    prior_info = 1.0 / prior_variance
+    sem = 1.0 / (math.sqrt(total_info + prior_info))
     ci_low = round(theta - 1.96 * sem, 3)
     ci_high = round(theta + 1.96 * sem, 3)
     target_sem = 0.25
-    stopping_met = bool(sem <= target_sem or items_count >= 45)
-    status = "CONVERGED_CONFIDENT" if stopping_met and items_count > 0 else ("INITIALIZING" if items_count == 0 else "ADAPTING")
+    stopping_met = bool(items_count > 0 and (sem <= target_sem or items_count >= 45))
+    status = (
+        "CONVERGED_CONFIDENT"
+        if (stopping_met and sem <= target_sem)
+        else ("MAX_ITEMS_REACHED" if (stopping_met and items_count >= 45) else ("INITIALIZING" if items_count == 0 else "ADAPTING"))
+    )
     return schemas.CATAssessmentOut(
         student_id=student_id,
         items_administered=items_count,
@@ -844,18 +850,24 @@ def _compute_fatigue_analysis(student_id: str, db: Session) -> schemas.FatigueAn
     )
     n = len(attempts)
     if n < 4:
+        avg_lat = round(sum(float(a.time_taken_seconds or 0.0) for a in attempts) / n, 1) if n > 0 else 0.0
+        acc_pct = round(100.0 * sum(1 for a in attempts if a.is_correct) / n, 1) if n > 0 else 0.0
         return schemas.FatigueAnalysisOut(
             student_id=student_id,
             total_attempts_analyzed=n,
             fatigue_index=0.0,
             latency_trend="STABLE",
-            mean_early_latency_sec=60.0,
-            mean_late_latency_sec=60.0,
-            early_accuracy_pct=0.0,
-            late_accuracy_pct=0.0,
+            mean_early_latency_sec=avg_lat,
+            mean_late_latency_sec=avg_lat,
+            early_accuracy_pct=acc_pct,
+            late_accuracy_pct=acc_pct,
             accuracy_drop_pct=0.0,
             rapid_guess_count=0,
-            pacing_coaching_advice="Pacing baseline calibrated. Take regular mock sessions to build cognitive stamina.",
+            pacing_coaching_advice=(
+                "Pacing baseline calibrating. Take more questions to detect fatigue onset."
+                if n > 0
+                else "Insufficient attempt data. Complete practice sessions to evaluate pacing stamina."
+            ),
         )
     mid = n // 2
     early = attempts[:mid]
@@ -913,14 +925,20 @@ def _compute_revision_calendar(
     seen_chapters: set[str] = set()
     decay_candidates = list(insights.spaced_repetition_reviews or [])
     bottlenecks = list(insights.root_cause_bottlenecks or [])
-    ranked_plan = list((study_plan or {}).get("ranked_improvement_plan", []))
+    action_table = (
+        list((study_plan or {}).get("improvement_action_table", []))
+        or list((study_plan or {}).get("ranked_improvement_plan", []))
+    )
+    mastery_map = {
+        td.get("topic_id"): float(td.get("current_mastery", 0.40))
+        for td in (insights.topic_mastery_details or [])
+        if isinstance(td, dict)
+    }
 
     for day in range(1, 15):
         chosen_chapter = None
         action_type = "HIGH_YIELD_DRILL"
-        urgency = 0.50
-        marks_gain = 8.0
-        reason = "Consistent high-yield NEET weightage practice."
+        reason = "Systematic NEET blueprint weightage drill."
 
         if day % 3 == 1 and bottlenecks:
             for b in bottlenecks:
@@ -928,8 +946,6 @@ def _compute_revision_calendar(
                 if candidate and candidate not in seen_chapters:
                     chosen_chapter = candidate
                     action_type = "REMEDIATE_PREREQUISITE"
-                    urgency = 0.90
-                    marks_gain = 18.0
                     reason = f"Remediate foundational bottleneck before drilling dependent topics: {b.get('recommendation', '')}"
                     break
         elif day % 2 == 0 and decay_candidates:
@@ -938,20 +954,16 @@ def _compute_revision_calendar(
                 if candidate and candidate not in seen_chapters:
                     chosen_chapter = candidate
                     action_type = "SPACED_REPETITION_REVIEW"
-                    urgency = float(d.get("retention_urgency", 0.75))
-                    marks_gain = 12.0
                     reason = f"Spaced repetition review to prevent Ebbinghaus forgetting decay ({int(float(d.get('decayed_mastery', 0.5)) * 100)}% decayed mastery)."
                     break
 
-        if not chosen_chapter and ranked_plan:
-            for item in ranked_plan:
-                candidate = item.get("chapter")
+        if not chosen_chapter and action_table:
+            for item in action_table:
+                candidate = item.get("topic_id") or item.get("chapter")
                 if candidate and candidate not in seen_chapters:
                     chosen_chapter = candidate
                     action_type = "HIGH_YIELD_DRILL"
-                    urgency = 0.65
-                    marks_gain = float(item.get("expected_neet_marks_gain", 10.0))
-                    reason = item.get("strategic_reason", "High NEET blueprint weightage chapter.")
+                    reason = item.get("what_to_improve") or item.get("strategic_reason") or "Targeted high-leverage drill."
                     break
 
         if not chosen_chapter:
@@ -965,6 +977,28 @@ def _compute_revision_calendar(
 
         seen_chapters.add(chosen_chapter)
         subj = topic_meta.get(chosen_chapter, "Science")
+        imp = float(_TOPIC_IMPORTANCE.get(chosen_chapter, 1.0))
+        curr_m = mastery_map.get(chosen_chapter, get_chapter_bkt_prior(chosen_chapter))
+        remaining_gap = max(0.05, 1.0 - curr_m)
+        base_marks = remaining_gap * imp * 11.1
+
+        if action_type == "REMEDIATE_PREREQUISITE":
+            marks_gain = round(max(4.0, base_marks * 1.5), 1)
+            urgency = round(min(1.0, max(0.40, 0.50 + 0.50 * remaining_gap)), 2)
+        elif action_type == "SPACED_REPETITION_REVIEW":
+            match_d = next((d for d in decay_candidates if d.get("topic_id") == chosen_chapter), None)
+            urgency = round(float(match_d.get("retention_urgency", 0.75)), 2) if match_d else round(min(1.0, max(0.35, remaining_gap)), 2)
+            marks_gain = round(max(3.0, base_marks), 1)
+        else:
+            match_item = next((it for it in action_table if (it.get("topic_id") or it.get("chapter")) == chosen_chapter), None)
+            if match_item and match_item.get("expected_marks_gain_720"):
+                marks_gain = round(float(match_item["expected_marks_gain_720"]), 1)
+            elif match_item and match_item.get("expected_neet_marks_gain"):
+                marks_gain = round(float(match_item["expected_neet_marks_gain"]), 1)
+            else:
+                marks_gain = round(max(3.0, base_marks), 1)
+            urgency = round(min(1.0, max(0.25, 0.30 + 0.40 * imp * remaining_gap)), 2)
+
         daily_schedule.append(
             schemas.RevisionDayPlanOut(
                 day=day,
@@ -973,8 +1007,8 @@ def _compute_revision_calendar(
                 subject=subj,
                 action_type=action_type,
                 target_questions=15,
-                urgency_score=round(urgency, 2),
-                potential_marks_gain=round(marks_gain, 1),
+                urgency_score=urgency,
+                potential_marks_gain=marks_gain,
                 reason=reason,
             )
         )
@@ -1176,7 +1210,7 @@ def get_mlops_health_and_drift(db: Session = Depends(get_db)):
             "rf_300_tree_compact_serverless_runtime": bool(COMPACT_RF_RUNTIME.loaded),
             "bkt_bayesian_knowledge_tracing": len(_TOPIC_IMPORTANCE) == 65,
             "bkt_65_chapter_empirical_bayes": len(CHAPTER_BKT_REGISTRY) == 65,
-            "irt_3pl_psychometric_engine": len(CALIBRATED_ITEMS) == 3215,
+            "irt_3pl_psychometric_engine": len(CALIBRATED_ITEMS) > 0,
             "irt_cold_start_ridge_regressor": (MODEL_DIR / "irt_cold_start_ridge.npz").exists(),
             "mirt_3d_skill_profiler": True,
             "ncert_prerequisite_dag_nodes": len(DAG_NODES),
@@ -1263,6 +1297,18 @@ def get_mlops_audit_overview(db: Session = Depends(get_db)):
         if chapter_summary_path.exists()
         else {}
     )
+    data_integ_path = MODEL_DIR / "data_integrity_report.json"
+    data_integrity_report = (
+        json.load(open(data_integ_path, encoding="utf-8"))
+        if data_integ_path.exists()
+        else {}
+    )
+    label_val_path = MODEL_DIR / "label_validity_report.json"
+    label_validity_report = (
+        json.load(open(label_val_path, encoding="utf-8"))
+        if label_val_path.exists()
+        else {}
+    )
     integrity = verify_all_ml_artifacts(allow_serverless_omissions=True, require_clean_bandit=False)
 
     return {
@@ -1291,6 +1337,8 @@ def get_mlops_audit_overview(db: Session = Depends(get_db)):
         "chapters_by_subject": chapters_by_subject,
         "artifact_registry": registry,
         "live_integrity_verification": integrity,
+        "data_integrity_audit": data_integrity_report,
+        "label_validity_audit": label_validity_report,
         "distribution_summary": {
             "subject_difficulty_matrix": dist_report.get("subject_difficulty_matrix", {}),
             "gap_summary": dist_report.get("gap_summary", {}),
@@ -1330,6 +1378,26 @@ def get_mlops_corpus_distribution():
         "distribution_audit": dist_report,
         "artifact_registry": registry,
         "live_integrity_verification": integrity,
+    }
+
+
+@app.get("/mlops/data_integrity")
+def get_mlops_data_integrity():
+    data_integ_path = MODEL_DIR / "data_integrity_report.json"
+    data_integrity_report = (
+        json.load(open(data_integ_path, encoding="utf-8"))
+        if data_integ_path.exists()
+        else {}
+    )
+    label_val_path = MODEL_DIR / "label_validity_report.json"
+    label_validity_report = (
+        json.load(open(label_val_path, encoding="utf-8"))
+        if label_val_path.exists()
+        else {}
+    )
+    return {
+        "data_integrity_audit": data_integrity_report,
+        "label_validity_audit": label_validity_report,
     }
 
 

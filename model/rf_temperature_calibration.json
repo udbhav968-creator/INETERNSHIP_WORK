@@ -5,26 +5,26 @@
     "basic",
     "medium"
   ],
-  "sample_count": 3215,
-  "optimal_temperature": 0.15,
+  "sample_count": 2400,
+  "optimal_temperature": 0.16,
   "pre_calibration": {
-    "multiclass_nll": 0.03361,
-    "multiclass_brier_score": 0.00759,
-    "ece_10_bin": 0.03125
+    "multiclass_nll": 0.0368,
+    "multiclass_brier_score": 0.00829,
+    "ece_10_bin": 0.03321
   },
   "post_calibration": {
-    "multiclass_nll": 0.00063,
-    "multiclass_brier_score": 0.00024,
-    "ece_10_bin": 0.00055
+    "multiclass_nll": 0.00278,
+    "multiclass_brier_score": 0.00149,
+    "ece_10_bin": 0.00089
   },
-  "nll_improvement_percent": 98.12,
-  "ece_improvement_percent": 98.23,
+  "nll_improvement_percent": 92.46,
+  "ece_improvement_percent": 97.33,
   "serverless_compression_benchmark": {
-    "sklearn_joblib_size_bytes": 5120906,
-    "compact_npz_forest_bytes": 269174,
-    "compact_vocab_meta_bytes": 19972,
-    "serverless_bundle_total_bytes": 289146,
-    "compression_ratio_x": 17.71,
-    "size_reduction_percent": 94.35
+    "sklearn_joblib_size_bytes": 4016794,
+    "compact_npz_forest_bytes": 209957,
+    "compact_vocab_meta_bytes": 13454,
+    "serverless_bundle_total_bytes": 223411,
+    "compression_ratio_x": 17.98,
+    "size_reduction_percent": 94.44
   }
 }

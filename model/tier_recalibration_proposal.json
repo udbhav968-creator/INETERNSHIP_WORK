@@ -1,16 +1,16 @@
 {
   "audit_mode": "NON_DESTRUCTIVE_PROPOSAL_ONLY",
   "source_corpus_mutated": false,
-  "total_audited_questions": 3215,
+  "total_audited_questions": 2400,
   "gap_resolution_summary": {
-    "chapters_missing_basic_before": 0,
-    "chapters_resolvable_via_irt_anchors": 0,
-    "physics_chapters_missing_basic_before": 0,
-    "physics_chapters_resolvable_via_irt_anchors": 0,
-    "chapters_missing_advanced_before": 0,
-    "advanced_chapters_resolvable_via_irt_anchors": 0,
-    "strict_global_basic_candidates_count": 566,
-    "strict_global_advanced_candidates_count": 146
+    "chapters_missing_basic_before": 3,
+    "chapters_resolvable_via_irt_anchors": 3,
+    "physics_chapters_missing_basic_before": 2,
+    "physics_chapters_resolvable_via_irt_anchors": 2,
+    "chapters_missing_advanced_before": 1,
+    "advanced_chapters_resolvable_via_irt_anchors": 1,
+    "strict_global_basic_candidates_count": 545,
+    "strict_global_advanced_candidates_count": 133
   },
   "top_basic_recalibration_candidates": [
     {
@@ -541,6 +541,62 @@
       "proposed_tier": "advanced"
     }
   ],
-  "per_chapter_basic_gap_anchors": [],
-  "per_chapter_advanced_gap_anchors": []
+  "per_chapter_basic_gap_anchors": [
+    {
+      "topic_id": "Dual Nature of Matter",
+      "subject": "Physics",
+      "current_basic_count": 0,
+      "current_medium_count": 6,
+      "proposed_basic_anchors_count": 3,
+      "top_anchor_question_ids": [
+        "NEET2013_PHY_038",
+        "NEET2025_PHY_037",
+        "NEET2021_PHY_033"
+      ],
+      "lowest_irt_b_in_chapter": 0.1016,
+      "fastest_ideal_time_sec": 108
+    },
+    {
+      "topic_id": "Wave Optics",
+      "subject": "Physics",
+      "current_basic_count": 0,
+      "current_medium_count": 8,
+      "proposed_basic_anchors_count": 3,
+      "top_anchor_question_ids": [
+        "NEET2020_PHY_138",
+        "NEET2020_PHY_165",
+        "NEET2024_PHY_030"
+      ],
+      "lowest_irt_b_in_chapter": 0.4527,
+      "fastest_ideal_time_sec": 108
+    },
+    {
+      "topic_id": "s-Block Elements",
+      "subject": "Chemistry",
+      "current_basic_count": 0,
+      "current_medium_count": 4,
+      "proposed_basic_anchors_count": 3,
+      "top_anchor_question_ids": [
+        "NEET2019_CHEM_088",
+        "NEET2016_CHEM_071",
+        "NEET2019_CHEM_054"
+      ],
+      "lowest_irt_b_in_chapter": -0.1073,
+      "fastest_ideal_time_sec": 89
+    }
+  ],
+  "per_chapter_advanced_gap_anchors": [
+    {
+      "topic_id": "Electromagnetic Induction",
+      "subject": "Physics",
+      "current_advanced_count": 0,
+      "current_medium_count": 4,
+      "proposed_advanced_anchors_count": 2,
+      "top_anchor_question_ids": [
+        "RENEET2026_PHY_042",
+        "NEET2018_PHY_021"
+      ],
+      "highest_irt_b_in_chapter": 1.0191
+    }
+  ]
 }

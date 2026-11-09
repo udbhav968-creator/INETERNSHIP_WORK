@@ -1,0 +1,907 @@
+{
+  "status": "PASSED",
+  "blocking_failures": [],
+  "warnings": [
+    "Physics has 0 Basic questions under the ORIGINAL source tags; current tiers are a heuristic relabelling.",
+    "5 (chapter, tier) cell(s) have zero questions under current tiers.",
+    "53 (chapter, tier) cell(s) have zero questions under original source tags.",
+    "2400/2400 difficulty tiers are heuristic (within-chapter text-complexity quantiles), not empirical.",
+    "2400/2400 ideal_time_sec values are synthetic (tier formula), not measured solve times."
+  ],
+  "totals": {
+    "questions": 2400,
+    "chapters": 65,
+    "official_pyq_provenance_verified": 2400
+  },
+  "answer_key": {
+    "overall": {
+      "n": 2400,
+      "counts": {
+        "a": 597,
+        "b": 634,
+        "c": 646,
+        "d": 523
+      },
+      "percent": {
+        "a": 24.88,
+        "b": 26.42,
+        "c": 26.92,
+        "d": 21.79
+      },
+      "chi_square_df3": 15.35,
+      "skewed_p_lt_0_001": false
+    },
+    "groups": [
+      {
+        "n": 173,
+        "counts": {
+          "a": 42,
+          "b": 41,
+          "c": 57,
+          "d": 33
+        },
+        "percent": {
+          "a": 24.28,
+          "b": 23.7,
+          "c": 32.95,
+          "d": 19.08
+        },
+        "chi_square_df3": 6.954,
+        "skewed_p_lt_0_001": false,
+        "group": "source::NEET 2013"
+      },
+      {
+        "n": 173,
+        "counts": {
+          "a": 42,
+          "b": 47,
+          "c": 47,
+          "d": 37
+        },
+        "percent": {
+          "a": 24.28,
+          "b": 27.17,
+          "c": 27.17,
+          "d": 21.39
+        },
+        "chi_square_df3": 1.59,
+        "skewed_p_lt_0_001": false,
+        "group": "source::NEET 2014"
+      },
+      {
+        "n": 174,
+        "counts": {
+          "a": 35,
+          "b": 50,
+          "c": 59,
+          "d": 30
+        },
+        "percent": {
+          "a": 20.11,
+          "b": 28.74,
+          "c": 33.91,
+          "d": 17.24
+        },
+        "chi_square_df3": 12.345,
+        "skewed_p_lt_0_001": false,
+        "group": "source::NEET 2015"
+      },
+      {
+        "n": 174,
+        "counts": {
+          "a": 49,
+          "b": 48,
+          "c": 35,
+          "d": 42
+        },
+        "percent": {
+          "a": 28.16,
+          "b": 27.59,
+          "c": 20.11,
+          "d": 24.14
+        },
+        "chi_square_df3": 2.874,
+        "skewed_p_lt_0_001": false,
+        "group": "source::NEET 2016"
+      },
+      {
+        "n": 170,
+        "counts": {
+          "a": 35,
+          "b": 48,
+          "c": 49,
+          "d": 38
+        },
+        "percent": {
+          "a": 20.59,
+          "b": 28.24,
+          "c": 28.82,
+          "d": 22.35
+        },
+        "chi_square_df3": 3.506,
+        "skewed_p_lt_0_001": false,
+        "group": "source::NEET 2017"
+      },
+      {
+        "n": 168,
+        "counts": {
+          "a": 26,
+          "b": 47,
+          "c": 49,
+          "d": 46
+        },
+        "percent": {
+          "a": 15.48,
+          "b": 27.98,
+          "c": 29.17,
+          "d": 27.38
+        },
+        "chi_square_df3": 8.238,
+        "skewed_p_lt_0_001": false,
+        "group": "source::NEET 2018"
+      },
+      {
+        "n": 170,
+        "counts": {
+          "a": 39,
+          "b": 46,
+          "c": 44,
+          "d": 41
+        },
+        "percent": {
+          "a": 22.94,
+          "b": 27.06,
+          "c": 25.88,
+          "d": 24.12
+        },
+        "chi_square_df3": 0.682,
+        "skewed_p_lt_0_001": false,
+        "group": "source::NEET 2019"
+      },
+      {
+        "n": 176,
+        "counts": {
+          "a": 48,
+          "b": 43,
+          "c": 48,
+          "d": 37
+        },
+        "percent": {
+          "a": 27.27,
+          "b": 24.43,
+          "c": 27.27,
+          "d": 21.02
+        },
+        "chi_square_df3": 1.864,
+        "skewed_p_lt_0_001": false,
+        "group": "source::NEET 2020"
+      },
+      {
+        "n": 180,
+        "counts": {
+          "a": 47,
+          "b": 46,
+          "c": 47,
+          "d": 40
+        },
+        "percent": {
+          "a": 26.11,
+          "b": 25.56,
+          "c": 26.11,
+          "d": 22.22
+        },
+        "chi_square_df3": 0.756,
+        "skewed_p_lt_0_001": false,
+        "group": "source::NEET 2021"
+      },
+      {
+        "n": 172,
+        "counts": {
+          "a": 37,
+          "b": 45,
+          "c": 51,
+          "d": 39
+        },
+        "percent": {
+          "a": 21.51,
+          "b": 26.16,
+          "c": 29.65,
+          "d": 22.67
+        },
+        "chi_square_df3": 2.791,
+        "skewed_p_lt_0_001": false,
+        "group": "source::NEET 2022"
+      },
+      {
+        "n": 181,
+        "counts": {
+          "a": 53,
+          "b": 51,
+          "c": 52,
+          "d": 25
+        },
+        "percent": {
+          "a": 29.28,
+          "b": 28.18,
+          "c": 28.73,
+          "d": 13.81
+        },
+        "chi_square_df3": 12.127,
+        "skewed_p_lt_0_001": false,
+        "group": "source::NEET 2023"
+      },
+      {
+        "n": 179,
+        "counts": {
+          "a": 59,
+          "b": 37,
+          "c": 43,
+          "d": 40
+        },
+        "percent": {
+          "a": 32.96,
+          "b": 20.67,
+          "c": 24.02,
+          "d": 22.35
+        },
+        "chi_square_df3": 6.453,
+        "skewed_p_lt_0_001": false,
+        "group": "source::NEET 2024"
+      },
+      {
+        "n": 159,
+        "counts": {
+          "a": 50,
+          "b": 45,
+          "c": 36,
+          "d": 28
+        },
+        "percent": {
+          "a": 31.45,
+          "b": 28.3,
+          "c": 22.64,
+          "d": 17.61
+        },
+        "chi_square_df3": 7.164,
+        "skewed_p_lt_0_001": false,
+        "group": "source::NEET 2025"
+      },
+      {
+        "n": 151,
+        "counts": {
+          "a": 35,
+          "b": 40,
+          "c": 29,
+          "d": 47
+        },
+        "percent": {
+          "a": 23.18,
+          "b": 26.49,
+          "c": 19.21,
+          "d": 31.13
+        },
+        "chi_square_df3": 4.629,
+        "skewed_p_lt_0_001": false,
+        "group": "source::NEET 2026 Re-NEET"
+      },
+      {
+        "n": 1224,
+        "counts": {
+          "a": 323,
+          "b": 314,
+          "c": 326,
+          "d": 261
+        },
+        "percent": {
+          "a": 26.39,
+          "b": 25.65,
+          "c": 26.63,
+          "d": 21.32
+        },
+        "chi_square_df3": 9.078,
+        "skewed_p_lt_0_001": false,
+        "group": "subject::Biology"
+      },
+      {
+        "n": 633,
+        "counts": {
+          "a": 164,
+          "b": 163,
+          "c": 164,
+          "d": 142
+        },
+        "percent": {
+          "a": 25.91,
+          "b": 25.75,
+          "c": 25.91,
+          "d": 22.43
+        },
+        "chi_square_df3": 2.229,
+        "skewed_p_lt_0_001": false,
+        "group": "subject::Chemistry"
+      },
+      {
+        "n": 543,
+        "counts": {
+          "a": 110,
+          "b": 157,
+          "c": 156,
+          "d": 120
+        },
+        "percent": {
+          "a": 20.26,
+          "b": 28.91,
+          "c": 28.73,
+          "d": 22.1
+        },
+        "chi_square_df3": 13.059,
+        "skewed_p_lt_0_001": false,
+        "group": "subject::Physics"
+      }
+    ]
+  },
+  "structure": {
+    "duplicate_ids": [],
+    "invalid_questions": [],
+    "invalid_count": 0
+  },
+  "tier_coverage": {
+    "current_tiers": {
+      "subject_totals": {
+        "Biology": {
+          "basic": 321,
+          "medium": 588,
+          "advanced": 315
+        },
+        "Chemistry": {
+          "basic": 154,
+          "medium": 302,
+          "advanced": 177
+        },
+        "Physics": {
+          "basic": 122,
+          "medium": 274,
+          "advanced": 147
+        }
+      },
+      "zero_cells": [
+        {
+          "subject": "Chemistry",
+          "chapter": "Environmental Chemistry",
+          "tier": "medium"
+        },
+        {
+          "subject": "Chemistry",
+          "chapter": "s-Block Elements",
+          "tier": "basic"
+        },
+        {
+          "subject": "Physics",
+          "chapter": "Dual Nature of Matter",
+          "tier": "basic"
+        },
+        {
+          "subject": "Physics",
+          "chapter": "Electromagnetic Induction",
+          "tier": "advanced"
+        },
+        {
+          "subject": "Physics",
+          "chapter": "Wave Optics",
+          "tier": "basic"
+        }
+      ],
+      "zero_cell_count": 5,
+      "chapters_below_40_questions": [
+        {
+          "subject": "Chemistry",
+          "chapter": "Environmental Chemistry",
+          "count": 4
+        },
+        {
+          "subject": "Physics",
+          "chapter": "Electromagnetic Induction",
+          "count": 7
+        },
+        {
+          "subject": "Physics",
+          "chapter": "Magnetism & Matter",
+          "count": 7
+        },
+        {
+          "subject": "Chemistry",
+          "chapter": "s-Block Elements",
+          "count": 7
+        },
+        {
+          "subject": "Physics",
+          "chapter": "Electromagnetic Waves",
+          "count": 8
+        },
+        {
+          "subject": "Physics",
+          "chapter": "Alternating Current",
+          "count": 9
+        },
+        {
+          "subject": "Physics",
+          "chapter": "Dual Nature of Matter",
+          "count": 9
+        },
+        {
+          "subject": "Chemistry",
+          "chapter": "Surface Chemistry",
+          "count": 9
+        },
+        {
+          "subject": "Physics",
+          "chapter": "Wave Optics",
+          "count": 10
+        },
+        {
+          "subject": "Chemistry",
+          "chapter": "Haloalkanes & Haloarenes",
+          "count": 13
+        },
+        {
+          "subject": "Chemistry",
+          "chapter": "Periodic Table",
+          "count": 13
+        },
+        {
+          "subject": "Chemistry",
+          "chapter": "Coordination Chemistry",
+          "count": 15
+        },
+        {
+          "subject": "Chemistry",
+          "chapter": "General Organic Chemistry",
+          "count": 15
+        },
+        {
+          "subject": "Physics",
+          "chapter": "Properties of Matter",
+          "count": 15
+        },
+        {
+          "subject": "Chemistry",
+          "chapter": "Solutions",
+          "count": 15
+        },
+        {
+          "subject": "Chemistry",
+          "chapter": "Amines & Nitrogen Compounds",
+          "count": 16
+        },
+        {
+          "subject": "Physics",
+          "chapter": "Thermal Physics",
+          "count": 16
+        },
+        {
+          "subject": "Chemistry",
+          "chapter": "Aldehydes, Ketones & Carboxylic Acids",
+          "count": 17
+        },
+        {
+          "subject": "Chemistry",
+          "chapter": "Hydrocarbons",
+          "count": 17
+        },
+        {
+          "subject": "Chemistry",
+          "chapter": "States of Matter",
+          "count": 19
+        },
+        {
+          "subject": "Physics",
+          "chapter": "Magnetic Effects of Current",
+          "count": 20
+        },
+        {
+          "subject": "Physics",
+          "chapter": "Atoms & Nuclei",
+          "count": 21
+        },
+        {
+          "subject": "Chemistry",
+          "chapter": "Thermodynamics",
+          "count": 21
+        },
+        {
+          "subject": "Physics",
+          "chapter": "Units & Dimensions",
+          "count": 21
+        },
+        {
+          "subject": "Physics",
+          "chapter": "Thermodynamics",
+          "count": 22
+        },
+        {
+          "subject": "Chemistry",
+          "chapter": "Chemical Kinetics",
+          "count": 23
+        },
+        {
+          "subject": "Chemistry",
+          "chapter": "d- and f-Block Elements",
+          "count": 23
+        },
+        {
+          "subject": "Chemistry",
+          "chapter": "Alcohols, Phenols & Ethers",
+          "count": 24
+        },
+        {
+          "subject": "Physics",
+          "chapter": "Gravitation",
+          "count": 24
+        },
+        {
+          "subject": "Chemistry",
+          "chapter": "p-Block Elements",
+          "count": 27
+        },
+        {
+          "subject": "Biology",
+          "chapter": "Evolution",
+          "count": 28
+        },
+        {
+          "subject": "Biology",
+          "chapter": "Human Digestion & Respiration",
+          "count": 28
+        },
+        {
+          "subject": "Physics",
+          "chapter": "Laws of Motion",
+          "count": 28
+        },
+        {
+          "subject": "Chemistry",
+          "chapter": "Redox Reactions & Electrochemistry",
+          "count": 28
+        },
+        {
+          "subject": "Physics",
+          "chapter": "Rotational Motion",
+          "count": 29
+        },
+        {
+          "subject": "Physics",
+          "chapter": "Semiconductor Electronics",
+          "count": 29
+        },
+        {
+          "subject": "Biology",
+          "chapter": "Circulation & Excretion",
+          "count": 30
+        },
+        {
+          "subject": "Physics",
+          "chapter": "Ray Optics",
+          "count": 30
+        },
+        {
+          "subject": "Biology",
+          "chapter": "Anatomy of Flowering Plants",
+          "count": 31
+        },
+        {
+          "subject": "Chemistry",
+          "chapter": "Equilibrium",
+          "count": 34
+        },
+        {
+          "subject": "Physics",
+          "chapter": "Work, Energy & Power",
+          "count": 34
+        },
+        {
+          "subject": "Chemistry",
+          "chapter": "General Principles & Metallurgy",
+          "count": 35
+        },
+        {
+          "subject": "Chemistry",
+          "chapter": "Biomolecules & Polymers",
+          "count": 37
+        }
+      ],
+      "chapters_below_40_count": 43
+    },
+    "original_source_tags": {
+      "available": true,
+      "subject_totals": {
+        "Biology": {
+          "basic": 26,
+          "medium": 1137,
+          "advanced": 61
+        },
+        "Chemistry": {
+          "basic": 14,
+          "medium": 561,
+          "advanced": 58
+        },
+        "Physics": {
+          "basic": 0,
+          "medium": 434,
+          "advanced": 109
+        }
+      },
+      "zero_cells": [
+        {
+          "subject": "Biology",
+          "chapter": "Anatomy of Flowering Plants",
+          "tier": "advanced"
+        },
+        {
+          "subject": "Biology",
+          "chapter": "Cell Cycle & Cell Division",
+          "tier": "basic"
+        },
+        {
+          "subject": "Biology",
+          "chapter": "Cell: The Unit of Life",
+          "tier": "basic"
+        },
+        {
+          "subject": "Biology",
+          "chapter": "Circulation & Excretion",
+          "tier": "basic"
+        },
+        {
+          "subject": "Biology",
+          "chapter": "Ecology & Environment",
+          "tier": "basic"
+        },
+        {
+          "subject": "Biology",
+          "chapter": "Evolution",
+          "tier": "basic"
+        },
+        {
+          "subject": "Biology",
+          "chapter": "Genetics & Molecular Inheritance",
+          "tier": "basic"
+        },
+        {
+          "subject": "Biology",
+          "chapter": "Human Health, Disease & Microbes",
+          "tier": "basic"
+        },
+        {
+          "subject": "Biology",
+          "chapter": "Locomotion & Neuro-Endocrine Control",
+          "tier": "basic"
+        },
+        {
+          "subject": "Biology",
+          "chapter": "Plant Physiology",
+          "tier": "basic"
+        },
+        {
+          "subject": "Chemistry",
+          "chapter": "Aldehydes, Ketones & Carboxylic Acids",
+          "tier": "basic"
+        },
+        {
+          "subject": "Chemistry",
+          "chapter": "Amines & Nitrogen Compounds",
+          "tier": "basic"
+        },
+        {
+          "subject": "Chemistry",
+          "chapter": "Chemical Kinetics",
+          "tier": "basic"
+        },
+        {
+          "subject": "Chemistry",
+          "chapter": "Coordination Chemistry",
+          "tier": "advanced"
+        },
+        {
+          "subject": "Chemistry",
+          "chapter": "Environmental Chemistry",
+          "tier": "advanced"
+        },
+        {
+          "subject": "Chemistry",
+          "chapter": "Environmental Chemistry",
+          "tier": "basic"
+        },
+        {
+          "subject": "Chemistry",
+          "chapter": "Equilibrium",
+          "tier": "basic"
+        },
+        {
+          "subject": "Chemistry",
+          "chapter": "General Principles & Metallurgy",
+          "tier": "basic"
+        },
+        {
+          "subject": "Chemistry",
+          "chapter": "Haloalkanes & Haloarenes",
+          "tier": "advanced"
+        },
+        {
+          "subject": "Chemistry",
+          "chapter": "Haloalkanes & Haloarenes",
+          "tier": "basic"
+        },
+        {
+          "subject": "Chemistry",
+          "chapter": "Hydrocarbons",
+          "tier": "advanced"
+        },
+        {
+          "subject": "Chemistry",
+          "chapter": "Hydrocarbons",
+          "tier": "basic"
+        },
+        {
+          "subject": "Chemistry",
+          "chapter": "Periodic Table",
+          "tier": "basic"
+        },
+        {
+          "subject": "Chemistry",
+          "chapter": "Redox Reactions & Electrochemistry",
+          "tier": "basic"
+        },
+        {
+          "subject": "Chemistry",
+          "chapter": "States of Matter",
+          "tier": "basic"
+        },
+        {
+          "subject": "Chemistry",
+          "chapter": "Structure of Atom",
+          "tier": "basic"
+        },
+        {
+          "subject": "Chemistry",
+          "chapter": "Surface Chemistry",
+          "tier": "basic"
+        },
+        {
+          "subject": "Chemistry",
+          "chapter": "Thermodynamics",
+          "tier": "basic"
+        },
+        {
+          "subject": "Chemistry",
+          "chapter": "d- and f-Block Elements",
+          "tier": "basic"
+        },
+        {
+          "subject": "Chemistry",
+          "chapter": "s-Block Elements",
+          "tier": "basic"
+        },
+        {
+          "subject": "Physics",
+          "chapter": "Alternating Current",
+          "tier": "basic"
+        },
+        {
+          "subject": "Physics",
+          "chapter": "Atoms & Nuclei",
+          "tier": "advanced"
+        },
+        {
+          "subject": "Physics",
+          "chapter": "Atoms & Nuclei",
+          "tier": "basic"
+        },
+        {
+          "subject": "Physics",
+          "chapter": "Current Electricity",
+          "tier": "basic"
+        },
+        {
+          "subject": "Physics",
+          "chapter": "Dual Nature of Matter",
+          "tier": "basic"
+        },
+        {
+          "subject": "Physics",
+          "chapter": "Electromagnetic Induction",
+          "tier": "basic"
+        },
+        {
+          "subject": "Physics",
+          "chapter": "Electromagnetic Waves",
+          "tier": "basic"
+        },
+        {
+          "subject": "Physics",
+          "chapter": "Electrostatics",
+          "tier": "basic"
+        },
+        {
+          "subject": "Physics",
+          "chapter": "Gravitation",
+          "tier": "basic"
+        },
+        {
+          "subject": "Physics",
+          "chapter": "Kinematics",
+          "tier": "basic"
+        },
+        {
+          "subject": "Physics",
+          "chapter": "Laws of Motion",
+          "tier": "basic"
+        },
+        {
+          "subject": "Physics",
+          "chapter": "Magnetic Effects of Current",
+          "tier": "basic"
+        },
+        {
+          "subject": "Physics",
+          "chapter": "Magnetism & Matter",
+          "tier": "basic"
+        },
+        {
+          "subject": "Physics",
+          "chapter": "Oscillations & Waves",
+          "tier": "basic"
+        },
+        {
+          "subject": "Physics",
+          "chapter": "Properties of Matter",
+          "tier": "basic"
+        },
+        {
+          "subject": "Physics",
+          "chapter": "Ray Optics",
+          "tier": "basic"
+        },
+        {
+          "subject": "Physics",
+          "chapter": "Rotational Motion",
+          "tier": "basic"
+        },
+        {
+          "subject": "Physics",
+          "chapter": "Semiconductor Electronics",
+          "tier": "basic"
+        },
+        {
+          "subject": "Physics",
+          "chapter": "Thermal Physics",
+          "tier": "basic"
+        },
+        {
+          "subject": "Physics",
+          "chapter": "Thermodynamics",
+          "tier": "basic"
+        },
+        {
+          "subject": "Physics",
+          "chapter": "Units & Dimensions",
+          "tier": "basic"
+        },
+        {
+          "subject": "Physics",
+          "chapter": "Wave Optics",
+          "tier": "basic"
+        },
+        {
+          "subject": "Physics",
+          "chapter": "Work, Energy & Power",
+          "tier": "basic"
+        }
+      ],
+      "zero_cell_count": 53
+    }
+  },
+  "label_provenance": {
+    "difficulty_tiers_heuristic": 2400,
+    "ideal_time_synthetic": 2400
+  }
+}

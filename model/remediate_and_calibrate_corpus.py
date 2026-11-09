@@ -365,52 +365,9 @@ def _deduplicate_exact_stems(questions: list[dict[str, Any]]) -> tuple[list[dict
     return kept, removed
 
 
-def remediate_and_build_all_datasets() -> dict[str, Any]:
-    raw_items = json.loads(RAW_FLAWLESS_PATH.read_text(encoding="utf-8"))
-    dag_nodes = json.loads(DAG_PATH.read_text(encoding="utf-8"))["nodes"]
-    valid_chapters = set(dag_nodes.keys())
-
-    repaired_leaked = 0
-    explicit_fixed = 0
-    reclassified_chapters = 0
-    clean_candidates: list[dict[str, Any]] = []
-    quarantined_items: list[dict[str, Any]] = []
-
-    for orig in raw_items:
-        q = dict(orig)
-        qid = q["question_id"]
-
-        if qid in EXPLICIT_OCR_FIXES:
-            q.update(EXPLICIT_OCR_FIXES[qid])
-            explicit_fixed += 1
-
-        if qid in EXPLICIT_CHAPTER_FIXES:
-            subj_new, ch_new, tag_new = EXPLICIT_CHAPTER_FIXES[qid]
-            q["subject"] = subj_new
-            q["chapter"] = ch_new
-            q["topic_tag"] = tag_new
-            reclassified_chapters += 1
-
-        if _repair_leaked_options_if_present(q):
-            repaired_leaked += 1
-
-        q["question_text"] = _normalize_whitespace_and_typography(str(q.get("question_text", "")))
-        for opt_k in ("option_a", "option_b", "option_c", "option_d"):
-            q[opt_k] = _normalize_whitespace_and_typography(str(q.get(opt_k, "")))
-        q["explanation"] = _normalize_whitespace_and_typography(str(q.get("explanation", "")))
-
-        if str(q.get("topic_tag", "")).strip() in ("", "General Core Concepts"):
-            q["topic_tag"] = f"{q['chapter']} Core Concepts"
-
-        defect = _diagnose_structural_defect(q, valid_chapters)
-        if defect is not None:
-            q["quarantine_reason"] = defect
-            quarantined_items.append(q)
-        else:
-            clean_candidates.append(q)
-
-    clean_items, exact_dups_removed = _deduplicate_exact_stems(clean_candidates)
-
+def assign_heuristic_tiers(
+    clean_items: list[dict[str, Any]],
+) -> tuple[dict[str, dict[str, Any]], dict[str, list[dict[str, Any]]], int]:
     feats_by_id = {q["question_id"]: compute_item_feature_dict(q) for q in clean_items}
     items_by_chapter: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for q in clean_items:
@@ -464,11 +421,17 @@ def remediate_and_build_all_datasets() -> dict[str, Any]:
                 else:
                     item["question_type"] = "Conceptual"
                 fc["question_type"] = item["question_type"]
+    return feats_by_id, items_by_chapter, tier_recalibrated_count
 
-    clean_items.sort(key=lambda x: x["question_id"])
-    CLEAN_OUT_PATH.write_text(json.dumps(clean_items, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    QUARANTINE_OUT_PATH.write_text(json.dumps(quarantined_items, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
+def write_derived_datasets(
+    clean_items: list[dict[str, Any]],
+    feats_by_id: dict[str, dict[str, Any]],
+    items_by_chapter: dict[str, list[dict[str, Any]]],
+    dag_nodes: dict[str, Any],
+    valid_chapters: set[str],
+    counters: dict[str, int],
+) -> dict[str, Any]:
     q_csv_cols = [
         "question_id",
         "subject",
@@ -559,12 +522,12 @@ def remediate_and_build_all_datasets() -> dict[str, Any]:
     summary_payload = {
         "total_canonical_chapters": len(valid_chapters),
         "total_verified_pyqs": len(clean_items),
-        "total_quarantined_items": len(quarantined_items),
-        "repaired_leaked_statement_items": repaired_leaked,
-        "explicit_ocr_repaired_items": explicit_fixed,
-        "reclassified_chapter_items": reclassified_chapters,
-        "exact_duplicates_removed": exact_dups_removed,
-        "tier_recalibrated_items": tier_recalibrated_count,
+        "total_quarantined_items": counters["quarantined"],
+        "repaired_leaked_statement_items": counters["repaired_leaked"],
+        "explicit_ocr_repaired_items": counters["explicit_fixed"],
+        "reclassified_chapter_items": counters["reclassified_chapters"],
+        "exact_duplicates_removed": counters["exact_dups_removed"],
+        "tier_recalibrated_items": counters["tier_recalibrated_count"],
         "chapters_missing_basic": sum(1 for r in chapter_rows if r["basic_pyqs"] == 0),
         "chapters_missing_medium": sum(1 for r in chapter_rows if r["medium_pyqs"] == 0),
         "chapters_missing_advanced": sum(1 for r in chapter_rows if r["advanced_pyqs"] == 0),
@@ -582,6 +545,77 @@ def remediate_and_build_all_datasets() -> dict[str, Any]:
     }
     CHAPTER_SUMMARY_OUT_PATH.write_text(json.dumps(summary_payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     return summary_payload
+
+
+def remediate_and_build_all_datasets() -> dict[str, Any]:
+    raw_items = json.loads(RAW_FLAWLESS_PATH.read_text(encoding="utf-8"))
+    dag_nodes = json.loads(DAG_PATH.read_text(encoding="utf-8"))["nodes"]
+    valid_chapters = set(dag_nodes.keys())
+
+    repaired_leaked = 0
+    explicit_fixed = 0
+    reclassified_chapters = 0
+    clean_candidates: list[dict[str, Any]] = []
+    quarantined_items: list[dict[str, Any]] = []
+
+    for orig in raw_items:
+        q = dict(orig)
+        qid = q["question_id"]
+
+        if qid in EXPLICIT_OCR_FIXES:
+            q.update(EXPLICIT_OCR_FIXES[qid])
+            explicit_fixed += 1
+
+        if qid in EXPLICIT_CHAPTER_FIXES:
+            subj_new, ch_new, tag_new = EXPLICIT_CHAPTER_FIXES[qid]
+            q["subject"] = subj_new
+            q["chapter"] = ch_new
+            q["topic_tag"] = tag_new
+            reclassified_chapters += 1
+
+        if _repair_leaked_options_if_present(q):
+            repaired_leaked += 1
+
+        q["question_text"] = _normalize_whitespace_and_typography(str(q.get("question_text", "")))
+        for opt_k in ("option_a", "option_b", "option_c", "option_d"):
+            q[opt_k] = _normalize_whitespace_and_typography(str(q.get(opt_k, "")))
+        q["explanation"] = _normalize_whitespace_and_typography(str(q.get("explanation", "")))
+
+        if str(q.get("topic_tag", "")).strip() in ("", "General Core Concepts"):
+            q["topic_tag"] = f"{q['chapter']} Core Concepts"
+
+        defect = _diagnose_structural_defect(q, valid_chapters)
+        if defect is not None:
+            q["quarantine_reason"] = defect
+            quarantined_items.append(q)
+        else:
+            clean_candidates.append(q)
+
+    clean_items, exact_dups_removed = _deduplicate_exact_stems(clean_candidates)
+
+    feats_by_id, items_by_chapter, tier_recalibrated_count = assign_heuristic_tiers(clean_items)
+
+    clean_items.sort(key=lambda x: x["question_id"])
+    CLEAN_OUT_PATH.write_text(json.dumps(clean_items, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    QUARANTINE_OUT_PATH.write_text(json.dumps(quarantined_items, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+    return write_derived_datasets(
+        clean_items,
+        feats_by_id,
+        items_by_chapter,
+        dag_nodes,
+        valid_chapters,
+        {
+            "quarantined": len(quarantined_items),
+            "repaired_leaked": repaired_leaked,
+            "explicit_fixed": explicit_fixed,
+            "reclassified_chapters": reclassified_chapters,
+            "exact_dups_removed": exact_dups_removed,
+            "tier_recalibrated_count": tier_recalibrated_count,
+        },
+    )
+
+
 
 
 if __name__ == "__main__":

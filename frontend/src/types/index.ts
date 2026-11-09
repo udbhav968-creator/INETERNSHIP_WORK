@@ -712,4 +712,53 @@ export interface MlopsAuditOverview {
       size_reduction_percent: number;
     };
   };
+  data_integrity_audit?: {
+    status?: string;
+    blocking_failures?: string[];
+    warnings?: string[];
+    totals?: {
+      questions: number;
+      chapters: number;
+      official_pyq_provenance_verified: number;
+    };
+    chi_square_uniformity?: Record<
+      string,
+      {
+        chi2: number;
+        p_value: number;
+        significant_skew: boolean;
+        counts: Record<string, number>;
+      }
+    >;
+    synthetic_label_check?: {
+      heuristic_quantiles: boolean;
+      synthetic_ideal_time: boolean;
+    };
+    zero_tier_cells_current?: {
+      count: number;
+      cells: Array<{ subject: string; chapter: string; tier: string }>;
+    };
+    zero_tier_cells_original?: {
+      count: number;
+      cells: Array<{ subject: string; chapter: string; tier: string }>;
+    };
+  };
+  label_validity_audit?: {
+    what_the_rf_accuracy_measures?: string;
+    baselines_5fold_cv_accuracy?: {
+      majority_class: number;
+      depth4_tree_on_ideal_time_sec_only: number;
+      depth4_tree_on_ideal_time_sec_and_subject: number;
+    };
+    tier_vs_original_source_tags?: {
+      available: boolean;
+      n?: number;
+      exact_agreement_percent?: number;
+      cohens_kappa?: number;
+      changed_from_original?: number;
+    };
+    student_responses_available?: number;
+    empirical_difficulty_validation_possible?: boolean;
+    interpretation?: string;
+  };
 }

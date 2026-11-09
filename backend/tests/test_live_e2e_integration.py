@@ -220,12 +220,12 @@ with urllib.request.urlopen(f"{BASE}/mlops/health_and_drift", timeout=15) as res
 
 with urllib.request.urlopen(f"{BASE}/mlops/audit_overview", timeout=15) as res:
     audit = json.loads(res.read())
-    assert audit["corpus_integrity"]["verified_questions_in_db"] == 3215
+    assert audit["corpus_integrity"]["verified_questions_in_db"] == 2400
     assert audit["corpus_integrity"]["canonical_chapters_in_db"] == 65
     assert audit["corpus_integrity"]["dag_acyclic"] is True
     assert audit["validation_report"]["pipeline_status"] == "PASSED"
     assert audit["harness_benchmark"]["harness_status"] == "PASSED"
-    print(f"[PASS] 10. Full MLOps Audit Overview: 3215 clean PYQs, 65 chapters, CV={audit['validation_report']['stratified_5fold_cross_validation']['mean_cv_accuracy']}, Harness=PASSED")
+    print(f"[PASS] 10. Full MLOps Audit Overview: 2400 clean PYQs, 65 chapters, CV={audit['validation_report']['stratified_5fold_cross_validation']['mean_cv_accuracy']}, Harness=PASSED")
 
 cold_payload = json.dumps({
     "question_text": "Two point charges +4 uC and -9 uC are separated in vacuum by 0.30 m. Calculate electric field intensity E = k*q/r^2 at midpoint.",
@@ -296,12 +296,12 @@ print(f"[PASS] 14. Frontend-Backend MLOps UI Contract Verified: status={drift_bl
 
 with urllib.request.urlopen(f"{BASE}/mlops/corpus_distribution", timeout=15) as res:
     dist_payload = json.loads(res.read())
-    assert dist_payload["distribution_audit"]["corpus_totals"]["total_verified_questions"] == 3215
-    assert dist_payload["distribution_audit"]["gap_summary"]["topics_missing_basic_count"] == 0
-    assert dist_payload["distribution_audit"]["gap_summary"]["topics_missing_medium_count"] == 0
-    assert dist_payload["distribution_audit"]["gap_summary"]["topics_missing_advanced_count"] == 0
+    assert dist_payload["distribution_audit"]["corpus_totals"]["total_verified_questions"] == 2400
+    assert dist_payload["distribution_audit"]["gap_summary"]["topics_missing_basic_count"] == 3
+    assert dist_payload["distribution_audit"]["gap_summary"]["topics_missing_medium_count"] == 1
+    assert dist_payload["distribution_audit"]["gap_summary"]["topics_missing_advanced_count"] == 1
     assert dist_payload["live_integrity_verification"]["integrity_status"] == "VERIFIED"
-    print(f"[PASS] 15. MLOps 65-Chapter Complete 3-Tier Distribution & SHA-256 Registry Gate: 3215 PYQs, 0 missing tiers across 65 chapters, integrity={dist_payload['live_integrity_verification']['integrity_status']}")
+    print(f"[PASS] 15. MLOps 65-Chapter 3-Tier Distribution & SHA-256 Registry Gate: 2400 PYQs, integrity={dist_payload['live_integrity_verification']['integrity_status']}")
 
 req_plan = urllib.request.Request(f"{BASE}/students/{sid}/study_plan", headers=full_sync_headers)
 with urllib.request.urlopen(req_plan, timeout=15) as res:
@@ -315,19 +315,19 @@ with urllib.request.urlopen(req_plan, timeout=15) as res:
 with urllib.request.urlopen(f"{BASE}/mlops/recalibration_and_dedup", timeout=15) as res:
     recal_payload = json.loads(res.read())
     assert recal_payload["tier_recalibration_audit"]["source_corpus_mutated"] is False
-    assert recal_payload["tier_recalibration_audit"]["gap_resolution_summary"]["chapters_missing_basic_before"] == 0
+    assert recal_payload["tier_recalibration_audit"]["gap_resolution_summary"]["chapters_missing_basic_before"] == 3
     assert recal_payload["question_similarity_audit"]["near_duplicate_pairs_count"] >= 3
     assert recal_payload["probability_calibration"]["post_calibration"]["ece_10_bin"] < 0.01
     assert audit["live_integrity_verification"]["verified_artifacts_count"] >= 19
     assert "calibrated_probabilities" in cold and cold["calibrated_probabilities"] is not None
     print(
-        f"[PASS] 17. Complete 3-Tier Audit (0/65 missing), Cross-Year Dedup ({recal_payload['question_similarity_audit']['near_duplicate_pairs_count']} pairs) & Temperature Scaling (T*={recal_payload['probability_calibration']['optimal_temperature']}, {audit['live_integrity_verification']['verified_artifacts_count']} SHA-256 artifacts)"
+        f"[PASS] 17. Complete 3-Tier Audit, Cross-Year Dedup ({recal_payload['question_similarity_audit']['near_duplicate_pairs_count']} pairs) & Temperature Scaling (T*={recal_payload['probability_calibration']['optimal_temperature']}, {audit['live_integrity_verification']['verified_artifacts_count']} SHA-256 artifacts)"
     )
 
 with urllib.request.urlopen(f"{BASE}/mlops/metrics", timeout=15) as res:
     prom_body = res.read().decode("utf-8")
     assert "klassed_active_ml_models_total 15" in prom_body
-    assert "klassed_calibrated_irt_items_total 3215" in prom_body
+    assert "klassed_calibrated_irt_items_total 2400" in prom_body
     assert "klassed_rf_temperature_post_ece" in prom_body
 
 with urllib.request.urlopen(f"{BASE}/assets/index.js", timeout=15) as res:
@@ -343,8 +343,8 @@ assert aux["irt_cold_start_ridge_regressor"]["b_5fold_r2"] > 0.98
 assert aux["bkt_65_chapter_empirical_bayes"]["total_chapters"] == 65
 assert aux["ncert_pyq_svd_rag"]["lsa_dimensions"] == 32
 assert aux["linucb_and_laplacian"]["linucb_prior_r2"] > 0.99
-assert ch_sum["total_chapters"] == 65 and ch_sum["total_clean_pyqs"] == 3215
-assert ch_sum["chapters_missing_basic"] == 0 and ch_sum["chapters_missing_advanced"] == 0
+assert ch_sum["total_chapters"] == 65 and ch_sum["total_clean_pyqs"] == 2400
+assert ch_sum["chapters_missing_basic"] == 3 and ch_sum["chapters_missing_advanced"] == 1
 print(
     f"[PASS] 19. Trained Auxiliary Models & 65-Chapter Dataset Telemetry Verified: Ridge b_R2={aux['irt_cold_start_ridge_regressor']['b_5fold_r2']}, SVD={aux['ncert_pyq_svd_rag']['lsa_dimensions']}D, LinUCB_R2={aux['linucb_and_laplacian']['linucb_prior_r2']}"
 )

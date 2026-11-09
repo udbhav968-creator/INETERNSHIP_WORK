@@ -1,36 +1,36 @@
 {
   "total_canonical_chapters": 65,
-  "total_verified_pyqs": 3215,
+  "total_verified_pyqs": 2400,
   "total_quarantined_items": 159,
   "repaired_leaked_statement_items": 47,
   "explicit_ocr_repaired_items": 10,
   "reclassified_chapter_items": 24,
   "exact_duplicates_removed": 2,
   "tier_recalibrated_items": 1673,
-  "chapters_missing_basic": 0,
-  "chapters_missing_medium": 0,
-  "chapters_missing_advanced": 0,
+  "chapters_missing_basic": 3,
+  "chapters_missing_medium": 1,
+  "chapters_missing_advanced": 1,
   "subject_totals": {
     "Physics": {
       "chapters": 22,
-      "total_pyqs": 927,
-      "basic": 235,
-      "medium": 457,
-      "advanced": 235
+      "total_pyqs": 564,
+      "basic": 132,
+      "medium": 281,
+      "advanced": 151
     },
     "Chemistry": {
       "chapters": 23,
-      "total_pyqs": 1021,
-      "basic": 258,
-      "medium": 505,
-      "advanced": 258
+      "total_pyqs": 612,
+      "basic": 144,
+      "medium": 295,
+      "advanced": 173
     },
     "Biology": {
       "chapters": 20,
-      "total_pyqs": 1267,
-      "basic": 328,
-      "medium": 611,
-      "advanced": 328
+      "total_pyqs": 1224,
+      "basic": 321,
+      "medium": 588,
+      "advanced": 315
     }
   },
   "chapters": {
@@ -38,18 +38,18 @@
       "chapter": "Alcohols, Phenols & Ethers",
       "subject": "Chemistry",
       "cluster": "Organic Chemistry",
-      "total_pyqs": 40,
-      "basic_pyqs": 10,
-      "medium_pyqs": 20,
-      "advanced_pyqs": 10,
+      "total_pyqs": 24,
+      "basic_pyqs": 7,
+      "medium_pyqs": 10,
+      "advanced_pyqs": 7,
       "distinct_exam_years": 12,
       "earliest_year": 2013,
       "latest_year": 2026,
-      "mean_word_count": 20.02,
+      "mean_word_count": 20.5,
       "mean_formula_density": 0.0,
       "mean_numerical_complexity": 0.1042,
-      "mean_latent_complexity": 0.2586,
-      "mean_ideal_time_sec": 92.38,
+      "mean_latent_complexity": 0.2677,
+      "mean_ideal_time_sec": 92.79,
       "prerequisite_count": 2,
       "dependent_chapters_count": 1,
       "neet_importance_weight": 0.92,
@@ -72,29 +72,29 @@
         2026
       ],
       "sample_question_ids": [
-        "NEET_AUG_CHEM_ORG_0610",
-        "NEET2014_CHEM_086",
-        "NEET2023_CHEM_096",
+        "NEET2013_CHEM_058",
+        "NEET2013_CHEM_078",
+        "NEET2013_CHEM_079",
         "NEET2014_CHEM_063",
-        "NEET2017_CHEM_083"
+        "NEET2014_CHEM_086"
       ]
     },
     "Aldehydes, Ketones & Carboxylic Acids": {
       "chapter": "Aldehydes, Ketones & Carboxylic Acids",
       "subject": "Chemistry",
       "cluster": "Organic Chemistry",
-      "total_pyqs": 40,
-      "basic_pyqs": 10,
-      "medium_pyqs": 20,
-      "advanced_pyqs": 10,
+      "total_pyqs": 17,
+      "basic_pyqs": 2,
+      "medium_pyqs": 8,
+      "advanced_pyqs": 7,
       "distinct_exam_years": 11,
       "earliest_year": 2013,
       "latest_year": 2026,
-      "mean_word_count": 19.2,
-      "mean_formula_density": 0.0036,
-      "mean_numerical_complexity": 0.0875,
-      "mean_latent_complexity": 0.2644,
-      "mean_ideal_time_sec": 92.67,
+      "mean_word_count": 20.82,
+      "mean_formula_density": 0.0085,
+      "mean_numerical_complexity": 0.1569,
+      "mean_latent_complexity": 0.3222,
+      "mean_ideal_time_sec": 99.29,
       "prerequisite_count": 2,
       "dependent_chapters_count": 2,
       "neet_importance_weight": 0.7,
@@ -116,29 +116,29 @@
         2026
       ],
       "sample_question_ids": [
-        "NEET_AUG_CHEM_ORG_0627",
-        "NEET_AUG_CHEM_ORG_0634",
-        "NEET_AUG_CHEM_ORG_0622",
-        "NEET_AUG_CHEM_ORG_0626",
-        "NEET2014_CHEM_088"
+        "NEET2013_CHEM_065",
+        "NEET2014_CHEM_088",
+        "NEET2016_CHEM_054",
+        "NEET2016_CHEM_083",
+        "NEET2017_CHEM_052"
       ]
     },
     "Alternating Current": {
       "chapter": "Alternating Current",
       "subject": "Physics",
       "cluster": "Electromagnetism",
-      "total_pyqs": 40,
-      "basic_pyqs": 10,
-      "medium_pyqs": 20,
-      "advanced_pyqs": 10,
+      "total_pyqs": 9,
+      "basic_pyqs": 2,
+      "medium_pyqs": 4,
+      "advanced_pyqs": 3,
       "distinct_exam_years": 7,
       "earliest_year": 2013,
       "latest_year": 2026,
-      "mean_word_count": 23.77,
-      "mean_formula_density": 0.383,
-      "mean_numerical_complexity": 0.4125,
-      "mean_latent_complexity": 0.5565,
-      "mean_ideal_time_sec": 114.35,
+      "mean_word_count": 34.56,
+      "mean_formula_density": 0.2291,
+      "mean_numerical_complexity": 0.6852,
+      "mean_latent_complexity": 0.7134,
+      "mean_ideal_time_sec": 118.56,
       "prerequisite_count": 3,
       "dependent_chapters_count": 0,
       "neet_importance_weight": 0.39,
@@ -157,29 +157,29 @@
         2026
       ],
       "sample_question_ids": [
-        "NEET_AUG_PHYS_EMAG_1234",
-        "NEET_AUG_PHYS_EMAG_1235",
-        "NEET_AUG_PHYS_EMAG_1238",
-        "NEET_AUG_PHYS_EMAG_1240",
-        "NEET2022_PHY_022"
+        "NEET2013_PHY_032",
+        "NEET2020_PHY_169",
+        "NEET2021_PHY_040",
+        "NEET2022_PHY_022",
+        "NEET2022_PHY_042"
       ]
     },
     "Amines & Nitrogen Compounds": {
       "chapter": "Amines & Nitrogen Compounds",
       "subject": "Chemistry",
       "cluster": "Organic Chemistry",
-      "total_pyqs": 40,
-      "basic_pyqs": 10,
-      "medium_pyqs": 20,
-      "advanced_pyqs": 10,
+      "total_pyqs": 16,
+      "basic_pyqs": 5,
+      "medium_pyqs": 5,
+      "advanced_pyqs": 6,
       "distinct_exam_years": 11,
       "earliest_year": 2014,
       "latest_year": 2026,
-      "mean_word_count": 19.8,
-      "mean_formula_density": 0.0093,
-      "mean_numerical_complexity": 0.1125,
-      "mean_latent_complexity": 0.2678,
-      "mean_ideal_time_sec": 92.75,
+      "mean_word_count": 24.12,
+      "mean_formula_density": 0.0232,
+      "mean_numerical_complexity": 0.1146,
+      "mean_latent_complexity": 0.3019,
+      "mean_ideal_time_sec": 95.44,
       "prerequisite_count": 2,
       "dependent_chapters_count": 1,
       "neet_importance_weight": 0.75,
@@ -201,29 +201,29 @@
         2026
       ],
       "sample_question_ids": [
-        "NEET_AUG_CHEM_ORG_0672",
-        "NEET_AUG_CHEM_ORG_0684",
+        "NEET2014_CHEM_078",
         "NEET2015_CHEM_030",
-        "NEET2018_CHEM_055",
-        "NEET2017_CHEM_087"
+        "NEET2017_CHEM_087",
+        "NEET2018_CHEM_053",
+        "NEET2018_CHEM_055"
       ]
     },
     "Anatomy of Flowering Plants": {
       "chapter": "Anatomy of Flowering Plants",
       "subject": "Biology",
       "cluster": "Botany Structure & Physiology",
-      "total_pyqs": 40,
-      "basic_pyqs": 10,
-      "medium_pyqs": 20,
-      "advanced_pyqs": 10,
+      "total_pyqs": 31,
+      "basic_pyqs": 9,
+      "medium_pyqs": 14,
+      "advanced_pyqs": 8,
       "distinct_exam_years": 12,
       "earliest_year": 2013,
       "latest_year": 2025,
-      "mean_word_count": 20.77,
+      "mean_word_count": 20.48,
       "mean_formula_density": 0.0,
-      "mean_numerical_complexity": 0.0125,
-      "mean_latent_complexity": 0.1923,
-      "mean_ideal_time_sec": 73.83,
+      "mean_numerical_complexity": 0.0161,
+      "mean_latent_complexity": 0.1945,
+      "mean_ideal_time_sec": 73.52,
       "prerequisite_count": 2,
       "dependent_chapters_count": 1,
       "neet_importance_weight": 1.27,
@@ -246,11 +246,11 @@
         2025
       ],
       "sample_question_ids": [
-        "NEET2018_BIO_127",
         "NEET2013_BIO_098",
+        "NEET2013_BIO_101",
+        "NEET2014_BIO_099",
         "NEET2014_BIO_101",
-        "NEET2019_BIO_134",
-        "NEET2019_BIO_170"
+        "NEET2014_BIO_174"
       ]
     },
     "Animal Kingdom": {
@@ -267,7 +267,7 @@
       "mean_word_count": 27.34,
       "mean_formula_density": 0.0037,
       "mean_numerical_complexity": 0.072,
-      "mean_latent_complexity": 0.2485,
+      "mean_latent_complexity": 0.2549,
       "mean_ideal_time_sec": 75.14,
       "prerequisite_count": 1,
       "dependent_chapters_count": 1,
@@ -292,29 +292,29 @@
         2026
       ],
       "sample_question_ids": [
-        "NEET2018_BIO_124",
-        "NEET2020_BIO_087",
+        "NEET2013_BIO_136",
+        "NEET2014_BIO_109",
         "NEET2014_BIO_136",
-        "NEET2023_BIO_189",
-        "NEET2016_BIO_176"
+        "NEET2014_BIO_171",
+        "NEET2015_BIO_055"
       ]
     },
     "Atoms & Nuclei": {
       "chapter": "Atoms & Nuclei",
       "subject": "Physics",
       "cluster": "Modern Physics",
-      "total_pyqs": 40,
-      "basic_pyqs": 10,
-      "medium_pyqs": 20,
-      "advanced_pyqs": 10,
+      "total_pyqs": 21,
+      "basic_pyqs": 4,
+      "medium_pyqs": 11,
+      "advanced_pyqs": 6,
       "distinct_exam_years": 12,
       "earliest_year": 2013,
       "latest_year": 2026,
-      "mean_word_count": 25.55,
-      "mean_formula_density": 0.1959,
-      "mean_numerical_complexity": 0.4958,
-      "mean_latent_complexity": 0.5237,
-      "mean_ideal_time_sec": 113.53,
+      "mean_word_count": 30.86,
+      "mean_formula_density": 0.1096,
+      "mean_numerical_complexity": 0.6111,
+      "mean_latent_complexity": 0.6518,
+      "mean_ideal_time_sec": 116.19,
       "prerequisite_count": 2,
       "dependent_chapters_count": 1,
       "neet_importance_weight": 0.73,
@@ -337,11 +337,11 @@
         2026
       ],
       "sample_question_ids": [
-        "NEET_AUG_PHYS_OPT_MOD_1035",
-        "NEET_AUG_PHYS_OPT_MOD_1033",
-        "NEET_AUG_PHYS_OPT_MOD_1025",
-        "NEET_AUG_PHYS_OPT_MOD_1036",
-        "NEET_AUG_PHYS_OPT_MOD_1029"
+        "NEET2013_PHY_034",
+        "NEET2013_PHY_035",
+        "NEET2013_PHY_036",
+        "NEET2014_PHY_041",
+        "NEET2014_PHY_042"
       ]
     },
     "Biological Classification": {
@@ -358,7 +358,7 @@
       "mean_word_count": 15.4,
       "mean_formula_density": 0.0105,
       "mean_numerical_complexity": 0.0735,
-      "mean_latent_complexity": 0.1553,
+      "mean_latent_complexity": 0.1676,
       "mean_ideal_time_sec": 72.84,
       "prerequisite_count": 1,
       "dependent_chapters_count": 4,
@@ -383,11 +383,11 @@
         2026
       ],
       "sample_question_ids": [
-        "NEET2017_BIO_126",
-        "NEET2015_BIO_090",
-        "NEET2017_BIO_125",
-        "NEET2016_BIO_162",
-        "NEET2015_BIO_082"
+        "NEET2013_BIO_105",
+        "NEET2013_BIO_128",
+        "NEET2013_BIO_130",
+        "NEET2014_BIO_093",
+        "NEET2014_BIO_094"
       ]
     },
     "Biomolecules": {
@@ -404,7 +404,7 @@
       "mean_word_count": 18.13,
       "mean_formula_density": 0.0047,
       "mean_numerical_complexity": 0.0717,
-      "mean_latent_complexity": 0.1955,
+      "mean_latent_complexity": 0.1994,
       "mean_ideal_time_sec": 73.87,
       "prerequisite_count": 1,
       "dependent_chapters_count": 5,
@@ -429,29 +429,29 @@
         2026
       ],
       "sample_question_ids": [
-        "NEET2018_BIO_119",
-        "NEET2015_BIO_091",
+        "NEET2013_BIO_103",
+        "NEET2013_BIO_104",
+        "NEET2013_BIO_106",
         "NEET2013_BIO_109",
-        "NEET2016_BIO_132",
-        "NEET2019_BIO_112"
+        "NEET2013_BIO_113"
       ]
     },
     "Biomolecules & Polymers": {
       "chapter": "Biomolecules & Polymers",
       "subject": "Chemistry",
       "cluster": "Organic Chemistry",
-      "total_pyqs": 40,
-      "basic_pyqs": 10,
-      "medium_pyqs": 20,
+      "total_pyqs": 37,
+      "basic_pyqs": 9,
+      "medium_pyqs": 18,
       "advanced_pyqs": 10,
       "distinct_exam_years": 13,
       "earliest_year": 2013,
       "latest_year": 2026,
-      "mean_word_count": 18.12,
-      "mean_formula_density": 0.0249,
+      "mean_word_count": 18.43,
+      "mean_formula_density": 0.027,
       "mean_numerical_complexity": 0.1667,
-      "mean_latent_complexity": 0.2854,
-      "mean_ideal_time_sec": 93.22,
+      "mean_latent_complexity": 0.3107,
+      "mean_ideal_time_sec": 93.95,
       "prerequisite_count": 2,
       "dependent_chapters_count": 0,
       "neet_importance_weight": 1.51,
@@ -475,11 +475,11 @@
         2026
       ],
       "sample_question_ids": [
-        "NEET2017_CHEM_049",
-        "NEET2016_CHEM_089",
-        "NEET2020_CHEM_119",
         "NEET2013_CHEM_080",
-        "NEET2016_CHEM_067"
+        "NEET2013_CHEM_086",
+        "NEET2014_CHEM_080",
+        "NEET2014_CHEM_081",
+        "NEET2015_CHEM_007"
       ]
     },
     "Biotechnology": {
@@ -521,11 +521,11 @@
         2026
       ],
       "sample_question_ids": [
-        "NEET2016_BIO_151",
+        "NEET2013_BIO_125",
+        "NEET2013_BIO_127",
+        "NEET2014_BIO_126",
         "NEET2014_BIO_169",
-        "NEET2020_BIO_007",
-        "NEET2017_BIO_132",
-        "NEET2019_BIO_152"
+        "NEET2016_BIO_123"
       ]
     },
     "Cell Cycle & Cell Division": {
@@ -542,7 +542,7 @@
       "mean_word_count": 20.84,
       "mean_formula_density": 0.0,
       "mean_numerical_complexity": 0.0543,
-      "mean_latent_complexity": 0.2155,
+      "mean_latent_complexity": 0.222,
       "mean_ideal_time_sec": 74.35,
       "prerequisite_count": 2,
       "dependent_chapters_count": 2,
@@ -568,11 +568,11 @@
         2026
       ],
       "sample_question_ids": [
+        "NEET2013_BIO_107",
         "NEET2013_BIO_116",
-        "NEET2017_BIO_135",
-        "NEET2016_BIO_118",
-        "NEET2020_BIO_086",
-        "NEET2014_BIO_146"
+        "NEET2014_BIO_106",
+        "NEET2014_BIO_146",
+        "NEET2015_BIO_077"
       ]
     },
     "Cell: The Unit of Life": {
@@ -589,7 +589,7 @@
       "mean_word_count": 19.77,
       "mean_formula_density": 0.0,
       "mean_numerical_complexity": 0.0639,
-      "mean_latent_complexity": 0.1895,
+      "mean_latent_complexity": 0.1953,
       "mean_ideal_time_sec": 73.81,
       "prerequisite_count": 0,
       "dependent_chapters_count": 6,
@@ -612,11 +612,11 @@
         2026
       ],
       "sample_question_ids": [
-        "RENEET2026_BIO_121",
-        "RENEET2026_BIO_108",
-        "NEET2015_BIO_107",
         "NEET2013_BIO_093",
-        "RENEET2026_BIO_116"
+        "NEET2013_BIO_143",
+        "NEET2013_BIO_146",
+        "NEET2014_BIO_091",
+        "NEET2014_BIO_103"
       ]
     },
     "Chemical Bonding": {
@@ -633,7 +633,7 @@
       "mean_word_count": 21.0,
       "mean_formula_density": 0.0281,
       "mean_numerical_complexity": 0.187,
-      "mean_latent_complexity": 0.3146,
+      "mean_latent_complexity": 0.3351,
       "mean_ideal_time_sec": 93.93,
       "prerequisite_count": 2,
       "dependent_chapters_count": 7,
@@ -659,29 +659,29 @@
         2026
       ],
       "sample_question_ids": [
-        "NEET2022_CHEM_070",
         "NEET2013_CHEM_085",
-        "NEET2018_CHEM_051",
+        "NEET2014_CHEM_065",
+        "NEET2014_CHEM_066",
         "NEET2014_CHEM_090",
-        "NEET2017_CHEM_079"
+        "NEET2015_CHEM_011"
       ]
     },
     "Chemical Kinetics": {
       "chapter": "Chemical Kinetics",
       "subject": "Chemistry",
       "cluster": "Physical Chemistry",
-      "total_pyqs": 40,
-      "basic_pyqs": 10,
-      "medium_pyqs": 20,
-      "advanced_pyqs": 10,
+      "total_pyqs": 23,
+      "basic_pyqs": 4,
+      "medium_pyqs": 12,
+      "advanced_pyqs": 7,
       "distinct_exam_years": 12,
       "earliest_year": 2013,
       "latest_year": 2026,
-      "mean_word_count": 23.38,
-      "mean_formula_density": 0.1504,
-      "mean_numerical_complexity": 0.4333,
-      "mean_latent_complexity": 0.427,
-      "mean_ideal_time_sec": 96.4,
+      "mean_word_count": 25.74,
+      "mean_formula_density": 0.1731,
+      "mean_numerical_complexity": 0.5797,
+      "mean_latent_complexity": 0.5473,
+      "mean_ideal_time_sec": 99.78,
       "prerequisite_count": 2,
       "dependent_chapters_count": 0,
       "neet_importance_weight": 0.99,
@@ -704,29 +704,29 @@
         2026
       ],
       "sample_question_ids": [
-        "NEET_AUG_CHEM_PHYS_0255",
-        "NEET_AUG_CHEM_PHYS_0249",
-        "NEET_AUG_CHEM_PHYS_0260",
-        "NEET2020_CHEM_109",
-        "NEET2018_CHEM_084"
+        "NEET2013_CHEM_048",
+        "NEET2013_CHEM_050",
+        "NEET2015_CHEM_035",
+        "NEET2016_CHEM_049",
+        "NEET2017_CHEM_081"
       ]
     },
     "Circulation & Excretion": {
       "chapter": "Circulation & Excretion",
       "subject": "Biology",
       "cluster": "Human & Animal Physiology",
-      "total_pyqs": 40,
-      "basic_pyqs": 10,
-      "medium_pyqs": 20,
-      "advanced_pyqs": 10,
+      "total_pyqs": 30,
+      "basic_pyqs": 7,
+      "medium_pyqs": 15,
+      "advanced_pyqs": 8,
       "distinct_exam_years": 12,
       "earliest_year": 2013,
       "latest_year": 2025,
-      "mean_word_count": 29.3,
-      "mean_formula_density": 0.0021,
-      "mean_numerical_complexity": 0.0958,
-      "mean_latent_complexity": 0.276,
-      "mean_ideal_time_sec": 75.8,
+      "mean_word_count": 31.93,
+      "mean_formula_density": 0.0029,
+      "mean_numerical_complexity": 0.0833,
+      "mean_latent_complexity": 0.2983,
+      "mean_ideal_time_sec": 76.73,
       "prerequisite_count": 2,
       "dependent_chapters_count": 1,
       "neet_importance_weight": 1.25,
@@ -749,29 +749,29 @@
         2025
       ],
       "sample_question_ids": [
-        "NEET2020_BIO_068",
-        "NEET2020_BIO_075",
-        "NEET2019_BIO_132",
-        "NEET_AUG_BIO_0133",
-        "NEET_AUG_BIO_0132"
+        "NEET2013_BIO_151",
+        "NEET2013_BIO_152",
+        "NEET2014_BIO_151",
+        "NEET2014_BIO_152",
+        "NEET2015_BIO_121"
       ]
     },
     "Coordination Chemistry": {
       "chapter": "Coordination Chemistry",
       "subject": "Chemistry",
       "cluster": "Inorganic Chemistry",
-      "total_pyqs": 40,
-      "basic_pyqs": 10,
-      "medium_pyqs": 20,
-      "advanced_pyqs": 10,
+      "total_pyqs": 15,
+      "basic_pyqs": 4,
+      "medium_pyqs": 8,
+      "advanced_pyqs": 3,
       "distinct_exam_years": 11,
       "earliest_year": 2013,
       "latest_year": 2026,
-      "mean_word_count": 15.07,
-      "mean_formula_density": 0.0977,
-      "mean_numerical_complexity": 0.2958,
-      "mean_latent_complexity": 0.3242,
-      "mean_ideal_time_sec": 94.0,
+      "mean_word_count": 14.87,
+      "mean_formula_density": 0.0,
+      "mean_numerical_complexity": 0.3,
+      "mean_latent_complexity": 0.3238,
+      "mean_ideal_time_sec": 92.13,
       "prerequisite_count": 2,
       "dependent_chapters_count": 0,
       "neet_importance_weight": 0.5,
@@ -793,11 +793,11 @@
         2026
       ],
       "sample_question_ids": [
-        "NEET_AUG_CHEM_INORG_0447",
-        "NEET2024_CHEM_069",
-        "NEET_AUG_CHEM_INORG_0436",
-        "NEET_AUG_CHEM_INORG_0448",
-        "NEET_AUG_CHEM_INORG_0459"
+        "NEET2013_CHEM_059",
+        "NEET2014_CHEM_072",
+        "NEET2014_CHEM_074",
+        "NEET2015_CHEM_019",
+        "NEET2017_CHEM_073"
       ]
     },
     "Current Electricity": {
@@ -814,7 +814,7 @@
       "mean_word_count": 39.93,
       "mean_formula_density": 0.1581,
       "mean_numerical_complexity": 0.6268,
-      "mean_latent_complexity": 0.6075,
+      "mean_latent_complexity": 0.7079,
       "mean_ideal_time_sec": 115.5,
       "prerequisite_count": 1,
       "dependent_chapters_count": 4,
@@ -839,29 +839,29 @@
         2026
       ],
       "sample_question_ids": [
-        "NEET2020_PHY_144",
-        "NEET2017_PHY_001",
-        "NEET2022_PHY_007",
-        "NEET2020_PHY_163",
-        "NEET2016_PHY_013"
+        "NEET2013_PHY_025",
+        "NEET2013_PHY_026",
+        "NEET2014_PHY_026",
+        "NEET2014_PHY_027",
+        "NEET2014_PHY_028"
       ]
     },
     "Dual Nature of Matter": {
       "chapter": "Dual Nature of Matter",
       "subject": "Physics",
       "cluster": "Modern Physics",
-      "total_pyqs": 40,
-      "basic_pyqs": 10,
-      "medium_pyqs": 20,
-      "advanced_pyqs": 10,
+      "total_pyqs": 9,
+      "basic_pyqs": 0,
+      "medium_pyqs": 6,
+      "advanced_pyqs": 3,
       "distinct_exam_years": 7,
       "earliest_year": 2013,
       "latest_year": 2026,
-      "mean_word_count": 23.23,
-      "mean_formula_density": 0.2479,
-      "mean_numerical_complexity": 0.325,
-      "mean_latent_complexity": 0.509,
-      "mean_ideal_time_sec": 113.25,
+      "mean_word_count": 33.56,
+      "mean_formula_density": 0.3636,
+      "mean_numerical_complexity": 0.5185,
+      "mean_latent_complexity": 0.6919,
+      "mean_ideal_time_sec": 122.89,
       "prerequisite_count": 3,
       "dependent_chapters_count": 1,
       "neet_importance_weight": 0.35,
@@ -880,11 +880,11 @@
         2026
       ],
       "sample_question_ids": [
-        "NEET_AUG_PHYS_OPT_MOD_1100",
-        "NEET_AUG_PHYS_OPT_MOD_1079",
-        "NEET_AUG_PHYS_OPT_MOD_1097",
-        "NEET_AUG_PHYS_OPT_MOD_1086",
-        "NEET_AUG_PHYS_OPT_MOD_1093"
+        "NEET2013_PHY_037",
+        "NEET2013_PHY_038",
+        "NEET2015_PHY_160",
+        "NEET2015_PHY_179",
+        "NEET2016_PHY_029"
       ]
     },
     "Ecology & Environment": {
@@ -901,7 +901,7 @@
       "mean_word_count": 22.34,
       "mean_formula_density": 0.016,
       "mean_numerical_complexity": 0.0731,
-      "mean_latent_complexity": 0.2272,
+      "mean_latent_complexity": 0.2349,
       "mean_ideal_time_sec": 74.7,
       "prerequisite_count": 2,
       "dependent_chapters_count": 0,
@@ -927,29 +927,29 @@
         2026
       ],
       "sample_question_ids": [
-        "NEET2017_BIO_116",
-        "NEET2018_BIO_111",
-        "NEET2020_BIO_002",
-        "NEET2025_BIO_133",
-        "NEET2015_BIO_058"
+        "NEET2013_BIO_132",
+        "NEET2013_BIO_176",
+        "NEET2013_BIO_178",
+        "NEET2013_BIO_180",
+        "NEET2014_BIO_134"
       ]
     },
     "Electromagnetic Induction": {
       "chapter": "Electromagnetic Induction",
       "subject": "Physics",
       "cluster": "Electromagnetism",
-      "total_pyqs": 40,
-      "basic_pyqs": 10,
-      "medium_pyqs": 20,
-      "advanced_pyqs": 10,
+      "total_pyqs": 7,
+      "basic_pyqs": 3,
+      "medium_pyqs": 4,
+      "advanced_pyqs": 0,
       "distinct_exam_years": 6,
       "earliest_year": 2015,
       "latest_year": 2026,
-      "mean_word_count": 23.85,
-      "mean_formula_density": 0.1774,
-      "mean_numerical_complexity": 0.2417,
-      "mean_latent_complexity": 0.4869,
-      "mean_ideal_time_sec": 112.75,
+      "mean_word_count": 19.86,
+      "mean_formula_density": 0.0,
+      "mean_numerical_complexity": 0.1905,
+      "mean_latent_complexity": 0.3681,
+      "mean_ideal_time_sec": 98.71,
       "prerequisite_count": 2,
       "dependent_chapters_count": 1,
       "neet_importance_weight": 0.32,
@@ -966,29 +966,29 @@
         2026
       ],
       "sample_question_ids": [
+        "NEET2015_PHY_138",
+        "NEET2018_PHY_021",
+        "NEET2019_PHY_006",
         "NEET2019_PHY_023",
-        "NEET_AUG_PHYS_EMAG_1291",
-        "NEET_AUG_PHYS_EMAG_1304",
-        "NEET2023_PHY_034",
-        "NEET_AUG_PHYS_EMAG_1294"
+        "NEET2022_PHY_009"
       ]
     },
     "Electromagnetic Waves": {
       "chapter": "Electromagnetic Waves",
       "subject": "Physics",
       "cluster": "Waves & Optics",
-      "total_pyqs": 40,
-      "basic_pyqs": 10,
-      "medium_pyqs": 20,
-      "advanced_pyqs": 10,
+      "total_pyqs": 8,
+      "basic_pyqs": 2,
+      "medium_pyqs": 5,
+      "advanced_pyqs": 1,
       "distinct_exam_years": 8,
       "earliest_year": 2015,
       "latest_year": 2025,
-      "mean_word_count": 19.05,
-      "mean_formula_density": 0.252,
-      "mean_numerical_complexity": 0.2083,
-      "mean_latent_complexity": 0.4336,
-      "mean_ideal_time_sec": 111.67,
+      "mean_word_count": 23.62,
+      "mean_formula_density": 0.1235,
+      "mean_numerical_complexity": 0.1667,
+      "mean_latent_complexity": 0.4241,
+      "mean_ideal_time_sec": 107.5,
       "prerequisite_count": 3,
       "dependent_chapters_count": 1,
       "neet_importance_weight": 0.39,
@@ -1008,11 +1008,11 @@
         2025
       ],
       "sample_question_ids": [
-        "NEET_AUG_PHYS_EMAG_1261",
-        "NEET_AUG_PHYS_EMAG_1282",
-        "NEET2024_PHY_032",
-        "NEET_AUG_PHYS_EMAG_1263",
-        "NEET_AUG_PHYS_EMAG_1274"
+        "NEET2015_PHY_137",
+        "NEET2016_PHY_008",
+        "NEET2018_PHY_018",
+        "NEET2020_PHY_137",
+        "NEET2022_PHY_001"
       ]
     },
     "Electrostatics": {
@@ -1029,7 +1029,7 @@
       "mean_word_count": 37.9,
       "mean_formula_density": 0.1883,
       "mean_numerical_complexity": 0.435,
-      "mean_latent_complexity": 0.547,
+      "mean_latent_complexity": 0.6118,
       "mean_ideal_time_sec": 114.27,
       "prerequisite_count": 3,
       "dependent_chapters_count": 5,
@@ -1056,29 +1056,29 @@
         2026
       ],
       "sample_question_ids": [
-        "NEET2021_PHY_020",
-        "NEET2024_PHY_019",
-        "NEET2023_PHY_024",
+        "NEET2013_PHY_023",
         "NEET2013_PHY_024",
-        "NEET2023_PHY_004"
+        "NEET2014_PHY_023",
+        "NEET2014_PHY_024",
+        "NEET2014_PHY_025"
       ]
     },
     "Environmental Chemistry": {
       "chapter": "Environmental Chemistry",
       "subject": "Chemistry",
       "cluster": "Inorganic Chemistry",
-      "total_pyqs": 40,
-      "basic_pyqs": 10,
-      "medium_pyqs": 20,
-      "advanced_pyqs": 10,
+      "total_pyqs": 4,
+      "basic_pyqs": 1,
+      "medium_pyqs": 0,
+      "advanced_pyqs": 3,
       "distinct_exam_years": 4,
       "earliest_year": 2014,
       "latest_year": 2023,
-      "mean_word_count": 16.25,
-      "mean_formula_density": 0.0049,
-      "mean_numerical_complexity": 0.0792,
-      "mean_latent_complexity": 0.2294,
-      "mean_ideal_time_sec": 91.75,
+      "mean_word_count": 21.0,
+      "mean_formula_density": 0.0,
+      "mean_numerical_complexity": 0.0,
+      "mean_latent_complexity": 0.297,
+      "mean_ideal_time_sec": 104.0,
       "prerequisite_count": 2,
       "dependent_chapters_count": 0,
       "neet_importance_weight": 0.05,
@@ -1093,29 +1093,28 @@
         2023
       ],
       "sample_question_ids": [
+        "NEET2014_CHEM_082",
         "NEET2017_CHEM_071",
-        "NEET_AUG_CHEM_INORG_0532",
-        "NEET_AUG_CHEM_INORG_0536",
-        "NEET_AUG_CHEM_INORG_0546",
-        "NEET_AUG_CHEM_INORG_0534"
+        "NEET2019_CHEM_052",
+        "NEET2023_CHEM_098"
       ]
     },
     "Equilibrium": {
       "chapter": "Equilibrium",
       "subject": "Chemistry",
       "cluster": "Physical Chemistry",
-      "total_pyqs": 40,
-      "basic_pyqs": 10,
-      "medium_pyqs": 20,
-      "advanced_pyqs": 10,
+      "total_pyqs": 34,
+      "basic_pyqs": 9,
+      "medium_pyqs": 16,
+      "advanced_pyqs": 9,
       "distinct_exam_years": 13,
       "earliest_year": 2013,
       "latest_year": 2026,
-      "mean_word_count": 26.82,
-      "mean_formula_density": 0.2105,
-      "mean_numerical_complexity": 0.5208,
-      "mean_latent_complexity": 0.4749,
-      "mean_ideal_time_sec": 97.53,
+      "mean_word_count": 27.88,
+      "mean_formula_density": 0.2003,
+      "mean_numerical_complexity": 0.5294,
+      "mean_latent_complexity": 0.5501,
+      "mean_ideal_time_sec": 97.59,
       "prerequisite_count": 2,
       "dependent_chapters_count": 2,
       "neet_importance_weight": 1.32,
@@ -1140,28 +1139,28 @@
       ],
       "sample_question_ids": [
         "NEET2013_CHEM_061",
-        "NEET2014_CHEM_051",
-        "NEET2024_CHEM_073",
+        "NEET2013_CHEM_066",
         "NEET2013_CHEM_068",
-        "NEET2017_CHEM_058"
+        "NEET2014_CHEM_051",
+        "NEET2014_CHEM_055"
       ]
     },
     "Evolution": {
       "chapter": "Evolution",
       "subject": "Biology",
       "cluster": "Reproduction & Genetics",
-      "total_pyqs": 40,
-      "basic_pyqs": 10,
-      "medium_pyqs": 20,
-      "advanced_pyqs": 10,
+      "total_pyqs": 28,
+      "basic_pyqs": 9,
+      "medium_pyqs": 14,
+      "advanced_pyqs": 5,
       "distinct_exam_years": 13,
       "earliest_year": 2013,
       "latest_year": 2026,
-      "mean_word_count": 19.25,
+      "mean_word_count": 18.18,
       "mean_formula_density": 0.0,
-      "mean_numerical_complexity": 0.075,
-      "mean_latent_complexity": 0.2006,
-      "mean_ideal_time_sec": 73.97,
+      "mean_numerical_complexity": 0.0595,
+      "mean_latent_complexity": 0.1936,
+      "mean_ideal_time_sec": 71.43,
       "prerequisite_count": 2,
       "dependent_chapters_count": 0,
       "neet_importance_weight": 1.26,
@@ -1185,29 +1184,29 @@
         2026
       ],
       "sample_question_ids": [
-        "NEET2015_BIO_128",
-        "NEET2016_BIO_150",
-        "NEET2020_BIO_039",
-        "NEET2020_BIO_073",
-        "NEET2018_BIO_160"
+        "NEET2013_BIO_121",
+        "NEET2013_BIO_123",
+        "NEET2013_BIO_124",
+        "NEET2013_BIO_171",
+        "NEET2013_BIO_179"
       ]
     },
     "General Organic Chemistry": {
       "chapter": "General Organic Chemistry",
       "subject": "Chemistry",
       "cluster": "Organic Chemistry",
-      "total_pyqs": 40,
-      "basic_pyqs": 10,
-      "medium_pyqs": 20,
-      "advanced_pyqs": 10,
+      "total_pyqs": 15,
+      "basic_pyqs": 2,
+      "medium_pyqs": 8,
+      "advanced_pyqs": 5,
       "distinct_exam_years": 12,
       "earliest_year": 2013,
       "latest_year": 2026,
-      "mean_word_count": 15.82,
-      "mean_formula_density": 0.0182,
-      "mean_numerical_complexity": 0.2292,
-      "mean_latent_complexity": 0.2635,
-      "mean_ideal_time_sec": 92.5,
+      "mean_word_count": 14.0,
+      "mean_formula_density": 0.0325,
+      "mean_numerical_complexity": 0.3333,
+      "mean_latent_complexity": 0.3058,
+      "mean_ideal_time_sec": 96.47,
       "prerequisite_count": 1,
       "dependent_chapters_count": 4,
       "neet_importance_weight": 0.6,
@@ -1229,29 +1228,29 @@
         2026
       ],
       "sample_question_ids": [
-        "NEET_AUG_CHEM_ORG_0705",
-        "NEET_AUG_CHEM_ORG_0697",
-        "NEET_AUG_CHEM_ORG_0691",
-        "NEET_AUG_CHEM_ORG_0710",
-        "NEET_AUG_CHEM_ORG_0707"
+        "NEET2013_CHEM_074",
+        "NEET2014_CHEM_084",
+        "NEET2015_CHEM_029",
+        "NEET2015_CHEM_037",
+        "NEET2017_CHEM_070"
       ]
     },
     "General Principles & Metallurgy": {
       "chapter": "General Principles & Metallurgy",
       "subject": "Chemistry",
       "cluster": "Inorganic Chemistry",
-      "total_pyqs": 40,
-      "basic_pyqs": 10,
-      "medium_pyqs": 20,
-      "advanced_pyqs": 10,
+      "total_pyqs": 35,
+      "basic_pyqs": 7,
+      "medium_pyqs": 19,
+      "advanced_pyqs": 9,
       "distinct_exam_years": 14,
       "earliest_year": 2013,
       "latest_year": 2026,
-      "mean_word_count": 23.95,
-      "mean_formula_density": 0.0633,
-      "mean_numerical_complexity": 0.2042,
-      "mean_latent_complexity": 0.3336,
-      "mean_ideal_time_sec": 94.17,
+      "mean_word_count": 24.37,
+      "mean_formula_density": 0.0724,
+      "mean_numerical_complexity": 0.2286,
+      "mean_latent_complexity": 0.3747,
+      "mean_ideal_time_sec": 95.43,
       "prerequisite_count": 3,
       "dependent_chapters_count": 0,
       "neet_importance_weight": 1.52,
@@ -1277,11 +1276,11 @@
         2026
       ],
       "sample_question_ids": [
-        "NEET2020_CHEM_111",
-        "NEET2015_CHEM_009",
-        "NEET_AUG_CHEM_INORG_0404",
-        "NEET2020_CHEM_118",
-        "NEET2018_CHEM_048"
+        "NEET2013_CHEM_052",
+        "NEET2013_CHEM_060",
+        "NEET2014_CHEM_085",
+        "NEET2014_CHEM_087",
+        "NEET2015_CHEM_009"
       ]
     },
     "Genetics & Molecular Inheritance": {
@@ -1298,7 +1297,7 @@
       "mean_word_count": 23.47,
       "mean_formula_density": 0.0,
       "mean_numerical_complexity": 0.0929,
-      "mean_latent_complexity": 0.2225,
+      "mean_latent_complexity": 0.2345,
       "mean_ideal_time_sec": 74.51,
       "prerequisite_count": 2,
       "dependent_chapters_count": 2,
@@ -1324,29 +1323,29 @@
         2026
       ],
       "sample_question_ids": [
-        "NEET2014_BIO_122",
-        "NEET2017_BIO_174",
-        "NEET2022_BIO_117",
-        "NEET2014_BIO_167",
-        "NEET2014_BIO_121"
+        "NEET2013_BIO_120",
+        "NEET2013_BIO_122",
+        "NEET2013_BIO_163",
+        "NEET2013_BIO_165",
+        "NEET2013_BIO_168"
       ]
     },
     "Gravitation": {
       "chapter": "Gravitation",
       "subject": "Physics",
       "cluster": "Mechanics Core",
-      "total_pyqs": 40,
-      "basic_pyqs": 10,
-      "medium_pyqs": 20,
-      "advanced_pyqs": 10,
+      "total_pyqs": 24,
+      "basic_pyqs": 4,
+      "medium_pyqs": 11,
+      "advanced_pyqs": 9,
       "distinct_exam_years": 13,
       "earliest_year": 2013,
       "latest_year": 2026,
-      "mean_word_count": 33.1,
-      "mean_formula_density": 0.1425,
-      "mean_numerical_complexity": 0.4333,
-      "mean_latent_complexity": 0.5429,
-      "mean_ideal_time_sec": 113.95,
+      "mean_word_count": 38.75,
+      "mean_formula_density": 0.1032,
+      "mean_numerical_complexity": 0.5625,
+      "mean_latent_complexity": 0.6573,
+      "mean_ideal_time_sec": 119.92,
       "prerequisite_count": 2,
       "dependent_chapters_count": 1,
       "neet_importance_weight": 1.12,
@@ -1370,29 +1369,29 @@
         2026
       ],
       "sample_question_ids": [
-        "NEET2017_PHY_030",
-        "NEET_AUG_PHYS_MECH_0835",
+        "NEET2013_PHY_011",
+        "NEET2014_PHY_011",
+        "NEET2014_PHY_012",
         "NEET2015_PHY_149",
-        "NEET_AUG_PHYS_MECH_0843",
-        "NEET_AUG_PHYS_MECH_0838"
+        "NEET2015_PHY_151"
       ]
     },
     "Haloalkanes & Haloarenes": {
       "chapter": "Haloalkanes & Haloarenes",
       "subject": "Chemistry",
       "cluster": "Organic Chemistry",
-      "total_pyqs": 40,
-      "basic_pyqs": 10,
-      "medium_pyqs": 20,
-      "advanced_pyqs": 10,
+      "total_pyqs": 13,
+      "basic_pyqs": 2,
+      "medium_pyqs": 7,
+      "advanced_pyqs": 4,
       "distinct_exam_years": 9,
       "earliest_year": 2015,
       "latest_year": 2026,
-      "mean_word_count": 17.93,
-      "mean_formula_density": 0.0305,
-      "mean_numerical_complexity": 0.1042,
-      "mean_latent_complexity": 0.2457,
-      "mean_ideal_time_sec": 92.1,
+      "mean_word_count": 17.69,
+      "mean_formula_density": 0.0507,
+      "mean_numerical_complexity": 0.1667,
+      "mean_latent_complexity": 0.2634,
+      "mean_ideal_time_sec": 95.08,
       "prerequisite_count": 2,
       "dependent_chapters_count": 1,
       "neet_importance_weight": 0.25,
@@ -1412,29 +1411,29 @@
         2026
       ],
       "sample_question_ids": [
-        "NEET_AUG_CHEM_ORG_0734",
-        "NEET_AUG_CHEM_ORG_0715",
-        "RENEET2026_CHEM_083",
-        "NEET_AUG_CHEM_ORG_0717",
-        "NEET_AUG_CHEM_ORG_0721"
+        "NEET2015_CHEM_032",
+        "NEET2015_CHEM_033",
+        "NEET2015_CHEM_034",
+        "NEET2015_CHEM_043",
+        "NEET2016_CHEM_085"
       ]
     },
     "Human Digestion & Respiration": {
       "chapter": "Human Digestion & Respiration",
       "subject": "Biology",
       "cluster": "Human & Animal Physiology",
-      "total_pyqs": 40,
-      "basic_pyqs": 10,
-      "medium_pyqs": 20,
-      "advanced_pyqs": 10,
+      "total_pyqs": 28,
+      "basic_pyqs": 8,
+      "medium_pyqs": 14,
+      "advanced_pyqs": 6,
       "distinct_exam_years": 12,
       "earliest_year": 2013,
       "latest_year": 2024,
-      "mean_word_count": 21.27,
-      "mean_formula_density": 0.0209,
-      "mean_numerical_complexity": 0.0917,
-      "mean_latent_complexity": 0.2264,
-      "mean_ideal_time_sec": 74.72,
+      "mean_word_count": 20.89,
+      "mean_formula_density": 0.0061,
+      "mean_numerical_complexity": 0.0774,
+      "mean_latent_complexity": 0.2293,
+      "mean_ideal_time_sec": 73.36,
       "prerequisite_count": 2,
       "dependent_chapters_count": 1,
       "neet_importance_weight": 1.03,
@@ -1457,11 +1456,11 @@
         2024
       ],
       "sample_question_ids": [
-        "NEET2016_BIO_112",
-        "NEET2017_BIO_099",
-        "NEET2016_BIO_099",
-        "NEET2020_BIO_059",
-        "NEET2021_BIO_180"
+        "NEET2013_BIO_149",
+        "NEET2014_BIO_147",
+        "NEET2015_BIO_065",
+        "NEET2015_BIO_125",
+        "NEET2016_BIO_099"
       ]
     },
     "Human Health, Disease & Microbes": {
@@ -1478,7 +1477,7 @@
       "mean_word_count": 25.0,
       "mean_formula_density": 0.0,
       "mean_numerical_complexity": 0.031,
-      "mean_latent_complexity": 0.2429,
+      "mean_latent_complexity": 0.2494,
       "mean_ideal_time_sec": 75.02,
       "prerequisite_count": 2,
       "dependent_chapters_count": 0,
@@ -1504,29 +1503,29 @@
         2026
       ],
       "sample_question_ids": [
-        "NEET2013_BIO_172",
         "NEET2013_BIO_126",
-        "NEET2019_BIO_123",
-        "NEET2020_BIO_010",
-        "RENEET2026_BIO_167"
+        "NEET2013_BIO_172",
+        "NEET2013_BIO_173",
+        "NEET2013_BIO_175",
+        "NEET2014_BIO_173"
       ]
     },
     "Hydrocarbons": {
       "chapter": "Hydrocarbons",
       "subject": "Chemistry",
       "cluster": "Organic Chemistry",
-      "total_pyqs": 40,
-      "basic_pyqs": 10,
-      "medium_pyqs": 20,
-      "advanced_pyqs": 10,
+      "total_pyqs": 17,
+      "basic_pyqs": 4,
+      "medium_pyqs": 7,
+      "advanced_pyqs": 6,
       "distinct_exam_years": 9,
       "earliest_year": 2013,
       "latest_year": 2026,
-      "mean_word_count": 18.1,
-      "mean_formula_density": 0.0183,
-      "mean_numerical_complexity": 0.1458,
-      "mean_latent_complexity": 0.2586,
-      "mean_ideal_time_sec": 92.4,
+      "mean_word_count": 17.53,
+      "mean_formula_density": 0.0337,
+      "mean_numerical_complexity": 0.1961,
+      "mean_latent_complexity": 0.3023,
+      "mean_ideal_time_sec": 95.29,
       "prerequisite_count": 1,
       "dependent_chapters_count": 2,
       "neet_importance_weight": 0.61,
@@ -1545,11 +1544,11 @@
         2026
       ],
       "sample_question_ids": [
-        "NEET2020_CHEM_113",
-        "NEET_AUG_CHEM_ORG_0659",
-        "NEET_AUG_CHEM_ORG_0652",
-        "NEET_AUG_CHEM_ORG_0646",
-        "NEET2020_CHEM_115"
+        "NEET2013_CHEM_082",
+        "NEET2013_CHEM_083",
+        "NEET2013_CHEM_090",
+        "NEET2014_CHEM_076",
+        "NEET2014_CHEM_077"
       ]
     },
     "Kinematics": {
@@ -1566,7 +1565,7 @@
       "mean_word_count": 41.15,
       "mean_formula_density": 0.2514,
       "mean_numerical_complexity": 0.7279,
-      "mean_latent_complexity": 0.6361,
+      "mean_latent_complexity": 0.7514,
       "mean_ideal_time_sec": 116.06,
       "prerequisite_count": 1,
       "dependent_chapters_count": 4,
@@ -1591,29 +1590,29 @@
         2026
       ],
       "sample_question_ids": [
-        "NEET2023_PHY_017",
-        "NEET2024_PHY_016",
-        "NEET2019_PHY_019",
-        "NEET2016_PHY_037",
-        "NEET2023_PHY_023"
+        "NEET2013_PHY_002",
+        "NEET2013_PHY_003",
+        "NEET2014_PHY_002",
+        "NEET2014_PHY_003",
+        "NEET2015_PHY_143"
       ]
     },
     "Laws of Motion": {
       "chapter": "Laws of Motion",
       "subject": "Physics",
       "cluster": "Mechanics Foundations",
-      "total_pyqs": 40,
-      "basic_pyqs": 10,
-      "medium_pyqs": 20,
-      "advanced_pyqs": 10,
+      "total_pyqs": 28,
+      "basic_pyqs": 7,
+      "medium_pyqs": 15,
+      "advanced_pyqs": 6,
       "distinct_exam_years": 13,
       "earliest_year": 2013,
       "latest_year": 2026,
-      "mean_word_count": 40.23,
-      "mean_formula_density": 0.1301,
-      "mean_numerical_complexity": 0.4667,
-      "mean_latent_complexity": 0.5886,
-      "mean_ideal_time_sec": 115.05,
+      "mean_word_count": 43.82,
+      "mean_formula_density": 0.1252,
+      "mean_numerical_complexity": 0.5238,
+      "mean_latent_complexity": 0.682,
+      "mean_ideal_time_sec": 114.04,
       "prerequisite_count": 1,
       "dependent_chapters_count": 6,
       "neet_importance_weight": 1.31,
@@ -1636,11 +1635,11 @@
         2026
       ],
       "sample_question_ids": [
-        "NEET_AUG_PHYS_MECH_0818",
-        "NEET_AUG_PHYS_MECH_0827",
-        "NEET2015_PHY_158",
-        "NEET2019_PHY_033",
-        "NEET2018_PHY_033"
+        "NEET2013_PHY_005",
+        "NEET2013_PHY_007",
+        "NEET2014_PHY_005",
+        "NEET2014_PHY_006",
+        "NEET2014_PHY_016"
       ]
     },
     "Locomotion & Neuro-Endocrine Control": {
@@ -1657,7 +1656,7 @@
       "mean_word_count": 21.02,
       "mean_formula_density": 0.0,
       "mean_numerical_complexity": 0.034,
-      "mean_latent_complexity": 0.1864,
+      "mean_latent_complexity": 0.189,
       "mean_ideal_time_sec": 73.65,
       "prerequisite_count": 2,
       "dependent_chapters_count": 1,
@@ -1683,29 +1682,29 @@
         2026
       ],
       "sample_question_ids": [
-        "NEET2014_BIO_158",
-        "NEET2014_BIO_155",
-        "NEET2020_BIO_081",
-        "NEET2020_BIO_090",
-        "NEET2016_BIO_092"
+        "NEET2013_BIO_140",
+        "NEET2013_BIO_148",
+        "NEET2013_BIO_155",
+        "NEET2013_BIO_156",
+        "NEET2013_BIO_157"
       ]
     },
     "Magnetic Effects of Current": {
       "chapter": "Magnetic Effects of Current",
       "subject": "Physics",
       "cluster": "Electromagnetism",
-      "total_pyqs": 40,
-      "basic_pyqs": 10,
-      "medium_pyqs": 20,
-      "advanced_pyqs": 10,
+      "total_pyqs": 20,
+      "basic_pyqs": 2,
+      "medium_pyqs": 11,
+      "advanced_pyqs": 7,
       "distinct_exam_years": 12,
       "earliest_year": 2013,
       "latest_year": 2026,
-      "mean_word_count": 33.05,
-      "mean_formula_density": 0.2629,
-      "mean_numerical_complexity": 0.4208,
-      "mean_latent_complexity": 0.5693,
-      "mean_ideal_time_sec": 114.6,
+      "mean_word_count": 42.4,
+      "mean_formula_density": 0.1683,
+      "mean_numerical_complexity": 0.6167,
+      "mean_latent_complexity": 0.7074,
+      "mean_ideal_time_sec": 121.75,
       "prerequisite_count": 2,
       "dependent_chapters_count": 3,
       "neet_importance_weight": 0.99,
@@ -1728,29 +1727,29 @@
         2026
       ],
       "sample_question_ids": [
-        "NEET_AUG_PHYS_EMAG_1210",
-        "NEET2024_PHY_001",
-        "NEET_AUG_PHYS_EMAG_1211",
-        "NEET_AUG_PHYS_EMAG_1205",
-        "NEET_AUG_PHYS_EMAG_1209"
+        "NEET2013_PHY_028",
+        "NEET2014_PHY_031",
+        "NEET2016_PHY_002",
+        "NEET2017_PHY_029",
+        "NEET2019_PHY_041"
       ]
     },
     "Magnetism & Matter": {
       "chapter": "Magnetism & Matter",
       "subject": "Physics",
       "cluster": "Electromagnetism",
-      "total_pyqs": 40,
-      "basic_pyqs": 10,
-      "medium_pyqs": 20,
-      "advanced_pyqs": 10,
+      "total_pyqs": 7,
+      "basic_pyqs": 1,
+      "medium_pyqs": 3,
+      "advanced_pyqs": 3,
       "distinct_exam_years": 7,
       "earliest_year": 2014,
       "latest_year": 2022,
-      "mean_word_count": 19.95,
-      "mean_formula_density": 0.2394,
-      "mean_numerical_complexity": 0.2042,
-      "mean_latent_complexity": 0.4339,
-      "mean_ideal_time_sec": 111.6,
+      "mean_word_count": 33.0,
+      "mean_formula_density": 0.365,
+      "mean_numerical_complexity": 0.3333,
+      "mean_latent_complexity": 0.5985,
+      "mean_ideal_time_sec": 121.43,
       "prerequisite_count": 1,
       "dependent_chapters_count": 0,
       "neet_importance_weight": 0.2,
@@ -1767,11 +1766,11 @@
         2022
       ],
       "sample_question_ids": [
-        "NEET_AUG_PHYS_EMAG_1329",
-        "NEET_AUG_PHYS_EMAG_1328",
+        "NEET2014_PHY_029",
         "NEET2016_PHY_003",
-        "NEET_AUG_PHYS_EMAG_1341",
-        "NEET_AUG_PHYS_EMAG_1337"
+        "NEET2017_PHY_028",
+        "NEET2018_PHY_027",
+        "NEET2019_PHY_026"
       ]
     },
     "Mole Concept / Stoichiometry": {
@@ -1788,7 +1787,7 @@
       "mean_word_count": 23.25,
       "mean_formula_density": 0.1113,
       "mean_numerical_complexity": 0.3508,
-      "mean_latent_complexity": 0.3688,
+      "mean_latent_complexity": 0.4196,
       "mean_ideal_time_sec": 95.19,
       "prerequisite_count": 0,
       "dependent_chapters_count": 6,
@@ -1811,11 +1810,11 @@
         2026
       ],
       "sample_question_ids": [
-        "RENEET2026_CHEM_098",
+        "NEET2013_CHEM_056",
+        "NEET2013_CHEM_057",
+        "NEET2013_CHEM_062",
         "NEET2013_CHEM_063",
-        "NEET2014_CHEM_069",
-        "NEET2020_CHEM_117",
-        "NEET2013_CHEM_062"
+        "NEET2013_CHEM_070"
       ]
     },
     "Morphology of Flowering Plants": {
@@ -1858,10 +1857,10 @@
       ],
       "sample_question_ids": [
         "NEET2013_BIO_095",
-        "NEET2013_BIO_117",
-        "NEET2018_BIO_129",
-        "NEET2014_BIO_119",
-        "NEET2015_BIO_053"
+        "NEET2013_BIO_097",
+        "NEET2013_BIO_099",
+        "NEET2013_BIO_102",
+        "NEET2013_BIO_114"
       ]
     },
     "Oscillations & Waves": {
@@ -1878,7 +1877,7 @@
       "mean_word_count": 37.16,
       "mean_formula_density": 0.1482,
       "mean_numerical_complexity": 0.585,
-      "mean_latent_complexity": 0.5778,
+      "mean_latent_complexity": 0.6549,
       "mean_ideal_time_sec": 114.94,
       "prerequisite_count": 3,
       "dependent_chapters_count": 3,
@@ -1905,29 +1904,29 @@
         2026
       ],
       "sample_question_ids": [
-        "NEET2019_PHY_008",
-        "RENEET2026_PHY_038",
-        "NEET2013_PHY_033",
-        "NEET2022_PHY_010",
-        "NEET2025_PHY_038"
+        "NEET2013_PHY_020",
+        "NEET2013_PHY_021",
+        "NEET2013_PHY_022",
+        "NEET2013_PHY_031",
+        "NEET2013_PHY_033"
       ]
     },
     "Periodic Table": {
       "chapter": "Periodic Table",
       "subject": "Chemistry",
       "cluster": "Inorganic Chemistry",
-      "total_pyqs": 40,
-      "basic_pyqs": 10,
-      "medium_pyqs": 20,
-      "advanced_pyqs": 10,
+      "total_pyqs": 13,
+      "basic_pyqs": 3,
+      "medium_pyqs": 8,
+      "advanced_pyqs": 2,
       "distinct_exam_years": 7,
       "earliest_year": 2014,
       "latest_year": 2026,
-      "mean_word_count": 17.68,
-      "mean_formula_density": 0.1076,
-      "mean_numerical_complexity": 0.1458,
-      "mean_latent_complexity": 0.2998,
-      "mean_ideal_time_sec": 93.38,
+      "mean_word_count": 19.46,
+      "mean_formula_density": 0.0617,
+      "mean_numerical_complexity": 0.141,
+      "mean_latent_complexity": 0.3213,
+      "mean_ideal_time_sec": 91.62,
       "prerequisite_count": 1,
       "dependent_chapters_count": 4,
       "neet_importance_weight": 0.5,
@@ -1944,11 +1943,11 @@
         2026
       ],
       "sample_question_ids": [
-        "NEET_AUG_CHEM_INORG_0469",
-        "NEET_AUG_CHEM_INORG_0462",
-        "NEET_AUG_CHEM_INORG_0473",
-        "NEET_AUG_CHEM_INORG_0466",
-        "NEET2015_CHEM_010"
+        "NEET2014_CHEM_061",
+        "NEET2015_CHEM_010",
+        "NEET2015_CHEM_038",
+        "NEET2016_CHEM_051",
+        "NEET2016_CHEM_077"
       ]
     },
     "Plant Kingdom": {
@@ -1965,7 +1964,7 @@
       "mean_word_count": 18.84,
       "mean_formula_density": 0.0,
       "mean_numerical_complexity": 0.0923,
-      "mean_latent_complexity": 0.1831,
+      "mean_latent_complexity": 0.1881,
       "mean_ideal_time_sec": 73.75,
       "prerequisite_count": 1,
       "dependent_chapters_count": 1,
@@ -1990,11 +1989,11 @@
         2026
       ],
       "sample_question_ids": [
-        "RENEET2026_BIO_130",
-        "NEET2016_BIO_140",
-        "NEET2017_BIO_112",
-        "NEET2020_BIO_071",
-        "NEET2021_BIO_103"
+        "NEET2013_BIO_091",
+        "NEET2013_BIO_094",
+        "NEET2013_BIO_096",
+        "NEET2013_BIO_135",
+        "NEET2014_BIO_095"
       ]
     },
     "Plant Physiology": {
@@ -2011,7 +2010,7 @@
       "mean_word_count": 21.0,
       "mean_formula_density": 0.0,
       "mean_numerical_complexity": 0.0751,
-      "mean_latent_complexity": 0.2057,
+      "mean_latent_complexity": 0.2096,
       "mean_ideal_time_sec": 74.08,
       "prerequisite_count": 3,
       "dependent_chapters_count": 1,
@@ -2039,28 +2038,28 @@
       ],
       "sample_question_ids": [
         "NEET2013_BIO_100",
-        "NEET2014_BIO_111",
-        "NEET2015_BIO_088",
-        "NEET2015_BIO_092",
-        "NEET2016_BIO_113"
+        "NEET2013_BIO_108",
+        "NEET2013_BIO_110",
+        "NEET2014_BIO_108",
+        "NEET2014_BIO_110"
       ]
     },
     "Properties of Matter": {
       "chapter": "Properties of Matter",
       "subject": "Physics",
       "cluster": "Bulk Matter & Thermal",
-      "total_pyqs": 40,
-      "basic_pyqs": 10,
-      "medium_pyqs": 20,
-      "advanced_pyqs": 10,
+      "total_pyqs": 15,
+      "basic_pyqs": 4,
+      "medium_pyqs": 7,
+      "advanced_pyqs": 4,
       "distinct_exam_years": 8,
       "earliest_year": 2013,
       "latest_year": 2023,
-      "mean_word_count": 29.32,
-      "mean_formula_density": 0.1563,
-      "mean_numerical_complexity": 0.2625,
-      "mean_latent_complexity": 0.4793,
-      "mean_ideal_time_sec": 112.5,
+      "mean_word_count": 36.87,
+      "mean_formula_density": 0.0997,
+      "mean_numerical_complexity": 0.3,
+      "mean_latent_complexity": 0.5275,
+      "mean_ideal_time_sec": 112.67,
       "prerequisite_count": 2,
       "dependent_chapters_count": 1,
       "neet_importance_weight": 0.6,
@@ -2079,29 +2078,29 @@
         2023
       ],
       "sample_question_ids": [
-        "NEET_AUG_PHYS_MECH_0909",
+        "NEET2013_PHY_012",
         "NEET2013_PHY_013",
-        "NEET_AUG_PHYS_MECH_0892",
-        "NEET_AUG_PHYS_MECH_0912",
-        "NEET_AUG_PHYS_MECH_0895"
+        "NEET2014_PHY_013",
+        "NEET2014_PHY_014",
+        "NEET2015_PHY_139"
       ]
     },
     "Ray Optics": {
       "chapter": "Ray Optics",
       "subject": "Physics",
       "cluster": "Waves & Optics",
-      "total_pyqs": 40,
-      "basic_pyqs": 10,
-      "medium_pyqs": 20,
-      "advanced_pyqs": 10,
+      "total_pyqs": 30,
+      "basic_pyqs": 8,
+      "medium_pyqs": 15,
+      "advanced_pyqs": 7,
       "distinct_exam_years": 14,
       "earliest_year": 2013,
       "latest_year": 2026,
-      "mean_word_count": 37.17,
-      "mean_formula_density": 0.0917,
-      "mean_numerical_complexity": 0.4958,
-      "mean_latent_complexity": 0.5789,
-      "mean_ideal_time_sec": 114.7,
+      "mean_word_count": 39.83,
+      "mean_formula_density": 0.0934,
+      "mean_numerical_complexity": 0.5167,
+      "mean_latent_complexity": 0.6715,
+      "mean_ideal_time_sec": 113.83,
       "prerequisite_count": 1,
       "dependent_chapters_count": 1,
       "neet_importance_weight": 1.35,
@@ -2125,29 +2124,29 @@
         2026
       ],
       "sample_question_ids": [
-        "NEET_AUG_PHYS_OPT_MOD_1004",
-        "NEET_AUG_PHYS_OPT_MOD_1002",
+        "NEET2013_PHY_039",
         "NEET2014_PHY_037",
-        "NEET2019_PHY_015",
-        "NEET2021_PHY_005"
+        "NEET2015_PHY_177",
+        "NEET2015_PHY_180",
+        "NEET2016_PHY_022"
       ]
     },
     "Redox Reactions & Electrochemistry": {
       "chapter": "Redox Reactions & Electrochemistry",
       "subject": "Chemistry",
       "cluster": "Physical Chemistry",
-      "total_pyqs": 40,
-      "basic_pyqs": 10,
-      "medium_pyqs": 20,
-      "advanced_pyqs": 10,
+      "total_pyqs": 28,
+      "basic_pyqs": 8,
+      "medium_pyqs": 13,
+      "advanced_pyqs": 7,
       "distinct_exam_years": 13,
       "earliest_year": 2013,
       "latest_year": 2026,
-      "mean_word_count": 28.52,
-      "mean_formula_density": 0.1084,
-      "mean_numerical_complexity": 0.5167,
-      "mean_latent_complexity": 0.4534,
-      "mean_ideal_time_sec": 97.03,
+      "mean_word_count": 30.75,
+      "mean_formula_density": 0.0637,
+      "mean_numerical_complexity": 0.5893,
+      "mean_latent_complexity": 0.5474,
+      "mean_ideal_time_sec": 96.39,
       "prerequisite_count": 2,
       "dependent_chapters_count": 1,
       "neet_importance_weight": 1.02,
@@ -2171,11 +2170,11 @@
         2026
       ],
       "sample_question_ids": [
-        "NEET2021_CHEM_065",
+        "NEET2013_CHEM_049",
+        "NEET2013_CHEM_051",
+        "NEET2013_CHEM_053",
         "NEET2013_CHEM_087",
-        "NEET2024_CHEM_084",
-        "NEET2024_CHEM_067",
-        "NEET_AUG_CHEM_PHYS_0216"
+        "NEET2014_CHEM_054"
       ]
     },
     "Reproduction & Human Development": {
@@ -2192,7 +2191,7 @@
       "mean_word_count": 20.9,
       "mean_formula_density": 0.0,
       "mean_numerical_complexity": 0.0493,
-      "mean_latent_complexity": 0.2097,
+      "mean_latent_complexity": 0.2122,
       "mean_ideal_time_sec": 74.35,
       "prerequisite_count": 3,
       "dependent_chapters_count": 0,
@@ -2219,29 +2218,29 @@
         2026
       ],
       "sample_question_ids": [
-        "NEET2014_BIO_138",
-        "NEET2018_BIO_146",
-        "NEET2015_BIO_072",
-        "NEET2015_BIO_106",
-        "NEET2016_BIO_093"
+        "NEET2013_BIO_119",
+        "NEET2013_BIO_134",
+        "NEET2013_BIO_153",
+        "NEET2013_BIO_159",
+        "NEET2013_BIO_161"
       ]
     },
     "Rotational Motion": {
       "chapter": "Rotational Motion",
       "subject": "Physics",
       "cluster": "Mechanics Core",
-      "total_pyqs": 40,
-      "basic_pyqs": 10,
-      "medium_pyqs": 20,
-      "advanced_pyqs": 10,
+      "total_pyqs": 29,
+      "basic_pyqs": 5,
+      "medium_pyqs": 15,
+      "advanced_pyqs": 9,
       "distinct_exam_years": 13,
       "earliest_year": 2013,
       "latest_year": 2026,
-      "mean_word_count": 38.38,
-      "mean_formula_density": 0.0681,
-      "mean_numerical_complexity": 0.45,
-      "mean_latent_complexity": 0.5393,
-      "mean_ideal_time_sec": 113.88,
+      "mean_word_count": 43.14,
+      "mean_formula_density": 0.0515,
+      "mean_numerical_complexity": 0.546,
+      "mean_latent_complexity": 0.6377,
+      "mean_ideal_time_sec": 117.76,
       "prerequisite_count": 2,
       "dependent_chapters_count": 0,
       "neet_importance_weight": 1.02,
@@ -2265,29 +2264,29 @@
         2026
       ],
       "sample_question_ids": [
+        "NEET2013_PHY_008",
+        "NEET2013_PHY_009",
         "NEET2013_PHY_029",
-        "NEET2022_PHY_031",
-        "NEET_AUG_PHYS_MECH_0810",
-        "NEET2023_PHY_014",
-        "NEET_AUG_PHYS_MECH_0812"
+        "NEET2014_PHY_009",
+        "NEET2014_PHY_010"
       ]
     },
     "Semiconductor Electronics": {
       "chapter": "Semiconductor Electronics",
       "subject": "Physics",
       "cluster": "Modern Physics",
-      "total_pyqs": 40,
-      "basic_pyqs": 10,
-      "medium_pyqs": 20,
-      "advanced_pyqs": 10,
+      "total_pyqs": 29,
+      "basic_pyqs": 6,
+      "medium_pyqs": 16,
+      "advanced_pyqs": 7,
       "distinct_exam_years": 12,
       "earliest_year": 2013,
       "latest_year": 2026,
-      "mean_word_count": 21.7,
-      "mean_formula_density": 0.1238,
-      "mean_numerical_complexity": 0.1667,
-      "mean_latent_complexity": 0.4167,
-      "mean_ideal_time_sec": 111.15,
+      "mean_word_count": 22.79,
+      "mean_formula_density": 0.1229,
+      "mean_numerical_complexity": 0.1782,
+      "mean_latent_complexity": 0.4566,
+      "mean_ideal_time_sec": 112.07,
       "prerequisite_count": 2,
       "dependent_chapters_count": 0,
       "neet_importance_weight": 1.23,
@@ -2310,29 +2309,29 @@
         2026
       ],
       "sample_question_ids": [
-        "NEET_AUG_PHYS_OPT_MOD_1017",
-        "NEET2020_PHY_156",
-        "NEET_AUG_PHYS_OPT_MOD_1016",
-        "NEET2018_PHY_016",
-        "NEET_AUG_PHYS_OPT_MOD_1014"
+        "NEET2013_PHY_043",
+        "NEET2013_PHY_045",
+        "NEET2014_PHY_034",
+        "NEET2014_PHY_044",
+        "NEET2014_PHY_045"
       ]
     },
     "Solutions": {
       "chapter": "Solutions",
       "subject": "Chemistry",
       "cluster": "Physical Chemistry",
-      "total_pyqs": 40,
-      "basic_pyqs": 10,
-      "medium_pyqs": 20,
-      "advanced_pyqs": 10,
+      "total_pyqs": 15,
+      "basic_pyqs": 3,
+      "medium_pyqs": 8,
+      "advanced_pyqs": 4,
       "distinct_exam_years": 11,
       "earliest_year": 2014,
       "latest_year": 2026,
-      "mean_word_count": 24.27,
-      "mean_formula_density": 0.1093,
-      "mean_numerical_complexity": 0.3,
-      "mean_latent_complexity": 0.4076,
-      "mean_ideal_time_sec": 95.97,
+      "mean_word_count": 29.4,
+      "mean_formula_density": 0.0999,
+      "mean_numerical_complexity": 0.4,
+      "mean_latent_complexity": 0.4665,
+      "mean_ideal_time_sec": 97.2,
       "prerequisite_count": 2,
       "dependent_chapters_count": 0,
       "neet_importance_weight": 0.57,
@@ -2354,10 +2353,10 @@
         2026
       ],
       "sample_question_ids": [
-        "NEET2017_CHEM_076",
-        "NEET2019_CHEM_066",
-        "NEET_AUG_CHEM_PHYS_0236",
-        "NEET_AUG_CHEM_PHYS_0222",
+        "NEET2014_CHEM_052",
+        "NEET2015_CHEM_026",
+        "NEET2016_CHEM_086",
+        "NEET2017_CHEM_048",
         "NEET2017_CHEM_054"
       ]
     },
@@ -2365,18 +2364,18 @@
       "chapter": "States of Matter",
       "subject": "Chemistry",
       "cluster": "Physical Chemistry",
-      "total_pyqs": 40,
-      "basic_pyqs": 10,
-      "medium_pyqs": 20,
-      "advanced_pyqs": 10,
+      "total_pyqs": 19,
+      "basic_pyqs": 3,
+      "medium_pyqs": 10,
+      "advanced_pyqs": 6,
       "distinct_exam_years": 12,
       "earliest_year": 2013,
       "latest_year": 2026,
-      "mean_word_count": 20.8,
-      "mean_formula_density": 0.1764,
-      "mean_numerical_complexity": 0.3708,
-      "mean_latent_complexity": 0.3981,
-      "mean_ideal_time_sec": 95.83,
+      "mean_word_count": 21.68,
+      "mean_formula_density": 0.1552,
+      "mean_numerical_complexity": 0.4737,
+      "mean_latent_complexity": 0.483,
+      "mean_ideal_time_sec": 98.79,
       "prerequisite_count": 2,
       "dependent_chapters_count": 4,
       "neet_importance_weight": 0.79,
@@ -2399,11 +2398,11 @@
         2026
       ],
       "sample_question_ids": [
-        "RENEET2026_CHEM_096",
-        "NEET_AUG_CHEM_PHYS_0307",
-        "NEET_AUG_CHEM_PHYS_0306",
-        "NEET_AUG_CHEM_PHYS_0297",
-        "NEET2018_CHEM_086"
+        "NEET2013_CHEM_055",
+        "NEET2014_CHEM_049",
+        "NEET2015_CHEM_017",
+        "NEET2015_CHEM_022",
+        "NEET2016_CHEM_065"
       ]
     },
     "Structural Organisation in Animals": {
@@ -2420,7 +2419,7 @@
       "mean_word_count": 20.39,
       "mean_formula_density": 0.0147,
       "mean_numerical_complexity": 0.0547,
-      "mean_latent_complexity": 0.2229,
+      "mean_latent_complexity": 0.2271,
       "mean_ideal_time_sec": 74.55,
       "prerequisite_count": 2,
       "dependent_chapters_count": 3,
@@ -2447,10 +2446,10 @@
       ],
       "sample_question_ids": [
         "NEET2013_BIO_131",
-        "NEET2016_BIO_149",
-        "NEET2013_BIO_160",
-        "NEET2022_BIO_174",
-        "RENEET2026_BIO_146"
+        "NEET2013_BIO_141",
+        "NEET2013_BIO_150",
+        "NEET2013_BIO_154",
+        "NEET2013_BIO_160"
       ]
     },
     "Structure of Atom": {
@@ -2467,7 +2466,7 @@
       "mean_word_count": 19.07,
       "mean_formula_density": 0.1223,
       "mean_numerical_complexity": 0.3214,
-      "mean_latent_complexity": 0.3461,
+      "mean_latent_complexity": 0.3936,
       "mean_ideal_time_sec": 94.61,
       "prerequisite_count": 1,
       "dependent_chapters_count": 3,
@@ -2492,29 +2491,29 @@
         2026
       ],
       "sample_question_ids": [
-        "NEET2014_CHEM_064",
-        "NEET2022_CHEM_059",
-        "NEET2017_CHEM_047",
-        "NEET2023_CHEM_094",
-        "NEET2016_CHEM_061"
+        "NEET2013_CHEM_046",
+        "NEET2013_CHEM_047",
+        "NEET2013_CHEM_088",
+        "NEET2014_CHEM_046",
+        "NEET2014_CHEM_064"
       ]
     },
     "Surface Chemistry": {
       "chapter": "Surface Chemistry",
       "subject": "Chemistry",
       "cluster": "Physical Chemistry",
-      "total_pyqs": 40,
-      "basic_pyqs": 10,
-      "medium_pyqs": 20,
-      "advanced_pyqs": 10,
+      "total_pyqs": 9,
+      "basic_pyqs": 1,
+      "medium_pyqs": 6,
+      "advanced_pyqs": 2,
       "distinct_exam_years": 7,
       "earliest_year": 2014,
       "latest_year": 2022,
-      "mean_word_count": 18.2,
-      "mean_formula_density": 0.0428,
-      "mean_numerical_complexity": 0.0458,
-      "mean_latent_complexity": 0.2421,
-      "mean_ideal_time_sec": 92.08,
+      "mean_word_count": 19.0,
+      "mean_formula_density": 0.0,
+      "mean_numerical_complexity": 0.037,
+      "mean_latent_complexity": 0.2499,
+      "mean_ideal_time_sec": 93.78,
       "prerequisite_count": 2,
       "dependent_chapters_count": 0,
       "neet_importance_weight": 0.31,
@@ -2532,11 +2531,11 @@
         2022
       ],
       "sample_question_ids": [
-        "NEET_AUG_CHEM_PHYS_0283",
-        "NEET_AUG_CHEM_PHYS_0279",
-        "NEET_AUG_CHEM_PHYS_0265",
-        "NEET_AUG_CHEM_PHYS_0280",
-        "NEET2020_CHEM_108"
+        "NEET2014_CHEM_050",
+        "NEET2014_CHEM_057",
+        "NEET2016_CHEM_079",
+        "NEET2018_CHEM_075",
+        "NEET2019_CHEM_072"
       ]
     },
     "The Living World & Taxonomy": {
@@ -2553,7 +2552,7 @@
       "mean_word_count": 18.08,
       "mean_formula_density": 0.0,
       "mean_numerical_complexity": 0.0711,
-      "mean_latent_complexity": 0.1776,
+      "mean_latent_complexity": 0.187,
       "mean_ideal_time_sec": 73.48,
       "prerequisite_count": 0,
       "dependent_chapters_count": 2,
@@ -2575,29 +2574,29 @@
         2026
       ],
       "sample_question_ids": [
-        "NEET2015_BIO_111",
-        "RENEET2026_BIO_134",
-        "NEET2018_BIO_135",
-        "NEET2015_BIO_122",
-        "NEET2015_BIO_118"
+        "NEET2013_BIO_092",
+        "NEET2013_BIO_111",
+        "NEET2013_BIO_112",
+        "NEET2013_BIO_118",
+        "NEET2013_BIO_133"
       ]
     },
     "Thermal Physics": {
       "chapter": "Thermal Physics",
       "subject": "Physics",
       "cluster": "Bulk Matter & Thermal",
-      "total_pyqs": 40,
-      "basic_pyqs": 10,
-      "medium_pyqs": 20,
-      "advanced_pyqs": 10,
+      "total_pyqs": 16,
+      "basic_pyqs": 2,
+      "medium_pyqs": 7,
+      "advanced_pyqs": 7,
       "distinct_exam_years": 9,
       "earliest_year": 2013,
       "latest_year": 2026,
-      "mean_word_count": 29.77,
-      "mean_formula_density": 0.19,
-      "mean_numerical_complexity": 0.4083,
-      "mean_latent_complexity": 0.5314,
-      "mean_ideal_time_sec": 113.8,
+      "mean_word_count": 41.44,
+      "mean_formula_density": 0.1214,
+      "mean_numerical_complexity": 0.6667,
+      "mean_latent_complexity": 0.6919,
+      "mean_ideal_time_sec": 123.38,
       "prerequisite_count": 2,
       "dependent_chapters_count": 1,
       "neet_importance_weight": 0.55,
@@ -2617,11 +2616,11 @@
         2026
       ],
       "sample_question_ids": [
-        "NEET2024_PHY_026",
-        "NEET_AUG_PHYS_MECH_0881",
-        "NEET_AUG_PHYS_MECH_0887",
-        "NEET_AUG_PHYS_MECH_0870",
-        "NEET_AUG_PHYS_MECH_0875"
+        "NEET2013_PHY_014",
+        "NEET2013_PHY_015",
+        "NEET2013_PHY_019",
+        "NEET2014_PHY_015",
+        "NEET2015_PHY_161"
       ]
     },
     "Thermodynamics": {
@@ -2638,7 +2637,7 @@
       "mean_word_count": 31.05,
       "mean_formula_density": 0.0791,
       "mean_numerical_complexity": 0.4108,
-      "mean_latent_complexity": 0.4595,
+      "mean_latent_complexity": 0.5084,
       "mean_ideal_time_sec": 105.53,
       "prerequisite_count": 2,
       "dependent_chapters_count": 0,
@@ -2664,29 +2663,29 @@
         2026
       ],
       "sample_question_ids": [
-        "NEET2019_CHEM_086",
-        "NEET2016_CHEM_076",
-        "NEET2023_CHEM_074",
-        "NEET2016_CHEM_050",
-        "NEET2019_CHEM_060"
+        "NEET2013_PHY_017",
+        "NEET2013_PHY_018",
+        "NEET2014_PHY_017",
+        "NEET2014_PHY_019",
+        "NEET2015_PHY_148"
       ]
     },
     "Units & Dimensions": {
       "chapter": "Units & Dimensions",
       "subject": "Physics",
       "cluster": "Mechanics Foundations",
-      "total_pyqs": 40,
-      "basic_pyqs": 10,
-      "medium_pyqs": 20,
-      "advanced_pyqs": 10,
+      "total_pyqs": 21,
+      "basic_pyqs": 7,
+      "medium_pyqs": 10,
+      "advanced_pyqs": 4,
       "distinct_exam_years": 13,
       "earliest_year": 2013,
       "latest_year": 2026,
-      "mean_word_count": 29.32,
-      "mean_formula_density": 0.2182,
-      "mean_numerical_complexity": 0.5042,
-      "mean_latent_complexity": 0.5607,
-      "mean_ideal_time_sec": 114.4,
+      "mean_word_count": 35.57,
+      "mean_formula_density": 0.0619,
+      "mean_numerical_complexity": 0.6032,
+      "mean_latent_complexity": 0.6079,
+      "mean_ideal_time_sec": 110.1,
       "prerequisite_count": 0,
       "dependent_chapters_count": 2,
       "neet_importance_weight": 0.97,
@@ -2707,29 +2706,29 @@
         2026
       ],
       "sample_question_ids": [
-        "NEET_AUG_PHYS_MECH_0860",
-        "NEET2022_PHY_034",
-        "NEET2020_PHY_167",
-        "NEET_AUG_PHYS_MECH_0856",
-        "NEET2023_PHY_028"
+        "NEET2013_PHY_001",
+        "NEET2014_PHY_001",
+        "NEET2015_PHY_174",
+        "NEET2017_PHY_019",
+        "NEET2018_PHY_037"
       ]
     },
     "Wave Optics": {
       "chapter": "Wave Optics",
       "subject": "Physics",
       "cluster": "Waves & Optics",
-      "total_pyqs": 40,
-      "basic_pyqs": 10,
-      "medium_pyqs": 20,
-      "advanced_pyqs": 10,
+      "total_pyqs": 10,
+      "basic_pyqs": 0,
+      "medium_pyqs": 8,
+      "advanced_pyqs": 2,
       "distinct_exam_years": 7,
       "earliest_year": 2013,
       "latest_year": 2025,
-      "mean_word_count": 25.12,
-      "mean_formula_density": 0.2045,
-      "mean_numerical_complexity": 0.2417,
-      "mean_latent_complexity": 0.4774,
-      "mean_ideal_time_sec": 112.53,
+      "mean_word_count": 35.3,
+      "mean_formula_density": 0.1716,
+      "mean_numerical_complexity": 0.3833,
+      "mean_latent_complexity": 0.5933,
+      "mean_ideal_time_sec": 117.5,
       "prerequisite_count": 3,
       "dependent_chapters_count": 1,
       "neet_importance_weight": 0.38,
@@ -2748,29 +2747,29 @@
         2025
       ],
       "sample_question_ids": [
-        "NEET_AUG_PHYS_OPT_MOD_1068",
-        "NEET_AUG_PHYS_OPT_MOD_1069",
-        "NEET_AUG_PHYS_OPT_MOD_1064",
-        "NEET_AUG_PHYS_OPT_MOD_1042",
-        "NEET_AUG_PHYS_OPT_MOD_1063"
+        "NEET2013_PHY_042",
+        "NEET2014_PHY_036",
+        "NEET2015_PHY_155",
+        "NEET2015_PHY_170",
+        "NEET2017_PHY_037"
       ]
     },
     "Work, Energy & Power": {
       "chapter": "Work, Energy & Power",
       "subject": "Physics",
       "cluster": "Mechanics Core",
-      "total_pyqs": 40,
+      "total_pyqs": 34,
       "basic_pyqs": 10,
-      "medium_pyqs": 20,
-      "advanced_pyqs": 10,
+      "medium_pyqs": 16,
+      "advanced_pyqs": 8,
       "distinct_exam_years": 13,
       "earliest_year": 2013,
       "latest_year": 2026,
-      "mean_word_count": 40.52,
-      "mean_formula_density": 0.0785,
-      "mean_numerical_complexity": 0.6,
-      "mean_latent_complexity": 0.5966,
-      "mean_ideal_time_sec": 115.12,
+      "mean_word_count": 41.03,
+      "mean_formula_density": 0.0684,
+      "mean_numerical_complexity": 0.6275,
+      "mean_latent_complexity": 0.6788,
+      "mean_ideal_time_sec": 113.44,
       "prerequisite_count": 2,
       "dependent_chapters_count": 7,
       "neet_importance_weight": 1.45,
@@ -2794,29 +2793,29 @@
         2026
       ],
       "sample_question_ids": [
-        "NEET2019_PHY_012",
-        "NEET2024_PHY_033",
-        "NEET2024_PHY_024",
-        "NEET2024_PHY_005",
-        "NEET2019_PHY_002"
+        "NEET2013_PHY_006",
+        "NEET2013_PHY_016",
+        "NEET2014_PHY_018",
+        "NEET2014_PHY_033",
+        "NEET2014_PHY_039"
       ]
     },
     "d- and f-Block Elements": {
       "chapter": "d- and f-Block Elements",
       "subject": "Chemistry",
       "cluster": "Inorganic Chemistry",
-      "total_pyqs": 40,
-      "basic_pyqs": 10,
-      "medium_pyqs": 20,
-      "advanced_pyqs": 10,
+      "total_pyqs": 23,
+      "basic_pyqs": 6,
+      "medium_pyqs": 10,
+      "advanced_pyqs": 7,
       "distinct_exam_years": 9,
       "earliest_year": 2013,
       "latest_year": 2026,
-      "mean_word_count": 19.88,
-      "mean_formula_density": 0.1047,
-      "mean_numerical_complexity": 0.2542,
-      "mean_latent_complexity": 0.3331,
-      "mean_ideal_time_sec": 94.22,
+      "mean_word_count": 21.78,
+      "mean_formula_density": 0.1213,
+      "mean_numerical_complexity": 0.2609,
+      "mean_latent_complexity": 0.3749,
+      "mean_ideal_time_sec": 95.57,
       "prerequisite_count": 3,
       "dependent_chapters_count": 2,
       "neet_importance_weight": 1.13,
@@ -2837,29 +2836,29 @@
         2026
       ],
       "sample_question_ids": [
-        "NEET2024_CHEM_054",
-        "NEET2014_CHEM_075",
-        "NEET_AUG_CHEM_INORG_0431",
-        "NEET2024_CHEM_066",
-        "NEET_AUG_CHEM_INORG_0419"
+        "NEET2013_CHEM_067",
+        "NEET2013_CHEM_072",
+        "NEET2013_CHEM_076",
+        "NEET2014_CHEM_071",
+        "NEET2014_CHEM_075"
       ]
     },
     "p-Block Elements": {
       "chapter": "p-Block Elements",
       "subject": "Chemistry",
       "cluster": "Inorganic Chemistry",
-      "total_pyqs": 40,
-      "basic_pyqs": 10,
-      "medium_pyqs": 20,
-      "advanced_pyqs": 10,
+      "total_pyqs": 27,
+      "basic_pyqs": 6,
+      "medium_pyqs": 13,
+      "advanced_pyqs": 8,
       "distinct_exam_years": 13,
       "earliest_year": 2013,
       "latest_year": 2025,
-      "mean_word_count": 23.93,
-      "mean_formula_density": 0.0102,
-      "mean_numerical_complexity": 0.15,
-      "mean_latent_complexity": 0.3371,
-      "mean_ideal_time_sec": 94.4,
+      "mean_word_count": 26.3,
+      "mean_formula_density": 0.0151,
+      "mean_numerical_complexity": 0.1728,
+      "mean_latent_complexity": 0.3868,
+      "mean_ideal_time_sec": 96.59,
       "prerequisite_count": 2,
       "dependent_chapters_count": 2,
       "neet_importance_weight": 1.1,
@@ -2883,29 +2882,29 @@
         2025
       ],
       "sample_question_ids": [
-        "NEET2013_CHEM_069",
-        "NEET_AUG_CHEM_INORG_0416",
+        "NEET2013_CHEM_054",
         "NEET2013_CHEM_064",
-        "NEET2021_CHEM_095",
-        "NEET2020_CHEM_101"
+        "NEET2013_CHEM_069",
+        "NEET2013_CHEM_075",
+        "NEET2014_CHEM_068"
       ]
     },
     "s-Block Elements": {
       "chapter": "s-Block Elements",
       "subject": "Chemistry",
       "cluster": "Inorganic Chemistry",
-      "total_pyqs": 40,
-      "basic_pyqs": 10,
-      "medium_pyqs": 20,
-      "advanced_pyqs": 10,
+      "total_pyqs": 7,
+      "basic_pyqs": 0,
+      "medium_pyqs": 4,
+      "advanced_pyqs": 3,
       "distinct_exam_years": 5,
       "earliest_year": 2016,
       "latest_year": 2022,
-      "mean_word_count": 15.4,
-      "mean_formula_density": 0.0046,
-      "mean_numerical_complexity": 0.0625,
-      "mean_latent_complexity": 0.231,
-      "mean_ideal_time_sec": 91.83,
+      "mean_word_count": 16.71,
+      "mean_formula_density": 0.0,
+      "mean_numerical_complexity": 0.0476,
+      "mean_latent_complexity": 0.2744,
+      "mean_ideal_time_sec": 100.29,
       "prerequisite_count": 2,
       "dependent_chapters_count": 0,
       "neet_importance_weight": 0.05,
@@ -2921,11 +2920,11 @@
         2022
       ],
       "sample_question_ids": [
-        "NEET_AUG_CHEM_INORG_0496",
-        "NEET_AUG_CHEM_INORG_0497",
-        "NEET_AUG_CHEM_INORG_0509",
-        "NEET_AUG_CHEM_INORG_0500",
-        "NEET_AUG_CHEM_INORG_0504"
+        "NEET2016_CHEM_052",
+        "NEET2016_CHEM_071",
+        "NEET2019_CHEM_054",
+        "NEET2019_CHEM_088",
+        "NEET2020_CHEM_130"
       ]
     }
   }

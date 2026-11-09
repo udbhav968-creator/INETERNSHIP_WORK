@@ -1,0 +1,18 @@
+{
+  "what_the_rf_accuracy_measures": "reproduction_of_heuristic_tier_labels_not_empirical_difficulty",
+  "baselines_5fold_cv_accuracy": {
+    "majority_class": 0.485,
+    "depth4_tree_on_ideal_time_sec_only": 0.8283,
+    "depth4_tree_on_ideal_time_sec_and_subject": 0.9587
+  },
+  "tier_vs_original_source_tags": {
+    "available": true,
+    "n": 2400,
+    "exact_agreement_percent": 51.25,
+    "cohens_kappa": 0.0968,
+    "changed_from_original": 1170
+  },
+  "student_responses_available": 0,
+  "empirical_difficulty_validation_possible": false,
+  "interpretation": "Tiers are within-chapter text-complexity quantiles and ideal_time_sec is a function of the tier, so high accuracy here shows the labelling rule is learnable, not that difficulty is predicted. Empirical validation needs logged student responses."
+}

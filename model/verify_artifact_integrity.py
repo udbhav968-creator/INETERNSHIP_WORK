@@ -6,6 +6,7 @@ import time
 from pathlib import Path
 
 from .corpus_distribution_and_readiness_audit import (
+    CLEAN_QBANK_PATH,
     DISTRIBUTION_REPORT_PATH,
     format_distribution_markdown_table,
     run_corpus_distribution_and_readiness_audit,
@@ -86,8 +87,12 @@ def verify_all_ml_artifacts(
 
     if not COMPACT_RF_RUNTIME.loaded:
         raise RuntimeError("Compact 300-tree serverless RF runtime failed to load")
-    if len(CALIBRATED_ITEMS) != 3215:
-        raise RuntimeError(f"Expected 3215 calibrated 3PL IRT items, got {len(CALIBRATED_ITEMS)}")
+    with open(CLEAN_QBANK_PATH, encoding="utf-8") as f:
+        expected_items = len(json.load(f))
+    if len(CALIBRATED_ITEMS) != expected_items:
+        raise RuntimeError(
+            f"Expected {expected_items} parameterised 3PL IRT items (one per clean question), got {len(CALIBRATED_ITEMS)}"
+        )
     if len(DAG_NODES) != 65 or len(RAG_INDEX.chunks) != 65 or len(COGNITIVE_SKILLS) != 8:
         raise RuntimeError("Curriculum graph / RAG / DINA skill count mismatch")
     if len(CHAPTER_BKT_REGISTRY) != 65:
