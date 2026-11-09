@@ -210,7 +210,9 @@ def signup(db: Session, name: str, email: str, password: str) -> Student:
 
 
 def login(db: Session, email: str, password: str, vault_token: Optional[str] = None) -> Student:
-    email = email.strip().lower()
+    email = (email or "").strip().lower()
+    if not email or not password:
+        raise HTTPException(status_code=401, detail="Incorrect email or password")
     if vault_token:
         hydrated = hydrate_student_from_vault(db, vault_token)
         if hydrated and hydrated.email != email:

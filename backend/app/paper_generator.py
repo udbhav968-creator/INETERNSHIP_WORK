@@ -393,4 +393,39 @@ def generate_paper(
             )
             paper.extend(picked)
 
+    if len(paper) < total_length:
+        needed = total_length - len(paper)
+        sorted_topics = sorted(
+            [t for t in _TOPIC_IMPORTANCE if not (syllabus_mode == "nmc_reduced" and t in NMC_REDUCED_SYLLABUS_EXCLUSIONS)],
+            key=lambda t: _TOPIC_IMPORTANCE.get(t, 1.0),
+            reverse=True,
+        )
+        for tid in sorted_topics:
+            if len(paper) >= total_length:
+                break
+            state = state_by_topic.get(tid)
+            m_prob = float(state.mastery_prob) if state and getattr(state, "mastery_prob", None) is not None else get_chapter_bkt_prior(tid)
+            lvl = state.level if state and getattr(state, "level", None) else ("advanced" if m_prob >= 0.70 else ("medium" if m_prob >= 0.45 else "basic"))
+            th = float(getattr(state, "irt_theta", global_theta) or global_theta) if state else global_theta
+            pf = state.pace_flag if state else None
+            pr = compute_prerequisite_readiness(tid, mastery_map)
+            imp_val = float(_TOPIC_IMPORTANCE.get(tid, 1.0))
+            fill_q = _select_topic_questions(
+                pools=pools,
+                topic_id=tid,
+                level=lvl,
+                target_count=min(needed, 2),
+                attempted_all=attempted_all,
+                mastered_correct=mastered_correct,
+                excluded_ids=excluded_ids,
+                student_id=student_id,
+                topic_theta=th,
+                mastery_prob=m_prob,
+                topic_importance=imp_val,
+                prereq_ready=pr,
+                pace_flag=pf,
+            )
+            paper.extend(fill_q)
+            needed = total_length - len(paper)
+
     return paper

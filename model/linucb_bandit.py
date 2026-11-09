@@ -105,8 +105,10 @@ def _load_bandit_checkpoint() -> None:
 def _save_bandit_checkpoint() -> None:
     try:
         payload = {sid: st.to_dict() for sid, st in _STUDENT_BANDITS.items()}
-        with open(_CHECKPOINT_PATH, "w", encoding="utf-8") as f:
+        tmp_path = _CHECKPOINT_PATH.with_suffix(".tmp")
+        with open(tmp_path, "w", encoding="utf-8") as f:
             json.dump(payload, f, indent=2)
+        os.replace(tmp_path, _CHECKPOINT_PATH)
     except Exception:
         pass
 

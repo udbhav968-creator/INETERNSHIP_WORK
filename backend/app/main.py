@@ -78,6 +78,13 @@ from model.streaming_online_calibration import STREAMING_CALIBRATION_ENGINE
 with open(MODEL_DIR / "topic_importance.json", encoding="utf-8") as f:
     _TOPIC_IMPORTANCE = json.load(f)
 
+
+def _read_json_safe(p: Path) -> dict:
+    if not p.exists():
+        return {}
+    with open(p, encoding="utf-8") as f:
+        return json.load(f)
+
 app = FastAPI(
     title="Klassed NEET Adaptive Engine",
     version="2.0.0",
@@ -200,6 +207,18 @@ def _process_single_attempt_no_commit(
         now_dt = datetime.now(timezone.utc) if ts.tzinfo else datetime.now(timezone.utc).replace(tzinfo=None)
         elapsed_hours = max(0.0, (now_dt - ts).total_seconds() / 3600.0)
 
+    student = db.query(Student).filter_by(student_id=attempt.student_id).first()
+    if not student:
+        student = Student(
+            student_id=attempt.student_id,
+            name=attempt.student_id.title(),
+            email=f"{attempt.student_id.lower()}@klassed.in",
+            password_hash="serverless_provisioned",
+            onboarded=True,
+        )
+        db.add(student)
+        db.flush()
+
     db.add(
         TestAttempt(
             student_id=attempt.student_id,
@@ -276,7 +295,6 @@ def _process_single_attempt_no_commit(
         time_ratio=time_ratio,
     )
 
-    student = db.query(Student).filter_by(student_id=attempt.student_id).first()
     if student:
         curr_global = float(getattr(student, "global_theta", 0.0) or 0.0)
         student.global_theta = round(0.85 * curr_global + 0.15 * new_topic_theta, 4)
@@ -408,15 +426,17 @@ def _sync_serverless_context(
                 continue
             if not db.query(Question.question_id).filter_by(question_id=qid).first():
                 continue
+            safe_t = max(0.5, float(item[3])) if item[3] is not None else 60.0
+            dwell_val = int(item[6]) if len(item) > 6 and item[6] is not None else max(1000, int(round(safe_t * 1000.0)))
             att_in = schemas.AttemptIn(
                 student_id=sid_for_journal,
                 question_id=qid,
                 paper_number=p_num,
                 selected_option=str(item[2]),
-                time_taken_seconds=max(1, int(item[3])),
-                option_switches=int(item[4]) if len(item) > 4 else 0,
-                hesitation_ms=int(item[5]) if len(item) > 5 else 0,
-                dwell_time_ms=int(item[6]) if len(item) > 6 else max(1000, int(item[3]) * 1000),
+                time_taken_seconds=safe_t,
+                option_switches=int(item[4]) if len(item) > 4 and item[4] is not None else 0,
+                hesitation_ms=int(item[5]) if len(item) > 5 and item[5] is not None else 0,
+                dwell_time_ms=dwell_val,
             )
             _process_single_attempt_no_commit(att_in, db)
             existing_pairs.add((p_num, qid))
@@ -949,9 +969,9 @@ def _compute_revision_calendar(
         or list((study_plan or {}).get("ranked_improvement_plan", []))
     )
     mastery_map = {
-        td.get("topic_id"): float(td.get("current_mastery", 0.40))
+        td.get("topic_id"): float(td.get("mastery_prob") if td.get("mastery_prob") is not None else td.get("current_mastery", 0.40))
         for td in (insights.topic_mastery_details or [])
-        if isinstance(td, dict)
+        if isinstance(td, dict) and td.get("topic_id")
     }
 
     for day in range(1, 15):
@@ -1293,44 +1313,28 @@ def get_mlops_audit_overview(db: Session = Depends(get_db)):
             harness_benchmark = json.load(f)
 
     dist_report = (
-        json.load(open(DISTRIBUTION_REPORT_PATH, encoding="utf-8"))
+        _read_json_safe(DISTRIBUTION_REPORT_PATH)
         if DISTRIBUTION_REPORT_PATH.exists()
         else run_corpus_distribution_and_readiness_audit(save_report=False)
     )
     recal_report = (
-        json.load(open(RECALIBRATION_REPORT_PATH, encoding="utf-8"))
+        _read_json_safe(RECALIBRATION_REPORT_PATH)
         if RECALIBRATION_REPORT_PATH.exists()
         else run_irt_tier_recalibration_audit(save_report=False)
     )
     sim_report = (
-        json.load(open(SIMILARITY_REPORT_PATH, encoding="utf-8"))
+        _read_json_safe(SIMILARITY_REPORT_PATH)
         if SIMILARITY_REPORT_PATH.exists()
         else run_question_similarity_audit(save_report=False)
     )
     prob_cal = get_calibration_metadata()
-    registry = (
-        json.load(open(REGISTRY_MANIFEST_FILE, encoding="utf-8"))
-        if REGISTRY_MANIFEST_FILE.exists()
-        else {}
-    )
+    registry = _read_json_safe(REGISTRY_MANIFEST_FILE)
     chapter_summary_path = PROJECT_ROOT / "data" / "taxonomy" / "chapter_wise_neet_pyq_summary.json"
-    chapter_wise_summary = (
-        json.load(open(chapter_summary_path, encoding="utf-8"))
-        if chapter_summary_path.exists()
-        else {}
-    )
+    chapter_wise_summary = _read_json_safe(chapter_summary_path)
     data_integ_path = MODEL_DIR / "data_integrity_report.json"
-    data_integrity_report = (
-        json.load(open(data_integ_path, encoding="utf-8"))
-        if data_integ_path.exists()
-        else {}
-    )
+    data_integrity_report = _read_json_safe(data_integ_path)
     label_val_path = MODEL_DIR / "label_validity_report.json"
-    label_validity_report = (
-        json.load(open(label_val_path, encoding="utf-8"))
-        if label_val_path.exists()
-        else {}
-    )
+    label_validity_report = _read_json_safe(label_val_path)
     integrity = verify_all_ml_artifacts(allow_serverless_omissions=True, require_clean_bandit=False)
 
     return {
@@ -1406,17 +1410,9 @@ def get_mlops_corpus_distribution():
 @app.get("/mlops/data_integrity")
 def get_mlops_data_integrity():
     data_integ_path = MODEL_DIR / "data_integrity_report.json"
-    data_integrity_report = (
-        json.load(open(data_integ_path, encoding="utf-8"))
-        if data_integ_path.exists()
-        else {}
-    )
+    data_integrity_report = _read_json_safe(data_integ_path)
     label_val_path = MODEL_DIR / "label_validity_report.json"
-    label_validity_report = (
-        json.load(open(label_val_path, encoding="utf-8"))
-        if label_val_path.exists()
-        else {}
-    )
+    label_validity_report = _read_json_safe(label_val_path)
     return {
         "data_integrity_audit": data_integrity_report,
         "label_validity_audit": label_validity_report,
@@ -1437,12 +1433,12 @@ def get_mlops_item_calibration_profile(question_id: str):
 @app.get("/mlops/recalibration_and_dedup")
 def get_mlops_recalibration_and_dedup():
     recal_report = (
-        json.load(open(RECALIBRATION_REPORT_PATH, encoding="utf-8"))
+        _read_json_safe(RECALIBRATION_REPORT_PATH)
         if RECALIBRATION_REPORT_PATH.exists()
         else run_irt_tier_recalibration_audit(save_report=False)
     )
     sim_report = (
-        json.load(open(SIMILARITY_REPORT_PATH, encoding="utf-8"))
+        _read_json_safe(SIMILARITY_REPORT_PATH)
         if SIMILARITY_REPORT_PATH.exists()
         else run_question_similarity_audit(save_report=False)
     )
