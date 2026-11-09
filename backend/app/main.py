@@ -511,10 +511,18 @@ def next_paper(
     topic_id: str | None = None,
     total_length: int = 45,
     mode: str = "mock_45",
+    syllabus_mode: str = "all",
     db: Session = Depends(get_db),
 ):
     _sync_serverless_context(request, db, student_id)
-    return generate_paper(db, student_id, total_length=total_length, topic_id=topic_id, mode=mode)
+    return generate_paper(
+        db,
+        student_id,
+        total_length=total_length,
+        topic_id=topic_id,
+        mode=mode,
+        syllabus_mode=syllabus_mode,
+    )
 
 
 @app.get("/students/{student_id}/papers/{paper_number}/review", response_model=schemas.PaperReviewOut)

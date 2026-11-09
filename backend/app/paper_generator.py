@@ -17,6 +17,14 @@ ADJACENT_FALLBACK_ORDER = {
     "advanced": ["medium", "basic"],
 }
 
+NMC_REDUCED_SYLLABUS_EXCLUSIONS = {
+    "States of Matter",
+    "s-Block Elements",
+    "Environmental Chemistry",
+    "General Principles & Metallurgy",
+    "Surface Chemistry",
+}
+
 _QUESTION_POOL_CACHE: dict[tuple[str, str], list[Question]] = {}
 _CACHED_TOTAL_QUESTIONS: int = 0
 
@@ -51,8 +59,10 @@ def _select_with_bandit(
     if len(pool) <= k:
         return list(pool)
 
+    candidates = list(pool)
+    random.shuffle(candidates)
     scored: list[tuple[float, Question]] = []
-    for q in pool:
+    for q in candidates:
         x = build_context_vector(
             question_id=q.question_id,
             difficulty=q.difficulty,
@@ -64,8 +74,7 @@ def _select_with_bandit(
             pace_flag=pace_flag,
         )
         ucb_score, _, _ = score_candidate_ucb(student_id, x)
-        jitter = random.uniform(-0.015, 0.015)
-        scored.append((ucb_score + jitter, q))
+        scored.append((ucb_score, q))
 
     scored.sort(key=lambda pair: pair[0], reverse=True)
     return [q for _, q in scored[:k]]
@@ -154,6 +163,7 @@ def generate_paper(
     total_length: int = 45,
     topic_id: str | None = None,
     mode: str = "mock_45",
+    syllabus_mode: str = "all",
 ) -> list[Question]:
     paper: list[Question] = []
     pools = _get_question_pools(db)
@@ -209,6 +219,8 @@ def generate_paper(
         subject_quotas = {"Physics": 45, "Chemistry": 45, "Biology": 90}
         for sub, target_sub_q in subject_quotas.items():
             sub_topics = [tid for tid, s in topic_to_subj.items() if s == sub]
+            if syllabus_mode == "nmc_reduced":
+                sub_topics = [tid for tid in sub_topics if tid not in NMC_REDUCED_SYLLABUS_EXCLUSIONS]
             sub_imp_sum = sum(_TOPIC_IMPORTANCE.get(tid, 1.0) for tid in sub_topics) or 1.0
             sub_paper: list[Question] = []
             remaining = target_sub_q
@@ -274,6 +286,8 @@ def generate_paper(
 
     fractional_topics: list[tuple[float, str]] = []
     for cur_topic_id, importance in _TOPIC_IMPORTANCE.items():
+        if syllabus_mode == "nmc_reduced" and cur_topic_id in NMC_REDUCED_SYLLABUS_EXCLUSIONS:
+            continue
         num_questions = round(importance / 100 * total_length)
         if num_questions == 0:
             fractional_topics.append((float(importance), cur_topic_id))

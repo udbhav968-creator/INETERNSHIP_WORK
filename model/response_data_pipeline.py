@@ -82,6 +82,11 @@ def get_item_calibration_profile(question_id: str, custom_db: Path | None = None
         "sample_size": n,
         "observed_accuracy": stats["accuracy"],
         "avg_time_seconds": stats["avg_time_seconds"],
+        "solve_time_source": (
+            "measured_empirical_cohort"
+            if n >= MIN_RESPONSES_FOR_EMPIRICAL_CALIBRATION
+            else "benchmark_prior_formula"
+        ),
         "calibration_status": status,
         "is_empirically_calibrated": is_empirical,
         "empirical_confidence_pct": confidence,
