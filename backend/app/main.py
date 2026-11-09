@@ -68,6 +68,7 @@ from model.question_similarity_audit import (
     run_question_similarity_audit,
 )
 from model.study_plan_and_coverage_engine import compute_syllabus_coverage_and_improvement_plan
+from model.response_data_pipeline import get_pipeline_response_audit, get_item_calibration_profile
 from model.verify_artifact_integrity import REGISTRY_MANIFEST_FILE, verify_all_ml_artifacts
 from model.multilingual_glossary import get_chapter_multilingual_metadata, translate_distractor_trap_to_hindi
 from model.socratic_audio_script_generator import generate_socratic_audio_script
@@ -1398,7 +1399,18 @@ def get_mlops_data_integrity():
     return {
         "data_integrity_audit": data_integrity_report,
         "label_validity_audit": label_validity_report,
+        "response_data_pipeline": get_pipeline_response_audit(),
     }
+
+
+@app.get("/mlops/response_pipeline")
+def get_mlops_response_pipeline():
+    return get_pipeline_response_audit()
+
+
+@app.get("/mlops/item_calibration_profile/{question_id}")
+def get_mlops_item_calibration_profile(question_id: str):
+    return get_item_calibration_profile(question_id)
 
 
 @app.get("/mlops/recalibration_and_dedup")
