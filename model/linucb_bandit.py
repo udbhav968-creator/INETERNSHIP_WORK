@@ -177,7 +177,7 @@ def record_bandit_feedback(
     prereq_readiness: float,
     pace_flag: str | None,
     is_correct: bool,
-    time_taken_seconds: int,
+    time_taken_seconds: float | int,
     prior_mastery_prob: float | None = None,
 ) -> float:
     x = build_context_vector(
@@ -195,7 +195,8 @@ def record_bandit_feedback(
     pred_prob = irt_3pl_probability(student_theta, irt_params)
 
     zpd_quality = max(0.0, 1.0 - abs(pred_prob - ZPD_TARGET_PROB))
-    time_ratio = time_taken_seconds / max(1, expected_time_seconds)
+    time_val = max(1.0, float(time_taken_seconds if time_taken_seconds is not None else expected_time_seconds))
+    time_ratio = time_val / max(1.0, float(expected_time_seconds))
     engagement_quality = 1.0 if 0.25 <= time_ratio <= 1.8 else 0.5
     outcome_bonus = 0.85 if is_correct else 0.65
 

@@ -107,14 +107,14 @@ class DriftAndCalibrationMonitor:
         self.baseline_difficulty_dist, self.baseline_time_buckets = _compute_real_corpus_baselines()
         self.predictions_log: deque = deque(maxlen=5000)
 
-    def log_prediction(self, predicted_prob: float, actual_correct: int, difficulty: str, time_taken: int):
+    def log_prediction(self, predicted_prob: float, actual_correct: int, difficulty: str, time_taken: float | int | None):
         with self._lock:
             self.predictions_log.append(
                 {
                     "prob": max(0.001, min(0.999, float(predicted_prob))),
                     "correct": 1 if actual_correct else 0,
                     "difficulty": (difficulty or "medium").lower(),
-                    "time_taken": int(time_taken),
+                    "time_taken": int(round(float(time_taken if time_taken is not None else 60.0))),
                 }
             )
 
@@ -172,12 +172,13 @@ class DriftAndCalibrationMonitor:
             records = list(self.predictions_log)
         if db_attempts:
             for att in db_attempts:
+                raw_t = att.get("time_taken")
                 records.append(
                     {
                         "prob": max(0.001, min(0.999, float(att["predicted_prob"]))),
                         "correct": 1 if att.get("correct") else 0,
                         "difficulty": str(att.get("difficulty", "medium")).lower(),
-                        "time_taken": int(att.get("time_taken", 60)),
+                        "time_taken": int(round(float(raw_t if raw_t is not None else 60.0))),
                     }
                 )
 

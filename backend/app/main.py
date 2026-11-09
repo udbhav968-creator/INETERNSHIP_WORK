@@ -176,9 +176,13 @@ def _process_single_attempt_no_commit(
     correct_clean = (question.correct_answer or "").strip().lower()
     is_correct = selected_clean == correct_clean
 
+    exp_sec = expected_time(question.difficulty, question.expected_time_seconds)
+    safe_time_taken = float(attempt.time_taken_seconds) if attempt.time_taken_seconds is not None else float(exp_sec or 60.0)
+    time_ratio = safe_time_taken / max(1.0, float(exp_sec))
+
     opt_switches = int(attempt.option_switches or 0)
     hesitation = int(attempt.hesitation_ms or 0)
-    dwell = int(attempt.dwell_time_ms or (attempt.time_taken_seconds * 1000))
+    dwell = int(attempt.dwell_time_ms if attempt.dwell_time_ms is not None else (safe_time_taken * 1000.0))
 
     prev_topic_attempt = (
         db.query(TestAttempt)
@@ -202,7 +206,7 @@ def _process_single_attempt_no_commit(
             question_id=attempt.question_id,
             paper_number=attempt.paper_number,
             is_correct=is_correct,
-            time_taken_seconds=attempt.time_taken_seconds,
+            time_taken_seconds=safe_time_taken,
             selected_option=attempt.selected_option,
             option_switches=opt_switches,
             hesitation_ms=hesitation,
@@ -231,9 +235,6 @@ def _process_single_attempt_no_commit(
         db.add(state)
         db.flush()
 
-    exp_sec = expected_time(question.difficulty, question.expected_time_seconds)
-    time_ratio = attempt.time_taken_seconds / max(1, exp_sec)
-
     prior_theta = float(getattr(state, "irt_theta", 0.0) or 0.0)
     prior_mastery = (
         float(state.mastery_prob)
@@ -242,7 +243,7 @@ def _process_single_attempt_no_commit(
     )
     irt_params = get_item_params(question.question_id, question.difficulty, exp_sec)
     pred_prob = irt_3pl_probability(prior_theta, irt_params)
-    DRIFT_MONITOR.log_prediction(pred_prob, int(is_correct), question.difficulty, attempt.time_taken_seconds)
+    DRIFT_MONITOR.log_prediction(pred_prob, int(is_correct), question.difficulty, safe_time_taken)
 
     process_answer(
         state,
@@ -257,7 +258,7 @@ def _process_single_attempt_no_commit(
     update_pace(
         state,
         is_correct,
-        attempt.time_taken_seconds,
+        safe_time_taken,
         question.difficulty,
         expected_time_seconds=question.expected_time_seconds,
     )
@@ -317,7 +318,7 @@ def _process_single_attempt_no_commit(
         prereq_readiness=prereq_ready,
         pace_flag=state.pace_flag,
         is_correct=is_correct,
-        time_taken_seconds=attempt.time_taken_seconds,
+        time_taken_seconds=safe_time_taken,
         prior_mastery_prob=prior_mastery,
     )
 
@@ -582,15 +583,16 @@ def _compute_paper_history(student_id: str, db: Session) -> list[schemas.PaperHi
                 "paper_number": p_num,
                 "total_questions": 0,
                 "correct_count": 0,
-                "total_time_seconds": 0,
-                "timestamp": att.timestamp.isoformat() if att.timestamp else "",
+                "total_time_seconds": 0.0,
+                "timestamp": att.timestamp.isoformat() if getattr(att, "timestamp", None) else "",
                 "topics": set(),
             }
         p = papers[p_num]
         p["total_questions"] += 1
         if att.is_correct:
             p["correct_count"] += 1
-        p["total_time_seconds"] += att.time_taken_seconds
+        time_sec = float(att.time_taken_seconds) if att.time_taken_seconds is not None else 0.0
+        p["total_time_seconds"] += time_sec
         if topic_id:
             p["topics"].add(topic_id)
 
@@ -604,7 +606,7 @@ def _compute_paper_history(student_id: str, db: Session) -> list[schemas.PaperHi
                 total_questions=total,
                 correct_count=corr,
                 score_percent=round(100.0 * corr / total, 1) if total else 0.0,
-                total_time_seconds=p["total_time_seconds"],
+                total_time_seconds=int(round(p["total_time_seconds"])),
                 timestamp=p["timestamp"],
                 topics=sorted(list(p["topics"])),
             )
@@ -676,7 +678,7 @@ def _compute_v2_student_insights(student_id: str, db: Session) -> schemas.V2Stud
                 "question_type": rich_q.get("question_type", ""),
                 "difficulty": q.difficulty,
                 "expected_time_seconds": q.expected_time_seconds or 90,
-                "time_taken_seconds": att.time_taken_seconds or 60,
+                "time_taken_seconds": float(att.time_taken_seconds) if att.time_taken_seconds is not None else 60.0,
                 "is_correct": att.is_correct,
             }
         )
@@ -832,11 +834,12 @@ def _compute_cat_assessment(student_id: str, db: Session, insights: schemas.V2St
     ci_low = round(theta - 1.96 * sem, 3)
     ci_high = round(theta + 1.96 * sem, 3)
     target_sem = 0.25
-    stopping_met = bool(items_count > 0 and (sem <= target_sem or items_count >= 45))
+    max_cat_items = 180 if items_count > 45 else 45
+    stopping_met = bool(items_count > 0 and (sem <= target_sem or items_count >= max_cat_items))
     status = (
         "CONVERGED_CONFIDENT"
         if (stopping_met and sem <= target_sem)
-        else ("MAX_ITEMS_REACHED" if (stopping_met and items_count >= 45) else ("INITIALIZING" if items_count == 0 else "ADAPTING"))
+        else ("MAX_ITEMS_REACHED" if (stopping_met and items_count >= max_cat_items) else ("INITIALIZING" if items_count == 0 else "ADAPTING"))
     )
     return schemas.CATAssessmentOut(
         student_id=student_id,
@@ -861,7 +864,7 @@ def _compute_fatigue_analysis(student_id: str, db: Session) -> schemas.FatigueAn
     )
     n = len(attempts)
     if n < 4:
-        avg_lat = round(sum(float(a.time_taken_seconds or 0.0) for a in attempts) / n, 1) if n > 0 else 0.0
+        avg_lat = round(sum(float(a.time_taken_seconds) if a.time_taken_seconds is not None else 60.0 for a in attempts) / n, 1) if n > 0 else 0.0
         acc_pct = round(100.0 * sum(1 for a in attempts if a.is_correct) / n, 1) if n > 0 else 0.0
         return schemas.FatigueAnalysisOut(
             student_id=student_id,
@@ -883,8 +886,8 @@ def _compute_fatigue_analysis(student_id: str, db: Session) -> schemas.FatigueAn
     mid = n // 2
     early = attempts[:mid]
     late = attempts[mid:]
-    early_lat = [float(a.time_taken_seconds or 60) for a in early]
-    late_lat = [float(a.time_taken_seconds or 60) for a in late]
+    early_lat = [float(a.time_taken_seconds) if a.time_taken_seconds is not None else 60.0 for a in early]
+    late_lat = [float(a.time_taken_seconds) if a.time_taken_seconds is not None else 60.0 for a in late]
     mean_early = sum(early_lat) / len(early_lat)
     mean_late = sum(late_lat) / len(late_lat)
     early_corr = sum(1 for a in early if a.is_correct)
@@ -892,7 +895,12 @@ def _compute_fatigue_analysis(student_id: str, db: Session) -> schemas.FatigueAn
     early_acc = round(100.0 * early_corr / len(early), 1)
     late_acc = round(100.0 * late_corr / len(late), 1)
     acc_drop = max(0.0, round(early_acc - late_acc, 1))
-    rapid_guesses = sum(1 for a in attempts if float(a.time_taken_seconds or 60) < 15 and not a.is_correct)
+    rapid_guesses = sum(
+        1
+        for a in attempts
+        if (float(a.time_taken_seconds) if a.time_taken_seconds is not None else 60.0) < 15.0
+        and not a.is_correct
+    )
     lat_ratio = (mean_late / max(1.0, mean_early)) - 1.0
     fatigue_raw = max(0.0, min(1.0, (acc_drop / 50.0) * 0.6 + max(0.0, lat_ratio) * 0.4))
     fatigue_idx = round(fatigue_raw, 3)
@@ -984,7 +992,10 @@ def _compute_revision_calendar(
                     break
 
         if not chosen_chapter:
-            chosen_chapter = all_topics[(day - 1) % len(all_topics)].topic_id
+            if all_topics:
+                chosen_chapter = all_topics[(day - 1) % len(all_topics)].topic_id
+            else:
+                chosen_chapter = "General NEET Practice"
 
         seen_chapters.add(chosen_chapter)
         subj = topic_meta.get(chosen_chapter, "Science")
@@ -1205,7 +1216,7 @@ def get_mlops_health_and_drift(db: Session = Depends(get_db)):
                 "predicted_prob": real_pred_prob,
                 "correct": att.is_correct,
                 "difficulty": q.difficulty,
-                "time_taken": att.time_taken_seconds,
+                "time_taken": float(att.time_taken_seconds) if att.time_taken_seconds is not None else 60.0,
             }
         )
 
@@ -1525,7 +1536,7 @@ def _compute_student_study_plan_payload(student_id: str, db: Session) -> dict:
                 "topic_id": q.topic_id,
                 "difficulty": q.difficulty,
                 "expected_time_seconds": q.expected_time_seconds or 90,
-                "time_taken_seconds": att.time_taken_seconds,
+                "time_taken_seconds": float(att.time_taken_seconds) if att.time_taken_seconds is not None else 60.0,
                 "is_correct": att.is_correct,
             }
         )

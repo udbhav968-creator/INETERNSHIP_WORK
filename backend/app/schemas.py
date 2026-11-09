@@ -13,7 +13,7 @@ class AttemptIn(BaseModel):
     question_id: str
     paper_number: int
     selected_option: str
-    time_taken_seconds: float
+    time_taken_seconds: Optional[float] = 60.0
     option_switches: Optional[int] = 0
     hesitation_ms: Optional[int] = 0
     dwell_time_ms: Optional[int] = 0
@@ -136,7 +136,7 @@ class AnalyticsOut(BaseModel):
 class SocraticHintIn(BaseModel):
     question_id: str
     selected_option: str
-    time_taken_seconds: Optional[int] = 60
+    time_taken_seconds: Optional[float] = 60.0
     option_switches: Optional[int] = 0
 
 

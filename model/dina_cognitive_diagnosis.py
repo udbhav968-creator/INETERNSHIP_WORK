@@ -222,7 +222,8 @@ def compute_dina_and_rt_profile(attempt_records: list[dict[str, Any]]) -> dict[s
         topic_id = str(rec.get("topic_id", ""))
         diff = str(rec.get("difficulty", "medium"))
         exp_t = max(15.0, float(rec.get("expected_time_seconds") or 90.0))
-        obs_t = max(1.5, float(rec.get("time_taken_seconds") or exp_t))
+        raw_obs = rec.get("time_taken_seconds")
+        obs_t = max(1.0, float(raw_obs)) if raw_obs is not None else exp_t
         is_corr = bool(rec.get("is_correct", False))
 
         q_vec = extract_item_q_vector(q_text, topic_id=topic_id, difficulty=diff)

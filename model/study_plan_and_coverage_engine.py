@@ -278,14 +278,16 @@ def compute_syllabus_coverage_and_improvement_plan(
             continue
         tid = str(att.get("topic_id") or "")
         subj = str((DAG_NODES.get(tid) or {}).get("subject", "Physics"))
-        t_taken = int(att.get("time_taken_seconds") or 60)
-        exp_t = int(att.get("expected_time_seconds") or 90)
+        raw_t = att.get("time_taken_seconds")
+        t_taken = float(raw_t) if raw_t is not None else 60.0
+        raw_exp = att.get("expected_time_seconds")
+        exp_t = float(raw_exp) if raw_exp is not None else 90.0
         m_cur = effective_mastery_all.get(tid, get_chapter_bkt_prior(tid))
         interval_h = 24 if m_cur < 0.45 else (72 if m_cur < 0.70 else 168)
         error_mode = (
             "impulsive_guess"
-            if t_taken <= max(10, int(0.25 * exp_t))
-            else ("slow_struggle" if t_taken >= int(1.35 * exp_t) else "conceptual_or_trap_error")
+            if t_taken <= max(10.0, 0.25 * exp_t)
+            else ("slow_struggle" if t_taken >= 1.35 * exp_t else "conceptual_or_trap_error")
         )
         mistake_retest_queue.append(
             {
@@ -293,7 +295,7 @@ def compute_syllabus_coverage_and_improvement_plan(
                 "topic_id": tid,
                 "subject": subj,
                 "difficulty": str(att.get("difficulty") or "medium"),
-                "time_taken_seconds": t_taken,
+                "time_taken_seconds": round(t_taken, 2),
                 "error_mode": error_mode,
                 "ebbinghaus_retest_hours": interval_h,
                 "chapter_mastery_percent": round(m_cur * 100.0, 1),

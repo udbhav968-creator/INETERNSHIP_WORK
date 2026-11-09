@@ -57,6 +57,9 @@ export function ExamScreen({
   const firstVisitedAt = useRef<Record<number, number>>({});
   const firstInteractionAt = useRef<Record<number, number>>({});
   const optionSwitchCounts = useRef<Record<number, number>>({});
+  const activeDwellMs = useRef<Record<number, number>>({});
+  const lastActiveTimestamp = useRef<number>(Date.now());
+  const currentIndexRef = useRef<number>(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -68,6 +71,7 @@ export function ExamScreen({
         if (parsed.answers) setAnswers(parsed.answers);
         if (typeof parsed.index === "number") setIndex(parsed.index);
         if (typeof parsed.elapsedSeconds === "number") setElapsedSeconds(parsed.elapsedSeconds);
+        if (parsed.activeDwell && typeof parsed.activeDwell === "object") activeDwellMs.current = parsed.activeDwell;
       } catch {
         localStorage.removeItem(cacheKey);
       }
@@ -94,14 +98,22 @@ export function ExamScreen({
     const cacheKey = `klassed_active_${studentId}_${paperNumber}_${topicId ?? "full"}_${mode}`;
     localStorage.setItem(
       cacheKey,
-      JSON.stringify({ answers, index, elapsedSeconds })
+      JSON.stringify({ answers, index, elapsedSeconds, activeDwell: activeDwellMs.current })
     );
   }, [answers, index, elapsedSeconds, loadState, studentId, paperNumber, topicId, mode, questions.length]);
 
   useEffect(() => {
     if (loadState !== "ready") return;
+    const now = Date.now();
+    const prevIdx = currentIndexRef.current;
+    if (prevIdx !== undefined && prevIdx >= 0) {
+      const delta = Math.max(0, now - lastActiveTimestamp.current);
+      activeDwellMs.current[prevIdx] = (activeDwellMs.current[prevIdx] ?? 0) + delta;
+    }
+    currentIndexRef.current = index;
+    lastActiveTimestamp.current = now;
     if (!(index in firstVisitedAt.current)) {
-      firstVisitedAt.current[index] = Date.now();
+      firstVisitedAt.current[index] = now;
     }
   }, [index, loadState]);
 
@@ -184,17 +196,24 @@ export function ExamScreen({
     setErrorMessage("");
 
     try {
+      const finalNow = Date.now();
+      const currIdx = currentIndexRef.current;
+      if (currIdx !== undefined && currIdx >= 0) {
+        const delta = Math.max(0, finalNow - lastActiveTimestamp.current);
+        activeDwellMs.current[currIdx] = (activeDwellMs.current[currIdx] ?? 0) + delta;
+        lastActiveTimestamp.current = finalNow;
+      }
+
       const batchPayloads: AttemptPayload[] = [];
       for (const [qIndexStr, optionIndex] of Object.entries(answers)) {
         const qIndex = Number(qIndexStr);
         const question = questions[qIndex];
         if (!question) continue;
 
-        const now = Date.now();
-        const visitedAt = firstVisitedAt.current[qIndex] ?? now;
-        const firstClickedAt = firstInteractionAt.current[qIndex] ?? now;
-        const dwellMs = Math.max(500, now - visitedAt);
-        const hesitationMs = Math.max(0, firstClickedAt - visitedAt);
+        const visitedAt = firstVisitedAt.current[qIndex] ?? finalNow;
+        const firstClickedAt = firstInteractionAt.current[qIndex] ?? finalNow;
+        const dwellMs = Math.max(1000, activeDwellMs.current[qIndex] ?? 1000);
+        const hesitationMs = Math.max(0, Math.min(dwellMs, firstClickedAt - visitedAt));
         const switches = optionSwitchCounts.current[qIndex] ?? 0;
         const timeTaken = Math.max(1, Math.round(dwellMs / 1000));
         const letter: OptionLetter = OPTION_LETTERS[optionIndex];

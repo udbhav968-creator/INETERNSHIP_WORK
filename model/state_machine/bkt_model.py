@@ -69,13 +69,14 @@ DEMOTE_TO_MEDIUM_THRESHOLD = 0.60
 
 def modulate_params_with_telemetry(
     params: BKTParams,
-    time_taken_seconds: int,
-    expected_time_seconds: int,
+    time_taken_seconds: float | int,
+    expected_time_seconds: float | int,
     option_switches: int = 0,
     hesitation_ms: int = 0,
 ) -> tuple[float, float, float]:
     p_t, p_g, p_s = params.p_transit, params.p_guess, params.p_slip
-    time_ratio = time_taken_seconds / max(1, expected_time_seconds)
+    time_val = max(1.0, float(time_taken_seconds if time_taken_seconds is not None else expected_time_seconds))
+    time_ratio = time_val / max(1.0, float(expected_time_seconds))
 
     if time_ratio < 0.15:
         p_g = min(0.45, p_g * 1.65)
@@ -139,8 +140,8 @@ def compute_bkt_update(
     prior_mastery: float,
     is_correct: bool,
     difficulty: str = "medium",
-    time_taken_seconds: int = 75,
-    expected_time_seconds: int = 90,
+    time_taken_seconds: float | int = 75,
+    expected_time_seconds: float | int = 90,
     option_switches: int = 0,
     hesitation_ms: int = 0,
     attempts_count: int = 1,

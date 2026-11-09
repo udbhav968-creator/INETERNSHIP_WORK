@@ -39,8 +39,8 @@ def build_analytics(db: Session, student_id: str) -> dict:
             "question_id": attempt.question_id,
             "topic_id": topic_id,
             "is_correct": attempt.is_correct,
-            "time_taken_seconds": attempt.time_taken_seconds,
-            "timestamp": attempt.timestamp.isoformat(),
+            "time_taken_seconds": int(round(float(attempt.time_taken_seconds) if attempt.time_taken_seconds is not None else 0.0)),
+            "timestamp": attempt.timestamp.isoformat() if getattr(attempt, "timestamp", None) else "",
         }
         for attempt, topic_id, _ in rows[:10]
     ]

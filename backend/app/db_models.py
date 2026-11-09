@@ -60,7 +60,7 @@ class TestAttempt(Base):
     question_id = Column(String, ForeignKey("questions.question_id"), nullable=False)
     paper_number = Column(Integer, nullable=False)
     is_correct = Column(Boolean, nullable=False)
-    time_taken_seconds = Column(Integer, nullable=False)
+    time_taken_seconds = Column(Float, nullable=False)
     selected_option = Column(String, nullable=False)
     option_switches = Column(Integer, default=0, nullable=False)
     hesitation_ms = Column(Integer, default=0, nullable=False)

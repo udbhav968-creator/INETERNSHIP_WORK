@@ -45,8 +45,9 @@ def process_answer(
     state.mastery_prob = p_next
     state.confidence_interval = ci_95
 
+    current_streak = int(state.streak or 0)
     if state.level == "basic":
-        state.streak = (state.streak + 1) if is_correct else 0
+        state.streak = (current_streak + 1) if is_correct else 0
         if sum(1 for r in results if r) >= 2:
             new_lvl = resolve_level_with_hysteresis(state.level, p_next, ci_95)
             if new_lvl != state.level:
@@ -55,7 +56,7 @@ def process_answer(
                 state.last_3_results = []
 
     elif state.level == "medium":
-        state.streak = (state.streak + 1) if is_correct else 0
+        state.streak = (current_streak + 1) if is_correct else 0
         wrong_count = results.count(False)
         if state.streak >= 3:
             new_lvl = resolve_level_with_hysteresis(state.level, p_next, ci_95)
@@ -71,7 +72,7 @@ def process_answer(
                 state.last_3_results = []
 
     elif state.level == "advanced":
-        state.streak = (state.streak + 1) if is_correct else 0
+        state.streak = (current_streak + 1) if is_correct else 0
         if len(results) >= 2 and results[-2:] == [False, False]:
             new_lvl = resolve_level_with_hysteresis(state.level, p_next, ci_95)
             if new_lvl != state.level:
