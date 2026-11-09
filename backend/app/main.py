@@ -171,6 +171,8 @@ def _process_single_attempt_no_commit(
         raise HTTPException(status_code=404, detail="Question not found")
 
     selected_clean = (attempt.selected_option or "").strip().lower()
+    if selected_clean in ("0", "1", "2", "3"):
+        selected_clean = ("a", "b", "c", "d")[int(selected_clean)]
     correct_clean = (question.correct_answer or "").strip().lower()
     is_correct = selected_clean == correct_clean
 

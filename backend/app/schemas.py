@@ -13,7 +13,7 @@ class AttemptIn(BaseModel):
     question_id: str
     paper_number: int
     selected_option: str
-    time_taken_seconds: int
+    time_taken_seconds: float
     option_switches: Optional[int] = 0
     hesitation_ms: Optional[int] = 0
     dwell_time_ms: Optional[int] = 0

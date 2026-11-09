@@ -26,7 +26,7 @@ This document outlines the end-to-end migration plan to PostgreSQL 16 with PgBou
 ### 2.1 Complete DDL Specification
 
 ```sql
--- PostgreSQL 16 Production Schema for Klassed Engine
+-- PostgreSQL 16 Production Schema for Klassed Engine (1:1 with SQLAlchemy declarative models)
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
@@ -35,10 +35,7 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 CREATE TABLE IF NOT EXISTS topics (
     topic_id VARCHAR(64) PRIMARY KEY,
     subject VARCHAR(32) NOT NULL,
-    name VARCHAR(128) NOT NULL,
-    class_level INTEGER NOT NULL CHECK (class_level IN (11, 12)),
-    importance_weight NUMERIC(6, 4) NOT NULL DEFAULT 1.5000,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    name VARCHAR(128) NOT NULL
 );
 
 CREATE INDEX idx_topics_subject ON topics (subject);
@@ -47,26 +44,16 @@ CREATE INDEX idx_topics_subject ON topics (subject);
 CREATE TABLE IF NOT EXISTS questions (
     question_id VARCHAR(64) PRIMARY KEY,
     topic_id VARCHAR(64) NOT NULL REFERENCES topics(topic_id) ON DELETE RESTRICT,
-    subject VARCHAR(32) NOT NULL,
     difficulty VARCHAR(16) NOT NULL CHECK (difficulty IN ('basic', 'medium', 'advanced')),
-    question_text TEXT NOT NULL,
-    option_a TEXT NOT NULL,
-    option_b TEXT NOT NULL,
-    option_c TEXT NOT NULL,
-    option_d TEXT NOT NULL,
-    correct_option CHAR(1) NOT NULL CHECK (correct_option IN ('a', 'b', 'c', 'd')),
-    explanation TEXT NOT NULL DEFAULT '',
-    ideal_time_sec INTEGER NOT NULL DEFAULT 90,
-    has_diagram BOOLEAN NOT NULL DEFAULT FALSE,
-    paper_source VARCHAR(64) NOT NULL DEFAULT 'Official NEET PYQ',
-    irt_a NUMERIC(6, 4) NOT NULL DEFAULT 1.0000,
-    irt_b NUMERIC(6, 4) NOT NULL DEFAULT 0.0000,
-    irt_c NUMERIC(6, 4) NOT NULL DEFAULT 0.2000,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    expected_time_seconds INTEGER NOT NULL DEFAULT 90,
+    text TEXT NOT NULL,
+    options JSONB NOT NULL,
+    correct_answer VARCHAR(16) NOT NULL,
+    wrong_option_tags JSONB,
+    years_asked JSONB
 );
 
 CREATE INDEX idx_questions_topic_diff ON questions (topic_id, difficulty);
-CREATE INDEX idx_questions_source ON questions (paper_source);
 
 -- 3. Students Table
 CREATE TABLE IF NOT EXISTS students (
@@ -74,10 +61,11 @@ CREATE TABLE IF NOT EXISTS students (
     name VARCHAR(128) NOT NULL,
     email VARCHAR(128) UNIQUE NOT NULL,
     password_hash VARCHAR(256) NOT NULL,
-    global_theta NUMERIC(6, 4) NOT NULL DEFAULT 0.0000,
-    is_active BOOLEAN NOT NULL DEFAULT TRUE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    class_level VARCHAR(32),
+    target_neet_year INTEGER,
+    onboarded BOOLEAN NOT NULL DEFAULT FALSE,
+    global_theta DOUBLE PRECISION NOT NULL DEFAULT 0.0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX idx_students_email ON students (email);
@@ -89,12 +77,12 @@ CREATE TABLE IF NOT EXISTS student_topic_state (
     level VARCHAR(16) NOT NULL DEFAULT 'basic' CHECK (level IN ('basic', 'medium', 'advanced')),
     streak INTEGER NOT NULL DEFAULT 0,
     last_3_results JSONB NOT NULL DEFAULT '[]'::jsonb,
-    avg_time_ratio NUMERIC(6, 4) NOT NULL DEFAULT 1.0000,
+    avg_time_ratio DOUBLE PRECISION,
+    attempts_counted INTEGER NOT NULL DEFAULT 0,
     pace_flag VARCHAR(16) DEFAULT NULL CHECK (pace_flag IN ('fast', 'slow', NULL)),
-    mastery_prob NUMERIC(6, 4) NOT NULL DEFAULT 0.3500,
-    irt_theta NUMERIC(6, 4) NOT NULL DEFAULT 0.0000,
-    confidence_interval JSONB NOT NULL DEFAULT '[-1.96, 1.96]'::jsonb,
-    last_practiced TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    mastery_prob DOUBLE PRECISION NOT NULL DEFAULT 0.35,
+    confidence_interval DOUBLE PRECISION NOT NULL DEFAULT 0.45,
+    irt_theta DOUBLE PRECISION NOT NULL DEFAULT 0.0,
     PRIMARY KEY (student_id, topic_id)
 );
 
@@ -103,23 +91,21 @@ CREATE INDEX idx_sts_student_level ON student_topic_state (student_id, level);
 
 -- 5. Test Attempts Table
 CREATE TABLE IF NOT EXISTS test_attempts (
-    attempt_id VARCHAR(64) PRIMARY KEY DEFAULT uuid_generate_v4()::text,
+    attempt_id SERIAL PRIMARY KEY,
     student_id VARCHAR(64) NOT NULL REFERENCES students(student_id) ON DELETE CASCADE,
     question_id VARCHAR(64) NOT NULL REFERENCES questions(question_id) ON DELETE RESTRICT,
-    topic_id VARCHAR(64) NOT NULL REFERENCES topics(topic_id) ON DELETE RESTRICT,
     paper_number INTEGER NOT NULL DEFAULT 1,
     is_correct BOOLEAN NOT NULL,
-    time_taken_seconds NUMERIC(8, 2) NOT NULL,
-    selected_option CHAR(1) NOT NULL,
-    difficulty VARCHAR(16) NOT NULL,
-    hesitation_ms NUMERIC(10, 2) NOT NULL DEFAULT 0.0,
+    time_taken_seconds DOUBLE PRECISION NOT NULL,
+    selected_option VARCHAR(16) NOT NULL,
     option_switches INTEGER NOT NULL DEFAULT 0,
+    hesitation_ms INTEGER NOT NULL DEFAULT 0,
+    dwell_time_ms INTEGER NOT NULL DEFAULT 0,
     timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX idx_attempts_student_time ON test_attempts (student_id, timestamp DESC);
 CREATE INDEX idx_attempts_question_correct ON test_attempts (question_id, is_correct);
-CREATE INDEX idx_attempts_topic_time ON test_attempts (topic_id, timestamp DESC);
 ```
 
 ---

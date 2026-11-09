@@ -191,10 +191,12 @@ def get_credible_bounds(mastery_prob: float, ci_half_width: float) -> tuple[floa
 
 
 def resolve_level_with_hysteresis(
-    current_level: str,
-    mastery_prob: float,
+    current_level: str | float,
+    mastery_prob: float | str,
     ci_95: float = 0.25,
 ) -> str:
+    if isinstance(current_level, (int, float)) and isinstance(mastery_prob, str):
+        current_level, mastery_prob = mastery_prob, current_level
     level = current_level or "basic"
     conservative_lower = mastery_prob - 0.35 * float(ci_95)
 
