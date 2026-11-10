@@ -185,11 +185,11 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
             />
             <SummaryStat
               label="Baseline NEET Projection"
-              value={v2Insights ? `${v2Insights.predicted_neet_score_720} / 720` : "—"}
+              value={v2Insights?.predicted_neet_score_720 != null ? `${v2Insights.predicted_neet_score_720} / 720` : "—"}
             />
             <SummaryStat
               label="3PL IRT Prior Percentile"
-              value={v2Insights ? `${v2Insights.estimated_neet_percentile}%ile` : "—"}
+              value={v2Insights?.estimated_neet_percentile != null ? `${v2Insights.estimated_neet_percentile}%ile` : "—"}
             />
           </div>
 
@@ -242,11 +242,11 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
             />
             <SummaryStat
               label="Predicted NEET Score"
-              value={v2Insights ? `${v2Insights.predicted_neet_score_720} / 720` : "—"}
+              value={v2Insights?.predicted_neet_score_720 != null ? `${v2Insights.predicted_neet_score_720} / 720` : "—"}
             />
             <SummaryStat
               label="3PL IRT Percentile"
-              value={v2Insights ? `${v2Insights.estimated_neet_percentile}%ile` : `${topics.length} topics`}
+              value={v2Insights?.estimated_neet_percentile != null ? `${v2Insights.estimated_neet_percentile}%ile` : `${topics.length} topics`}
             />
           </div>
 
