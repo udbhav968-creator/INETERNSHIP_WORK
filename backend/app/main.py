@@ -989,8 +989,8 @@ def _compute_fatigue_analysis(student_id: str, db: Session) -> schemas.FatigueAn
     mean_late = sum(late_lat) / len(late_lat) if late_lat else 60.0
     early_corr = sum(1 for a in early if a.is_correct)
     late_corr = sum(1 for a in late if a.is_correct)
-    early_acc = round(100.0 * early_corr / len(early), 1)
-    late_acc = round(100.0 * late_corr / len(late), 1)
+    early_acc = round(100.0 * early_corr / max(1, len(early)), 1) if early else 0.0
+    late_acc = round(100.0 * late_corr / max(1, len(late)), 1) if late else 0.0
     acc_drop = max(0.0, round(early_acc - late_acc, 1))
     rapid_guesses = sum(
         1
@@ -1120,6 +1120,8 @@ def _compute_revision_calendar(
                 marks_gain = round(base_marks, 1)
             urgency = round(min(1.0, max(0.20, (imp / 100.0) * remaining_gap * 10.0)), 2)
 
+        avail_q = db.query(func.count(Question.question_id)).filter(Question.topic_id == chosen_chapter).scalar() or 15
+        target_q = min(15, max(3, int(avail_q)))
         daily_schedule.append(
             schemas.RevisionDayPlanOut(
                 day=day,
@@ -1127,7 +1129,7 @@ def _compute_revision_calendar(
                 chapter=chosen_chapter,
                 subject=subj,
                 action_type=action_type,
-                target_questions=15,
+                target_questions=target_q,
                 urgency_score=urgency,
                 potential_marks_gain=marks_gain,
                 reason=reason,

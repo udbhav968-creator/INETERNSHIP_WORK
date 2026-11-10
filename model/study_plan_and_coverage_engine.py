@@ -314,7 +314,7 @@ def compute_syllabus_coverage_and_improvement_plan(
             "developing_chapters": sb["developing_chapters"],
             "less_learned_chapters": sb["less_learned_chapters"],
             "untouched_chapters": sb["untouched_chapters"],
-            "mean_mastery_percent": round(100.0 * sum(sb["mastery_values"]) / len(sb["mastery_values"]), 1),
+            "mean_mastery_percent": round(100.0 * sum(sb["mastery_values"]) / max(1, len(sb["mastery_values"])), 1) if sb["mastery_values"] else 0.0,
         }
 
     return {
