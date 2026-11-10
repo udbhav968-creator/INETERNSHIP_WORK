@@ -177,9 +177,13 @@ def hydrate_student_from_vault(db: Session, vault_token: Optional[str]) -> Optio
     if not sid or not email or not pw_hash.startswith("$2"):
         return None
 
-    student = db.query(Student).filter_by(email=email).first()
-    if not student:
-        student = db.query(Student).filter_by(student_id=sid).first()
+    student_by_email = db.query(Student).filter_by(email=email).first()
+    student_by_id = db.query(Student).filter_by(student_id=sid).first()
+    if student_by_email and student_by_id and student_by_email.student_id != student_by_id.student_id:
+        return None
+    student = student_by_email or student_by_id
+    if student and (student.student_id != sid or student.email != email):
+        return None
     if not student:
         student = Student(
             student_id=sid,
@@ -240,17 +244,28 @@ def signup(db: Session, name: str, email: str, password: str) -> Student:
     if db.query(Student).filter_by(email=email).first():
         raise HTTPException(status_code=409, detail="An account with this email already exists")
 
-    student = Student(
-        student_id=_make_student_id(name, db),
-        name=name,
-        email=email,
-        password_hash=hash_password(password),
-        onboarded=False,
-    )
-    db.add(student)
-    db.commit()
-    db.refresh(student)
-    return _attach_tokens(student)
+    for _ in range(5):
+        cand_id = _make_student_id(name, db)
+        if db.query(Student).filter_by(student_id=cand_id).first():
+            continue
+        try:
+            student = Student(
+                student_id=cand_id,
+                name=name,
+                email=email,
+                password_hash=hash_password(password),
+                onboarded=False,
+            )
+            db.add(student)
+            db.commit()
+            db.refresh(student)
+            return _attach_tokens(student)
+        except Exception:
+            db.rollback()
+            if db.query(Student).filter_by(email=email).first():
+                raise HTTPException(status_code=409, detail="An account with this email already exists")
+            continue
+    raise HTTPException(status_code=500, detail="Failed to allocate unique student identifier")
 
 
 def login(db: Session, email: str, password: str, vault_token: Optional[str] = None) -> Student:

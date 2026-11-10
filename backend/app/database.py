@@ -27,6 +27,8 @@ if DATABASE_URL.startswith("postgres://"):
 _IS_SQLITE = DATABASE_URL.startswith("sqlite")
 engine_kwargs = {"pool_pre_ping": True}
 if _IS_SQLITE:
+    from sqlalchemy.pool import NullPool
+    engine_kwargs["poolclass"] = NullPool
     engine_kwargs["connect_args"] = {"check_same_thread": False, "timeout": 30}
 else:
     engine_kwargs["pool_size"] = int(os.environ.get("DB_POOL_SIZE", 20))

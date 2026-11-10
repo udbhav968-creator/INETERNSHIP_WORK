@@ -485,6 +485,8 @@ def submit_paper(
         raise HTTPException(status_code=403, detail="Forbidden: Cannot submit paper for another student")
     if not payload.attempts:
         raise HTTPException(status_code=400, detail="No attempts provided in paper submission")
+    if len(payload.attempts) > 180:
+        raise HTTPException(status_code=422, detail="Paper submission cannot exceed 180 questions")
 
     seen_qids = set()
     deduped_attempts = []

@@ -134,12 +134,12 @@ def verify_all_ml_artifacts(
 def render_ci_markdown_summary() -> str:
     integrity = verify_all_ml_artifacts()
     dist_report = (
-        json.load(open(DISTRIBUTION_REPORT_PATH, encoding="utf-8"))
+        json.loads(DISTRIBUTION_REPORT_PATH.read_text(encoding="utf-8"))
         if DISTRIBUTION_REPORT_PATH.exists()
         else run_corpus_distribution_and_readiness_audit(save_report=False)
     )
-    val_report = json.load(open(VALIDATION_REPORT_FILE, encoding="utf-8"))
-    har_report = json.load(open(HARNESS_REPORT_FILE, encoding="utf-8"))
+    val_report = json.loads(VALIDATION_REPORT_FILE.read_text(encoding="utf-8"))
+    har_report = json.loads(HARNESS_REPORT_FILE.read_text(encoding="utf-8"))
 
     rf_h = val_report["random_forest_holdout_evaluation"]
     cv = val_report["stratified_5fold_cross_validation"]
