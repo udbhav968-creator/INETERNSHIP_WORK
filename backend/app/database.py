@@ -64,10 +64,18 @@ def _migrate_v2_columns():
         ("test_attempts", "dwell_time_ms", "INTEGER NOT NULL DEFAULT 0"),
     ]
     with engine.begin() as conn:
+        is_sqlite = engine.dialect.name == "sqlite"
         for table_name, col_name, col_def in migrations:
             try:
-                rows = conn.execute(text(f"PRAGMA table_info({table_name})")).fetchall()
-                existing_cols = {r[1] for r in rows}
+                if is_sqlite:
+                    rows = conn.execute(text(f"PRAGMA table_info({table_name})")).fetchall()
+                    existing_cols = {r[1] for r in rows}
+                else:
+                    rows = conn.execute(
+                        text("SELECT column_name FROM information_schema.columns WHERE table_name = :t"),
+                        {"t": table_name},
+                    ).fetchall()
+                    existing_cols = {r[0] for r in rows}
                 if col_name not in existing_cols:
                     conn.execute(text(f"ALTER TABLE {table_name} ADD COLUMN {col_name} {col_def}"))
             except Exception:

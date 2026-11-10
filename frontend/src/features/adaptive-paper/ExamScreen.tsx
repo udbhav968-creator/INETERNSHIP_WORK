@@ -81,6 +81,7 @@ export function ExamScreen({
       .then((data) => {
         if (cancelled) return;
         setQuestions(data);
+        lastActiveTimestamp.current = Date.now();
         setLoadState(data.length === 0 ? "empty" : "ready");
       })
       .catch((err) => {
@@ -104,9 +105,27 @@ export function ExamScreen({
 
   useEffect(() => {
     if (loadState !== "ready") return;
+    const handleVisibilityChange = () => {
+      const now = Date.now();
+      const curr = currentIndexRef.current;
+      if (document.hidden) {
+        const delta = Math.max(0, now - lastActiveTimestamp.current);
+        activeDwellMs.current[curr] = (activeDwellMs.current[curr] ?? 0) + delta;
+      } else {
+        lastActiveTimestamp.current = now;
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [loadState]);
+
+  useEffect(() => {
+    if (loadState !== "ready") return;
     const now = Date.now();
     const prevIdx = currentIndexRef.current;
-    if (prevIdx !== undefined && prevIdx >= 0) {
+    if (prevIdx !== undefined && prevIdx >= 0 && prevIdx !== index && !document.hidden) {
       const delta = Math.max(0, now - lastActiveTimestamp.current);
       activeDwellMs.current[prevIdx] = (activeDwellMs.current[prevIdx] ?? 0) + delta;
     }

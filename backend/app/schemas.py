@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from typing import Optional, Any
 
 try:
@@ -17,6 +17,26 @@ class AttemptIn(BaseModel):
     option_switches: Optional[int] = 0
     hesitation_ms: Optional[int] = 0
     dwell_time_ms: Optional[int] = 0
+
+    @field_validator("selected_option")
+    @classmethod
+    def validate_selected_option(cls, v: str) -> str:
+        clean = (v or "").strip().lower()
+        if clean in ("0", "1", "2", "3"):
+            clean = ("a", "b", "c", "d")[int(clean)]
+        if clean not in ("a", "b", "c", "d"):
+            raise ValueError("selected_option must be one of: a, b, c, d")
+        return clean
+
+    @field_validator("time_taken_seconds")
+    @classmethod
+    def validate_time_taken_seconds(cls, v: Optional[float]) -> float:
+        if v is None:
+            return 60.0
+        val = float(v)
+        if val < 0.5 or val > 3600.0:
+            raise ValueError("time_taken_seconds must be between 0.5 and 3600.0")
+        return round(val, 2)
 
 
 class PaperSubmitIn(BaseModel):
@@ -168,9 +188,9 @@ class ColdStartItemIn(BaseModel):
 
 class V2StudentInsightsOut(BaseModel):
     student_id: str
-    global_theta: float
-    estimated_neet_percentile: float
-    predicted_neet_score_720: int
+    global_theta: Optional[float] = 0.0
+    estimated_neet_percentile: Optional[float] = None
+    predicted_neet_score_720: Optional[int] = None
     zpd_target_success_prob: float
     mirt_3d_profile: Optional[dict[str, Any]] = None
     dina_cognitive_profile: Optional[dict[str, Any]] = None
@@ -190,7 +210,7 @@ class CATAssessmentOut(BaseModel):
     cumulative_fisher_information: float
     target_sem_threshold: float
     stopping_rule_met: bool
-    predicted_neet_score: int
+    predicted_neet_score: Optional[int] = None
     assessment_status: str
 
 

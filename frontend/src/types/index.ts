@@ -195,8 +195,8 @@ export interface MonteCarloConformalSimulator {
 export interface V2StudentInsights {
   student_id: string;
   global_theta: number;
-  estimated_neet_percentile: number;
-  predicted_neet_score_720: number;
+  estimated_neet_percentile: number | null;
+  predicted_neet_score_720: number | null;
   zpd_target_success_prob: number;
   mirt_3d_profile?: {
     theta_conceptual: number;
@@ -334,7 +334,7 @@ export interface CATAssessment {
   cumulative_fisher_information: number;
   target_sem_threshold: number;
   stopping_rule_met: boolean;
-  predicted_neet_score: number;
+  predicted_neet_score: number | null;
   assessment_status: string;
 }
 

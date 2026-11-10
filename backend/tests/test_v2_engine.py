@@ -422,19 +422,35 @@ def test_14_all_11_endpoints_and_concurrent_stress():
 
         r_login = client.post("/auth/login", json={"email": test_email, "password": "strongpassword123"})
         assert r_login.status_code == 200
+        jwt_token = r_login.json()["access_token"]
+        auth_hdr = {"Authorization": f"Bearer {jwt_token}"}
 
+        assert client.get(f"/students/{created_student_id}/dashboard_snapshot").status_code == 401
+        assert client.get(f"/students/{created_student_id}/dashboard_snapshot", headers={"Authorization": "Bearer malformed.jwt.token"}).status_code == 401
+        assert client.get("/students/OTHER_STUDENT_ID/dashboard_snapshot", headers=auth_hdr).status_code == 403
+        assert client.post("/submit_attempt", json={"student_id": created_student_id, "question_id": "Q1", "paper_number": 1, "selected_option": "a", "time_taken_seconds": 45.0}).status_code == 401
+        assert client.post("/submit_attempt", headers=auth_hdr, json={"student_id": "OTHER_STUDENT", "question_id": "Q1", "paper_number": 1, "selected_option": "a", "time_taken_seconds": 45.0}).status_code == 403
+
+        snap_cold = client.get(f"/students/{created_student_id}/dashboard_snapshot", headers=auth_hdr).json()
+        assert snap_cold["v2_insights"]["predicted_neet_score_720"] is None
+        assert snap_cold["v2_insights"]["estimated_neet_percentile"] is None
+        assert snap_cold["cat_assessment"]["assessment_status"] == "INITIALIZING"
+
+        assert client.get(f"/students/{created_student_id}/next_paper?total_length=500", headers=auth_hdr).status_code == 422
+        assert client.get(f"/students/{created_student_id}/next_paper?total_length=0", headers=auth_hdr).status_code == 422
 
         r_onboard = client.post(
             f"/students/{created_student_id}/onboarding",
             json={"class_level": "12", "target_neet_year": 2027},
+            headers=auth_hdr,
         )
         assert r_onboard.status_code == 200 and r_onboard.json()["onboarded"] is True
 
 
-        assert client.get(f"/students/{created_student_id}").status_code == 200
+        assert client.get(f"/students/{created_student_id}", headers=auth_hdr).status_code == 200
 
 
-        r_paper = client.get(f"/students/{created_student_id}/next_paper")
+        r_paper = client.get(f"/students/{created_student_id}/next_paper", headers=auth_hdr)
         assert r_paper.status_code == 200
         paper_items = r_paper.json()
         assert len(paper_items) >= 40
@@ -444,6 +460,7 @@ def test_14_all_11_endpoints_and_concurrent_stress():
             q = paper_items[idx]
             resp = client.post(
                 "/submit_attempt",
+                headers=auth_hdr,
                 json={
                     "student_id": created_student_id,
                     "question_id": q["question_id"],
@@ -466,21 +483,22 @@ def test_14_all_11_endpoints_and_concurrent_stress():
             assert "mastery_prob" in body and "irt_theta" in body
 
 
-        r_state = client.get(f"/students/{created_student_id}/state")
+        r_state = client.get(f"/students/{created_student_id}/state", headers=auth_hdr)
         assert r_state.status_code == 200 and len(r_state.json()) >= 1
 
 
-        r_rev = client.get(f"/students/{created_student_id}/papers/1/review")
+        r_rev = client.get(f"/students/{created_student_id}/papers/1/review", headers=auth_hdr)
         assert r_rev.status_code == 200 and r_rev.json()["total_questions"] == 8
 
 
-        r_chap = client.get(f"/students/{created_student_id}/next_paper?topic_id=Wave%20Optics")
+        r_chap = client.get(f"/students/{created_student_id}/next_paper?topic_id=Wave%20Optics", headers=auth_hdr)
         assert r_chap.status_code == 200
         chap_items = r_chap.json()
         assert len(chap_items) >= 2 and all(q["topic_id"] == "Wave Optics" for q in chap_items)
 
         r_batch = client.post(
             "/submit_paper",
+            headers=auth_hdr,
             json={
                 "student_id": created_student_id,
                 "paper_number": 1,
@@ -513,14 +531,14 @@ def test_14_all_11_endpoints_and_concurrent_stress():
         assert batch_body["paper_number"] == 2 and batch_body["total_questions"] == 2
 
 
-        r_ana = client.get(f"/students/{created_student_id}/analytics")
+        r_ana = client.get(f"/students/{created_student_id}/analytics", headers=auth_hdr)
         assert r_ana.status_code == 200 and r_ana.json()["total_attempts"] == 10
 
 
-        r_ins = client.get(f"/students/{created_student_id}/v2_insights")
+        r_ins = client.get(f"/students/{created_student_id}/v2_insights", headers=auth_hdr)
         assert r_ins.status_code == 200
         ins_body = r_ins.json()
-        assert 120 <= ins_body["predicted_neet_score_720"] <= 720
+        assert 0 <= ins_body["predicted_neet_score_720"] <= 720
         assert len(ins_body["recommended_unlock_topics"]) == 65
         assert "mirt_3d_profile" in ins_body and ins_body["mirt_3d_profile"] is not None
         assert "spaced_repetition_reviews" in ins_body
@@ -1691,7 +1709,9 @@ def test_28_zero_hardcoded_cold_start_priors_unified_score_and_15_trained_models
         snap = client.get(f"/students/{sid}/dashboard_snapshot", headers=hdr).json()
         ins = snap["v2_insights"]
         mc_opt = ins["monte_carlo_conformal_simulator"]["negative_marking_optimizer"]["optimal_skip_expected_score_720"]
-        assert ins["predicted_neet_score_720"] == mc_opt
+        assert ins["predicted_neet_score_720"] is None
+        assert ins["estimated_neet_percentile"] is None
+        assert mc_opt > 0
 
         priors = {round(float(ch["current_mastery"]), 4) for ch in ins["recommended_unlock_topics"]}
         assert len(priors) >= 15

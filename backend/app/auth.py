@@ -8,15 +8,29 @@ import re
 import time
 from typing import Optional
 import bcrypt
-from fastapi import HTTPException
+from cryptography.fernet import Fernet
+from fastapi import Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from .db_models import Student
 
 MIN_PASSWORD_LENGTH = 8
 VALID_CLASS_LEVELS = ("11", "12", "dropper")
-JWT_SECRET_KEY = os.environ.get("KLASSED_JWT_SECRET", "klassed-neet-v2-enterprise-hmac-secret-2026")
+DEFAULT_JWT_SECRET = "klassed-neet-v2-enterprise-hmac-secret-2026"
+_RAW_SECRET = os.environ.get("KLASSED_JWT_SECRET")
+_IS_PROD = os.environ.get("ENVIRONMENT", "").lower() in ("production", "prod") or os.environ.get("KLASSED_ENV", "").lower() in ("production", "prod")
+
+if not _RAW_SECRET:
+    if _IS_PROD:
+        raise RuntimeError("FATAL: KLASSED_JWT_SECRET must be set in production environments")
+    JWT_SECRET_KEY = DEFAULT_JWT_SECRET
+else:
+    JWT_SECRET_KEY = _RAW_SECRET
+
 JWT_EXPIRY_SECONDS = 86400 * 7
 VAULT_EXPIRY_SECONDS = 86400 * 30
+
+_VAULT_KEY = base64.urlsafe_b64encode(hashlib.sha256(JWT_SECRET_KEY.encode("utf-8")).digest())
+_VAULT_CIPHER = Fernet(_VAULT_KEY)
 
 
 def _sign_hmac_payload(header: dict, payload: dict) -> str:
@@ -80,7 +94,6 @@ def verify_access_token(token: str) -> Optional[dict]:
 
 def create_vault_token(student: Student) -> str:
     now = int(time.time())
-    header = {"alg": "HS256", "typ": "KLASSED_VAULT"}
     payload = {
         "sub": student.student_id,
         "name": student.name,
@@ -92,11 +105,19 @@ def create_vault_token(student: Student) -> str:
         "iat": now,
         "exp": now + VAULT_EXPIRY_SECONDS,
     }
-    return _sign_hmac_payload(header, payload)
+    raw = json.dumps(payload, separators=(",", ":")).encode("utf-8")
+    return _VAULT_CIPHER.encrypt(raw).decode("utf-8")
 
 
 def verify_vault_token(token: str) -> Optional[dict]:
-    return _verify_hmac_payload(token, "KLASSED_VAULT")
+    try:
+        raw = _VAULT_CIPHER.decrypt(str(token).strip().encode("utf-8"))
+        payload = json.loads(raw.decode("utf-8"))
+        if payload.get("exp", 0) < int(time.time()):
+            return None
+        return payload
+    except Exception:
+        return None
 
 
 def _attach_tokens(student: Student) -> Student:
@@ -180,6 +201,23 @@ def hydrate_student_from_vault(db: Session, vault_token: Optional[str]) -> Optio
             db.commit()
             db.refresh(student)
     return student
+
+
+def get_current_student_id(request: Request) -> str:
+    auth_header = request.headers.get("authorization") or ""
+    if not auth_header.lower().startswith("bearer "):
+        raise HTTPException(status_code=401, detail="Authentication credentials were not provided")
+    raw_token = auth_header[7:].strip()
+    claims = verify_access_token(raw_token)
+    if not claims or not claims.get("sub"):
+        raise HTTPException(status_code=401, detail="Invalid or expired authentication credentials")
+    return str(claims["sub"])
+
+
+def verify_student_access(student_id: str, caller_id: str = Depends(get_current_student_id)) -> str:
+    if str(caller_id) != str(student_id):
+        raise HTTPException(status_code=403, detail="Forbidden: You cannot access another student's data")
+    return str(caller_id)
 
 
 def signup(db: Session, name: str, email: str, password: str) -> Student:

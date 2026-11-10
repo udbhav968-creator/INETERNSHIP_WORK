@@ -103,7 +103,7 @@ def _get_student_lock(student_id: str) -> threading.RLock:
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origin_regex=r"(http://(localhost|127\.0\.0\.1):\d+|https://.*\.(vercel\.app|netlify\.app|onrender\.com|up\.railway\.app|hf\.space))",
+    allow_origin_regex=r"(http://(localhost|127\.0\.0\.1):\d+|https://(app\.)?klassed\.in)",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -133,7 +133,7 @@ def signup(payload: schemas.SignupIn, db: Session = Depends(get_db)):
 def login(payload: schemas.LoginIn, request: Request, db: Session = Depends(get_db)):
     vault_hdr = request.headers.get("x-klassed-vault")
     student = auth.login(db, payload.email, payload.password, vault_token=vault_hdr)
-    _sync_serverless_context(request, db, student.student_id)
+    _sync_serverless_context(request, db, target_student_id=student.student_id, authenticated_sid=student.student_id)
     db.refresh(student)
     return auth._attach_tokens(student)
 
@@ -143,25 +143,23 @@ def complete_onboarding(
     student_id: str,
     payload: schemas.OnboardingIn,
     request: Request,
+    authorized_sid: str = Depends(auth.verify_student_access),
     db: Session = Depends(get_db),
 ):
     _sync_serverless_context(request, db, student_id)
     student = db.query(Student).filter_by(student_id=student_id).first()
     if not student:
-        student = Student(
-            student_id=student_id,
-            name=student_id.title(),
-            email=f"{student_id.lower()}@klassed.in",
-            password_hash="serverless_provisioned",
-            onboarded=False,
-        )
-        db.add(student)
-        db.flush()
+        raise HTTPException(status_code=404, detail="Student not found")
     return auth.complete_onboarding(db, student, payload.class_level, payload.target_neet_year)
 
 
 @app.get("/students/{student_id}", response_model=schemas.StudentOut)
-def get_student(student_id: str, request: Request, db: Session = Depends(get_db)):
+def get_student(
+    student_id: str,
+    request: Request,
+    authorized_sid: str = Depends(auth.verify_student_access),
+    db: Session = Depends(get_db),
+):
     _sync_serverless_context(request, db, student_id)
     student = db.query(Student).filter_by(student_id=student_id).first()
     if not student:
@@ -180,11 +178,13 @@ def _process_single_attempt_no_commit(
     selected_clean = (attempt.selected_option or "").strip().lower()
     if selected_clean in ("0", "1", "2", "3"):
         selected_clean = ("a", "b", "c", "d")[int(selected_clean)]
+    if selected_clean not in ("a", "b", "c", "d"):
+        raise HTTPException(status_code=422, detail="selected_option must be one of: a, b, c, d")
     correct_clean = (question.correct_answer or "").strip().lower()
     is_correct = selected_clean == correct_clean
 
     exp_sec = expected_time(question.difficulty, question.expected_time_seconds)
-    safe_time_taken = float(attempt.time_taken_seconds) if attempt.time_taken_seconds is not None else float(exp_sec or 60.0)
+    safe_time_taken = max(0.5, min(3600.0, float(attempt.time_taken_seconds) if attempt.time_taken_seconds is not None else float(exp_sec or 60.0)))
     time_ratio = safe_time_taken / max(1.0, float(exp_sec))
 
     opt_switches = int(attempt.option_switches or 0)
@@ -209,15 +209,7 @@ def _process_single_attempt_no_commit(
 
     student = db.query(Student).filter_by(student_id=attempt.student_id).first()
     if not student:
-        student = Student(
-            student_id=attempt.student_id,
-            name=attempt.student_id.title(),
-            email=f"{attempt.student_id.lower()}@klassed.in",
-            password_hash="serverless_provisioned",
-            onboarded=True,
-        )
-        db.add(student)
-        db.flush()
+        raise HTTPException(status_code=404, detail=f"Student {attempt.student_id} not found")
 
     db.add(
         TestAttempt(
@@ -296,8 +288,16 @@ def _process_single_attempt_no_commit(
     )
 
     if student:
-        curr_global = float(getattr(student, "global_theta", 0.0) or 0.0)
-        student.global_theta = round(0.85 * curr_global + 0.15 * new_topic_theta, 4)
+        all_st = db.query(StudentTopicState).filter_by(student_id=attempt.student_id).all()
+        prec_sum = 0.0
+        weighted_theta = 0.0
+        for s in all_st:
+            ci_val = max(0.05, float(getattr(s, "confidence_interval", 0.45) or 0.45))
+            prec = 1.0 / (ci_val ** 2)
+            th = float(getattr(s, "irt_theta", 0.0) or 0.0)
+            weighted_theta += prec * th
+            prec_sum += prec
+        student.global_theta = round(weighted_theta / max(1e-6, prec_sum), 4) if prec_sum > 0.0 else round(new_topic_theta, 4)
 
     all_student_states = (
         db.query(StudentTopicState).filter_by(student_id=attempt.student_id).all()
@@ -359,6 +359,7 @@ def _sync_serverless_context(
     request: Request | None,
     db: Session,
     target_student_id: str | None = None,
+    authenticated_sid: str | None = None,
 ) -> None:
     if request is None:
         return
@@ -373,18 +374,18 @@ def _sync_serverless_context(
         raw_token = auth_header[7:].strip()
         claims = auth.verify_access_token(raw_token)
 
-    if claims and claims.get("sub"):
-        jwt_sid = str(claims["sub"])
-        with _get_student_lock(jwt_sid):
-            existing = db.query(Student).filter_by(student_id=jwt_sid).first()
+    effective_sid = authenticated_sid or (str(claims["sub"]) if claims and claims.get("sub") else None)
+    if effective_sid and claims and claims.get("sub"):
+        with _get_student_lock(effective_sid):
+            existing = db.query(Student).filter_by(student_id=effective_sid).first()
             if not existing:
-                email_val = str(claims.get("email") or f"{jwt_sid.lower()}@klassed.in")
+                email_val = str(claims.get("email") or f"{effective_sid.lower()}@klassed.in")
                 if db.query(Student).filter_by(email=email_val).first():
-                    email_val = f"{jwt_sid.lower()}_{int(datetime.now(timezone.utc).timestamp())}@klassed.in"
+                    email_val = f"{effective_sid.lower()}_{int(datetime.now(timezone.utc).timestamp())}@klassed.in"
                 db.add(
                     Student(
-                        student_id=jwt_sid,
-                        name=str(claims.get("name") or jwt_sid),
+                        student_id=effective_sid,
+                        name=str(claims.get("name") or effective_sid),
                         email=email_val,
                         password_hash="jwt_verified_serverless",
                         class_level=claims.get("class_level"),
@@ -395,11 +396,13 @@ def _sync_serverless_context(
                 db.commit()
 
     journal_hdr = request.headers.get("x-klassed-journal")
-    sid_for_journal = target_student_id or (str(claims["sub"]) if claims and claims.get("sub") else None)
-    if not journal_hdr or not sid_for_journal:
+    if not journal_hdr:
         return
-    if claims and claims.get("sub") and str(claims["sub"]) != sid_for_journal:
+    if not effective_sid:
         return
+    if target_student_id and str(target_student_id) != effective_sid:
+        return
+    sid_for_journal = effective_sid
 
     try:
         padded = journal_hdr.strip() + "=" * (-len(journal_hdr.strip()) % 4)
@@ -426,7 +429,7 @@ def _sync_serverless_context(
                 continue
             if not db.query(Question.question_id).filter_by(question_id=qid).first():
                 continue
-            safe_t = max(0.5, float(item[3])) if item[3] is not None else 60.0
+            safe_t = max(0.5, min(3600.0, float(item[3]))) if item[3] is not None else 60.0
             dwell_val = int(item[6]) if len(item) > 6 and item[6] is not None else max(1000, int(round(safe_t * 1000.0)))
             att_in = schemas.AttemptIn(
                 student_id=sid_for_journal,
@@ -446,7 +449,14 @@ def _sync_serverless_context(
 
 
 @app.post("/submit_attempt")
-def submit_attempt(attempt: schemas.AttemptIn, request: Request, db: Session = Depends(get_db)):
+def submit_attempt(
+    attempt: schemas.AttemptIn,
+    request: Request,
+    caller_id: str = Depends(auth.get_current_student_id),
+    db: Session = Depends(get_db),
+):
+    if attempt.student_id != caller_id:
+        raise HTTPException(status_code=403, detail="Forbidden: Cannot submit attempt for another student")
     _sync_serverless_context(request, db, attempt.student_id)
     with _get_student_lock(attempt.student_id):
         is_correct, _, state = _process_single_attempt_no_commit(attempt, db)
@@ -462,9 +472,27 @@ def submit_attempt(attempt: schemas.AttemptIn, request: Request, db: Session = D
 
 
 @app.post("/submit_paper", response_model=schemas.PaperReviewOut)
-def submit_paper(payload: schemas.PaperSubmitIn, request: Request, db: Session = Depends(get_db)):
+def submit_paper(
+    payload: schemas.PaperSubmitIn,
+    request: Request,
+    caller_id: str = Depends(auth.get_current_student_id),
+    db: Session = Depends(get_db),
+):
+    if payload.student_id != caller_id:
+        raise HTTPException(status_code=403, detail="Forbidden: Cannot submit paper for another student")
     if not payload.attempts:
         raise HTTPException(status_code=400, detail="No attempts provided in paper submission")
+
+    seen_qids = set()
+    deduped_attempts = []
+    for att in payload.attempts:
+        if att.student_id != caller_id:
+            raise HTTPException(status_code=403, detail="Forbidden: Attempt student_id does not match caller")
+        if att.question_id in seen_qids:
+            continue
+        seen_qids.add(att.question_id)
+        deduped_attempts.append(att)
+    payload.attempts = deduped_attempts
 
     _sync_serverless_context(request, db, payload.student_id)
     with _get_student_lock(payload.student_id):
@@ -521,7 +549,12 @@ def submit_paper(payload: schemas.PaperSubmitIn, request: Request, db: Session =
 
 
 @app.get("/students/{student_id}/state", response_model=list[schemas.TopicStateOut])
-def get_student_state(student_id: str, request: Request, db: Session = Depends(get_db)):
+def get_student_state(
+    student_id: str,
+    request: Request,
+    authorized_sid: str = Depends(auth.verify_student_access),
+    db: Session = Depends(get_db),
+):
     _sync_serverless_context(request, db, student_id)
     FEATURE_STORE.get_student_features(student_id)
     return db.query(StudentTopicState).filter_by(student_id=student_id).all()
@@ -535,8 +568,14 @@ def next_paper(
     total_length: int = 45,
     mode: str = "mock_45",
     syllabus_mode: str = "all",
+    authorized_sid: str = Depends(auth.verify_student_access),
     db: Session = Depends(get_db),
 ):
+    if total_length < 1 or total_length > 180:
+        raise HTTPException(
+            status_code=422,
+            detail="total_length must be between 1 and 180 questions",
+        )
     _sync_serverless_context(request, db, student_id)
     return generate_paper(
         db,
@@ -549,7 +588,13 @@ def next_paper(
 
 
 @app.get("/students/{student_id}/papers/{paper_number}/review", response_model=schemas.PaperReviewOut)
-def paper_review(student_id: str, paper_number: int, request: Request, db: Session = Depends(get_db)):
+def paper_review(
+    student_id: str,
+    paper_number: int,
+    request: Request,
+    authorized_sid: str = Depends(auth.verify_student_access),
+    db: Session = Depends(get_db),
+):
     _sync_serverless_context(request, db, student_id)
     rows = (
         db.query(TestAttempt, Question)
@@ -635,13 +680,23 @@ def _compute_paper_history(student_id: str, db: Session) -> list[schemas.PaperHi
 
 
 @app.get("/students/{student_id}/papers/history", response_model=list[schemas.PaperHistorySummaryOut])
-def paper_history(student_id: str, request: Request, db: Session = Depends(get_db)):
+def paper_history(
+    student_id: str,
+    request: Request,
+    authorized_sid: str = Depends(auth.verify_student_access),
+    db: Session = Depends(get_db),
+):
     _sync_serverless_context(request, db, student_id)
     return _compute_paper_history(student_id, db)
 
 
 @app.get("/students/{student_id}/analytics", response_model=schemas.AnalyticsOut)
-def get_analytics(student_id: str, request: Request, db: Session = Depends(get_db)):
+def get_analytics(
+    student_id: str,
+    request: Request,
+    authorized_sid: str = Depends(auth.verify_student_access),
+    db: Session = Depends(get_db),
+):
     _sync_serverless_context(request, db, student_id)
     return build_analytics(db, student_id)
 
@@ -804,20 +859,25 @@ def _compute_v2_student_insights(student_id: str, db: Session) -> schemas.V2Stud
         ci_map=ci_map,
         topic_importance=_TOPIC_IMPORTANCE,
     )
-    predicted_score = int(
-        max(
-            120,
-            min(
-                720,
-                int(mc_simulator["negative_marking_optimizer"]["optimal_skip_expected_score_720"]),
-            ),
+    predicted_score = (
+        int(
+            max(
+                0,
+                min(
+                    720,
+                    int(mc_simulator["negative_marking_optimizer"]["optimal_skip_expected_score_720"]),
+                ),
+            )
         )
+        if attempt_rows
+        else None
     )
+    percentile_val = percentile if attempt_rows else None
 
     return schemas.V2StudentInsightsOut(
         student_id=student_id,
         global_theta=round(global_theta, 4),
-        estimated_neet_percentile=percentile,
+        estimated_neet_percentile=percentile_val,
         predicted_neet_score_720=predicted_score,
         zpd_target_success_prob=0.70,
         mirt_3d_profile=mirt_3d,
@@ -831,19 +891,27 @@ def _compute_v2_student_insights(student_id: str, db: Session) -> schemas.V2Stud
 
 
 @app.get("/students/{student_id}/v2_insights", response_model=schemas.V2StudentInsightsOut)
-def get_v2_student_insights(student_id: str, request: Request, db: Session = Depends(get_db)):
+def get_v2_student_insights(
+    student_id: str,
+    request: Request,
+    authorized_sid: str = Depends(auth.verify_student_access),
+    db: Session = Depends(get_db),
+):
     _sync_serverless_context(request, db, student_id)
     return _compute_v2_student_insights(student_id, db)
 
 
 def _compute_cat_assessment(student_id: str, db: Session, insights: schemas.V2StudentInsightsOut) -> schemas.CATAssessmentOut:
+    latest_paper = db.query(func.max(TestAttempt.paper_number)).filter_by(student_id=student_id).scalar()
     attempt_rows = (
         db.query(TestAttempt.question_id)
-        .filter(TestAttempt.student_id == student_id)
+        .filter(TestAttempt.student_id == student_id, TestAttempt.paper_number == latest_paper)
         .all()
+        if latest_paper is not None
+        else []
     )
     items_count = len(attempt_rows)
-    theta = float(insights.global_theta)
+    theta = float(insights.global_theta or 0.0)
     total_info = 0.0
     for (qid,) in attempt_rows:
         params = get_item_params(qid)
@@ -855,12 +923,16 @@ def _compute_cat_assessment(student_id: str, db: Session, insights: schemas.V2St
     ci_high = round(theta + 1.96 * sem, 3)
     target_sem = 0.25
     max_cat_items = 180 if items_count > 45 else 45
-    stopping_met = bool(items_count > 0 and (sem <= target_sem or items_count >= max_cat_items))
-    status = (
-        "CONVERGED_CONFIDENT"
-        if (stopping_met and sem <= target_sem)
-        else ("MAX_ITEMS_REACHED" if (stopping_met and items_count >= max_cat_items) else ("INITIALIZING" if items_count == 0 else "ADAPTING"))
-    )
+    min_cat_items = 15
+    stopping_met = bool(items_count >= min_cat_items and (sem <= target_sem or items_count >= max_cat_items))
+    if items_count == 0:
+        status = "INITIALIZING"
+    elif stopping_met and sem <= target_sem:
+        status = "CONVERGED_CONFIDENT"
+    elif stopping_met and items_count >= max_cat_items:
+        status = "MAX_ITEMS_REACHED"
+    else:
+        status = "ADAPTING"
     return schemas.CATAssessmentOut(
         student_id=student_id,
         items_administered=items_count,
@@ -883,7 +955,7 @@ def _compute_fatigue_analysis(student_id: str, db: Session) -> schemas.FatigueAn
         .all()
     )
     n = len(attempts)
-    if n < 4:
+    if n < 6:
         avg_lat = round(sum(float(a.time_taken_seconds) if a.time_taken_seconds is not None else 60.0 for a in attempts) / n, 1) if n > 0 else 0.0
         acc_pct = round(100.0 * sum(1 for a in attempts if a.is_correct) / n, 1) if n > 0 else 0.0
         return schemas.FatigueAnalysisOut(
@@ -906,10 +978,10 @@ def _compute_fatigue_analysis(student_id: str, db: Session) -> schemas.FatigueAn
     mid = n // 2
     early = attempts[:mid]
     late = attempts[mid:]
-    early_lat = [float(a.time_taken_seconds) if a.time_taken_seconds is not None else 60.0 for a in early]
-    late_lat = [float(a.time_taken_seconds) if a.time_taken_seconds is not None else 60.0 for a in late]
-    mean_early = sum(early_lat) / len(early_lat)
-    mean_late = sum(late_lat) / len(late_lat)
+    early_lat = [float(a.time_taken_seconds) for a in early if a.time_taken_seconds is not None]
+    late_lat = [float(a.time_taken_seconds) for a in late if a.time_taken_seconds is not None]
+    mean_early = sum(early_lat) / len(early_lat) if early_lat else 60.0
+    mean_late = sum(late_lat) / len(late_lat) if late_lat else 60.0
     early_corr = sum(1 for a in early if a.is_correct)
     late_corr = sum(1 for a in late if a.is_correct)
     early_acc = round(100.0 * early_corr / len(early), 1)
@@ -918,11 +990,13 @@ def _compute_fatigue_analysis(student_id: str, db: Session) -> schemas.FatigueAn
     rapid_guesses = sum(
         1
         for a in attempts
-        if (float(a.time_taken_seconds) if a.time_taken_seconds is not None else 60.0) < 15.0
+        if a.time_taken_seconds is not None
+        and float(a.time_taken_seconds) < 15.0
         and not a.is_correct
     )
     lat_ratio = (mean_late / max(1.0, mean_early)) - 1.0
-    fatigue_raw = max(0.0, min(1.0, (acc_drop / 50.0) * 0.6 + max(0.0, lat_ratio) * 0.4))
+    acc_drop_fraction = acc_drop / 100.0
+    fatigue_raw = max(0.0, min(1.0, acc_drop_fraction + max(0.0, lat_ratio * 0.5)))
     fatigue_idx = round(fatigue_raw, 3)
     if lat_ratio > 0.35:
         lat_trend = "SLAGGING"
@@ -1022,15 +1096,15 @@ def _compute_revision_calendar(
         imp = float(_TOPIC_IMPORTANCE.get(chosen_chapter, 1.0))
         curr_m = mastery_map.get(chosen_chapter, get_chapter_bkt_prior(chosen_chapter))
         remaining_gap = max(0.05, 1.0 - curr_m)
-        base_marks = remaining_gap * imp * 11.1
+        base_marks = remaining_gap * (imp / 100.0) * 720.0
 
         if action_type == "REMEDIATE_PREREQUISITE":
-            marks_gain = round(max(4.0, base_marks * 1.5), 1)
-            urgency = round(min(1.0, max(0.40, 0.50 + 0.50 * remaining_gap)), 2)
+            marks_gain = round(base_marks, 1)
+            urgency = round(min(1.0, max(0.20, remaining_gap)), 2)
         elif action_type == "SPACED_REPETITION_REVIEW":
             match_d = next((d for d in decay_candidates if d.get("topic_id") == chosen_chapter), None)
-            urgency = round(float(match_d.get("retention_urgency", 0.75)), 2) if match_d else round(min(1.0, max(0.35, remaining_gap)), 2)
-            marks_gain = round(max(3.0, base_marks), 1)
+            urgency = round(float(match_d.get("retention_urgency", 0.75)), 2) if match_d else round(min(1.0, max(0.20, remaining_gap)), 2)
+            marks_gain = round(base_marks, 1)
         else:
             match_item = next((it for it in action_table if (it.get("topic_id") or it.get("chapter")) == chosen_chapter), None)
             if match_item and match_item.get("expected_marks_gain_720"):
@@ -1038,8 +1112,8 @@ def _compute_revision_calendar(
             elif match_item and match_item.get("expected_neet_marks_gain"):
                 marks_gain = round(float(match_item["expected_neet_marks_gain"]), 1)
             else:
-                marks_gain = round(max(3.0, base_marks), 1)
-            urgency = round(min(1.0, max(0.25, 0.30 + 0.40 * imp * remaining_gap)), 2)
+                marks_gain = round(base_marks, 1)
+            urgency = round(min(1.0, max(0.20, (imp / 100.0) * remaining_gap * 10.0)), 2)
 
         daily_schedule.append(
             schemas.RevisionDayPlanOut(
@@ -1064,20 +1138,35 @@ def _compute_revision_calendar(
 
 
 @app.get("/students/{student_id}/cat_assessment", response_model=schemas.CATAssessmentOut)
-def get_cat_assessment(student_id: str, request: Request, db: Session = Depends(get_db)):
+def get_cat_assessment(
+    student_id: str,
+    request: Request,
+    authorized_sid: str = Depends(auth.verify_student_access),
+    db: Session = Depends(get_db),
+):
     _sync_serverless_context(request, db, student_id)
     v2_insights = _compute_v2_student_insights(student_id, db)
     return _compute_cat_assessment(student_id, db, v2_insights)
 
 
 @app.get("/students/{student_id}/fatigue_analysis", response_model=schemas.FatigueAnalysisOut)
-def get_fatigue_analysis(student_id: str, request: Request, db: Session = Depends(get_db)):
+def get_fatigue_analysis(
+    student_id: str,
+    request: Request,
+    authorized_sid: str = Depends(auth.verify_student_access),
+    db: Session = Depends(get_db),
+):
     _sync_serverless_context(request, db, student_id)
     return _compute_fatigue_analysis(student_id, db)
 
 
 @app.get("/students/{student_id}/revision_calendar", response_model=schemas.RevisionCalendarOut)
-def get_revision_calendar(student_id: str, request: Request, db: Session = Depends(get_db)):
+def get_revision_calendar(
+    student_id: str,
+    request: Request,
+    authorized_sid: str = Depends(auth.verify_student_access),
+    db: Session = Depends(get_db),
+):
     _sync_serverless_context(request, db, student_id)
     v2_insights = _compute_v2_student_insights(student_id, db)
     study_plan = _compute_student_study_plan_payload(student_id, db)
@@ -1085,7 +1174,12 @@ def get_revision_calendar(student_id: str, request: Request, db: Session = Depen
 
 
 @app.get("/students/{student_id}/dashboard_snapshot", response_model=schemas.DashboardSnapshotOut)
-def get_dashboard_snapshot(student_id: str, request: Request, db: Session = Depends(get_db)):
+def get_dashboard_snapshot(
+    student_id: str,
+    request: Request,
+    authorized_sid: str = Depends(auth.verify_student_access),
+    db: Session = Depends(get_db),
+):
     _sync_serverless_context(request, db, student_id)
     FEATURE_STORE.get_student_features(student_id)
     topics = db.query(StudentTopicState).filter_by(student_id=student_id).all()
@@ -1567,7 +1661,12 @@ def _compute_student_study_plan_payload(student_id: str, db: Session) -> dict:
 
 
 @app.get("/students/{student_id}/study_plan")
-def get_student_ml_study_plan(student_id: str, request: Request, db: Session = Depends(get_db)):
+def get_student_ml_study_plan(
+    student_id: str,
+    request: Request,
+    authorized_sid: str = Depends(auth.verify_student_access),
+    db: Session = Depends(get_db),
+):
     _sync_serverless_context(request, db, student_id)
     return _compute_student_study_plan_payload(student_id, db)
 

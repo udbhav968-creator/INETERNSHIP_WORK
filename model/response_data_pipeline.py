@@ -58,18 +58,19 @@ def get_item_calibration_profile(question_id: str, custom_db: Path | None = None
     a_val = float(params.a)
     c_val = float(params.c)
 
+    fisher_info_per_resp = max(0.05, float(a_val**2) * ((1.0 - c_val) / max(0.1, 1.0 + c_val)) * 0.25)
     if n == 0:
         sem_b = 1.0000
         status = "COLD_START_HEURISTIC"
         is_empirical = False
         confidence = 0.0
     elif n < MIN_RESPONSES_FOR_EMPIRICAL_CALIBRATION:
-        sem_b = round(1.0 / math.sqrt(1.0 + 0.15 * n), 4)
+        sem_b = round(1.0 / math.sqrt(1.0 + n * fisher_info_per_resp), 4)
         status = "PILOT_ACCUMULATING"
         is_empirical = False
         confidence = round((n / float(MIN_RESPONSES_FOR_EMPIRICAL_CALIBRATION)) * 100.0, 1)
     else:
-        sem_b = round(1.0 / math.sqrt(1.0 + 0.25 * n), 4)
+        sem_b = round(1.0 / math.sqrt(1.0 + n * fisher_info_per_resp), 4)
         status = "EMPIRICALLY_CALIBRATED"
         is_empirical = True
         confidence = 100.0
