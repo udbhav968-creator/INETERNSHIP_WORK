@@ -17,7 +17,13 @@ MIN_PASSWORD_LENGTH = 8
 VALID_CLASS_LEVELS = ("11", "12", "dropper")
 DEFAULT_JWT_SECRET = "klassed-neet-v2-enterprise-hmac-secret-2026"
 _RAW_SECRET = os.environ.get("KLASSED_JWT_SECRET")
-_IS_PROD = os.environ.get("ENVIRONMENT", "").lower() in ("production", "prod") or os.environ.get("KLASSED_ENV", "").lower() in ("production", "prod")
+_IS_PROD = (
+    os.environ.get("ENVIRONMENT", "").lower() in ("production", "prod")
+    or os.environ.get("KLASSED_ENV", "").lower() in ("production", "prod")
+    or os.environ.get("VERCEL_ENV", "").lower() == "production"
+    or os.environ.get("NODE_ENV", "").lower() == "production"
+    or bool(os.environ.get("RENDER"))
+)
 
 if not _RAW_SECRET:
     if _IS_PROD:

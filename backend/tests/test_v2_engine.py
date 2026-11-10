@@ -549,6 +549,8 @@ def test_14_all_11_endpoints_and_concurrent_stress():
             json={"question_id": paper_items[0]["question_id"], "selected_option": "b"},
         )
         assert r_soc.status_code == 200 and len(r_soc.json()["socratic_hint"]) > 10
+        assert client.post("/remediation/socratic_hint", json={"question_id": "DOES_NOT_EXIST_XYZ", "selected_option": "b"}).status_code == 404
+        assert client.post("/remediation/socratic_hint", json={"question_id": paper_items[0]["question_id"], "selected_option": "invalid_opt"}).status_code == 422
 
         r_cold = client.post(
             "/mlops/predict_cold_start_item",

@@ -159,6 +159,16 @@ class SocraticHintIn(BaseModel):
     time_taken_seconds: Optional[float] = 60.0
     option_switches: Optional[int] = 0
 
+    @field_validator("selected_option")
+    @classmethod
+    def validate_selected_option(cls, v: str) -> str:
+        clean = (v or "").strip().lower()
+        if clean in ("0", "1", "2", "3"):
+            clean = ("a", "b", "c", "d")[int(clean)]
+        if clean not in ("a", "b", "c", "d"):
+            raise ValueError("selected_option must be one of: a, b, c, d")
+        return clean
+
 
 class SocraticHintOut(BaseModel):
     question_id: str

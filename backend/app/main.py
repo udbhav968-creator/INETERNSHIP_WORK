@@ -431,19 +431,22 @@ def _sync_serverless_context(
                 continue
             safe_t = max(0.5, min(3600.0, float(item[3]))) if item[3] is not None else 60.0
             dwell_val = int(item[6]) if len(item) > 6 and item[6] is not None else max(1000, int(round(safe_t * 1000.0)))
-            att_in = schemas.AttemptIn(
-                student_id=sid_for_journal,
-                question_id=qid,
-                paper_number=p_num,
-                selected_option=str(item[2]),
-                time_taken_seconds=safe_t,
-                option_switches=int(item[4]) if len(item) > 4 and item[4] is not None else 0,
-                hesitation_ms=int(item[5]) if len(item) > 5 and item[5] is not None else 0,
-                dwell_time_ms=dwell_val,
-            )
-            _process_single_attempt_no_commit(att_in, db)
-            existing_pairs.add((p_num, qid))
-            replayed = True
+            try:
+                att_in = schemas.AttemptIn(
+                    student_id=sid_for_journal,
+                    question_id=qid,
+                    paper_number=p_num,
+                    selected_option=str(item[2]),
+                    time_taken_seconds=safe_t,
+                    option_switches=int(item[4]) if len(item) > 4 and item[4] is not None else 0,
+                    hesitation_ms=int(item[5]) if len(item) > 5 and item[5] is not None else 0,
+                    dwell_time_ms=dwell_val,
+                )
+                _process_single_attempt_no_commit(att_in, db)
+                existing_pairs.add((p_num, qid))
+                replayed = True
+            except Exception:
+                continue
         if replayed:
             db.commit()
 
@@ -1245,6 +1248,8 @@ def predict_cold_start_item(payload: schemas.ColdStartItemIn):
 def get_socratic_hint(payload: schemas.SocraticHintIn, db: Session = Depends(get_db)):
     q_row = db.query(Question).filter_by(question_id=payload.question_id).first()
     rich_q = _RAG_INDEX.question_lookup.get(payload.question_id, {})
+    if not q_row and not rich_q:
+        raise HTTPException(status_code=404, detail="Question not found")
 
     topic_id = q_row.topic_id if q_row else rich_q.get("chapter", "Physics")
     q_text = q_row.text if q_row else rich_q.get("question_text", "")
@@ -1675,18 +1680,21 @@ _FRONTEND_DIST = PROJECT_ROOT / "frontend" / "dist"
 if (_FRONTEND_DIST / "index.html").exists():
     @app.get("/assets/{asset_name}", include_in_schema=False)
     def serve_frontend_asset(asset_name: str):
-        assets_dir = _FRONTEND_DIST / "assets"
-        target = assets_dir / asset_name
+        assets_dir = (_FRONTEND_DIST / "assets").resolve()
+        clean_name = os.path.basename(asset_name)
+        target = (assets_dir / clean_name).resolve()
+        if assets_dir not in target.parents and target != assets_dir:
+            raise HTTPException(status_code=404, detail="Asset not found")
         if not target.exists():
-            if asset_name.endswith(".js"):
+            if clean_name.endswith(".js"):
                 js_files = sorted(assets_dir.glob("*.js"))
                 if js_files:
                     target = js_files[0]
-            elif asset_name.endswith(".css"):
+            elif clean_name.endswith(".css"):
                 css_files = sorted(assets_dir.glob("*.css"))
                 if css_files:
                     target = css_files[0]
-        if not target.exists():
+        if not target.exists() or (assets_dir not in target.parents and target != assets_dir):
             raise HTTPException(status_code=404, detail="Asset not found")
         media_type = (
             "application/javascript; charset=utf-8"
