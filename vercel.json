@@ -1,3 +1,17 @@
 {
-  "buildCommand": "cd frontend && npm install && npm run build"
+  "buildCommand": "cd frontend && npm install && npm run build",
+  "outputDirectory": "frontend/dist",
+  "rewrites": [
+    { "source": "/auth/(.*)", "destination": "/api/index.py" },
+    { "source": "/students/(.*)", "destination": "/api/index.py" },
+    { "source": "/submit_attempt", "destination": "/api/index.py" },
+    { "source": "/submit_paper", "destination": "/api/index.py" },
+    { "source": "/remediation/(.*)", "destination": "/api/index.py" },
+    { "source": "/mlops/(.*)", "destination": "/api/index.py" },
+    { "source": "/health", "destination": "/api/index.py" },
+    { "source": "/docs", "destination": "/api/index.py" },
+    { "source": "/openapi.json", "destination": "/api/index.py" },
+    { "source": "/assets/(.*)", "destination": "/assets/$1" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
 }
