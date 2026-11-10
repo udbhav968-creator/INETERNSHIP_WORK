@@ -1750,6 +1750,40 @@ def test_28_zero_hardcoded_cold_start_priors_unified_score_and_15_trained_models
             db.close()
 
 
+
+
+def test_29_section4_recommendations_empirical_quarantine_postgres_multilingual():
+    client = TestClient(app)
+
+    r_recal = client.post("/mlops/recalibrate_empirical_items")
+    assert r_recal.status_code == 200
+    assert r_recal.json()["status"] == "SUCCESS"
+
+    r_quar = client.get("/mlops/quarantine_expansion_readiness")
+    assert r_quar.status_code == 200
+    assert r_quar.json()["total_quarantined_items"] == 815
+    assert r_quar.json()["ready_for_sme_review_count"] == 815
+    assert r_quar.json()["safe_to_merge_unconditionally"] is False
+
+    r_db = client.get("/mlops/database_telemetry")
+    assert r_db.status_code == 200
+    assert r_db.json()["dialect"] == "sqlite"
+    assert r_db.json()["status"] == "HEALTHY"
+
+    r_pg = client.get("/mlops/check_postgres")
+    assert r_pg.status_code == 200
+    assert r_pg.json()["status"] in ("SKIPPED", "CONNECTED")
+
+    r_soc = client.post(
+        "/remediation/socratic_hint",
+        json={"question_id": "NEET2013_BIO_091", "selected_option": "b", "language": "hi"},
+    )
+    assert r_soc.status_code == 200
+    soc_data = r_soc.json()
+    assert soc_data["qa_engine_mode"] == "NCERT_DETERMINISTIC_LSA_FALLBACK"
+    assert soc_data["multilingual_support"] is not None
+    assert soc_data["multilingual_support"]["language"] == "hi"
+
 if __name__ == "__main__":
     suites = [
         test_01_random_forest_model_and_live_inference,
@@ -1780,6 +1814,7 @@ if __name__ == "__main__":
         test_26_ml_devops_standalone_suite_registry_checksums_and_study_plan_endpoints,
         test_27_tier_recalibration_near_duplicate_guard_temperature_scaling_and_prometheus_metrics,
         test_28_zero_hardcoded_cold_start_priors_unified_score_and_15_trained_models,
+        test_29_section4_recommendations_empirical_quarantine_postgres_multilingual,
     ]
     for fn in suites:
         fn()

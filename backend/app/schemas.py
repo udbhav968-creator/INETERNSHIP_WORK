@@ -158,6 +158,7 @@ class SocraticHintIn(BaseModel):
     selected_option: str
     time_taken_seconds: Optional[float] = 60.0
     option_switches: Optional[int] = 0
+    language: Optional[str] = 'en'
 
     @field_validator("selected_option")
     @classmethod
@@ -183,6 +184,8 @@ class SocraticHintOut(BaseModel):
     distractor_trap_taxonomy: Optional[str] = "CONCEPTUAL_SUBSTITUTION"
     audio_socratic_script: Optional[dict[str, Any]] = None
     hindi_glossary: Optional[dict[str, Any]] = None
+    qa_engine_mode: Optional[str] = "NCERT_DETERMINISTIC_LSA_FALLBACK"
+    multilingual_support: Optional[dict[str, Any]] = None
 
 
 class ColdStartItemIn(BaseModel):

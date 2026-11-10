@@ -8,6 +8,7 @@ from pathlib import Path
 import numpy as np
 
 from .knowledge_graph_dag import get_direct_prerequisites
+from .multilingual_glossary import get_chapter_multilingual_metadata, translate_distractor_trap_to_hindi
 
 _STOP_WORDS = {
     "the", "and", "for", "with", "that", "this", "from", "are", "was", "were",
@@ -231,6 +232,7 @@ def generate_socratic_remediation(
     selected_option: str | None = None,
     topic_tag: str = "",
     explanation: str = "",
+    language: str = "en",
 ) -> dict:
     t0 = time.perf_counter()
 
@@ -302,6 +304,20 @@ def generate_socratic_remediation(
     trap_tax = classify_distractor_trap_taxonomy(str(sel_text), str(corr_text)) if (sel_norm and sel_norm != corr_norm) else "TARGET_CORRECT"
     latency_ms = round((time.perf_counter() - t0) * 1000.0, 3)
 
+    multilingual_data = None
+    if language.lower() in ("hi", "hindi"):
+        hi_meta = get_chapter_multilingual_metadata(topic_id)
+        hi_trap = translate_distractor_trap_to_hindi(trap_tax)
+        multilingual_data = {
+            "language": "hi",
+            "chapter_hi": hi_meta.get("chapter_hi", topic_id),
+            "subject_hi": hi_meta.get("subject_hi", ""),
+            "trap_label_hi": hi_trap.get("label_hi", ""),
+            "trap_explanation_hi": hi_trap.get("explanation_hi", ""),
+            "core_terms": hi_meta.get("core_terms", []),
+            "socratic_tip_hi": hi_meta.get("socratic_tip_hi", ""),
+        }
+
     return {
         "question_id": question_id,
         "topic_id": topic_id,
@@ -316,4 +332,28 @@ def generate_socratic_remediation(
         "guided_derivation_steps": derivation_steps,
         "prerequisite_chain": prereqs,
         "retrieval_latency_ms": latency_ms,
+        "qa_engine_mode": "NCERT_DETERMINISTIC_LSA_FALLBACK",
+        "multilingual_support": multilingual_data,
+    }
+
+
+def query_socratic_qa_with_fallback(question_text: str, student_query: str, chapter: str) -> dict:
+    t0 = time.perf_counter()
+    comb_query = f"{chapter} {question_text} {student_query}"
+    retrieved = _INDEX.retrieve(comb_query, chapter_hint=chapter, top_k=2)
+    primary = retrieved[0][0] if retrieved else {
+        "chapter": chapter,
+        "ncert_ref": f"NCERT — {chapter}",
+        "core_concept": f"Principles of {chapter}",
+        "formulas": [],
+    }
+    elapsed = round((time.perf_counter() - t0) * 1000.0, 3)
+    return {
+        "chapter": chapter,
+        "engine_mode": "NCERT_DETERMINISTIC_LSA_FALLBACK",
+        "ncert_reference": primary.get("ncert_ref", f"NCERT — {chapter}"),
+        "core_concept": primary.get("core_concept", ""),
+        "relevant_formulas": primary.get("formulas", []),
+        "answer_summary": f"According to {primary.get('ncert_ref')}, apply the core relationship for {chapter}.",
+        "latency_ms": elapsed,
     }

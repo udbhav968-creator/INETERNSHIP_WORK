@@ -68,7 +68,9 @@ from model.question_similarity_audit import (
     run_question_similarity_audit,
 )
 from model.study_plan_and_coverage_engine import compute_syllabus_coverage_and_improvement_plan
-from model.response_data_pipeline import get_pipeline_response_audit, get_item_calibration_profile
+from model.response_data_pipeline import get_pipeline_response_audit, get_item_calibration_profile, recalibrate_eligible_empirical_items
+from model.quarantine_provenance_audit import audit_quarantine_expansion_readiness
+from .postgres_adapter import get_database_telemetry, check_postgres_connection
 from model.verify_artifact_integrity import REGISTRY_MANIFEST_FILE, verify_all_ml_artifacts
 from model.multilingual_glossary import get_chapter_multilingual_metadata, translate_distractor_trap_to_hindi
 from model.socratic_audio_script_generator import generate_socratic_audio_script
@@ -1279,6 +1281,7 @@ def get_socratic_hint(payload: schemas.SocraticHintIn, db: Session = Depends(get
         options=options,
         correct_answer=correct_ans,
         selected_option=payload.selected_option,
+        language=getattr(payload, "language", "en") or "en",
     )
     formulas = raw.get("key_formulas") or []
     socratic_qs = raw.get("socratic_guiding_questions") or []
@@ -1309,6 +1312,8 @@ def get_socratic_hint(payload: schemas.SocraticHintIn, db: Session = Depends(get
         distractor_trap_taxonomy=trap_cat,
         audio_socratic_script=audio_script,
         hindi_glossary=hindi_meta,
+        qa_engine_mode=raw.get("qa_engine_mode", "NCERT_DETERMINISTIC_LSA_FALLBACK"),
+        multilingual_support=raw.get("multilingual_support"),
     )
 
 
@@ -1347,6 +1352,7 @@ def get_mlops_health_and_drift(db: Session = Depends(get_db)):
         )
 
     return {
+        "database_telemetry": get_database_telemetry(),
         "feature_store": FEATURE_STORE.get_latency_percentiles(),
         "drift_and_calibration": DRIFT_MONITOR.evaluate_health(db_attempts),
         "online_streaming_engine": STREAMING_CALIBRATION_ENGINE.get_online_summary(),
@@ -1681,6 +1687,26 @@ def get_student_ml_study_plan(
 ):
     _sync_serverless_context(request, db, student_id)
     return _compute_student_study_plan_payload(student_id, db)
+
+
+@app.post("/mlops/recalibrate_empirical_items")
+def recalibrate_empirical_items_endpoint():
+    return recalibrate_eligible_empirical_items()
+
+
+@app.get("/mlops/quarantine_expansion_readiness")
+def quarantine_expansion_readiness_endpoint():
+    return audit_quarantine_expansion_readiness()
+
+
+@app.get("/mlops/database_telemetry")
+def database_telemetry_endpoint():
+    return get_database_telemetry()
+
+
+@app.get("/mlops/check_postgres")
+def check_postgres_endpoint():
+    return check_postgres_connection()
 
 
 _FRONTEND_DIST = PROJECT_ROOT / "frontend" / "dist"

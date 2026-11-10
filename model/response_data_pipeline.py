@@ -152,3 +152,72 @@ def get_pipeline_response_audit(custom_db: Path | None = None) -> dict[str, Any]
 def should_recalibrate_empirically(question_id: str, custom_db: Path | None = None) -> bool:
     stats = get_item_response_stats(question_id, custom_db)
     return stats["n"] >= MIN_RESPONSES_FOR_EMPIRICAL_CALIBRATION
+
+def recalibrate_eligible_empirical_items(custom_db: Path | None = None) -> dict[str, Any]:
+    conn = _connect_db(custom_db)
+    if conn is None:
+        return {
+            "status": "ERROR",
+            "detail": "Database connection unavailable",
+            "eligible_count": 0,
+            "recalibrated_items": [],
+        }
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            "SELECT question_id, COUNT(*) AS n, "
+            "COALESCE(SUM(CASE WHEN is_correct = 1 THEN 1 ELSE 0 END), 0) AS correct "
+            "FROM test_attempts "
+            "GROUP BY question_id "
+            "HAVING COUNT(*) >= ?",
+            (MIN_RESPONSES_FOR_EMPIRICAL_CALIBRATION,),
+        )
+        rows = cur.fetchall()
+    finally:
+        conn.close()
+
+    recalibrated = []
+    for row in rows:
+        qid = str(row["question_id"])
+        n = int(row["n"])
+        corr = int(row["correct"])
+        obs_p = corr / n if n > 0 else 0.0
+
+        prior = get_item_params(qid)
+        a_val = float(prior.a)
+        b_prior = float(prior.b)
+        c_val = float(prior.c)
+
+        p_clamped = max(c_val + 0.02, min(0.98, obs_p))
+        p_adj = max(0.01, min(0.99, (p_clamped - c_val) / max(0.01, 1.0 - c_val)))
+        logit = math.log(p_adj / (1.0 - p_adj))
+        b_obs = round(-logit / max(0.2, a_val), 4)
+        b_obs = max(-3.0, min(3.0, b_obs))
+
+        fisher_info = max(0.05, float(a_val**2) * ((1.0 - c_val) / max(0.1, 1.0 + c_val)) * 0.25)
+        w = (n * fisher_info) / (1.0 + n * fisher_info)
+        b_shrunk = round((1.0 - w) * b_prior + w * b_obs, 4)
+        sem_b = round(1.0 / math.sqrt(1.0 + n * fisher_info), 4)
+
+        recalibrated.append({
+            "question_id": qid,
+            "sample_size": n,
+            "observed_accuracy": round(obs_p, 4),
+            "prior_b": b_prior,
+            "observed_b": b_obs,
+            "recalibrated_b": b_shrunk,
+            "shrinkage_weight_w": round(w, 4),
+            "sem_b": sem_b,
+            "confidence_interval_95": [
+                round(b_shrunk - 1.96 * sem_b, 4),
+                round(b_shrunk + 1.96 * sem_b, 4),
+            ],
+        })
+
+    return {
+        "status": "SUCCESS",
+        "threshold_responses": MIN_RESPONSES_FOR_EMPIRICAL_CALIBRATION,
+        "eligible_count": len(recalibrated),
+        "recalibrated_items": recalibrated,
+    }
+

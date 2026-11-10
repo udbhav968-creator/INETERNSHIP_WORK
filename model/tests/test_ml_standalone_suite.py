@@ -67,6 +67,9 @@ from model.study_plan_and_coverage_engine import (
 from model.validate_question_bank import validate as validate_qbank
 from model.validate_weightage_file import validate as validate_weightage
 from model.verify_artifact_integrity import verify_all_ml_artifacts
+from model.quarantine_provenance_audit import audit_quarantine_expansion_readiness, get_quarantine_item_by_id
+from model.response_data_pipeline import recalibrate_eligible_empirical_items
+from model.rag_socratic_engine import query_socratic_qa_with_fallback
 
 MODEL_DIR = Path(__file__).resolve().parent.parent
 PROJECT_ROOT = MODEL_DIR.parent
@@ -658,6 +661,36 @@ def ml_suite_24_multilingual_hindi_glossary_and_socratic_audio_script():
     assert "</speak>" in audio["ssml_payload"]
 
 
+
+
+def ml_suite_25_section4_empirical_recalibration_and_quarantine_audit():
+    recal = recalibrate_eligible_empirical_items()
+    assert recal["status"] in ("SUCCESS", "ERROR")
+    assert recal["threshold_responses"] == 30
+
+    audit = audit_quarantine_expansion_readiness()
+    assert audit["status"] == "SUCCESS"
+    assert audit["total_quarantined_items"] == 815
+    assert audit["ready_for_sme_review_count"] == 815
+    assert audit["structurally_defective_count"] == 0
+    assert audit["safe_to_merge_unconditionally"] is False
+    assert (
+        audit["provenance_policy"]
+        == "QUARANTINED_ITEMS_REQUIRE_OFFICIAL_NTA_SESSION_SOURCE_OR_DOUBLE_BLIND_SME_SIGNOFF_BEFORE_MERGE"
+    )
+
+    item = get_quarantine_item_by_id(audit["sme_candidates_preview"][0])
+    assert item is not None
+    assert item["question_id"] == audit["sme_candidates_preview"][0]
+
+    qa_res = query_socratic_qa_with_fallback(
+        "Calculate molar mass of water",
+        "What is atomic weight of H and O?",
+        "Mole Concept / Stoichiometry",
+    )
+    assert qa_res["engine_mode"] == "NCERT_DETERMINISTIC_LSA_FALLBACK"
+    assert "ncert_reference" in qa_res
+
 if __name__ == "__main__":
     suites = [
         ml_suite_01_question_bank_and_weightage_schema_validators,
@@ -684,6 +717,7 @@ if __name__ == "__main__":
         ml_suite_22_national_rank_and_college_cutoff_simulation,
         ml_suite_23_online_streaming_calibration_and_continuous_retraining,
         ml_suite_24_multilingual_hindi_glossary_and_socratic_audio_script,
+        ml_suite_25_section4_empirical_recalibration_and_quarantine_audit,
     ]
     for fn in suites:
         fn()
