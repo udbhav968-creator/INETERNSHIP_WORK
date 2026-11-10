@@ -282,7 +282,7 @@ def generate_paper(
                     if remaining <= 0:
                         break
             paper.extend(sub_paper)
-        return paper
+        return paper[:total_length] if not topic_id else paper
 
     fractional_topics: list[tuple[float, str]] = []
     for cur_topic_id, importance in _TOPIC_IMPORTANCE.items():
@@ -428,4 +428,4 @@ def generate_paper(
             paper.extend(fill_q)
             needed = total_length - len(paper)
 
-    return paper
+    return paper[:total_length] if not topic_id else paper

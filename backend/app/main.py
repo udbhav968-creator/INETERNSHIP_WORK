@@ -581,6 +581,9 @@ def next_paper(
             status_code=422,
             detail="total_length must be between 1 and 180 questions",
         )
+    if topic_id:
+        if not db.query(Topic).filter_by(topic_id=topic_id).first():
+            raise HTTPException(status_code=404, detail=f"Topic '{topic_id}' not found")
     _sync_serverless_context(request, db, student_id)
     return generate_paper(
         db,

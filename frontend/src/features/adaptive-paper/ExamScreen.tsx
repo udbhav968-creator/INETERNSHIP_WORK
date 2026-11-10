@@ -211,6 +211,11 @@ export function ExamScreen({
 
   async function handleSubmitPaper() {
     setConfirmingSubmit(false);
+    if (Object.keys(answers).length === 0) {
+      setErrorMessage("Please answer at least one question before submitting your exam.");
+      setLoadState("ready");
+      return;
+    }
     setLoadState("submitting");
     setErrorMessage("");
 
