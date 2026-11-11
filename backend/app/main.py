@@ -1495,6 +1495,9 @@ def get_mlops_audit_overview(db: Session = Depends(get_db)):
             "top_near_duplicate_pairs": sim_report.get("top_near_duplicate_pairs", [])[:8],
         },
         "probability_calibration": prob_cal,
+        "database_telemetry": get_database_telemetry(),
+        "quarantine_audit": audit_quarantine_expansion_readiness(),
+        "empirical_recalibration": recalibrate_eligible_empirical_items(),
     }
 
 

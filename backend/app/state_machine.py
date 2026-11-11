@@ -25,7 +25,7 @@ def process_answer(
     current_mastery = getattr(state, "mastery_prob", None)
     if current_mastery is None:
         ch_prior = get_chapter_bkt_prior(getattr(state, "topic_id", None))
-        current_mastery = ch_prior if state.level == "basic" else (0.62 if state.level == "medium" else 0.85)
+        current_mastery = ch_prior if state.level == "basic" else (min(0.75, max(0.45, ch_prior + 0.15)) if state.level == "medium" else min(0.90, max(0.70, ch_prior + 0.35)))
     attempts_so_far = (getattr(state, "attempts_counted", 0) or 0) + len(results)
 
     sim_time_taken = max(1, int(round(float(time_ratio) * 90)))

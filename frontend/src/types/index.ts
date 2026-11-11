@@ -105,6 +105,11 @@ export interface SocraticHintOut {
   socratic_hint: string;
   verified_step_by_step: string;
   retrieval_similarity: number;
+  distractor_trap_taxonomy?: string;
+  audio_socratic_script?: any;
+  hindi_glossary?: any;
+  qa_engine_mode?: string;
+  multilingual_support?: any;
 }
 
 export interface DinaSkillItem {
@@ -760,5 +765,24 @@ export interface MlopsAuditOverview {
     student_responses_available?: number;
     empirical_difficulty_validation_possible?: boolean;
     interpretation?: string;
+  };
+  database_telemetry?: {
+    status: string;
+    dialect: string;
+    is_sqlite: boolean;
+    pool_class: string;
+    ping_latency_ms: number;
+  };
+  quarantine_audit?: {
+    status: string;
+    total_quarantined_items: number;
+    ready_for_sme_review_count: number;
+    structurally_defective_count: number;
+    safe_to_merge_unconditionally: boolean;
+  };
+  empirical_recalibration?: {
+    status: string;
+    threshold_responses: number;
+    eligible_count: number;
   };
 }

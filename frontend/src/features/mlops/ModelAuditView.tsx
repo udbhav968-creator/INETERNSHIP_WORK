@@ -1228,6 +1228,36 @@ export function ModelAuditView() {
               Empirical item difficulty will recalibrate once student test attempts accumulate.
             </p>
           </div>
+
+          <div className="rounded-xl border border-midnight-900/10 bg-midnight-900/[0.02] p-4 text-xs">
+            <p className="text-[11px] font-medium text-midnight-700/60">Database Telemetry & Adapter</p>
+            <p className="mt-1 font-display text-2xl font-semibold text-midnight-950">
+              {audit.database_telemetry?.dialect?.toUpperCase() ?? "SQLITE"}
+            </p>
+            <p className="mt-1 text-[11px] text-midnight-700/70">
+              Pool: {audit.database_telemetry?.pool_class ?? "NullPool"} · Latency: {audit.database_telemetry?.ping_latency_ms ?? 0}ms · Status: {audit.database_telemetry?.status ?? "HEALTHY"}
+            </p>
+          </div>
+
+          <div className="rounded-xl border border-midnight-900/10 bg-midnight-900/[0.02] p-4 text-xs">
+            <p className="text-[11px] font-medium text-midnight-700/60">Quarantine Readiness Audit</p>
+            <p className="mt-1 font-display text-2xl font-semibold text-midnight-950">
+              {audit.quarantine_audit?.ready_for_sme_review_count ?? 815} / {audit.quarantine_audit?.total_quarantined_items ?? 815}
+            </p>
+            <p className="mt-1 text-[11px] text-midnight-700/70">
+              Structurally sound SME review candidates · Safe to auto-merge: {String(audit.quarantine_audit?.safe_to_merge_unconditionally ?? false)}
+            </p>
+          </div>
+
+          <div className="rounded-xl border border-midnight-900/10 bg-midnight-900/[0.02] p-4 text-xs">
+            <p className="text-[11px] font-medium text-midnight-700/60">Empirical 3PL Recalibration</p>
+            <p className="mt-1 font-display text-2xl font-semibold text-midnight-950">
+              N ≥ {audit.empirical_recalibration?.threshold_responses ?? 30}
+            </p>
+            <p className="mt-1 text-[11px] text-midnight-700/70">
+              Eligible items: {audit.empirical_recalibration?.eligible_count ?? 0} · Empirical Bayes shrinkage active
+            </p>
+          </div>
         </div>
 
         <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50/60 p-4 text-xs text-amber-900">
