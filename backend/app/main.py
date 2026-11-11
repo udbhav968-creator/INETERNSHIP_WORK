@@ -1758,3 +1758,13 @@ if (_FRONTEND_DIST / "index.html").exists():
             content=(_FRONTEND_DIST / "index.html").read_text(encoding="utf-8"),
             headers={"Cache-Control": "no-store, no-cache, must-revalidate, max-age=0"},
         )
+
+    @app.get("/{full_path:path}", include_in_schema=False)
+    def serve_spa_fallback(full_path: str):
+        asset_file = _FRONTEND_DIST / full_path
+        if asset_file.is_file():
+            return FileResponse(str(asset_file))
+        return HTMLResponse(
+            content=(_FRONTEND_DIST / "index.html").read_text(encoding="utf-8"),
+            headers={"Cache-Control": "no-store, no-cache, must-revalidate, max-age=0"},
+        )
