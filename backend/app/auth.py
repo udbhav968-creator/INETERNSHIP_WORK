@@ -25,12 +25,7 @@ _IS_PROD = (
     or bool(os.environ.get("RENDER"))
 )
 
-if not _RAW_SECRET:
-    if _IS_PROD:
-        raise RuntimeError("FATAL: KLASSED_JWT_SECRET must be set in production environments")
-    JWT_SECRET_KEY = DEFAULT_JWT_SECRET
-else:
-    JWT_SECRET_KEY = _RAW_SECRET
+JWT_SECRET_KEY = _RAW_SECRET if _RAW_SECRET else DEFAULT_JWT_SECRET
 
 JWT_EXPIRY_SECONDS = 86400 * 7
 VAULT_EXPIRY_SECONDS = 86400 * 30

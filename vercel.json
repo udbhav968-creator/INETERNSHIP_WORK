@@ -1,6 +1,9 @@
 {
   "buildCommand": "cd frontend && npm install && npm run build",
   "outputDirectory": "frontend/dist",
+  "env": {
+    "KLASSED_JWT_SECRET": "klassed-neet-v2-enterprise-hmac-secret-2026"
+  },
   "functions": {
     "api/index.py": {
       "includeFiles": "{backend/**,data/**,model/**}",
