@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import json
 import math
+import os
 import sqlite3
+import tempfile
 from pathlib import Path
 from typing import Any
 
@@ -16,15 +18,26 @@ MIN_RESPONSES_FOR_EMPIRICAL_CALIBRATION = 30
 
 
 def _connect_db(custom_path: Path | None = None) -> sqlite3.Connection | None:
-    target = custom_path or DB_PATH
+    if custom_path:
+        target = custom_path
+    elif os.environ.get("VERCEL"):
+        tmp = Path(tempfile.gettempdir()) / "klassed.db"
+        target = tmp if tmp.exists() else DB_PATH
+    else:
+        target = DB_PATH
     if not target.exists():
         return None
     try:
-        conn = sqlite3.connect(str(target))
+        conn = sqlite3.connect(f"file:{target.resolve().as_posix()}?mode=ro", uri=True)
         conn.row_factory = sqlite3.Row
         return conn
     except Exception:
-        return None
+        try:
+            conn = sqlite3.connect(str(target))
+            conn.row_factory = sqlite3.Row
+            return conn
+        except Exception:
+            return None
 
 
 def get_item_response_stats(question_id: str, custom_db: Path | None = None) -> dict[str, Any]:
