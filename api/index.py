@@ -20,6 +20,9 @@ class _VercelPathMiddleware:
             if p.startswith("/api/index.py"):
                 p = p[len("/api/index.py"):]
                 scope["path"] = p if p else "/"
+            elif p.startswith("/api/index"):
+                p = p[len("/api/index"):]
+                scope["path"] = p if p else "/"
             elif p == "/api":
                 scope["path"] = "/"
             elif p.startswith("/api/"):
