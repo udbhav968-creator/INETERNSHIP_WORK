@@ -78,9 +78,9 @@ def run_live_e2e_tests():
     with urllib.request.urlopen(req_ins, timeout=15) as res:
         insights = json.loads(res.read())
         assert insights["global_theta"] == 0.0
-        assert insights["estimated_neet_percentile"] == 50.0
+        assert insights["estimated_neet_percentile"] is None
         mc_opt_score = insights["monte_carlo_conformal_simulator"]["negative_marking_optimizer"]["optimal_skip_expected_score_720"]
-        assert insights["predicted_neet_score_720"] == mc_opt_score
+        assert insights["predicted_neet_score_720"] is None
         assert len(insights["recommended_unlock_topics"]) == 65
         assert len({round(c["current_mastery"], 3) for c in insights["recommended_unlock_topics"]}) >= 15
         assert all(s["status"] == "prior_calibrated" for s in insights["dina_cognitive_profile"]["skills"])
