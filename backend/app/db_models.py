@@ -37,6 +37,18 @@ class Question(Base):
     wrong_option_tags = Column(JSON, nullable=True)
     years_asked = Column(JSON, nullable=True)
 
+    @property
+    def paper_source(self) -> str:
+        qid = self.question_id or ""
+        if "2026" in qid:
+            return "NEET 2026 Re-NEET"
+        for y in range(2025, 2012, -1):
+            if str(y) in qid:
+                return f"NEET {y}"
+        if self.years_asked and isinstance(self.years_asked, list) and len(self.years_asked) > 0:
+            return f"NEET {self.years_asked[0]}"
+        return "Official NEET PYQ"
+
 
 class StudentTopicState(Base):
     __tablename__ = "student_topic_state"

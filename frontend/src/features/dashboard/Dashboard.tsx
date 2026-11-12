@@ -26,6 +26,15 @@ interface DashboardProps {
 type LoadState = "loading" | "ready" | "error" | "empty";
 type SubjectFilter = "All" | "Physics" | "Chemistry" | "Biology";
 
+function parseExamYear(qid?: string, fallback?: string): string {
+  if (!qid) return fallback || "NEET PYQ";
+  if (qid.includes("2026")) return "NEET 2026 Re-NEET";
+  const m = qid.match(/NEET(\d{4})/i);
+  if (m) return `NEET ${m[1]}`;
+  return fallback || "NEET PYQ";
+}
+
+
 export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
   const [topics, setTopics] = useState<TopicState[]>([]);
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
@@ -45,6 +54,8 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
   const [errorMessage, setErrorMessage] = useState("");
   const [subjectFilter, setSubjectFilter] = useState<SubjectFilter>("All");
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedSubjectQuick, setSelectedSubjectQuick] = useState<SubjectFilter>("All");
+  const [selectedChapterQuick, setSelectedChapterQuick] = useState<string>("Mole Concept / Stoichiometry");
 
   useEffect(() => {
     let cancelled = false;
@@ -152,6 +163,66 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
           >
             Start 180-Q Full NEET Exam
           </Button>
+        </div>
+      </Card>
+
+      <Card className="border border-midnight-900/10 bg-surface-raised p-5 shadow-sm">
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-base font-bold text-accent">
+              🎯
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-midnight-950">
+                Chapterwise PYQ Practice Drill (All 65 NCERT Chapters)
+              </p>
+              <p className="text-xs text-midnight-700/70">
+                Select any chapter across Biology, Chemistry, or Physics to practice authentic historical NEET PYQs (15 questions).
+              </p>
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <select
+              value={selectedSubjectQuick}
+              onChange={(e) => {
+                const subj = e.target.value as SubjectFilter;
+                setSelectedSubjectQuick(subj);
+                const firstForSubj = allSyllabusChapters.find(
+                  (c) => subj === "All" || c.subject === subj
+                );
+                if (firstForSubj) setSelectedChapterQuick(firstForSubj.topic_id);
+              }}
+              className="rounded-xl border border-midnight-900/15 bg-white px-3 py-2 text-xs font-semibold text-midnight-900 outline-none focus:border-accent"
+            >
+              <option value="All">All Subjects (65 Chapters)</option>
+              <option value="Biology">Biology (20 Chapters)</option>
+              <option value="Chemistry">Chemistry (23 Chapters)</option>
+              <option value="Physics">Physics (22 Chapters)</option>
+            </select>
+            <select
+              value={selectedChapterQuick}
+              onChange={(e) => setSelectedChapterQuick(e.target.value)}
+              className="max-w-[200px] truncate rounded-xl border border-midnight-900/15 bg-white px-3 py-2 text-xs font-semibold text-midnight-950 outline-none focus:border-accent sm:max-w-xs"
+            >
+              {allSyllabusChapters
+                .filter((c) => selectedSubjectQuick === "All" || c.subject === selectedSubjectQuick)
+                .map((c) => (
+                  <option key={c.topic_id} value={c.topic_id}>
+                    {c.topic_id} ({c.subject})
+                  </option>
+                ))}
+            </select>
+            <Button
+              onClick={() => {
+                if (selectedChapterQuick) {
+                  onStartPaper(selectedChapterQuick, 15, "diagnostic_15");
+                }
+              }}
+              className="shrink-0 bg-midnight-950 text-xs font-semibold text-white hover:bg-midnight-800"
+            >
+              Start Chapter Drill →
+            </Button>
+          </div>
         </div>
       </Card>
 
@@ -494,7 +565,12 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
                         {att.is_correct ? "✓" : "✗"}
                       </span>
                       <div>
-                        <p className="font-medium text-midnight-950">{att.topic_id}</p>
+                        <div className="flex items-center gap-1.5">
+                          <span className="inline-flex items-center rounded bg-emerald-500/10 px-1.5 py-0.5 text-[10px] font-bold text-emerald-800 border border-emerald-500/20">
+                            {parseExamYear(att.question_id)}
+                          </span>
+                          <p className="font-medium text-midnight-950">{att.topic_id}</p>
+                        </div>
                         <p className="text-[11px] font-mono text-midnight-700/50">{att.question_id}</p>
                       </div>
                     </div>
@@ -1186,9 +1262,17 @@ function PaperReviewModal({
             const hint = hints[q.question_id];
             return (
               <Card key={q.question_id} className="p-4 bg-surface-raised">
-                <p className="mb-1 text-xs font-medium uppercase tracking-wide text-midnight-700/50">
-                  Question {i + 1} · {q.topic_id}
-                </p>
+                <div className="mb-2 flex items-center justify-between gap-2 border-b border-midnight-900/[0.06] pb-1.5">
+                  <div className="flex items-center gap-2">
+                    <span className="inline-flex items-center rounded-md bg-emerald-500/10 px-2 py-0.5 text-[11px] font-bold text-emerald-800 border border-emerald-500/20">
+                      {q.paper_source || parseExamYear(q.question_id)}
+                    </span>
+                    <span className="text-xs font-semibold uppercase tracking-wide text-midnight-700/60">
+                      Question {i + 1} · {q.topic_id}
+                    </span>
+                  </div>
+                  <span className="text-[11px] font-mono text-midnight-700/50">{q.question_id}</span>
+                </div>
                 <p className="mb-3 text-sm font-medium leading-relaxed text-midnight-950">{q.text}</p>
                 <div className="flex flex-col gap-1.5">
                   {q.options.map((optText, optIdx) => {

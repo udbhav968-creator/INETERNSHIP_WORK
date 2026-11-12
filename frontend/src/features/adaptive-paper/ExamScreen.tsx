@@ -25,6 +25,18 @@ interface ExamScreenProps {
 
 type LoadState = "loading" | "ready" | "error" | "empty" | "submitting" | "submit-error" | "results";
 
+function getExamYearLabel(paperSource?: string, yearsAsked?: number[], questionId?: string): string {
+  if (paperSource) return paperSource;
+  if (yearsAsked && yearsAsked.length > 0) return `NEET ${yearsAsked[0]}`;
+  if (questionId) {
+    if (questionId.includes("2026")) return "NEET 2026 Re-NEET";
+    const m = questionId.match(/NEET(\d{4})/i);
+    if (m) return `NEET ${m[1]}`;
+  }
+  return "Official NEET PYQ";
+}
+
+
 export function ExamScreen({
   studentId,
   paperNumber,
@@ -304,9 +316,14 @@ export function ExamScreen({
     <div className="mx-auto flex max-w-4xl flex-col gap-6 lg:flex-row">
       <aside className="order-2 flex flex-col gap-3 lg:order-1 lg:w-56 lg:shrink-0">
         <Card className="p-4">
-          <p className="mb-2 text-xs font-medium uppercase tracking-wide text-midnight-700/50">
-            {topicId ? `Chapter Drill · ${topicId}` : `Sample Paper ${paperNumber}`}
-          </p>
+          <div className="mb-2.5">
+            <span className="inline-block rounded-md bg-accent/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-accent-dim">
+              {topicId ? "Chapter PYQ Drill" : (questions.length === 180 ? "180-Q Full Exam" : "45-Q Adaptive Mock")}
+            </span>
+            <p className="mt-1 text-xs font-semibold text-midnight-950">
+              {topicId ? topicId : `Sample Paper ${paperNumber}`}
+            </p>
+          </div>
 
           {questions.length === 180 && (
             <div className="mb-2.5 flex flex-wrap gap-1">
@@ -395,11 +412,22 @@ export function ExamScreen({
         </div>
 
         <Card className="p-7">
-          <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-            <p className="text-xs font-medium uppercase tracking-wide text-midnight-700/50">
-              {current.topic_id}
-            </p>
-            <DifficultyBadge level={current.difficulty} />
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-midnight-900/[0.06] pb-2.5">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-1 rounded-md bg-emerald-500/10 px-2.5 py-0.5 text-xs font-bold text-emerald-800 border border-emerald-500/25 shadow-xs">
+                <svg className="h-3 w-3 text-emerald-600" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
+                </svg>
+                {getExamYearLabel(current.paper_source, current.years_asked, current.question_id)}
+              </span>
+              <p className="text-xs font-semibold uppercase tracking-wide text-midnight-700/70">
+                {current.topic_id}
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] font-mono text-midnight-700/50">{current.question_id}</span>
+              <DifficultyBadge level={current.difficulty} />
+            </div>
           </div>
           <p className="mb-6 text-lg leading-relaxed text-midnight-950">{current.text}</p>
 
@@ -650,9 +678,17 @@ function ResultsView({
           const hint = hints[q.question_id];
           return (
             <Card key={q.question_id} className="p-5">
-              <p className="mb-1 text-xs font-medium uppercase tracking-wide text-midnight-700/50">
-                Question {i + 1} · {q.topic_id}
-              </p>
+              <div className="mb-2.5 flex flex-wrap items-center justify-between gap-2 border-b border-midnight-900/[0.06] pb-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="inline-flex items-center gap-1 rounded-md bg-emerald-500/10 px-2 py-0.5 text-[11px] font-bold text-emerald-800 border border-emerald-500/25">
+                    {getExamYearLabel(q.paper_source, q.years_asked, q.question_id)}
+                  </span>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-midnight-700/70">
+                    Question {i + 1} · {q.topic_id}
+                  </p>
+                </div>
+                <span className="text-[11px] font-mono text-midnight-700/50">{q.question_id}</span>
+              </div>
               <p className="mb-3 text-sm leading-relaxed text-midnight-950">{q.text}</p>
               <div className="flex flex-col gap-2">
                 {q.options.map((optionText, optIdx) => {

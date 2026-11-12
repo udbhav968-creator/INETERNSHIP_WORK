@@ -632,6 +632,8 @@ def paper_review(
                 correct_answer=question.correct_answer,
                 selected_option=attempt.selected_option,
                 is_correct=attempt.is_correct,
+                years_asked=question.years_asked,
+                paper_source=question.paper_source,
             )
         )
 

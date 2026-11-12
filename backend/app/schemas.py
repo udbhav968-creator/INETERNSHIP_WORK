@@ -65,6 +65,8 @@ class QuestionOut(BaseModel):
     text: str
     options: list[str]
     expected_time_seconds: Optional[int] = 90
+    years_asked: Optional[list[int]] = None
+    paper_source: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -109,6 +111,8 @@ class QuestionReviewOut(BaseModel):
     correct_answer: str
     selected_option: str
     is_correct: bool
+    years_asked: Optional[list[int]] = None
+    paper_source: Optional[str] = None
 
 
 class PaperReviewOut(BaseModel):

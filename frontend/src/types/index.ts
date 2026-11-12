@@ -21,6 +21,8 @@ export interface QuestionOut {
   text: string;
   options: string[];
   expected_time_seconds?: number;
+  years_asked?: number[];
+  paper_source?: string;
 }
 
 export interface AttemptPayload {
@@ -51,6 +53,8 @@ export interface QuestionReviewOut {
   correct_answer: OptionLetter;
   selected_option: OptionLetter;
   is_correct: boolean;
+  years_asked?: number[];
+  paper_source?: string;
 }
 
 export interface PaperReviewOut {
