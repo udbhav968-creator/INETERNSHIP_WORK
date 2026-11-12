@@ -6,6 +6,11 @@
 **Live Production URL:** [https://klassed-neet-adaptive-engine.vercel.app](https://klassed-neet-adaptive-engine.vercel.app)  
 **Production Stack:** Python 3.11+, FastAPI, NumPy, SciPy, Scikit-Learn, PyTorch/ONNX, SQLite/PostgreSQL, React 18, TypeScript, Vite, Tailwind CSS, Vercel Serverless Edge.
 
+**Documentation Reports:**
+* **Standalone Interactive HTML Report:** [`docs/klassed_project_architecture_and_deep_explanation.html`](docs/klassed_project_architecture_and_deep_explanation.html)
+* **Complete Microsoft Word Report:** [`docs/klassed_project_architecture_and_deep_explanation.docx`](docs/klassed_project_architecture_and_deep_explanation.docx)
+
+
 ---
 
 ## 1. Executive Summary & Core Architectural Innovation
