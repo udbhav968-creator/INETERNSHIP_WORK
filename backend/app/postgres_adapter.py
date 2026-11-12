@@ -160,3 +160,33 @@ def migrate_sqlite_to_postgres(
         "total_records_migrated": sum(counts.values()),
         "elapsed_seconds": elapsed,
     }
+
+def generate_postgresql_partitioning_ddl(num_hash_partitions: int = 16) -> dict[str, Any]:
+    partitions = [
+        f"CREATE TABLE IF NOT EXISTS test_attempts_part_{i:02d} PARTITION OF test_attempts_partitioned FOR VALUES WITH (MODULUS {num_hash_partitions}, REMAINDER {i});"
+        for i in range(num_hash_partitions)
+    ]
+    base_ddl = (
+        "CREATE TABLE IF NOT EXISTS test_attempts_partitioned ("
+        "attempt_id BIGSERIAL, "
+        "student_id VARCHAR NOT NULL, "
+        "question_id VARCHAR NOT NULL, "
+        "paper_number INTEGER NOT NULL, "
+        "is_correct BOOLEAN NOT NULL, "
+        "time_taken_seconds FLOAT NOT NULL, "
+        "selected_option VARCHAR NOT NULL, "
+        "option_switches INTEGER NOT NULL DEFAULT 0, "
+        "hesitation_ms INTEGER NOT NULL DEFAULT 0, "
+        "dwell_time_ms INTEGER NOT NULL DEFAULT 0, "
+        "timestamp TIMESTAMPTZ DEFAULT NOW(), "
+        "PRIMARY KEY (student_id, attempt_id)"
+        f") PARTITION BY HASH (student_id);"
+    )
+    return {
+        "strategy": "HASH",
+        "partition_key": "student_id",
+        "total_partitions": num_hash_partitions,
+        "base_table_ddl": base_ddl,
+        "partition_tables_ddl": partitions,
+    }
+

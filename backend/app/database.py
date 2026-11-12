@@ -31,9 +31,10 @@ if _IS_SQLITE:
     engine_kwargs["poolclass"] = NullPool
     engine_kwargs["connect_args"] = {"check_same_thread": False, "timeout": 30}
 else:
-    engine_kwargs["pool_size"] = int(os.environ.get("DB_POOL_SIZE", 20))
-    engine_kwargs["max_overflow"] = int(os.environ.get("DB_MAX_OVERFLOW", 10))
-    engine_kwargs["pool_recycle"] = 1800
+    engine_kwargs["pool_size"] = int(os.environ.get("DB_POOL_SIZE", 50))
+    engine_kwargs["max_overflow"] = int(os.environ.get("DB_MAX_OVERFLOW", 50))
+    engine_kwargs["pool_timeout"] = int(os.environ.get("DB_POOL_TIMEOUT", 10))
+    engine_kwargs["pool_recycle"] = int(os.environ.get("DB_POOL_RECYCLE", 1800))
 
 engine = create_engine(DATABASE_URL, **engine_kwargs)
 

@@ -84,4 +84,31 @@ class StreamingOnlineCalibrationEngine:
         }
 
 
+    def update_batch_online(
+        self,
+        attempts: list[dict[str, Any]],
+    ) -> dict[str, Any]:
+        updated_items = 0
+        mean_abs_residual = 0.0
+        for att in attempts:
+            qid = str(att.get("question_id", ""))
+            theta = float(att.get("student_theta", 0.0))
+            is_corr = bool(att.get("is_correct", False))
+            curr_a = float(att.get("current_a", 1.25))
+            curr_b = float(att.get("current_b", 0.0))
+            curr_c = float(att.get("current_c", 0.20))
+            new_a, new_b, _ = self.update_item_parameters_online(
+                qid, theta, is_corr, curr_a, curr_b, curr_c
+            )
+            updated_items += 1
+            logit = max(-15.0, min(15.0, 1.702 * curr_a * (theta - curr_b)))
+            p_pred = curr_c + (1.0 - curr_c) / (1.0 + math.exp(-logit))
+            mean_abs_residual += abs((1.0 if is_corr else 0.0) - p_pred)
+        return {
+            "batch_size": len(attempts),
+            "updated_items": updated_items,
+            "mean_batch_residual": round(mean_abs_residual / max(1, updated_items), 4),
+        }
+
+
 STREAMING_CALIBRATION_ENGINE = StreamingOnlineCalibrationEngine()

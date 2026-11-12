@@ -3,6 +3,8 @@ import math
 import os
 import tempfile
 import threading
+import time
+from collections import OrderedDict
 from pathlib import Path
 
 import numpy as np
@@ -12,10 +14,17 @@ from .irt_3pl_model import fisher_information, get_item_params, irt_3pl_probabil
 CONTEXT_DIM = 6
 DEFAULT_ALPHA = 0.35
 ZPD_TARGET_PROB = 0.70
+MAX_STUDENT_CACHE = int(os.environ.get("LINUCB_CACHE_CAPACITY", "50000"))
+NUM_STRIPES = 64
 
 _BANDIT_LOCK = threading.RLock()
+_STRIPED_LOCKS = [threading.RLock() for _ in range(NUM_STRIPES)]
 _MODEL_DIR = Path(__file__).resolve().parent
 _PRIOR_INIT_PATH = _MODEL_DIR / "linucb_prior_init.json"
+
+
+def _get_student_lock(student_id: str) -> threading.RLock:
+    return _STRIPED_LOCKS[abs(hash(str(student_id))) % NUM_STRIPES]
 
 
 def _load_warm_start_prior() -> tuple[np.ndarray, np.ndarray]:
@@ -85,7 +94,7 @@ class LinUCBStudentState:
         return inst
 
 
-_STUDENT_BANDITS: dict[str, LinUCBStudentState] = {}
+_STUDENT_BANDITS: OrderedDict[str, LinUCBStudentState] = OrderedDict()
 
 
 def _load_bandit_checkpoint() -> None:
@@ -95,16 +104,29 @@ def _load_bandit_checkpoint() -> None:
     try:
         with open(src, encoding="utf-8") as f:
             raw = json.load(f)
-        for sid, payload in raw.items():
-            if isinstance(payload, dict) and "A" in payload and "b" in payload:
-                _STUDENT_BANDITS[sid] = LinUCBStudentState.from_dict(payload)
+        with _BANDIT_LOCK:
+            for sid, payload in raw.items():
+                if isinstance(payload, dict) and "A" in payload and "b" in payload:
+                    _STUDENT_BANDITS[sid] = LinUCBStudentState.from_dict(payload)
+                    if len(_STUDENT_BANDITS) > MAX_STUDENT_CACHE:
+                        _STUDENT_BANDITS.popitem(last=False)
     except Exception:
         pass
 
 
-def _save_bandit_checkpoint() -> None:
+_LAST_SAVE_TIME = 0.0
+_MIN_SAVE_INTERVAL = 0.5
+
+
+def _save_bandit_checkpoint(force: bool = False) -> None:
+    global _LAST_SAVE_TIME
+    now = time.time()
+    if not force and (now - _LAST_SAVE_TIME) < _MIN_SAVE_INTERVAL:
+        return
+    _LAST_SAVE_TIME = now
     try:
-        payload = {sid: st.to_dict() for sid, st in _STUDENT_BANDITS.items()}
+        with _BANDIT_LOCK:
+            payload = {sid: st.to_dict() for sid, st in list(_STUDENT_BANDITS.items())[-MAX_STUDENT_CACHE:]}
         tmp_path = _CHECKPOINT_PATH.with_suffix(".tmp")
         with open(tmp_path, "w", encoding="utf-8") as f:
             json.dump(payload, f, indent=2)
@@ -113,13 +135,18 @@ def _save_bandit_checkpoint() -> None:
         pass
 
 
+def flush_bandit_checkpoints() -> None:
+    _save_bandit_checkpoint(force=True)
+
+
 def reset_student_bandit(student_id: str, remove: bool = False) -> None:
     with _BANDIT_LOCK:
         if remove:
             _STUDENT_BANDITS.pop(student_id, None)
         else:
             _STUDENT_BANDITS[student_id] = LinUCBStudentState()
-        _save_bandit_checkpoint()
+            _STUDENT_BANDITS.move_to_end(student_id)
+        _save_bandit_checkpoint(force=True)
 
 
 _load_bandit_checkpoint()
@@ -127,9 +154,23 @@ _load_bandit_checkpoint()
 
 def get_student_bandit(student_id: str) -> LinUCBStudentState:
     with _BANDIT_LOCK:
-        if student_id not in _STUDENT_BANDITS:
-            _STUDENT_BANDITS[student_id] = LinUCBStudentState()
-        return _STUDENT_BANDITS[student_id]
+        if student_id in _STUDENT_BANDITS:
+            _STUDENT_BANDITS.move_to_end(student_id)
+            return _STUDENT_BANDITS[student_id]
+        new_state = LinUCBStudentState()
+        _STUDENT_BANDITS[student_id] = new_state
+        if len(_STUDENT_BANDITS) > MAX_STUDENT_CACHE:
+            _STUDENT_BANDITS.popitem(last=False)
+        return new_state
+
+
+def get_bandit_cache_telemetry() -> dict[str, int]:
+    with _BANDIT_LOCK:
+        return {
+            "cached_active_students": len(_STUDENT_BANDITS),
+            "max_cache_capacity": MAX_STUDENT_CACHE,
+            "striped_locks_count": NUM_STRIPES,
+        }
 
 
 def build_context_vector(
@@ -211,7 +252,7 @@ def record_bandit_feedback(
         min(1.0, 0.40 * zpd_quality + 0.25 * engagement_quality + 0.25 * outcome_bonus + mastery_gain_bonus),
         4,
     )
-    with _BANDIT_LOCK:
+    with _get_student_lock(student_id):
         get_student_bandit(student_id).update(x, reward)
         _save_bandit_checkpoint()
     return reward

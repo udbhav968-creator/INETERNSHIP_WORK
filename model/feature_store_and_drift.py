@@ -2,7 +2,8 @@ import json
 import math
 import threading
 import time
-from collections import deque
+import os
+from collections import deque, OrderedDict
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 
@@ -42,9 +43,10 @@ def _compute_real_corpus_baselines() -> tuple[dict[str, float], list[float]]:
 
 
 class InMemoryFeatureStore:
-    def __init__(self, max_latency_samples: int = 1000):
+    def __init__(self, max_latency_samples: int = 1000, max_capacity: int = 50000):
         self._lock = threading.RLock()
-        self._student_cache: Dict[str, Dict[str, Any]] = {}
+        self.max_capacity = int(os.environ.get("FEATURE_STORE_CAPACITY", str(max_capacity)))
+        self._student_cache: OrderedDict[str, Dict[str, Any]] = OrderedDict()
         self._latencies_ms: deque = deque(maxlen=max_latency_samples)
         self._hits: int = 0
         self._misses: int = 0
@@ -57,6 +59,7 @@ class InMemoryFeatureStore:
             self._latencies_ms.append(elapsed_ms)
             if record is not None:
                 self._hits += 1
+                self._student_cache.move_to_end(student_id)
             else:
                 self._misses += 1
             return dict(record) if record is not None else None
@@ -68,6 +71,9 @@ class InMemoryFeatureStore:
                 **features,
                 "updated_at_epoch": time.time(),
             }
+            self._student_cache.move_to_end(student_id)
+            if len(self._student_cache) > self.max_capacity:
+                self._student_cache.popitem(last=False)
             elapsed_ms = (time.perf_counter() - t0) * 1000.0
             self._latencies_ms.append(elapsed_ms)
             return elapsed_ms
