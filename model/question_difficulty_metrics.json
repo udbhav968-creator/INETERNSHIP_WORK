@@ -3,7 +3,7 @@
   "target": "difficulty_level",
   "training_rows": 1920,
   "testing_rows": 480,
-  "accuracy": 0.9979166666666667,
+  "accuracy": 0.8083333333333333,
   "classes": [
     "advanced",
     "basic",
@@ -14,15 +14,12 @@
     "chapter",
     "topic_tag",
     "question_type",
-    "ideal_time_sec",
     "has_diagram",
     "word_count",
     "char_length",
     "formula_density",
     "numerical_complexity",
     "negation_trap",
-    "distractor_similarity",
-    "marks",
-    "negative_marks"
+    "distractor_similarity"
   ]
 }

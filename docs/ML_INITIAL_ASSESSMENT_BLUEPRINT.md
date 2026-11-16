@@ -155,8 +155,8 @@ Tuning trade-off (`REPEAT_PENALTY` / `CHAPTER_PENALTY` in `mock_test_generator.p
 | BKT chapter parameters | PYQ-derived heuristics | ❌ | ⚠️ Priors only |
 | DINA 8-skill parameters | PYQ Q-matrix heuristics | ❌ | ⚠️ Priors only |
 | LinUCB bandit prior | BKT priors + DAG | ❌ | ⚠️ Priors only |
-| Drift monitor / temperature scaling | RF out-of-fold probabilities | ❌ | ⚠️ Needs real outcomes |
-| Difficulty RF (production) | 2,400 PYQs incl. `ideal_time_sec` | n/a | ⚠️ 97.5% is leakage; 74.9% without the leaked feature |
+| Drift monitor / temperature scaling | Leak-free RF out-of-fold probabilities (T* = 0.96) | ❌ | ⚠️ Re-fit on real outcomes later |
+| Difficulty RF (production) | 2,400 PYQs, leaked features (`ideal_time_sec`, `marks`, `negative_marks`) removed | n/a | ✅ Retrained: 80.8% holdout, 80.1% 5-fold CV (previously reported 99.79% was leakage) |
 | Difficulty RF v2 candidate | 9,448 verified sample tiers, no leaked features | n/a | ✅ 78.5% on held-out papers (baseline 52.5%); not promoted |
 | Chapter resolver | PYQ + verified sample chapters | n/a | ✅ ≥ 90% precision where it labels |
 | Near-duplicate guard | All 11,848 items | n/a | ✅ |

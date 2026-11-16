@@ -21,8 +21,8 @@ def run_full_authentic_training():
     print("\n[1/6] Running Data Integrity Gate on 2,400 Verified Questions...")
     gate_res = run_data_integrity_gate()
     print(f"      Status: {gate_res.get('status')}")
-    print(f"      Verified Questions: {gate_res.get('verified_questions_count')}")
-    print(f"      Quarantined Questions: {gate_res.get('quarantined_questions_count')}")
+    print(f"      Questions: {gate_res.get('totals', {}).get('questions')}")
+    print(f"      Label provenance: {gate_res.get('label_provenance')}")
 
     print("\n[2/6] Calibrating 3PL IRT & Training Psychometric Auxiliary Models...")
     calibrated = calibrate_question_bank()
