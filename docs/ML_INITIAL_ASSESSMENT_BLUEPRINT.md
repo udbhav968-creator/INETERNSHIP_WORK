@@ -1,129 +1,142 @@
-# ML Handoff: 180-Question NEET Assessment, Mocks, Profile Initialization & Test Analytics
+# ML Handoff: 180-Question NEET Assessment, New Dataset, Mocks, Profiles & Analytics
 
 **Owner:** ML intern (Udbhav Yadav) · **Branch:** `ml/neet-180-equated-initial-assessment`  
-**Scope:** `model/` only. No backend, frontend or database files are changed. Backend integration points are listed in §7.  
-**Verification:** 30 / 30 standalone ML suites pass (`python -m model.tests.test_ml_standalone_suite`). Suites 26–30 are new.
+**Scope:** `model/`, `docs/` and the new dataset file only. No backend or frontend code is changed, and Pranay's repo is untouched (it was only read).
 
 ---
 
 ## 1. Deliverables
 
-| # | Module | Purpose | Artifact(s) | Test |
-|---|---|---|---|---|
-| 1 | `model/assessment_blueprint.py` | Standardized 180-question blueprint, 3 IRT-equated disjoint initial-assessment forms, form assignment, EAP scoring | `assessment_forms.json`, `assessment_equivalence_report.json` | suite 26 |
-| 2 | `model/sample_paper_ingestion.py` | Validates and calibrates the 16,689-question sample-paper dataset when it lands in this repo | `cold_start_irt_linking.json`, `sample_paper_irt_parameters.json`, `sample_paper_ingestion_report.json`, `data/quarantine/sample_papers_rejected.json` | suite 27 |
-| 3 | `model/mock_test_generator.py` | Unlimited full-length mocks, equated to the initial assessment, fresh items first | — (generated on request) | suite 28 |
-| 4 | `model/student_profile_initializer.py` | Turns the initial assessment into a complete adaptive profile for all 65 chapters | — | suite 29 |
-| 5 | `model/test_analytics_engine.py` | Test-wise and question-wise analysis plus equated score trends | — | suite 30 |
+| # | Module | Purpose | Test |
+|---|---|---|---|
+| 1 | `model/assessment_blueprint.py` | Standardized 180-question blueprint, 3 IRT-equated disjoint initial-assessment forms, EAP scoring | suite 26 |
+| 2 | `model/chapter_resolver.py` | Maps the dataset's 152 chapter names onto the 65 canonical chapters (exact → NCERT alias → classifier at ≥ 90% precision → quarantine) | suite 27 |
+| 3 | `model/sample_paper_ingestion.py` | Validation, de-duplication, quarantine and cold-start IRT calibration of the sample-paper dataset | suite 27 |
+| 4 | `model/mock_test_generator.py` | Unlimited 180-question mocks, equated to the initial assessment, fresh items first | suite 28 |
+| 5 | `model/student_profile_initializer.py` | Initial assessment → adaptive profile for all 65 chapters, predicted NEET score, spec-v1 rule output | suite 29 |
+| 6 | `model/test_analytics_engine.py` | Test-wise and question-wise analytics, equated score trend | suite 30 |
 
 ---
 
-## 2. Initial assessment blueprint (team question 1)
+## 2. New dataset: what it actually contains
+
+Source: `data/tagged_questions/neet_samples_001_to_101_verified.json` (branch `data/new-sample-papers-001-101`).
+
+| | Count |
+|---|---|
+| Rows in file | 16,689 |
+| **Accepted: new, unique, valid, calibrated** | **9,448** (Physics 3,545 · Chemistry 1,701 · Biology 4,202) |
+| Rejected → `data/quarantine/sample_papers_rejected.json` | 7,241 |
+
+| Rejection reason | Rows |
+|---|---|
+| Exact copy of a PYQ already in the bank | 4,088 |
+| Repeated copy within the sample papers (up to 15 copies of one question) | 1,359 |
+| Chapter could not be resolved with ≥ 90% confidence ("General Biology / Chemistry / Physics" etc.) | 2,633 |
+| Duplicate options | 644 |
+| Empty question text | 184 |
+| Subject–chapter conflict (e.g. Biology tagged "Motion in a Straight Line") | 9 |
+
+All 930 diagram references resolve to files (33 extra images are unreferenced). Each quarantined row includes its top-3 chapter suggestions, so the content team can fix and re-submit it quickly.
+
+**Label-quality red flags for the content team:**
+
+| Chapter | Share of subject in sample papers | Share in real NEET PYQs | Over-representation |
+|---|---|---|---|
+| Physics · Kinematics (incl. "Motion in a Straight Line") | 53.7% | 12.5% | 4.3× |
+| Biology · Biological Classification | 22.3% | 8.3% | 2.7× |
+
+"Motion in a Straight Line" is used as a fallback label: its questions cover centre of mass, optics, electrostatics and more. Papers are unaffected because chapter quotas are fixed by the blueprint, but chapter-level analytics on these items are less reliable until the labels are fixed.
+
+**Tier imbalance:** the new data has only 763 accepted advanced items, against 3,723 basic and 4,962 medium.
+
+---
+
+## 3. Calibration of the new items
+
+| Step | Method | Evidence |
+|---|---|---|
+| Cold-start (a, b, c) | Existing ridge IRT predictor from question text | b correlates r = 0.88 with calibrated PYQ b (2,400 anchors) |
+| Tier | Verified `difficulty_level` from the dataset | The predictor's own tier guess matched only 59%, so it is not used |
+| Linking | Tier-anchored: within each subject × tier cell, the mean and spread of sample items are matched to the calibrated PYQ cell, keeping the cold-start ordering | After linking, sample and PYQ cell means agree to within 0.005 in a, b and c |
+| Assumption | A verified tier means the same in sample papers as in PYQs | Replace with empirical calibration once real student responses exist |
+
+Matching on PYQ-fitted constants instead left sample items systematically easier (e.g. Chemistry advanced b 1.39 vs 1.93), which broke mock equivalence. Tier-anchored linking fixed that.
+
+---
+
+## 4. Initial assessment (team question 1)
 
 | Dimension | Specification |
 |---|---|
 | Length / time / marking | 180 questions · 180 minutes · +4 / −1 / 0 · max 720 |
-| Section order | Physics 1–45 · Chemistry 46–90 · Biology 91–180 |
-| Difficulty share | 25% basic · 50% medium · 25% advanced per subject (Physics 11/23/11, Chemistry 11/23/11, Biology 23/45/22) |
-| Chapter coverage | Every chapter gets ≥ 1 item; the rest are allocated by `topic_importance.json` |
-| Item source | Verified NEET PYQs only, because they carry calibrated IRT parameters. Sample-paper items go to mocks. |
-| Near-duplicates | Excluded within a form |
-| Forms | 3 disjoint forms; a student's form is fixed by a hash of `student_id` |
+| Subject / difficulty | 45 / 45 / 90 · 25% basic, 50% medium, 25% advanced per subject |
+| Coverage | Every chapter ≥ 1 item; the rest by `topic_importance.json` |
+| Items | Verified PYQs only (calibrated anchors); 3 disjoint forms, assigned by hash of `student_id` |
+| Equivalence | Expected-marks gap ≤ 0.42 / 720 at any ability; information gap ≤ 0.66%; SEM 0.108 at θ = 0 |
 
-**Equivalence guarantee.** After the stratified draw, item swaps within the same chapter × tier cell bring all forms onto one 3PL test characteristic curve (expected marks) and one test information curve, from θ = −3 to +3.
-
-| Metric (measured) | Result | Tolerance |
-|---|---|---|
-| Max expected-marks gap between forms, any ability level | 0.42 / 720 | ≤ 6 |
-| Max test-information gap | 0.66% | ≤ 5% |
-| Mean difficulty (b) gap | 0.008 | ≤ 0.05 |
-| Item overlap between forms | 0 | 0 |
-| Measurement error at θ = 0 | 0.108 | ≤ 0.25 |
-| Ability recovery on simulated students | error < 0.4 | — |
-
-Known gap: one form's Physics section has 24 medium / 10 advanced instead of 23 / 11, because the pool ran out. The difficulty curves still match, and the gap is recorded in `tier_label_deviation_by_form`.
+Pranay's spec §6 describes 3 fixed diagnostic papers that are the same for every student. This design keeps that idea, but each student takes one of 3 equivalent forms, so answers can't circulate between students. Decision for Pranay: either keep this, or serve one form to everyone.
 
 ---
 
-## 3. Profile initialization (team question 2)
+## 5. Profile initialization (team question 2)
 
-**Already automatic:** each answer posted to `/submit_paper` updates BKT mastery, IRT θ, `global_theta`, DAG propagation, pacing and the bandit.
+Yes. Per-answer updates already happen on `/submit_paper`. In addition, `initialize_student_profile(responses)` returns, for all 65 chapters:
 
-**New:** `initialize_student_profile(responses)` scores the whole paper in one pass. That's more accurate than replaying 180 sequential updates, which give early questions too much weight.
-
-| Output | How it is computed |
+| Output | Method |
 |---|---|
-| `global_theta`, SEM, percentile | Bayesian EAP over the full response set |
-| Per-chapter `mastery_prob` | Static BKT posterior using each chapter's calibrated prior, guess and slip, then hierarchical shrinkage over the prerequisite DAG. Chapters with no responses still get a value. |
-| Per-chapter `irt_theta` | EAP with a prior centred on the student's global θ |
-| `level` | ≥ 0.70 advanced · ≥ 0.45 medium · else basic (same thresholds as the backend) |
-| `confidence_interval`, `avg_time_ratio`, `pace_flag` | Same meaning and thresholds as `StudentTopicState` / `time_tracking.py` |
-| `predicted_neet_score` | Posterior-predictive 90% interval, median, percentile and All-India-rank range. Coverage on simulated students: 91% (41/45). |
-| `priority_chapters` | Top 10 by importance × mastery gap × prerequisite readiness, for the personalization screen |
-
-`topic_states` rows match `StudentTopicState` columns, so the backend can write them directly.
+| `global_theta`, SEM, percentile | Bayesian EAP over all 180 responses |
+| Chapter `mastery_prob`, `level`, `confidence_interval`, `irt_theta`, `pace_flag` | Static BKT posterior with calibrated guess/slip, DAG shrinkage for unobserved chapters; same fields and thresholds as `StudentTopicState` |
+| `spec_v1_initial_level`, `spec_v1_flag_for_extra_support` | The exact rule in spec §6 (accuracy ≥ 0.7 → medium, else basic; < 0.4 → extra support), reported alongside for comparison |
+| `predicted_neet_score` | Posterior-predictive 90% interval; 91% coverage on simulated students |
+| `priority_chapters` | Top 10 by importance × mastery gap × prerequisite readiness |
 
 ---
 
-## 4. Unlimited full-length mocks (ML side of team question 3)
+## 6. Unlimited mocks (team question 3, ML side)
 
-`generate_mock_180(student_id, attempt_index, seen_question_ids)` returns a 180-question paper (45/45/90) that is:
+`generate_mock_180(student_id, attempt_index, seen_question_ids)`: 45/45/90 exactly, deterministic per (student, attempt), about 0.2–0.6 s, never uses initial-assessment items.
 
-- **Equated** to the initial assessment. Tested on 14 consecutive mocks with the PYQ pool and 40 with a pool the size of the new dataset: every one stays within 2.1 marks, so scores are comparable across attempts.
-- **Fresh first:** never uses initial-assessment items and avoids items the student has already seen. When a cell runs out, it repeats the fewest possible items and reports `repeated_items`.
-- **Deterministic per (student, attempt)**, so a page reload returns the same paper. Generation takes about 0.2–0.3 s.
+Measured with the real combined bank (PYQ + 9,448 sample items), 40 consecutive mocks for one student:
 
-| Pool | Guaranteed fully fresh mocks per student | Bottleneck |
-|---|---|---|
-| PYQ only (today) | 1 (repeats rise after that, but mocks stay equated) | Environmental Chemistry chapter size |
-| PYQ + 16,689 sample papers (projected from the announced mix) | ≈ 30 | Only 933 advanced items in the new dataset |
-
-**Recommendation to the content team:** about 600 more advanced Biology items would raise fresh-mock capacity to ≈ 50.
-
----
-
-## 5. Test analytics (ML side of team question 4)
-
-| Function | Output for the Dashboard / Analytics screens |
+| Metric | Result |
 |---|---|
-| `analyze_test(paper_ids, responses)` | Marks, attempted / correct / incorrect / unattempted, accuracy and time by subject, chapter and difficulty; per-test θ; equated marks (expected score on the reference paper with all questions attempted); weakest chapters by marks lost; negative-marking audit (marks lost, avoidable losses where P(correct) < 0.20); per-question flags: `unexpected_miss`, `strong_solve`, `should_have_skipped`, `skipped_likely_correct`, `rushed`, `time_sink` |
-| `score_trend(tests)` | θ and equated-marks series, precision-weighted slope, significance of change, direction (improving / stable / declining), best and average scores |
+| Repeated items by mock 10 / 20 / 40 | 4 / 19 / 94 of 180 |
+| Worst expected-marks gap vs initial assessment | 5.11 / 720 (tolerance 6) |
+| Mocks outside tolerance | 1 of 40 |
+| Chapter weightage | Subject quotas exact; on average about 1 chapter is off by ±1 question (spec §1: weightage fixed) |
+
+Tuning trade-off (`REPEAT_PENALTY` / `CHAPTER_PENALTY` in `mock_test_generator.py`): relaxing the chapter penalty from 3 to 1 gives 11 fully fresh mocks, but leaves about 16 chapters off by ±1 per paper and 4 of 40 mocks out of tolerance. The default favours the spec's fixed weightage.
+
+**Capacity limit:** advanced items and a few small chapters (Environmental Chemistry has no new items). About 600 more advanced Biology/Chemistry items would give roughly 25+ fully fresh mocks.
 
 ---
 
-## 6. New dataset (16,689 sample-paper questions)
+## 7. Analytics (team question 4, ML side)
 
-The dataset is on branch `data/new-sample-papers-001-101` in the upstream repo and is not yet in this repo. When `data/tagged_questions/neet_samples_001_to_101_verified.json` (plus `assets/diagrams/`) is present, run:
-
-```
-python -m model.sample_paper_ingestion
-python -m model.tests.test_ml_standalone_suite
-```
-
-| Step | Behaviour |
+| Function | Output |
 |---|---|
-| Validation | Required fields, `Verified` status, subject / difficulty mapping, valid answer key, 4 distinct options, chapter mapping onto the 65 canonical chapters (`and` ↔ `&` aliases), diagram file exists, no ID clash, no duplicate of a PYQ or of another row. Rejects go to `data/quarantine/sample_papers_rejected.json` with reasons. |
-| Calibration | Cold-start ridge IRT. Tiers come from the dataset's verified labels, because the predictor's own tier guess matched only 59%. Parameters are put on the PYQ scale by mean-sigma linking per subject × tier: linked b RMSE 0.16, r = 0.99 (in-sample on 2,400 anchors). |
-| Runtime | ≈ 17 min for the first run (≈ 63 ms per item); later runs recompute only changed rows |
-| Use | Mocks draw on PYQ + sample papers. The initial assessment stays on PYQ anchors. |
+| `analyze_test(paper_ids, responses)` | Marks, attempted / correct / incorrect / unattempted by subject, chapter and tier; per-test θ; equated marks; weakest chapters; negative-marking audit (skip when P < 0.20); per-question flags (`unexpected_miss`, `strong_solve`, `should_have_skipped`, `skipped_likely_correct`, `rushed`, `time_sink`) |
+| `score_trend(tests)` | θ and equated-marks series, weighted slope, significance, direction |
 
 ---
 
-## 7. Backend integration (backend team; not changed in this PR)
+## 8. Backend integration (backend team; not changed here)
 
 | Need | Call |
 |---|---|
-| Serve initial assessment | `load_forms()["forms"][form_index_for_student(sid)]["question_ids"]`, then fetch from the DB in that order |
-| Initialize profile on submit | `initialize_student_profile([{question_id, is_correct, time_taken_seconds}])` → upsert `topic_states`, set `global_theta` |
-| Serve a mock | `generate_mock_180(sid, n_prior_mocks, seen_ids)` |
-| Post-test analysis | `analyze_test(paper_ids, responses)`; store `theta` / `theta_sem` per test for `score_trend` |
-| Adaptive / topic tests | Existing `paper_generator.generate_paper` (LinUCB + BKT); unchanged |
+| Initial assessment | `load_forms()["forms"][form_index_for_student(sid)]["question_ids"]` |
+| Profile on submit | `initialize_student_profile(...)` → upsert `topic_states`, set `global_theta` |
+| Mock | `generate_mock_180(sid, n_prior_mocks, seen_ids)` |
+| Analytics | `analyze_test(...)`, store `theta` / `theta_sem` per test → `score_trend(...)` |
+| Load new questions into DB | Load only IDs in `model/sample_paper_irt_parameters.json`, using its resolved `chapter` (not the file's raw chapter) |
 
-**Issues found for the backend team:**
+**Issues for the backend team:**
 
 | # | Issue | Impact |
 |---|---|---|
-| 1 | `load_real_data.py` uses the chapter name as `topic_id`, and "Thermodynamics" exists in both Physics and Chemistry | The two chapters merge into one topic with one subject, so subject splits are off by up to 21 items |
-| 2 | `extract_year()` returns 2024 when `paper_source` has no year (e.g. "Sample Paper 12") | Sample-paper items would show as "NEET 2024" in `paper_source` and `years_asked` |
-| 3 | `Question` has no `source_type` column | PYQ and sample-paper items can't be told apart for analytics or display |
-| 4 | Test type (`initial_assessment` / `mock_180` / `adaptive` / `topic`) and per-test θ aren't stored | Needed for unlimited attempts with separate records, and for equated score trends |
+| 1 | `topic_id` = chapter name; "Thermodynamics" exists in both Physics and Chemistry | The two chapters merge in the DB |
+| 2 | `extract_year()` defaults to 2024 when `paper_source` has no year | Sample papers would display as "NEET 2024" |
+| 3 | No `source_type` on `Question` | PYQ vs sample-paper items can't be told apart |
+| 4 | Test type and per-test θ not stored | Needed for unlimited attempts with separate records and trends |
+| 5 | Loader skips "General …" chapters | 2,633 rows already quarantined here with suggestions for re-labelling |

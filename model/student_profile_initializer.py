@@ -66,6 +66,13 @@ def _static_bkt_posterior(chapter: str, obs: list[tuple[dict, int]]) -> float:
     return 1.0 / (1.0 + math.exp(-log_odds))
 
 
+def _spec_v1_level(row: dict | None) -> str | None:
+    if not row:
+        return None
+    acc = row["correct"] / row["n"]
+    return "medium" if acc >= 0.7 else "basic"
+
+
 def _level(m: float) -> str:
     return "advanced" if m >= ADVANCED_THRESHOLD else ("medium" if m >= MEDIUM_THRESHOLD else "basic")
 
@@ -149,6 +156,9 @@ def initialize_student_profile(responses: list[dict], source: str = "unified") -
                 "pace_flag": (None if avg_ratio is None else ("slow" if avg_ratio > PACE_THRESHOLD else "fast")),
                 "attempts_counted": n,
                 "correct_in_assessment": row["correct"] if row else 0,
+                "spec_v1_accuracy": round(row["correct"] / row["n"], 4) if row else None,
+                "spec_v1_initial_level": _spec_v1_level(row),
+                "spec_v1_flag_for_extra_support": bool(row and row["correct"] / row["n"] < 0.4),
                 "observed": bool(row),
                 "streak": 0,
                 "last_3_results": [],

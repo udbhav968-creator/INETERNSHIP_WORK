@@ -22,9 +22,11 @@ from .assessment_blueprint import (
 from .question_similarity_audit import get_near_duplicate_siblings_map
 
 MOCK_VERSION = f"{BLUEPRINT_VERSION}-mock"
-REPEAT_PENALTY = 0.5
+REPEAT_PENALTY = 4.0
 TIER_PENALTY = 0.5
-OPTIMIZER_ITERATIONS = 12000
+CHAPTER_PENALTY = 3.0
+SAME_CHAPTER_PROPOSAL = 0.7
+OPTIMIZER_ITERATIONS = 24000
 _BANK_CACHE: dict[str, tuple[list[dict], dict, dict]] = {}
 
 
@@ -121,11 +123,19 @@ def _optimize(
 ) -> list[dict]:
     form = list(form)
     by_unit: dict[str, list[dict]] = defaultdict(list)
+    by_subject: dict[str, list[dict]] = defaultdict(list)
     for q in bank:
         if q["question_id"] not in reserved:
             by_unit[q["unit"]].append(q)
+            by_subject[q["subject"]].append(q)
     tier_target = {(s, t): n for s, tq in targets["subject_tier_quota"].items() for t, n in tq.items()}
     tier_count = Counter((q["subject"], q["tier"]) for q in form)
+    chapter_target = dict(targets["chapter_quota"])
+    chapter_count = Counter(q["unit"] for q in form)
+
+    def chapter_dev(counter: Counter) -> int:
+        return sum((counter.get(u, 0) - n) ** 2 for u, n in chapter_target.items())
+
     in_form = {q["question_id"] for q in form}
     sib_block = Counter(sib for q in form for sib in siblings.get(q["question_id"], []))
     repeats = sum(1 for q in form if q["question_id"] in seen)
@@ -134,11 +144,19 @@ def _optimize(
     def tier_dev(counter: Counter) -> int:
         return sum(abs(counter.get(k, 0) - v) for k, v in tier_target.items())
 
-    best = _curve_loss(tcc, tif, target_tcc, target_tif) + REPEAT_PENALTY * repeats + TIER_PENALTY * tier_dev(tier_count)
+    def total(tcc_, tif_, rep_, tc_, cc_) -> float:
+        return (
+            _curve_loss(tcc_, tif_, target_tcc, target_tif)
+            + REPEAT_PENALTY * rep_
+            + TIER_PENALTY * tier_dev(tc_)
+            + CHAPTER_PENALTY * chapter_dev(cc_)
+        )
+
+    best = total(tcc, tif, repeats, tier_count, chapter_count)
     for _ in range(OPTIMIZER_ITERATIONS):
         idx = rng.randrange(len(form))
         old = form[idx]
-        pool = by_unit.get(old["unit"], [])
+        pool = by_unit.get(old["unit"], []) if rng.random() < SAME_CHAPTER_PROPOSAL else by_subject.get(old["subject"], [])
         if len(pool) < 2:
             continue
         new = pool[rng.randrange(len(pool))]
@@ -152,7 +170,12 @@ def _optimize(
         tc2 = tier_count.copy()
         tc2[(old["subject"], old["tier"])] -= 1
         tc2[(new["subject"], new["tier"])] += 1
-        cand = _curve_loss(tcc2, tif2, target_tcc, target_tif) + REPEAT_PENALTY * rep2 + TIER_PENALTY * tier_dev(tc2)
+        cc2 = chapter_count
+        if new["unit"] != old["unit"]:
+            cc2 = chapter_count.copy()
+            cc2[old["unit"]] -= 1
+            cc2[new["unit"]] += 1
+        cand = total(tcc2, tif2, rep2, tc2, cc2)
         if cand < best:
             form[idx] = new
             in_form.discard(old["question_id"])
@@ -161,7 +184,7 @@ def _optimize(
                 sib_block[sib] -= 1
             for sib in siblings.get(nid, []):
                 sib_block[sib] += 1
-            tcc, tif, repeats, tier_count, best = tcc2, tif2, rep2, tc2, cand
+            tcc, tif, repeats, tier_count, chapter_count, best = tcc2, tif2, rep2, tc2, cc2, cand
     return form
 
 
@@ -212,6 +235,14 @@ def generate_mock_180(
             "chapters_covered": len({q["unit"] for q in ordered}),
         },
         "repeated_items": sum(1 for q in ordered if q["question_id"] in seen),
+        "chapter_weightage_deviation": {
+            "chapters_off_target": sum(
+                1 for u, n in targets["chapter_quota"].items() if Counter(q["unit"] for q in ordered).get(u, 0) != n
+            ),
+            "max_abs_deviation": max(
+                abs(Counter(q["unit"] for q in ordered).get(u, 0) - n) for u, n in targets["chapter_quota"].items()
+            ),
+        },
         "equivalence_to_initial_assessment": {
             "max_expected_marks_gap": round(float(np.max(np.abs(tcc - target_tcc))), 2),
             "max_test_information_ratio_gap": round(float(np.max(np.abs(tif - target_tif) / target_tif)), 4),

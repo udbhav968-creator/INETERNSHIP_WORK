@@ -751,6 +751,7 @@ def ml_suite_26_irt_equated_180q_initial_assessment_forms():
 
 def ml_suite_27_sample_paper_ingestion_validation_and_cold_start_linking():
     import tempfile
+    from model.chapter_resolver import ChapterResolver
     from model.sample_paper_ingestion import LINKING_PATH, ingest, load_accepted_sample_rows
 
     linking = json.loads(LINKING_PATH.read_text(encoding="utf-8"))
@@ -759,6 +760,17 @@ def ml_suite_27_sample_paper_ingestion_validation_and_cold_start_linking():
     assert linking["linked_b_correlation"] > 0.9
 
     pyq = json.loads((PROJECT_ROOT / "data" / "tagged_questions" / "neet_questions_clean.json").read_text(encoding="utf-8"))
+    resolver = ChapterResolver(pyq)
+    assert resolver.label_route("Physics", "Motion in a Plane") == ("alias", "Kinematics")
+    assert resolver.label_route("Biology", "Body Fluids and Circulation") == ("alias", "Circulation & Excretion")
+    assert resolver.label_route("Chemistry", "Some Basic Concepts of Chemistry") == ("alias", "Mole Concept / Stoichiometry")
+    assert resolver.label_route("Biology", "General Biology")[0] == "generic"
+    assert resolver.label_route("Biology", "Motion in a Straight Line")[0] == "subject_conflict"
+    resolver.fit([])
+    for subj, m in resolver.metrics.items():
+        if m["confidence_threshold"] < 1.0:
+            assert m["holdout_precision_at_threshold"] >= 0.90
+
     rows = []
     for i, r in enumerate(pyq[:24]):
         x = dict(r)
@@ -770,7 +782,7 @@ def ml_suite_27_sample_paper_ingestion_validation_and_cold_start_linking():
         rows.append(x)
     rows[0]["chapter"] = rows[0]["chapter"].replace("&", "and")
     bad = [dict(rows[1], question_id="SP001_BAD1", verification_status="Pending", question_text="unverified item text"),
-           dict(rows[2], question_id="SP001_BAD2", chapter="Astrology", question_text="non canonical chapter text"),
+           dict(rows[2], question_id="SP001_BAD2", subject="Biology", chapter="Kinematics", question_text="conflicting subject text"),
            dict(rows[3], question_id="SP001_BAD3", has_diagram=True, image_asset="assets/diagrams/missing.png", question_text="missing diagram text"),
            dict(pyq[5], question_id="SP001_BAD4"),
            dict(rows[4], question_id="SP001_004"),
@@ -783,12 +795,12 @@ def ml_suite_27_sample_paper_ingestion_validation_and_cold_start_linking():
         rows[7]["image_asset"] = "assets/diagrams/ok.png"
         src = tdp / "samples.json"
         src.write_text(json.dumps(rows + bad), encoding="utf-8")
-        kw = dict(sample_path=src, params_path=tdp / "p.json", report_path=tdp / "r.json", rejected_path=tdp / "x.json", assets_root=tdp)
+        kw = dict(sample_path=src, params_path=tdp / "p.json", report_path=tdp / "r.json", rejected_path=tdp / "x.json", assets_root=tdp, resolver=resolver)
         rep = ingest(**kw)
         assert rep["status"] == "ingested"
         assert rep["accepted"] == 24 and rep["rejected"] == 6
         reasons = rep["rejection_reasons"]
-        for key in ("not_verified", "non_canonical_chapter", "diagram_asset_missing", "duplicate_of_pyq", "duplicate_id", "bad_correct_option"):
+        for key in ("not_verified", "subject_chapter_conflict", "diagram_asset_missing", "duplicate_of_pyq", "duplicate_id", "bad_correct_option"):
             assert reasons.get(key, 0) >= 1, (key, reasons)
         params = json.loads((tdp / "p.json").read_text(encoding="utf-8"))["items"]
         assert params["SP001_000"]["chapter"] == pyq[0]["chapter"]
@@ -800,6 +812,13 @@ def ml_suite_27_sample_paper_ingestion_validation_and_cold_start_linking():
         assert len(accepted_rows) == 24 and all(r["source_type"] == "sample_paper" for r in accepted_rows)
         missing = ingest(sample_path=tdp / "nope.json", report_path=tdp / "r2.json")
         assert missing["status"] == "dataset_not_present"
+
+    real = json.loads((MODEL_DIR / "sample_paper_ingestion_report.json").read_text(encoding="utf-8"))
+    if real.get("status") == "ingested":
+        assert real["rows_in_file"] == real["accepted"] + real["rejected"]
+        assert set(real["by_subject"]) == {"Physics", "Chemistry", "Biology"}
+        sp = json.loads((MODEL_DIR / "sample_paper_irt_parameters.json").read_text(encoding="utf-8"))
+        assert sp["item_count"] == real["accepted"]
 
 
 def ml_suite_28_equated_unlimited_mock_180_generation():
@@ -853,6 +872,9 @@ def ml_suite_29_initial_assessment_profile_initialization():
         assert len(pr["topic_states"]) == 65
         for s in pr["topic_states"]:
             assert s["level"] in ("basic", "medium", "advanced")
+            if s["observed"]:
+                assert s["spec_v1_initial_level"] == ("medium" if s["spec_v1_accuracy"] >= 0.7 else "basic")
+                assert s["spec_v1_flag_for_extra_support"] == (s["spec_v1_accuracy"] < 0.4)
             assert 0.05 <= s["mastery_prob"] <= 0.95
             assert 0.0 < s["confidence_interval"] <= 0.45
         assert len(pr["priority_chapters"]) == 10
