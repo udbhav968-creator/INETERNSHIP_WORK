@@ -1,7 +1,7 @@
 {
   "model": "RandomForestClassifierCompactRuntime",
   "n_estimators": 300,
-  "total_nodes": 44076,
+  "total_nodes": 218258,
   "classes": [
     "advanced",
     "basic",
@@ -316,15 +316,12 @@
     ]
   ],
   "numeric_features": [
-    "ideal_time_sec",
     "has_diagram",
     "word_count",
     "char_length",
     "formula_density",
     "numerical_complexity",
     "negation_trap",
-    "distractor_similarity",
-    "marks",
-    "negative_marks"
+    "distractor_similarity"
   ]
 }

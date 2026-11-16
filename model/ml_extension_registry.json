@@ -1,0 +1,35 @@
+{
+  "registry": "ml-extension-v1",
+  "artifacts": {
+    "model/assessment_forms.json": {
+      "exists": true,
+      "size_bytes": 15898,
+      "sha256": "7631bc80d59d76c51b8b1d71ebcc44b71a9385ab8be8ef480c8c8618e7dc8d77"
+    },
+    "model/cold_start_irt_linking.json": {
+      "exists": true,
+      "size_bytes": 2426,
+      "sha256": "716d038c17f04a76a9dbe189b3d2007539c5f8c473421832cead1b704e31baf1"
+    },
+    "model/sample_paper_irt_parameters.json": {
+      "exists": true,
+      "size_bytes": 5447023,
+      "sha256": "49828da65b105f618b58b5ed7a398db0119cbbe29b0c1376140be7a08ff5d010"
+    },
+    "model/unified_near_duplicate_map.json": {
+      "exists": true,
+      "size_bytes": 107243,
+      "sha256": "e4c986056825048287d243a3f321e36a83d1dbd0bdadb05ac34781086be78bfc"
+    },
+    "model/question_difficulty_model_v2_candidate.joblib": {
+      "exists": true,
+      "size_bytes": 3489996,
+      "sha256": "86df54ccbc2057724c36a21f2139ec772af8ad464fff73b5fc569ed2a9501144"
+    },
+    "data/tagged_questions/neet_samples_001_to_101_verified.json": {
+      "exists": true,
+      "size_bytes": 18900850,
+      "sha256": "5112d99a9a30e761382b9fe535eccab67f1f30f187efc9922e366056a4d0fabe"
+    }
+  }
+}

@@ -1,0 +1,108 @@
+{
+  "audit": "difficulty-classifier leakage and external validity",
+  "provenance": {
+    "pyq_ideal_time_source": [
+      "synthetic_tier_formula"
+    ],
+    "pyq_difficulty_source": [
+      "chapter_text_complexity_quantile_heuristic"
+    ],
+    "pyq_ideal_time_range_by_tier": {
+      "advanced": {
+        "min": 90,
+        "max": 152
+      },
+      "basic": {
+        "min": 55,
+        "max": 89
+      },
+      "medium": {
+        "min": 69,
+        "max": 116
+      }
+    }
+  },
+  "pyq_with_ideal_time_5fold": {
+    "accuracy": 0.9513,
+    "macro_f1": 0.9522,
+    "n": 2400,
+    "majority_baseline": 0.485
+  },
+  "pyq_without_ideal_time_5fold": {
+    "accuracy": 0.7304,
+    "macro_f1": 0.7367,
+    "n": 2400,
+    "majority_baseline": 0.485
+  },
+  "pyq_trained_tested_on_verified_sample_tiers": {
+    "accuracy": 0.4267,
+    "macro_f1": 0.4028,
+    "n": 9448,
+    "majority_baseline": 0.5252
+  },
+  "sample_only_grouped_by_paper_5fold": {
+    "accuracy": 0.7851,
+    "macro_f1": 0.7227,
+    "n": 9448,
+    "majority_baseline": 0.5252
+  },
+  "v2_pyq_plus_sample_grouped_by_paper_5fold": {
+    "accuracy": 0.7108,
+    "macro_f1": 0.6815,
+    "n": 11848,
+    "majority_baseline": 0.517
+  },
+  "pyq_heuristic_tier_vs_v2_prediction": {
+    "agreement": 0.4308,
+    "crosstab": {
+      "advanced": {
+        "advanced": 181,
+        "basic": 28,
+        "medium": 110
+      },
+      "basic": {
+        "advanced": 97,
+        "basic": 343,
+        "medium": 544
+      },
+      "medium": {
+        "advanced": 361,
+        "basic": 226,
+        "medium": 510
+      }
+    }
+  },
+  "v2_candidate": {
+    "artifact": "question_difficulty_model_v2_candidate.joblib",
+    "trained_on": "verified sample-paper tiers only (PYQ tiers are a text-complexity heuristic and conflict with verified labels)",
+    "expected_accuracy": {
+      "accuracy": 0.7851,
+      "macro_f1": 0.7227,
+      "n": 9448,
+      "majority_baseline": 0.5252
+    },
+    "train_rows": 9448,
+    "features": [
+      "subject",
+      "chapter",
+      "question_type_norm",
+      "has_diagram",
+      "word_count",
+      "char_length",
+      "option_char_mean",
+      "formula_density",
+      "numerical_complexity",
+      "negation_trap",
+      "distractor_similarity",
+      "statement_count"
+    ],
+    "excluded_features": [
+      "ideal_time_sec",
+      "marks",
+      "negative_marks",
+      "topic_tag"
+    ],
+    "status": "candidate only; production question_difficulty_model.joblib is unchanged"
+  },
+  "conclusion": "ideal_time_sec is generated from the tier, so accuracy with it measures the generator, not difficulty; accuracy without it is the honest cold-start estimate"
+}

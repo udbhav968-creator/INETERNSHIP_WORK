@@ -1,22 +1,22 @@
 {
   "registry_version": "2.3.0",
-  "champion_classifier": "RandomForestClassifier_300_Balanced_14Features",
+  "champion_classifier": "RandomForestClassifier_300_Balanced_11Features_NoTierLeakage",
   "serverless_runtime": "CompactNumPyForest_300_Trees_Plus_RidgeIRT_Plus_SVD_RAG",
   "artifacts": {
     "model/question_difficulty_model.joblib": {
       "exists": true,
-      "size_bytes": 4016794,
-      "sha256": "df5fb2e7e0304a8031054febdb054607e4386da55bf3481b479eec2fc6a373b5"
+      "size_bytes": 19365114,
+      "sha256": "7797f5001d4c8018198fa2ebdbe6f2db2735cafb49df0559d6a3548154a1a33a"
     },
     "model/rf_difficulty_forest.npz": {
       "exists": true,
-      "size_bytes": 209957,
-      "sha256": "bd2cf48996d4681ecb2a780db8d0019915359b137b9fe7122a55d622c75ec155"
+      "size_bytes": 1037847,
+      "sha256": "1e82121869826ef4a21e98b332a3eedca3b653d916286bf08dbd30fca85d2dd4"
     },
     "model/rf_difficulty_meta.json": {
       "exists": true,
-      "size_bytes": 13125,
-      "sha256": "06ec794caa03445db790a32e1d7b475ed7e237350295349594c9d844d0ed171d"
+      "size_bytes": 13069,
+      "sha256": "27ad49d2467696ce2fb1139d01c8f12a09e863abee91fc41e8bb52e6e281af33"
     },
     "model/irt_item_parameters.json": {
       "exists": true,
@@ -65,8 +65,8 @@
     },
     "model/rf_temperature_calibration.json": {
       "exists": true,
-      "size_bytes": 786,
-      "sha256": "189ba999ad43a39272bf4416a28dc3fca56f1ee6c8bd791829f47eaf19a5d389"
+      "size_bytes": 788,
+      "sha256": "8fbcf0c6c210b937759fa22fc50c2058bc4639c8f8c94b8305a50241aac0940d"
     },
     "model/tier_recalibration_proposal.json": {
       "exists": true,

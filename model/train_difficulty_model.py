@@ -18,20 +18,7 @@ MODEL_DIR = PROJECT_ROOT / "model"
 MODEL_FILE = MODEL_DIR / "question_difficulty_model.joblib"
 METRICS_FILE = MODEL_DIR / "question_difficulty_metrics.json"
 
-CATEGORICAL_FEATURES = ["subject", "chapter", "topic_tag", "question_type"]
-NUMERIC_FEATURES = [
-    "ideal_time_sec",
-    "has_diagram",
-    "word_count",
-    "char_length",
-    "formula_density",
-    "numerical_complexity",
-    "negation_trap",
-    "distractor_similarity",
-    "marks",
-    "negative_marks",
-]
-FEATURES = CATEGORICAL_FEATURES + NUMERIC_FEATURES
+from model.training_and_validation_pipeline import CATEGORICAL_FEATURES, NUMERIC_FEATURES, FEATURES
 
 
 def main():

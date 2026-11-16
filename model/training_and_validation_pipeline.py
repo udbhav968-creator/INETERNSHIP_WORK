@@ -53,7 +53,6 @@ REGISTRY_MANIFEST_FILE = MODEL_DIR / "model_registry_manifest.json"
 
 CATEGORICAL_FEATURES = ["subject", "chapter", "topic_tag", "question_type"]
 NUMERIC_FEATURES = [
-    "ideal_time_sec",
     "has_diagram",
     "word_count",
     "char_length",
@@ -61,13 +60,11 @@ NUMERIC_FEATURES = [
     "numerical_complexity",
     "negation_trap",
     "distractor_similarity",
-    "marks",
-    "negative_marks",
 ]
 FEATURES = CATEGORICAL_FEATURES + NUMERIC_FEATURES
 TARGET = "difficulty_level"
 
-MIN_ACCURACY_GATE = 0.975
+MIN_ACCURACY_GATE = 0.70
 
 
 def _artifact_canonical_size_and_sha256(path: Path) -> tuple[int, str]:
@@ -167,7 +164,7 @@ def build_model_registry_manifest() -> dict:
         }
     return {
         "registry_version": "2.3.0",
-        "champion_classifier": "RandomForestClassifier_300_Balanced_14Features",
+        "champion_classifier": "RandomForestClassifier_300_Balanced_11Features_NoTierLeakage",
         "serverless_runtime": "CompactNumPyForest_300_Trees_Plus_RidgeIRT_Plus_SVD_RAG",
         "artifacts": artifacts,
     }
@@ -416,7 +413,7 @@ def run_deep_training_and_validation(save_artifacts: bool = True) -> dict:
             chapter=str(row.chapter),
             topic_tag=str(row.topic_tag),
             question_type=str(row.question_type),
-            ideal_time_sec=float(row.ideal_time_sec),
+            ideal_time_sec=float(getattr(row, "ideal_time_sec", 0.0)),
             has_diagram=bool(row.has_diagram),
             word_count=float(row.word_count),
             char_length=float(row.char_length),
@@ -424,8 +421,8 @@ def run_deep_training_and_validation(save_artifacts: bool = True) -> dict:
             numerical_complexity=float(row.numerical_complexity),
             negation_trap=float(row.negation_trap),
             distractor_similarity=float(row.distractor_similarity),
-            marks=float(row.marks),
-            negative_marks=float(row.negative_marks),
+            marks=float(getattr(row, "marks", 4.0)),
+            negative_marks=float(getattr(row, "negative_marks", -1.0)),
         )
         sk_row = {c: float(p) for c, p in zip(champ_classes, sk_all_probs[idx])}
         if np_p is not None:

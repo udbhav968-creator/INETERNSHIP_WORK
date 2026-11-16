@@ -1,6 +1,7 @@
 import ast
 import csv
 import json
+import math
 import tokenize
 from pathlib import Path
 
@@ -691,6 +692,278 @@ def ml_suite_25_section4_empirical_recalibration_and_quarantine_audit():
     assert qa_res["engine_mode"] == "NCERT_DETERMINISTIC_LSA_FALLBACK"
     assert "ncert_reference" in qa_res
 
+def ml_suite_26_irt_equated_180q_initial_assessment_forms():
+    from model.assessment_blueprint import (
+        MAX_MARKS,
+        SUBJECT_QUOTAS,
+        build_equated_forms,
+        form_index_for_student,
+        load_forms,
+        load_question_bank,
+        score_initial_assessment,
+    )
+
+    bank = load_question_bank()
+    out = build_equated_forms(bank=bank)
+    rep = out["report"]
+    assert rep["all_checks_passed"] is True, rep["checks"]
+    assert rep["max_pairwise_overlap"] == 0
+    assert rep["max_expected_marks_gap_across_theta"] <= 6.0
+    assert rep["max_test_information_ratio_gap"] <= 0.05
+    for f in rep["forms"]:
+        assert f["n_items"] == 180
+        assert f["by_subject"] == SUBJECT_QUOTAS
+        assert f["sem_at_theta0"] <= 0.25
+
+    stored = load_forms()
+    assert stored["forms"] == out["forms"]["forms"]
+    assert stored["max_marks"] == MAX_MARKS == 720
+    sections = [q for q in stored["forms"][0]["question_ids"]]
+    by_id = {q["question_id"]: q for q in bank}
+    subj_seq = [by_id[qid]["subject"] for qid in sections]
+    assert subj_seq == ["Physics"] * 45 + ["Chemistry"] * 45 + ["Biology"] * 90
+
+    assert form_index_for_student("student-x") == form_index_for_student("student-x")
+    assert {form_index_for_student(f"s{i}") for i in range(200)} == {0, 1, 2}
+
+    ids = stored["forms"][0]["question_ids"]
+    strong = score_initial_assessment([{"question_id": q, "is_correct": True} for q in ids], bank=bank)
+    weak = score_initial_assessment([{"question_id": q, "is_correct": False} for q in ids], bank=bank)
+    assert strong["marks"] == 720 and weak["marks"] == -180
+    import random as _random
+    from model.irt_3pl_model import D_SCALING as _D
+
+    estimates = []
+    for true_theta in (-1.5, 0.0, 1.0, 2.0):
+        rng = _random.Random(7)
+        sim = []
+        for qid in ids:
+            it = by_id[qid]
+            p = it["c"] + (1.0 - it["c"]) / (1.0 + math.exp(-_D * it["a"] * (true_theta - it["b"])))
+            sim.append({"question_id": qid, "is_correct": rng.random() < p})
+        res = score_initial_assessment(sim, bank=bank)
+        assert abs(res["theta_eap"] - true_theta) < 0.4, (true_theta, res["theta_eap"])
+        assert res["theta_sem"] < 0.25
+        assert sum(res["subject_marks"].values()) == res["marks"]
+        estimates.append(res["theta_eap"])
+    assert weak["theta_eap"] < estimates[0] < estimates[1] < estimates[2] < estimates[3] < strong["theta_eap"]
+
+
+def ml_suite_27_sample_paper_ingestion_validation_and_cold_start_linking():
+    import tempfile
+    from model.chapter_resolver import ChapterResolver
+    from model.sample_paper_ingestion import LINKING_PATH, ingest, load_accepted_sample_rows
+
+    linking = json.loads(LINKING_PATH.read_text(encoding="utf-8"))
+    assert linking["anchor_items"] == 2400
+    assert linking["linked_b_rmse"] < linking["raw_b_rmse"]
+    assert linking["linked_b_correlation"] > 0.9
+
+    pyq = json.loads((PROJECT_ROOT / "data" / "tagged_questions" / "neet_questions_clean.json").read_text(encoding="utf-8"))
+    resolver = ChapterResolver(pyq)
+    assert resolver.label_route("Physics", "Motion in a Plane") == ("alias", "Kinematics")
+    assert resolver.label_route("Biology", "Body Fluids and Circulation") == ("alias", "Circulation & Excretion")
+    assert resolver.label_route("Chemistry", "Some Basic Concepts of Chemistry") == ("alias", "Mole Concept / Stoichiometry")
+    assert resolver.label_route("Biology", "General Biology")[0] == "generic"
+    assert resolver.label_route("Biology", "Motion in a Straight Line")[0] == "subject_conflict"
+    resolver.fit([])
+    for subj, m in resolver.metrics.items():
+        if m["confidence_threshold"] < 1.0:
+            assert m["holdout_precision_at_threshold"] >= 0.90
+
+    rows = []
+    for i, r in enumerate(pyq[:24]):
+        x = dict(r)
+        x["question_id"] = f"SP001_{i:03d}"
+        x["paper_source"] = "Sample Paper 1"
+        x["question_text"] = r["question_text"] + f" [sample variant {i}]"
+        x["has_diagram"] = False
+        x["image_asset"] = ""
+        rows.append(x)
+    rows[0]["chapter"] = rows[0]["chapter"].replace("&", "and")
+    bad = [dict(rows[1], question_id="SP001_BAD1", verification_status="Pending", question_text="unverified item text"),
+           dict(rows[2], question_id="SP001_BAD2", subject="Biology", chapter="Kinematics", question_text="conflicting subject text"),
+           dict(rows[3], question_id="SP001_BAD3", has_diagram=True, image_asset="assets/diagrams/missing.png", question_text="missing diagram text"),
+           dict(pyq[5], question_id="SP001_BAD4"),
+           dict(rows[4], question_id="SP001_004"),
+           dict(rows[6], question_id="SP001_BAD6", correct_option="e", question_text="bad option text")]
+    with tempfile.TemporaryDirectory() as td:
+        tdp = Path(td)
+        (tdp / "assets" / "diagrams").mkdir(parents=True)
+        (tdp / "assets" / "diagrams" / "ok.png").write_bytes(b"png")
+        rows[7]["has_diagram"] = True
+        rows[7]["image_asset"] = "assets/diagrams/ok.png"
+        src = tdp / "samples.json"
+        src.write_text(json.dumps(rows + bad), encoding="utf-8")
+        kw = dict(sample_path=src, params_path=tdp / "p.json", report_path=tdp / "r.json", rejected_path=tdp / "x.json", assets_root=tdp, resolver=resolver)
+        rep = ingest(**kw)
+        assert rep["status"] == "ingested"
+        assert rep["accepted"] == 24 and rep["rejected"] == 6
+        reasons = rep["rejection_reasons"]
+        for key in ("not_verified", "subject_chapter_conflict", "diagram_asset_missing", "duplicate_of_pyq", "duplicate_id", "bad_correct_option"):
+            assert reasons.get(key, 0) >= 1, (key, reasons)
+        params = json.loads((tdp / "p.json").read_text(encoding="utf-8"))["items"]
+        assert params["SP001_000"]["chapter"] == pyq[0]["chapter"]
+        for v in params.values():
+            assert 0.5 <= v["a"] <= 2.5 and -3.0 <= v["b"] <= 3.0 and 0.10 <= v["c"] <= 0.30
+        rep2 = ingest(**kw)
+        assert rep2["cold_start_recomputed"] == 0 and rep2["cold_start_cached"] == 24
+        accepted_rows, _ = load_accepted_sample_rows(src, tdp / "p.json")
+        assert len(accepted_rows) == 24 and all(r["source_type"] == "sample_paper" for r in accepted_rows)
+        missing = ingest(sample_path=tdp / "nope.json", report_path=tdp / "r2.json")
+        assert missing["status"] == "dataset_not_present"
+
+    real = json.loads((MODEL_DIR / "sample_paper_ingestion_report.json").read_text(encoding="utf-8"))
+    if real.get("status") == "ingested":
+        assert real["rows_in_file"] == real["accepted"] + real["rejected"]
+        assert set(real["by_subject"]) == {"Physics", "Chemistry", "Biology"}
+        sp = json.loads((MODEL_DIR / "sample_paper_irt_parameters.json").read_text(encoding="utf-8"))
+        assert sp["item_count"] == real["accepted"]
+
+
+def ml_suite_28_equated_unlimited_mock_180_generation():
+    from model.mock_test_generator import generate_mock_180, reserved_initial_assessment_ids
+
+    reserved = reserved_initial_assessment_ids()
+    assert len(reserved) == 540
+    seen: set[str] = set()
+    for attempt in range(6):
+        m = generate_mock_180("suite-student", attempt, seen, source="pyq")
+        ids = m["question_ids"]
+        assert len(ids) == 180 and len(set(ids)) == 180
+        assert m["composition"]["by_subject"] == {"Physics": 45, "Chemistry": 45, "Biology": 90}
+        assert not (set(ids) & reserved)
+        assert m["equivalence_to_initial_assessment"]["within_tolerance"] is True
+        if attempt == 0:
+            assert m["repeated_items"] == 0
+        seen |= set(ids)
+    again = generate_mock_180("suite-student", 0, set(), source="pyq")["question_ids"]
+    assert again == generate_mock_180("suite-student", 0, set(), source="pyq")["question_ids"]
+    assert again != generate_mock_180("suite-student-2", 0, set(), source="pyq")["question_ids"]
+
+
+def _simulate(ids, by_id, theta, seed, skip=0.0):
+    import random as _random
+    from model.irt_3pl_model import D_SCALING as _D
+
+    rng = _random.Random(seed)
+    out = []
+    for qid in ids:
+        it = by_id[qid]
+        if rng.random() < skip:
+            continue
+        p = it["c"] + (1.0 - it["c"]) / (1.0 + math.exp(-_D * it["a"] * (theta - it["b"])))
+        out.append({"question_id": qid, "is_correct": rng.random() < p, "time_taken_seconds": it["ideal_time_sec"] * rng.uniform(0.5, 1.6)})
+    return out
+
+
+def ml_suite_29_initial_assessment_profile_initialization():
+    from model.assessment_blueprint import load_forms, load_question_bank
+    from model.student_profile_initializer import initialize_student_profile
+
+    by_id = {q["question_id"]: q for q in load_question_bank()}
+    forms = load_forms()["forms"]
+    profiles = []
+    hits = 0
+    trials = 0
+    for k, theta in enumerate((-1.5, -0.5, 0.5, 1.5)):
+        pr = initialize_student_profile(_simulate(forms[1]["question_ids"], by_id, theta, 11 + k))
+        assert abs(pr["global_theta"] - theta) < 0.4
+        assert len(pr["topic_states"]) == 65
+        for s in pr["topic_states"]:
+            assert s["level"] in ("basic", "medium", "advanced")
+            if s["observed"]:
+                assert s["spec_v1_initial_level"] == ("medium" if s["spec_v1_accuracy"] >= 0.7 else "basic")
+                assert s["spec_v1_flag_for_extra_support"] == (s["spec_v1_accuracy"] < 0.4)
+            assert 0.05 <= s["mastery_prob"] <= 0.95
+            assert 0.0 < s["confidence_interval"] <= 0.45
+        assert len(pr["priority_chapters"]) == 10
+        profiles.append(pr)
+        for rep in range(3):
+            nxt = _simulate(forms[2]["question_ids"], by_id, theta, 100 + 7 * k + rep)
+            marks = sum(4 if r["is_correct"] else -1 for r in nxt)
+            lo, hi = pr["predicted_neet_score"]["interval_90"]
+            hits += lo <= marks <= hi
+            trials += 1
+    means = [float(np.mean([s["mastery_prob"] for s in p["topic_states"]])) for p in profiles]
+    assert means == sorted(means)
+    adv = [sum(s["level"] == "advanced" for s in p["topic_states"]) for p in profiles]
+    assert adv == sorted(adv)
+    assert hits / trials >= 0.75
+
+
+def ml_suite_30_test_analytics_and_equated_score_trend():
+    from model.assessment_blueprint import load_forms, load_question_bank
+    from model.test_analytics_engine import SKIP_THRESHOLD, analyze_test, score_trend
+
+    assert abs(SKIP_THRESHOLD - 0.2) < 1e-9
+    by_id = {q["question_id"]: q for q in load_question_bank()}
+    forms = load_forms()["forms"]
+    tests = []
+    for k, theta in enumerate((-0.6, 0.0, 0.6)):
+        ids = forms[k]["question_ids"]
+        res = _simulate(ids, by_id, theta, 40 + k, skip=0.1)
+        a = analyze_test(ids, res, test_type="mock_180")
+        s = a["summary"]
+        assert s["total"] == 180 and s["attempted"] == len(res)
+        assert s["attempted"] + s["unattempted"] == 180
+        assert s["marks"] == 4 * s["correct"] - s["incorrect"]
+        assert sum(v["marks"] for v in a["by_subject"].values()) == s["marks"]
+        assert sum(v["total"] for v in a["by_chapter"].values()) == 180
+        assert len(a["questions"]) == 180
+        assert a["negative_marking"]["avoidable_marks_lost"] <= a["negative_marking"]["marks_lost_to_wrong_answers"]
+        tests.append({"theta": a["theta"], "theta_sem": a["theta_sem"], "marks": s["marks"], "test_type": "mock_180"})
+    tr = score_trend(tests)
+    assert tr["trend"]["direction"] == "improving"
+    assert tr["trend"]["change_is_significant"] is True
+    eq = [p["equated_marks"] for p in tr["points"]]
+    assert eq == sorted(eq)
+    assert score_trend(tests[:1])["trend"]["direction"] == "insufficient_tests"
+
+
+def ml_suite_31_difficulty_leakage_audit_and_v2_candidate():
+    rep = json.loads((MODEL_DIR / "difficulty_model_leakage_audit.json").read_text(encoding="utf-8"))
+    assert rep["provenance"]["pyq_ideal_time_source"] == ["synthetic_tier_formula"]
+    with_t = rep["pyq_with_ideal_time_5fold"]["accuracy"]
+    without_t = rep["pyq_without_ideal_time_5fold"]["accuracy"]
+    assert with_t - without_t > 0.1
+    v2 = rep["sample_only_grouped_by_paper_5fold"]
+    assert v2["accuracy"] > v2["majority_baseline"] + 0.15
+    assert "ideal_time_sec" in rep["v2_candidate"]["excluded_features"]
+    model = joblib.load(MODEL_DIR / rep["v2_candidate"]["artifact"])
+    from model.difficulty_model_v2 import featurize
+
+    pyq = json.loads((PROJECT_ROOT / "data" / "tagged_questions" / "neet_questions_clean.json").read_text(encoding="utf-8"))[:50]
+    preds = model.predict(featurize(pyq))
+    assert set(preds) <= {"basic", "medium", "advanced"} and len(preds) == 50
+
+
+def ml_suite_32_unified_near_duplicate_guard_in_mocks():
+    from model.mock_test_generator import generate_mock_180, reserved_initial_assessment_ids
+    from model.unified_similarity_guard import UNIFIED_SIBLINGS_PATH, get_unified_siblings_map
+
+    rep = json.loads(UNIFIED_SIBLINGS_PATH.read_text(encoding="utf-8"))
+    sib = get_unified_siblings_map()
+    for q, ss in list(sib.items())[:500]:
+        for s in ss:
+            assert q in sib.get(s, []), (q, s)
+    base = reserved_initial_assessment_ids()
+    full = reserved_initial_assessment_ids(include_siblings=True)
+    assert base <= full
+    seen: set[str] = set()
+    for attempt in range(3):
+        ids = generate_mock_180("guard-student", attempt, seen, source="unified")["question_ids"]
+        s_ids = set(ids)
+        assert not (s_ids & full)
+        assert sum(1 for q in s_ids for s in sib.get(q, []) if s in s_ids) == 0
+        seen |= s_ids
+    assert rep["items_scanned"] >= 2400
+    from model.ml_extension_registry import EXTENSION_ARTIFACTS, verify_extension_registry
+
+    ext = verify_extension_registry()
+    assert ext["status"] == "VERIFIED" and ext["extension_artifacts_verified"] == len(EXTENSION_ARTIFACTS)
+
+
 if __name__ == "__main__":
     suites = [
         ml_suite_01_question_bank_and_weightage_schema_validators,
@@ -718,6 +991,13 @@ if __name__ == "__main__":
         ml_suite_23_online_streaming_calibration_and_continuous_retraining,
         ml_suite_24_multilingual_hindi_glossary_and_socratic_audio_script,
         ml_suite_25_section4_empirical_recalibration_and_quarantine_audit,
+        ml_suite_26_irt_equated_180q_initial_assessment_forms,
+        ml_suite_27_sample_paper_ingestion_validation_and_cold_start_linking,
+        ml_suite_28_equated_unlimited_mock_180_generation,
+        ml_suite_29_initial_assessment_profile_initialization,
+        ml_suite_30_test_analytics_and_equated_score_trend,
+        ml_suite_31_difficulty_leakage_audit_and_v2_candidate,
+        ml_suite_32_unified_near_duplicate_guard_in_mocks,
     ]
     for fn in suites:
         fn()
