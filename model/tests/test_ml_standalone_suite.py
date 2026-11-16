@@ -964,6 +964,27 @@ def ml_suite_32_unified_near_duplicate_guard_in_mocks():
     assert ext["status"] == "VERIFIED" and ext["extension_artifacts_verified"] == len(EXTENSION_ARTIFACTS)
 
 
+def ml_suite_33_side_by_side_models_trained_on_unified_bank():
+    from model.train_on_unified_bank import PRODUCTION_PATHS, REPORT_PATH, UNIFIED_PATHS
+
+    rep = json.loads(REPORT_PATH.read_text(encoding="utf-8"))
+    assert rep["training_corpus"]["pyq"] == 2400
+    assert rep["training_corpus"]["sample_paper"] >= 9000
+    assert rep["dina_8_skill_priors"]["items_unified"] == rep["training_corpus"]["total_items"]
+    assert rep["bkt_chapter_priors"]["chapters"] == 65
+    for k, p in UNIFIED_PATHS.items():
+        assert p.exists(), p
+        assert p != PRODUCTION_PATHS[k]
+    bkt = json.loads(UNIFIED_PATHS["BKT_CHAPTER_JSON"].read_text(encoding="utf-8"))
+    assert len(bkt["chapters"]) == 65
+    for ch in bkt["chapters"].values():
+        assert 0.0 < ch["p_init"] < 1.0
+    prod = json.loads(PRODUCTION_PATHS["BKT_CHAPTER_JSON"].read_text(encoding="utf-8"))
+    assert prod["weighted_global_prior"] == rep["bkt_chapter_priors"]["weighted_global_prior_production"]
+    rag = rep["ncert_rag_index"]
+    assert rag["heldout_chapter_retrieval_unified"]["questions"] == rag["heldout_chapter_retrieval_production"]["questions"]
+
+
 if __name__ == "__main__":
     suites = [
         ml_suite_01_question_bank_and_weightage_schema_validators,
@@ -998,6 +1019,7 @@ if __name__ == "__main__":
         ml_suite_30_test_analytics_and_equated_score_trend,
         ml_suite_31_difficulty_leakage_audit_and_v2_candidate,
         ml_suite_32_unified_near_duplicate_guard_in_mocks,
+        ml_suite_33_side_by_side_models_trained_on_unified_bank,
     ]
     for fn in suites:
         fn()

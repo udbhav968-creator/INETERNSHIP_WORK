@@ -115,6 +115,7 @@ The PYQ tier labels agree with the verified labels only 43% of the time, so tier
 |---|---|
 | Question-content models (difficulty RF, chapter resolver, near-duplicate guard, RAG) | ✅ Trained on available data |
 | New dataset calibration (9,448 items) | ✅ Done on the ML branch |
+| BKT, DINA, RAG, LinUCB re-trained on PYQ + sample papers | ✅ Trained side-by-side (`model/train_on_unified_bank.py`, `unified_training_report.json`); not promoted, because gains come from the easier item mix, not from student evidence |
 | Student-response models (IRT a/b/c, BKT, DINA, LinUCB, temperature on outcomes, drift baselines) | ❌ **Not trainable yet: 0 student attempts** |
 
 Retraining trigger: once real students take the initial assessment (≈ 300 students × 180 responses), re-estimate IRT, BKT, DINA and the bandit from `test_attempts`, and replace the Monte Carlo interval with a calibrated one.
@@ -125,10 +126,10 @@ Retraining trigger: once real students take the initial assessment (≈ 300 stud
 
 | Suite | Command | Result |
 |---|---|---|
-| Standalone ML suites | `python -m model.tests.test_ml_standalone_suite` | 32 / 32 pass |
+| Standalone ML suites | `python -m model.tests.test_ml_standalone_suite` | 33 / 33 pass |
 | Backend integration suites | `python backend/tests/test_v2_engine.py` | 29 / 29 pass |
 | Core SHA-256 registry | `python -m model.verify_artifact_integrity` | 21 / 21 verified |
-| ML extension registry | `python -m model.ml_extension_registry` | 6 / 6 |
+| ML extension registry | `python -m model.ml_extension_registry` | 12 / 12 |
 
 Code hygiene: the project rule is no comments or docstrings in `model/*.py`, enforced by ML suite 15.
 

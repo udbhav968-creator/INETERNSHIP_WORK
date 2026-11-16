@@ -1,0 +1,176 @@
+{
+  "model_type": "DINA_8Skill_MarginalIRT_Calibrated",
+  "total_corpus_items": 11848,
+  "skills": {
+    "dimensional_unit_analysis": {
+      "name": "Dimensional & Unit Conversion",
+      "corpus_pyq_count": 1905,
+      "prior_mastery": 0.4607,
+      "prior_alpha": 2.7642,
+      "prior_beta": 3.2358,
+      "prior_sd": 0.1884,
+      "slip": 0.1343,
+      "guess": 0.2,
+      "mean_irt_b": 0.2859
+    },
+    "algebraic_numerical_computation": {
+      "name": "Multi-Step Numerical Computation",
+      "corpus_pyq_count": 3708,
+      "prior_mastery": 0.3697,
+      "prior_alpha": 2.2182,
+      "prior_beta": 3.7818,
+      "prior_sd": 0.1825,
+      "slip": 0.137,
+      "guess": 0.1911,
+      "mean_irt_b": 0.6658
+    },
+    "log_exp_calculus_reasoning": {
+      "name": "Logarithmic, Exponential & Rate Calculus",
+      "corpus_pyq_count": 2435,
+      "prior_mastery": 0.4112,
+      "prior_alpha": 2.4672,
+      "prior_beta": 3.5328,
+      "prior_sd": 0.186,
+      "slip": 0.1375,
+      "guess": 0.1898,
+      "mean_irt_b": 0.4648
+    },
+    "sign_vector_convention": {
+      "name": "Sign, Vector & Convention Mastery",
+      "corpus_pyq_count": 1394,
+      "prior_mastery": 0.3393,
+      "prior_alpha": 2.0358,
+      "prior_beta": 3.9642,
+      "prior_sd": 0.179,
+      "slip": 0.1398,
+      "guess": 0.1887,
+      "mean_irt_b": 0.7841
+    },
+    "mechanism_electronic_flow": {
+      "name": "Reaction Mechanism & Equilibrium Logic",
+      "corpus_pyq_count": 1331,
+      "prior_mastery": 0.477,
+      "prior_alpha": 2.862,
+      "prior_beta": 3.138,
+      "prior_sd": 0.1888,
+      "slip": 0.1343,
+      "guess": 0.1967,
+      "mean_irt_b": 0.2459
+    },
+    "ncert_exception_trend_recall": {
+      "name": "NCERT Exceptions & Taxonomic Recall",
+      "corpus_pyq_count": 5979,
+      "prior_mastery": 0.56,
+      "prior_alpha": 3.36,
+      "prior_beta": 2.64,
+      "prior_sd": 0.1876,
+      "slip": 0.1353,
+      "guess": 0.2118,
+      "mean_irt_b": -0.7344
+    },
+    "diagram_circuit_graph_reading": {
+      "name": "Circuit, Graph & Structural Interpretation",
+      "corpus_pyq_count": 1576,
+      "prior_mastery": 0.4998,
+      "prior_alpha": 2.9988,
+      "prior_beta": 3.0012,
+      "prior_sd": 0.189,
+      "slip": 0.1324,
+      "guess": 0.1981,
+      "mean_irt_b": 0.1372
+    },
+    "assertion_deductive_logic": {
+      "name": "Assertion\u2013Reason & Multi-Statement Deduction",
+      "corpus_pyq_count": 7872,
+      "prior_mastery": 0.56,
+      "prior_alpha": 3.36,
+      "prior_beta": 2.64,
+      "prior_sd": 0.1876,
+      "slip": 0.1333,
+      "guess": 0.2015,
+      "mean_irt_b": -0.2367
+    }
+  },
+  "skill_correlation_matrix": {
+    "dimensional_unit_analysis": {
+      "dimensional_unit_analysis": 1.0,
+      "algebraic_numerical_computation": 0.3126,
+      "log_exp_calculus_reasoning": -0.0719,
+      "sign_vector_convention": 0.0085,
+      "mechanism_electronic_flow": -0.0415,
+      "ncert_exception_trend_recall": -0.3572,
+      "diagram_circuit_graph_reading": -0.0936,
+      "assertion_deductive_logic": -0.304
+    },
+    "algebraic_numerical_computation": {
+      "dimensional_unit_analysis": 0.3126,
+      "algebraic_numerical_computation": 1.0,
+      "log_exp_calculus_reasoning": 0.1738,
+      "sign_vector_convention": 0.2637,
+      "mechanism_electronic_flow": 0.1196,
+      "ncert_exception_trend_recall": -0.4708,
+      "diagram_circuit_graph_reading": 0.0481,
+      "assertion_deductive_logic": -0.6078
+    },
+    "log_exp_calculus_reasoning": {
+      "dimensional_unit_analysis": -0.0719,
+      "algebraic_numerical_computation": 0.1738,
+      "log_exp_calculus_reasoning": 1.0,
+      "sign_vector_convention": -0.058,
+      "mechanism_electronic_flow": 0.0717,
+      "ncert_exception_trend_recall": -0.3759,
+      "diagram_circuit_graph_reading": -0.0824,
+      "assertion_deductive_logic": -0.2583
+    },
+    "sign_vector_convention": {
+      "dimensional_unit_analysis": 0.0085,
+      "algebraic_numerical_computation": 0.2637,
+      "log_exp_calculus_reasoning": -0.058,
+      "sign_vector_convention": 1.0,
+      "mechanism_electronic_flow": -0.0702,
+      "ncert_exception_trend_recall": -0.3162,
+      "diagram_circuit_graph_reading": 0.0622,
+      "assertion_deductive_logic": -0.2381
+    },
+    "mechanism_electronic_flow": {
+      "dimensional_unit_analysis": -0.0415,
+      "algebraic_numerical_computation": 0.1196,
+      "log_exp_calculus_reasoning": 0.0717,
+      "sign_vector_convention": -0.0702,
+      "mechanism_electronic_flow": 1.0,
+      "ncert_exception_trend_recall": -0.1939,
+      "diagram_circuit_graph_reading": -0.0543,
+      "assertion_deductive_logic": -0.1694
+    },
+    "ncert_exception_trend_recall": {
+      "dimensional_unit_analysis": -0.3572,
+      "algebraic_numerical_computation": -0.4708,
+      "log_exp_calculus_reasoning": -0.3759,
+      "sign_vector_convention": -0.3162,
+      "mechanism_electronic_flow": -0.1939,
+      "ncert_exception_trend_recall": 1.0,
+      "diagram_circuit_graph_reading": -0.1463,
+      "assertion_deductive_logic": 0.3237
+    },
+    "diagram_circuit_graph_reading": {
+      "dimensional_unit_analysis": -0.0936,
+      "algebraic_numerical_computation": 0.0481,
+      "log_exp_calculus_reasoning": -0.0824,
+      "sign_vector_convention": 0.0622,
+      "mechanism_electronic_flow": -0.0543,
+      "ncert_exception_trend_recall": -0.1463,
+      "diagram_circuit_graph_reading": 1.0,
+      "assertion_deductive_logic": -0.2064
+    },
+    "assertion_deductive_logic": {
+      "dimensional_unit_analysis": -0.304,
+      "algebraic_numerical_computation": -0.6078,
+      "log_exp_calculus_reasoning": -0.2583,
+      "sign_vector_convention": -0.2381,
+      "mechanism_electronic_flow": -0.1694,
+      "ncert_exception_trend_recall": 0.3237,
+      "diagram_circuit_graph_reading": -0.2064,
+      "assertion_deductive_logic": 1.0
+    }
+  }
+}

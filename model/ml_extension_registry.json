@@ -30,6 +30,36 @@
       "exists": true,
       "size_bytes": 18900850,
       "sha256": "5112d99a9a30e761382b9fe535eccab67f1f30f187efc9922e366056a4d0fabe"
+    },
+    "model/bkt_chapter_parameters_unified.json": {
+      "exists": true,
+      "size_bytes": 25910,
+      "sha256": "a6220e37c1572eced80b8662b88c3c7b64548b2ecbc1244f1495deb8acccafe1"
+    },
+    "model/dina_calibrated_parameters_unified.json": {
+      "exists": true,
+      "size_bytes": 5844,
+      "sha256": "587b9969f04658cb855682c39d56d0d667da9e437c36073a01c078f3b47933aa"
+    },
+    "model/ncert_rag_svd_index_unified.npz": {
+      "exists": true,
+      "size_bytes": 291996,
+      "sha256": "eefe1be29d3fea5693419cf5566843394536330d17477c356fb9c66119c82995"
+    },
+    "model/ncert_rag_svd_meta_unified.json": {
+      "exists": true,
+      "size_bytes": 108061,
+      "sha256": "2953eaa57ba030447b48441062cb2b71f5f0e50113415b0d73c489e57e2b0555"
+    },
+    "model/linucb_prior_init_unified.json": {
+      "exists": true,
+      "size_bytes": 1020,
+      "sha256": "7a58fb03e8832b65a7e765de225ffc3482289de1ea80b66de2f3baffce8740a8"
+    },
+    "model/conformal_laplacian_model_unified.json": {
+      "exists": true,
+      "size_bytes": 7759,
+      "sha256": "f9b18eb3e87979b383a541263cf669ad5c3724a4c35918e57a54273c92d25031"
     }
   }
 }

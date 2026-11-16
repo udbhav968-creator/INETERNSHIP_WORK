@@ -1,0 +1,93 @@
+{
+  "training_corpus": {
+    "total_items": 11848,
+    "pyq": 2400,
+    "sample_paper": 9448
+  },
+  "bkt_chapter_priors": {
+    "chapters": 65,
+    "weighted_global_prior_production": 0.4034,
+    "weighted_global_prior_unified": 0.4409,
+    "mean_abs_p_init_change": 0.0469,
+    "max_abs_p_init_change": 0.2107,
+    "min_items_per_chapter_production": 4,
+    "min_items_per_chapter_unified": 4
+  },
+  "dina_8_skill_priors": {
+    "items_production": 2400,
+    "items_unified": 11848,
+    "items_per_skill_unified": {
+      "dimensional_unit_analysis": 1905,
+      "algebraic_numerical_computation": 3708,
+      "log_exp_calculus_reasoning": 2435,
+      "sign_vector_convention": 1394,
+      "mechanism_electronic_flow": 1331,
+      "ncert_exception_trend_recall": 5979,
+      "diagram_circuit_graph_reading": 1576,
+      "assertion_deductive_logic": 7872
+    },
+    "prior_mastery_production": {
+      "dimensional_unit_analysis": 0.4041,
+      "algebraic_numerical_computation": 0.28,
+      "log_exp_calculus_reasoning": 0.3945,
+      "sign_vector_convention": 0.3753,
+      "mechanism_electronic_flow": 0.461,
+      "ncert_exception_trend_recall": 0.56,
+      "diagram_circuit_graph_reading": 0.4447,
+      "assertion_deductive_logic": 0.479
+    },
+    "prior_mastery_unified": {
+      "dimensional_unit_analysis": 0.4607,
+      "algebraic_numerical_computation": 0.3697,
+      "log_exp_calculus_reasoning": 0.4112,
+      "sign_vector_convention": 0.3393,
+      "mechanism_electronic_flow": 0.477,
+      "ncert_exception_trend_recall": 0.56,
+      "diagram_circuit_graph_reading": 0.4998,
+      "assertion_deductive_logic": 0.56
+    }
+  },
+  "ncert_rag_index": {
+    "unified_metrics": {
+      "model_type": "Hybrid_SublinearTFIDF_TruncatedSVD_LSA",
+      "n_chapters_indexed": 65,
+      "vocab_size": 6000,
+      "lsa_dimensions": 32,
+      "lsa_explained_variance_ratio": 0.5607,
+      "svd_variance_spectrum": {
+        "rank_16": 0.3172,
+        "rank_24": 0.4416,
+        "rank_32": 0.5607,
+        "rank_48": 0.7861
+      }
+    },
+    "heldout_chapter_retrieval_production": {
+      "questions": 3000,
+      "top1_chapter_accuracy": 0.1093,
+      "top3_chapter_accuracy": 0.1783
+    },
+    "heldout_chapter_retrieval_unified": {
+      "questions": 3000,
+      "top1_chapter_accuracy": 0.1083,
+      "top3_chapter_accuracy": 0.1727
+    }
+  },
+  "linucb_and_laplacian": {
+    "linucb_prior_r2": 0.99976,
+    "laplacian_spectral_gap": 0.0449
+  },
+  "artifacts": {
+    "BKT_CHAPTER_JSON": "bkt_chapter_parameters_unified.json",
+    "DINA_CALIBRATED_JSON": "dina_calibrated_parameters_unified.json",
+    "RAG_SVD_NPZ": "ncert_rag_svd_index_unified.npz",
+    "RAG_SVD_META_JSON": "ncert_rag_svd_meta_unified.json",
+    "LINUCB_PRIOR_JSON": "linucb_prior_init_unified.json",
+    "CONFORMAL_LAPLACIAN_JSON": "conformal_laplacian_model_unified.json"
+  },
+  "status": "trained side-by-side; production artifacts unchanged until promoted",
+  "not_retrained": {
+    "irt_cold_start_ridge": "sample-paper IRT parameters were produced by this ridge; retraining on them would be circular",
+    "topic_importance": "sample papers carry no exam year",
+    "student_response_models": "0 student attempts exist"
+  }
+}

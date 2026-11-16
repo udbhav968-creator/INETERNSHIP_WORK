@@ -162,13 +162,24 @@ Tuning trade-off (`REPEAT_PENALTY` / `CHAPTER_PENALTY` in `mock_test_generator.p
 | Near-duplicate guard | All 11,848 items | n/a | ✅ |
 | NCERT RAG index | 65-chapter NCERT KB | n/a | ✅ |
 
+**Side-by-side training on the combined bank (2,400 PYQ + 9,448 sample items)**, via `python -m model.train_on_unified_bank` → `model/unified_training_report.json`:
+
+| Model | Result vs. production | Promoted? |
+|---|---|---|
+| BKT chapter priors | Global prior 0.403 → 0.441; mean chapter change 0.047 | No: the shift comes from the easier sample-paper mix (39% basic / 8% advanced vs 25% / 27% in PYQs), not from student evidence |
+| DINA 8-skill priors | 4–15× more items per skill; priors +0.00–0.09 | No: same mix effect; the log/exp skill regex over-fires on sample formatting (162 → 2,435 items) |
+| NCERT RAG index | Held-out chapter retrieval top-1 10.9% → 10.8% | No: no gain |
+| LinUCB warm start + Laplacian | Rebuilt from the unified BKT priors | No: depends on BKT |
+
+Not retrained: the cold-start IRT ridge (circular, since the sample parameters came from it) and topic importance (sample papers have no exam year).
+
 **What "fully trained" needs:** real student responses. `data/training/student_attempts.csv` has 0 rows. Once the initial assessment is live, about 300+ students × 180 responses lets the team re-estimate IRT a/b/c, BKT guess/slip/transit, DINA slip/guess, LinUCB and temperature scaling from data.
 
 ## 10. Verification
 
 | Check | Result |
 |---|---|
-| Standalone ML suites | 32 / 32 pass |
+| Standalone ML suites | 33 / 33 pass |
 | Backend suites (`backend/tests/test_v2_engine.py`) | 29 / 29 pass (no backend files changed) |
 | Core SHA-256 registry | 21 / 21 unchanged |
-| ML extension registry | 6 / 6 verified |
+| ML extension registry | 12 / 12 verified |

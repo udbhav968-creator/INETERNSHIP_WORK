@@ -14,6 +14,12 @@ EXTENSION_ARTIFACTS = [
     "model/unified_near_duplicate_map.json",
     "model/question_difficulty_model_v2_candidate.joblib",
     "data/tagged_questions/neet_samples_001_to_101_verified.json",
+    "model/bkt_chapter_parameters_unified.json",
+    "model/dina_calibrated_parameters_unified.json",
+    "model/ncert_rag_svd_index_unified.npz",
+    "model/ncert_rag_svd_meta_unified.json",
+    "model/linucb_prior_init_unified.json",
+    "model/conformal_laplacian_model_unified.json",
 ]
 
 
