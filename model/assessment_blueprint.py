@@ -52,7 +52,22 @@ def _largest_remainder(total: int, weights: dict[str, float], floor_each: int = 
     return alloc
 
 
-def load_question_bank(path: Path = QUESTION_BANK_PATH) -> list[dict]:
+def _bank_item(r: dict, tier: str, params: dict, source_type: str) -> dict:
+    return {
+        "question_id": r["question_id"],
+        "subject": r["subject"],
+        "chapter": r["chapter"],
+        "unit": f"{r['subject']}::{r['chapter']}",
+        "tier": tier,
+        "a": float(params["a"]),
+        "b": float(params["b"]),
+        "c": float(params["c"]),
+        "ideal_time_sec": int(r.get("ideal_time_sec") or 90),
+        "source_type": source_type,
+    }
+
+
+def load_question_bank(path: Path = QUESTION_BANK_PATH, source: str = "pyq") -> list[dict]:
     with open(path, encoding="utf-8") as f:
         rows = json.load(f)
     bank = []
@@ -60,19 +75,14 @@ def load_question_bank(path: Path = QUESTION_BANK_PATH) -> list[dict]:
         tier = str(r.get("difficulty_level") or "medium").strip().lower()
         if tier not in TIER_ORDER or r.get("subject") not in SUBJECT_QUOTAS:
             continue
-        params = get_item_params(r["question_id"], tier, int(r.get("ideal_time_sec") or 90))
-        bank.append(
-            {
-                "question_id": r["question_id"],
-                "subject": r["subject"],
-                "chapter": r["chapter"],
-                "unit": f"{r['subject']}::{r['chapter']}",
-                "tier": tier,
-                "a": params.a,
-                "b": params.b,
-                "c": params.c,
-            }
-        )
+        p = get_item_params(r["question_id"], tier, int(r.get("ideal_time_sec") or 90))
+        bank.append(_bank_item(r, tier, {"a": p.a, "b": p.b, "c": p.c}, "pyq"))
+    if source in ("unified", "sample_paper"):
+        from .sample_paper_ingestion import load_accepted_sample_rows
+
+        sample_rows, params = load_accepted_sample_rows()
+        sample = [_bank_item(r, r["difficulty_level"], params[r["question_id"]], "sample_paper") for r in sample_rows]
+        bank = sample if source == "sample_paper" else bank + sample
     bank.sort(key=lambda q: q["question_id"])
     return bank
 

@@ -1,0 +1,106 @@
+{
+  "method": "mean-sigma linking of cold-start ridge b onto the calibrated PYQ anchor scale, per subject x verified difficulty tier",
+  "anchor_items": 2400,
+  "raw_b_correlation": 0.8844,
+  "linked_b_rmse": 0.1622,
+  "linked_b_correlation": 0.9915,
+  "raw_b_rmse": 0.8217,
+  "cells": {
+    "*::advanced": {
+      "n": 639,
+      "mu_pred_b": 1.1958,
+      "sd_pred_b": 0.8468,
+      "mu_cal_b": 1.9245,
+      "sd_cal_b": 0.3504,
+      "a_ratio": 1.092
+    },
+    "*::basic": {
+      "n": 597,
+      "mu_pred_b": -1.4356,
+      "sd_pred_b": 0.187,
+      "mu_cal_b": -1.4152,
+      "sd_cal_b": 0.2015,
+      "a_ratio": 1.0178
+    },
+    "*::medium": {
+      "n": 1164,
+      "mu_pred_b": -0.6338,
+      "sd_pred_b": 0.7871,
+      "mu_cal_b": 0.1313,
+      "sd_cal_b": 0.3671,
+      "a_ratio": 1.109
+    },
+    "Biology::advanced": {
+      "n": 315,
+      "mu_pred_b": 0.7034,
+      "sd_pred_b": 0.5943,
+      "mu_cal_b": 1.6965,
+      "sd_cal_b": 0.2185,
+      "a_ratio": 1.1327
+    },
+    "Biology::basic": {
+      "n": 321,
+      "mu_pred_b": -1.5578,
+      "sd_pred_b": 0.0322,
+      "mu_cal_b": -1.5525,
+      "sd_cal_b": 0.0343,
+      "a_ratio": 1.0011
+    },
+    "Biology::medium": {
+      "n": 588,
+      "mu_pred_b": -1.0702,
+      "sd_pred_b": 0.4801,
+      "mu_cal_b": -0.1272,
+      "sd_cal_b": 0.1334,
+      "a_ratio": 1.1337
+    },
+    "Chemistry::advanced": {
+      "n": 177,
+      "mu_pred_b": 1.3081,
+      "sd_pred_b": 0.7271,
+      "mu_cal_b": 1.9335,
+      "sd_cal_b": 0.2509,
+      "a_ratio": 1.0762
+    },
+    "Chemistry::basic": {
+      "n": 154,
+      "mu_pred_b": -1.4009,
+      "sd_pred_b": 0.1393,
+      "mu_cal_b": -1.3866,
+      "sd_cal_b": 0.0608,
+      "a_ratio": 1.0222
+    },
+    "Chemistry::medium": {
+      "n": 302,
+      "mu_pred_b": -0.5605,
+      "sd_pred_b": 0.6689,
+      "mu_cal_b": 0.1499,
+      "sd_cal_b": 0.2186,
+      "a_ratio": 1.1029
+    },
+    "Physics::advanced": {
+      "n": 147,
+      "mu_pred_b": 2.1154,
+      "sd_pred_b": 0.5861,
+      "mu_cal_b": 2.4024,
+      "sd_cal_b": 0.1254,
+      "a_ratio": 1.0331
+    },
+    "Physics::basic": {
+      "n": 122,
+      "mu_pred_b": -1.1577,
+      "sd_pred_b": 0.1606,
+      "mu_cal_b": -1.09,
+      "sd_cal_b": 0.1859,
+      "a_ratio": 1.058
+    },
+    "Physics::medium": {
+      "n": 274,
+      "mu_pred_b": 0.222,
+      "sd_pred_b": 0.7051,
+      "mu_cal_b": 0.6652,
+      "sd_cal_b": 0.2296,
+      "a_ratio": 1.0679
+    }
+  }
+}
