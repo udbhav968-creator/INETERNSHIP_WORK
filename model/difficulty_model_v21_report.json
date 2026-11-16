@@ -1,0 +1,81 @@
+{
+  "model": "difficulty v2.1 text candidate",
+  "labels": "verified sample-paper tiers (papers 001-101 accepted rows)",
+  "evaluation": "GroupKFold(5) by paper_source; no paper appears in both train and test",
+  "n_rows": 9448,
+  "n_papers": 83,
+  "class_balance": {
+    "medium": 0.5252,
+    "basic": 0.3941,
+    "advanced": 0.0808
+  },
+  "majority_baseline": 0.5252,
+  "v2_structural_rf": {
+    "accuracy": 0.7851,
+    "macro_f1": 0.7227,
+    "log_loss": 0.5842,
+    "ece_top_label": 0.0824,
+    "n": 9448
+  },
+  "v21_tfidf_logreg": {
+    "accuracy": 0.8238,
+    "macro_f1": 0.7705,
+    "log_loss": 0.4616,
+    "ece_top_label": 0.0189,
+    "n": 9448
+  },
+  "near_duplicate_control": {
+    "definition": "test row whose nearest training row has word TF-IDF cosine >= 0.8",
+    "share_test_rows_with_near_duplicate": 0.11,
+    "v2_structural_rf_on_clean_rows": {
+      "accuracy": 0.7826,
+      "macro_f1": 0.7172,
+      "log_loss": 0.5916,
+      "ece_top_label": 0.0807,
+      "n": 8409
+    },
+    "v21_tfidf_logreg_on_clean_rows": {
+      "accuracy": 0.8141,
+      "macro_f1": 0.7577,
+      "log_loss": 0.4785,
+      "ece_top_label": 0.0227,
+      "n": 8409
+    }
+  },
+  "features": {
+    "text": "question text + options: word 1-2 gram TF-IDF and char_wb 3-5 gram TF-IDF",
+    "categorical": [
+      "subject",
+      "chapter",
+      "question_type_norm"
+    ],
+    "numeric": [
+      "has_diagram",
+      "word_count",
+      "char_length",
+      "option_char_mean",
+      "formula_density",
+      "numerical_complexity",
+      "negation_trap",
+      "distractor_similarity",
+      "statement_count"
+    ]
+  },
+  "excluded_features": [
+    "ideal_time_sec",
+    "marks",
+    "negative_marks",
+    "topic_tag"
+  ],
+  "hyperparameters": {
+    "logreg_C": 2.0,
+    "class_weight": "balanced"
+  },
+  "pyq_heuristic_tier_agreement_informational": 0.4088,
+  "decision": {
+    "macro_f1_gain_on_clean_rows": 0.0405,
+    "status": "candidate: beats v2 on duplicate-free held-out papers",
+    "production_model_changed": false,
+    "artifact": "question_difficulty_model_v21_text_candidate.joblib"
+  }
+}

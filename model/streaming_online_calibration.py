@@ -63,20 +63,23 @@ class StreamingOnlineCalibrationEngine:
         self.topic_correlations[pair_key] = clamped_weight
         return clamped_weight
 
-    def record_online_elbo(self, likelihoods: list[float], priors: list[float]) -> float:
+    def record_online_log_joint(self, likelihoods: list[float], priors: list[float]) -> float:
         log_l = sum(math.log(max(1e-9, l)) for l in likelihoods)
         log_p = sum(math.log(max(1e-9, p)) for p in priors)
-        elbo = log_l + log_p
-        self.online_elbo_history.append(round(elbo, 4))
+        log_joint = log_l + log_p
+        self.online_elbo_history.append(round(log_joint, 4))
         if len(self.online_elbo_history) > 100:
             self.online_elbo_history.pop(0)
-        return round(elbo, 4)
+        return round(log_joint, 4)
+
+    record_online_elbo = record_online_log_joint
 
     def get_online_summary(self) -> dict[str, Any]:
         return {
             "total_items_updated": len(self.step_counts),
             "total_edge_transfers_monitored": len(self.topic_correlations),
-            "recent_mean_elbo": round(float(np.mean(self.online_elbo_history)), 4) if self.online_elbo_history else 0.0,
+            "recent_mean_log_joint": round(float(np.mean(self.online_elbo_history)), 4) if self.online_elbo_history else None,
+            "log_joint_definition": "sum log-likelihood + sum log-prior; unnormalised log posterior, not an ELBO",
             "monitored_edges": [
                 {"parent": p, "child": c, "transfer_weight": w}
                 for (p, c), w in list(self.topic_correlations.items())[:10]

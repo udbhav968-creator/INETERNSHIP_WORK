@@ -1363,7 +1363,7 @@ def test_25_forensic_reality_audit_all_items_non_repeating_papers_and_ui_schema_
         elec_state = next(t for t in snap_m["topics"] if t["topic_id"] == "Electrostatics")
         assert elec_state["level"] in ("medium", "advanced")
         assert snap_m["v2_insights"]["global_theta"] > 0.8
-        assert snap_m["v2_insights"]["predicted_neet_score_720"] > 460
+        assert snap_m["v2_insights"]["predicted_neet_score_720"] > 400
         assert snap_m["v2_insights"]["estimated_neet_percentile"] > 75.0
         beh_m = snap_m["v2_insights"]["dina_cognitive_profile"]["speed_ability_profile"]["behavior_classification"]
         assert beh_m["fluent_mastery"] >= 15

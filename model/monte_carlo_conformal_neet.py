@@ -11,7 +11,7 @@ import numpy as np
 
 from model.irt_3pl_model import CALIBRATED_ITEMS
 from model.knowledge_graph_dag import DAG_NODES
-from model.national_rank_simulator import simulate_national_rank_and_college_cutoffs
+from model.national_rank_simulator import QUALIFYING_CUTOFF_SOURCE, simulate_national_rank_and_college_cutoffs
 from model.state_machine.bkt_model import get_chapter_bkt_prior
 
 MODEL_DIR = Path(__file__).resolve().parent
@@ -41,6 +41,17 @@ def _load_chapter_irt_pools() -> dict[str, list[tuple[float, float, float]]]:
 
 
 _CHAPTER_IRT_POOLS: dict[str, list[tuple[float, float, float]]] = _load_chapter_irt_pools()
+_GLOBAL_IRT_POOL: list[tuple[float, float, float]] = [item for pool in _CHAPTER_IRT_POOLS.values() for item in pool]
+if not _GLOBAL_IRT_POOL:
+    _GLOBAL_IRT_POOL = [
+        (float(ip["a"] if isinstance(ip, dict) else ip.a), float(ip["b"] if isinstance(ip, dict) else ip.b), float(ip["c"] if isinstance(ip, dict) else ip.c))
+        for ip in CALIBRATED_ITEMS.values()
+    ]
+NEGATIVE_MARKING_BREAK_EVEN_PROB = 0.20
+LEVERAGE_TARGET_P_CORRECT = 0.89
+LEVERAGE_BETA_DAMPING = 0.70
+LEVERAGE_DOWNSTREAM_SHARE = 0.45
+LEVERAGE_MASTERY_CEILING = 0.85
 
 
 def _load_conformal_laplacian_meta() -> dict[str, Any]:
@@ -115,7 +126,7 @@ def compute_graph_laplacian_leverage(
                 i = idx_map[prereq]
                 adj[i, j] = 1.0
 
-    beta = float(CONFORMAL_LAPLACIAN_META.get("heat_beta", 0.38)) * 0.70
+    beta = float(CONFORMAL_LAPLACIAN_META.get("heat_beta", 0.38)) * LEVERAGE_BETA_DAMPING
     adj_2hop = adj @ adj
     heat_kernel = np.eye(n) + beta * adj + 0.5 * (beta ** 2) * adj_2hop
 
@@ -134,19 +145,19 @@ def compute_graph_laplacian_leverage(
         current_masteries[i] = m_c
 
         ch_pool = _CHAPTER_IRT_POOLS.get(t_name)
-        mean_a = float(np.mean([p[0] for p in ch_pool])) if ch_pool else 1.15
-        mean_b = float(np.mean([p[1] for p in ch_pool])) if ch_pool else 0.10
-        mean_c = float(np.mean([p[2] for p in ch_pool])) if ch_pool else 0.22
+        pool = ch_pool if ch_pool else _GLOBAL_IRT_POOL
+        mean_a = float(np.mean([p[0] for p in pool]))
+        mean_b = float(np.mean([p[1] for p in pool]))
+        mean_c = float(np.mean([p[2] for p in pool]))
 
-        th_eff = th_c + 0.45 * (m_c - 0.40)
-        p_curr = mean_c + (1.0 - mean_c) / (1.0 + math.exp(-1.702 * mean_a * (th_eff - mean_b)))
-        p_target = max(p_curr, 0.89)
+        p_curr = mean_c + (1.0 - mean_c) / (1.0 + math.exp(-1.702 * mean_a * (th_c - mean_b)))
+        p_target = max(p_curr, LEVERAGE_TARGET_P_CORRECT)
 
         ev_curr = 5.0 * p_curr - 1.0
         ev_target = 5.0 * p_target - 1.0
         direct_headroom_marks[i] = max(0.0, q_counts[i] * (ev_target - ev_curr))
 
-    bottleneck_factor = np.clip(0.85 - current_masteries, 0.05, 0.80)
+    bottleneck_factor = np.clip(LEVERAGE_MASTERY_CEILING - current_masteries, 0.05, 0.80)
     total_diffused_marks = np.zeros(n, dtype=np.float64)
     downstream_marks = np.zeros(n, dtype=np.float64)
 
@@ -155,7 +166,7 @@ def compute_graph_laplacian_leverage(
         down_i = 0.0
         for j in range(n):
             if i != j and heat_kernel[i, j] > 0:
-                down_i += heat_kernel[i, j] * direct_headroom_marks[j] * bottleneck_factor[i] * 0.45
+                down_i += heat_kernel[i, j] * direct_headroom_marks[j] * bottleneck_factor[i] * LEVERAGE_DOWNSTREAM_SHARE
         downstream_marks[i] = down_i
         total_diffused_marks[i] = direct_i + down_i
 
@@ -204,15 +215,14 @@ def run_monte_carlo_conformal_neet_simulation(
 
     item_thetas = np.zeros(180, dtype=np.float64)
     item_ses = np.zeros(180, dtype=np.float64)
-    item_masteries = np.zeros(180, dtype=np.float64)
     item_a = np.zeros(180, dtype=np.float64)
-    tier_b = np.zeros(180, dtype=np.float64)
+    item_b = np.zeros(180, dtype=np.float64)
     item_c = np.zeros(180, dtype=np.float64)
+    pool_source_counts = {"chapter_calibrated_pool": 0, "global_calibrated_pool": 0}
 
     q_cursor = 0
     for topic_id, _, q_cnt in allocation:
         th_c = float(theta_map.get(topic_id, global_theta))
-        m_c = float(mastery_map.get(topic_id, get_chapter_bkt_prior(topic_id)))
         ci_c = float(ci_map.get(topic_id, 0.36))
         se_c = max(0.12, min(0.55, ci_c * 0.75))
 
@@ -221,22 +231,22 @@ def run_monte_carlo_conformal_neet_simulation(
         if slot_len <= 0:
             break
 
-        item_thetas[q_cursor:end_cursor] = th_c + 0.35 * (m_c - 0.40)
+        item_thetas[q_cursor:end_cursor] = th_c
         item_ses[q_cursor:end_cursor] = se_c
-        item_masteries[q_cursor:end_cursor] = m_c
 
         ch_pool = _CHAPTER_IRT_POOLS.get(topic_id)
         if ch_pool:
-            pick_idx = rng.integers(0, len(ch_pool), size=slot_len)
-            for k_local, p_idx in enumerate(pick_idx):
-                a_v, b_v, c_v = ch_pool[int(p_idx)]
-                item_a[q_cursor + k_local] = a_v
-                tier_b[q_cursor + k_local] = b_v * 0.55
-                item_c[q_cursor + k_local] = c_v
+            pool = ch_pool
+            pool_source_counts["chapter_calibrated_pool"] += slot_len
         else:
-            item_a[q_cursor:end_cursor] = rng.uniform(0.95, 1.45, size=slot_len)
-            tier_b[q_cursor:end_cursor] = rng.uniform(-0.45, 0.55, size=slot_len)
-            item_c[q_cursor:end_cursor] = rng.uniform(0.18, 0.24, size=slot_len)
+            pool = _GLOBAL_IRT_POOL
+            pool_source_counts["global_calibrated_pool"] += slot_len
+        pick_idx = rng.integers(0, len(pool), size=slot_len)
+        for k_local, p_idx in enumerate(pick_idx):
+            a_v, b_v, c_v = pool[int(p_idx)]
+            item_a[q_cursor + k_local] = a_v
+            item_b[q_cursor + k_local] = b_v
+            item_c[q_cursor + k_local] = c_v
 
         q_cursor = end_cursor
         if q_cursor >= 180:
@@ -248,12 +258,9 @@ def run_monte_carlo_conformal_neet_simulation(
         size=(n_trials, 180),
     )
 
-    logits = 1.702 * item_a[None, :] * (sampled_thetas - tier_b[None, :])
+    logits = 1.702 * item_a[None, :] * (sampled_thetas - item_b[None, :])
     p_know = 1.0 / (1.0 + np.exp(-np.clip(logits, -15.0, 15.0)))
-    p_3pl = item_c[None, :] + (1.0 - item_c[None, :]) * p_know
-
-    trap_penalty = np.where(p_know < 0.26, 0.52 + 1.80 * p_know, 1.0)
-    p_effective = np.clip(p_3pl * trap_penalty, 0.08, 0.995)
+    p_effective = item_c[None, :] + (1.0 - item_c[None, :]) * p_know
 
     u_draws = rng.random(size=(n_trials, 180))
     is_correct_mat = u_draws < p_effective
@@ -261,7 +268,10 @@ def run_monte_carlo_conformal_neet_simulation(
     marks_attempt_all = np.where(is_correct_mat, 4, -1)
     total_scores_attempt_all = np.clip(np.sum(marks_attempt_all, axis=1), 0, 720)
 
-    should_skip_mask = p_effective < 0.23
+    point_logits = 1.702 * item_a * (item_thetas - item_b)
+    p_point = item_c + (1.0 - item_c) / (1.0 + np.exp(-np.clip(point_logits, -15.0, 15.0)))
+    skip_items = p_point < NEGATIVE_MARKING_BREAK_EVEN_PROB
+    should_skip_mask = np.broadcast_to(skip_items[None, :], marks_attempt_all.shape)
     marks_optimal_skip = np.where(should_skip_mask, 0, marks_attempt_all)
     total_scores_optimal_skip = np.clip(np.sum(marks_optimal_skip, axis=1), 0, 720)
 
@@ -281,6 +291,8 @@ def run_monte_carlo_conformal_neet_simulation(
     marks_gained_by_skip = max(0, mean_score_skip - mean_score_all)
     avg_skip_count = int(round(float(np.mean(np.sum(should_skip_mask, axis=1)))))
 
+    qualifying_cutoff = int(QUALIFYING_CUTOFF_SOURCE["general_cutoff_score"])
+    prob_qualifying_sourced = round(float(np.mean(total_scores_optimal_skip >= qualifying_cutoff) * 100.0), 1)
     prob_qualifying_165 = round(float(np.mean(total_scores_optimal_skip >= 165) * 100.0), 1)
     prob_govt_550 = round(float(np.mean(total_scores_optimal_skip >= 550) * 100.0), 1)
     prob_aiims_650 = round(float(np.mean(total_scores_optimal_skip >= 650) * 100.0), 1)
@@ -299,7 +311,9 @@ def run_monte_carlo_conformal_neet_simulation(
     )
 
     return {
-        "model_type": "MonteCarlo_500_SplitConformal_and_GraphLaplacian_Diffusion",
+        "model_type": "MonteCarlo_3PL_EmpiricalQuantile_and_GraphLaplacian_Diffusion",
+        "interval_method": "monte_carlo_empirical_quantile_not_conformal_calibrated",
+        "item_parameter_sources": pool_source_counts,
         "n_trials": n_trials,
         "expected_score_attempt_all_720": mean_score_all,
         "conformal_90_interval": [ci_90_low, ci_90_high],
@@ -307,7 +321,8 @@ def run_monte_carlo_conformal_neet_simulation(
         "score_std_dev": score_std,
         "negative_marking_optimizer": {
             "ev_formula": "E[Marks] = 4*P(correct) - 1*(1 - P(correct)) = 5*P - 1",
-            "optimal_skip_threshold_prob": 0.23,
+            "optimal_skip_threshold_prob": NEGATIVE_MARKING_BREAK_EVEN_PROB,
+            "skip_decision_basis": "point_estimate_theta_not_oracle",
             "optimal_skip_expected_score_720": mean_score_skip,
             "expected_marks_gained_by_skipping": marks_gained_by_skip,
             "recommended_skip_questions_per_180": avg_skip_count,
@@ -317,7 +332,21 @@ def run_monte_carlo_conformal_neet_simulation(
             "qualifying_cutoff_165_percent": prob_qualifying_165,
             "state_govt_mbbs_550_percent": prob_govt_550,
             "top_aiims_650_percent": prob_aiims_650,
+            "fixed_thresholds_note": "165/550/650 are fixed reference scores, not official cutoffs",
+            "sourced_qualifying_cutoff": {
+                "score": qualifying_cutoff,
+                "probability_percent": prob_qualifying_sourced,
+                "exam_year": QUALIFYING_CUTOFF_SOURCE["exam_year"],
+                "category": QUALIFYING_CUTOFF_SOURCE["category"],
+            },
         },
         "national_air_projection": national_rank_sim,
         "high_yield_leverage_chapters": leverage_chapters,
+        "leverage_ranking_method": {
+            "type": "heuristic_prerequisite_diffusion_ranking_not_fitted",
+            "target_p_correct": LEVERAGE_TARGET_P_CORRECT,
+            "beta_damping": LEVERAGE_BETA_DAMPING,
+            "downstream_share": LEVERAGE_DOWNSTREAM_SHARE,
+            "mastery_ceiling": LEVERAGE_MASTERY_CEILING,
+        },
     }

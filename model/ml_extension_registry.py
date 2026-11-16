@@ -20,6 +20,8 @@ EXTENSION_ARTIFACTS = [
     "model/ncert_rag_svd_meta_unified.json",
     "model/linucb_prior_init_unified.json",
     "model/conformal_laplacian_model_unified.json",
+    "model/question_difficulty_model_v21_text_candidate.joblib",
+    "model/difficulty_model_v21_report.json",
 ]
 
 

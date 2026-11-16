@@ -596,7 +596,8 @@ def ml_suite_22_national_rank_and_college_cutoff_simulation():
         conformal_score_interval=[320, 410],
         mean_score=380,
     )
-    assert sim["total_national_candidates"] == 2400000
+    assert sim["total_national_candidates"] == 1999895
+    assert sim["model_assumptions"]["score_to_percentile_curve"]["status"] == "approximate"
     assert sim["conformal_air_interval"][0] < sim["conformal_air_interval"][1]
     assert len(sim["college_admission_probabilities"]) >= 7
     assert any(col["college_id"] == "aiims_delhi" for col in sim["college_admission_probabilities"])
@@ -625,17 +626,40 @@ def ml_suite_23_online_streaming_calibration_and_continuous_retraining():
     )
     assert 0.05 <= trans <= 0.95
 
-    elbo = STREAMING_CALIBRATION_ENGINE.record_online_elbo([0.8, 0.9], [0.5, 0.5])
+    elbo = STREAMING_CALIBRATION_ENGINE.record_online_log_joint([0.8, 0.9], [0.5, 0.5])
     assert isinstance(elbo, float)
+    assert abs(elbo - (math.log(0.8) + math.log(0.9) + 2 * math.log(0.5))) < 1e-3
+
+    from model.continuous_retraining_engine import DRIFT_THRESHOLDS
+    base_brier = DRIFT_THRESHOLDS["baseline_brier"]
+    base_ece = DRIFT_THRESHOLDS["baseline_ece"]
+    assert base_brier is not None and base_ece is not None
+    assert DRIFT_THRESHOLDS["max_brier"] > base_brier
 
     drift_report = evaluate_drift_and_retrain_if_needed(
         current_psi=0.02,
-        current_brier=0.0078,
-        current_ece=0.0011,
+        current_brier=base_brier,
+        current_ece=base_ece,
         force_retrain=False,
+        sample_size=500,
     )
     assert drift_report["drift_detected"] is False
     assert drift_report["retrain_triggered"] is False
+    assert drift_report["action_taken"] == "NOOP_STABLE"
+
+    small_report = evaluate_drift_and_retrain_if_needed(
+        current_psi=0.9,
+        current_brier=base_brier * 3,
+        current_ece=base_ece * 3,
+        force_retrain=False,
+        sample_size=5,
+    )
+    assert small_report["action_taken"] == "INSUFFICIENT_DATA"
+    assert small_report["retrain_triggered"] is False
+
+    live_report = evaluate_drift_and_retrain_if_needed(force_retrain=False)
+    assert live_report["metrics_source"] == "live_drift_monitor"
+    assert live_report["retrain_triggered"] is False
 
 
 def ml_suite_24_multilingual_hindi_glossary_and_socratic_audio_script():
@@ -985,6 +1009,54 @@ def ml_suite_33_side_by_side_models_trained_on_unified_bank():
     assert rag["heldout_chapter_retrieval_unified"]["questions"] == rag["heldout_chapter_retrieval_production"]["questions"]
 
 
+def ml_suite_34_difficulty_v21_text_candidate_beats_v2_on_clean_rows():
+    from model.difficulty_model_v21_text import V21_MODEL_PATH, V21_REPORT_PATH, featurize_with_text
+
+    rep = json.loads(V21_REPORT_PATH.read_text(encoding="utf-8"))
+    assert "GroupKFold" in rep["evaluation"]
+    assert "ideal_time_sec" in rep["excluded_features"]
+    clean = rep["near_duplicate_control"]
+    v2c = clean["v2_structural_rf_on_clean_rows"]
+    v21c = clean["v21_tfidf_logreg_on_clean_rows"]
+    assert v21c["macro_f1"] > v2c["macro_f1"]
+    assert v21c["accuracy"] > rep["majority_baseline"] + 0.20
+    assert rep["v21_tfidf_logreg"]["ece_top_label"] < 0.05
+    assert rep["decision"]["production_model_changed"] is False
+    model = joblib.load(V21_MODEL_PATH)
+    pyq = json.loads((PROJECT_ROOT / "data" / "tagged_questions" / "neet_questions_clean.json").read_text(encoding="utf-8"))[:40]
+    proba = model.predict_proba(featurize_with_text(pyq))
+    assert proba.shape == (40, 3)
+    assert np.allclose(proba.sum(axis=1), 1.0)
+
+
+def ml_suite_35_honest_simulation_no_invented_penalties_and_sourced_facts():
+    import inspect
+    import model.monte_carlo_conformal_neet as mc
+    from model.national_rank_simulator import MODEL_ASSUMPTIONS, NEET_YEAR_FACTS, QUALIFYING_CUTOFF_SOURCE
+    from model.feature_store_and_drift import DriftAndCalibrationMonitor
+
+    src = inspect.getsource(mc.run_monte_carlo_conformal_neet_simulation)
+    assert "trap_penalty" not in src and "* 0.55" not in src and "rng.uniform" not in src
+    assert mc.NEGATIVE_MARKING_BREAK_EVEN_PROB == 0.20
+    out = mc.run_monte_carlo_conformal_neet_simulation(
+        student_id="honesty_probe",
+        global_theta=0.0,
+        mastery_map={},
+        theta_map={},
+        ci_map={},
+        topic_importance={t: 1.0 for t in DAG_NODES},
+        n_trials=200,
+    )
+    assert out["interval_method"].startswith("monte_carlo_empirical_quantile")
+    assert sum(out["item_parameter_sources"].values()) == 180
+    assert out["negative_marking_optimizer"]["skip_decision_basis"] == "point_estimate_theta_not_oracle"
+    assert out["cutoff_probabilities"]["sourced_qualifying_cutoff"]["score"] == QUALIFYING_CUTOFF_SOURCE["general_cutoff_score"]
+    assert NEET_YEAR_FACTS[2026]["appeared"] == 1999895
+    assert MODEL_ASSUMPTIONS["college_tier_thresholds"]["status"] == "approximate"
+    empty = DriftAndCalibrationMonitor().evaluate_health()
+    assert empty["metrics_available"] is False and empty["drift_status"] == "NO_ATTEMPTS_YET"
+
+
 if __name__ == "__main__":
     suites = [
         ml_suite_01_question_bank_and_weightage_schema_validators,
@@ -1020,6 +1092,8 @@ if __name__ == "__main__":
         ml_suite_31_difficulty_leakage_audit_and_v2_candidate,
         ml_suite_32_unified_near_duplicate_guard_in_mocks,
         ml_suite_33_side_by_side_models_trained_on_unified_bank,
+        ml_suite_34_difficulty_v21_text_candidate_beats_v2_on_clean_rows,
+        ml_suite_35_honest_simulation_no_invented_penalties_and_sourced_facts,
     ]
     for fn in suites:
         fn()

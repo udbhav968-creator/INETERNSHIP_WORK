@@ -60,6 +60,16 @@
       "exists": true,
       "size_bytes": 7759,
       "sha256": "f9b18eb3e87979b383a541263cf669ad5c3724a4c35918e57a54273c92d25031"
+    },
+    "model/question_difficulty_model_v21_text_candidate.joblib": {
+      "exists": true,
+      "size_bytes": 3073042,
+      "sha256": "e1158b6dba209a44bf44f0b9cd99edba04d425cc73c72adf0541ae6e29aa93cf"
+    },
+    "model/difficulty_model_v21_report.json": {
+      "exists": true,
+      "size_bytes": 2098,
+      "sha256": "5d2ce2456db4b3c898a4cd9b80f4cbce4df228bc4575df90605d81ede38245f8"
     }
   }
 }

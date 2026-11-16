@@ -12,9 +12,14 @@ PROJECT_ROOT = MODEL_DIR.parent
 QUESTIONS_PATH = PROJECT_ROOT / "data" / "tagged_questions" / "neet_questions_clean.json"
 
 
+RESPONSE_TIME_REFERENCE_NOTE = "reference is the corpus ideal_time_sec field, which is a tier-derived formula, not observed student timings; replace with logged timings once available"
+CORPUS_IDEAL_TIMES: list[float] = []
+
+
 def _compute_real_corpus_baselines() -> tuple[dict[str, float], list[float]]:
     diff_counts = {"basic": 0, "medium": 0, "advanced": 0}
     time_counts = [0, 0, 0]
+    CORPUS_IDEAL_TIMES.clear()
     if QUESTIONS_PATH.exists():
         with open(QUESTIONS_PATH, encoding="utf-8") as f:
             questions = json.load(f)
@@ -29,6 +34,7 @@ def _compute_real_corpus_baselines() -> tuple[dict[str, float], list[float]]:
                 diff_counts["medium"] += 1
 
             t = int(q.get("ideal_time_sec") or 85)
+            CORPUS_IDEAL_TIMES.append(float(t))
             if t < 75:
                 time_counts[0] += 1
             elif t <= 95:
@@ -39,7 +45,7 @@ def _compute_real_corpus_baselines() -> tuple[dict[str, float], list[float]]:
             {k: round(v / total, 4) for k, v in diff_counts.items()},
             [round(c / total, 4) for c in time_counts],
         )
-    return ({"basic": 0.3448, "medium": 0.4974, "advanced": 0.1578}, [0.30, 0.50, 0.20])
+    return ({"basic": 1 / 3, "medium": 1 / 3, "advanced": 1 / 3}, [1 / 3, 1 / 3, 1 / 3])
 
 
 class InMemoryFeatureStore:
@@ -200,6 +206,7 @@ class DriftAndCalibrationMonitor:
                 "drift_status": "NO_ATTEMPTS_YET",
                 "recalibration_required": False,
                 "sample_size": 0,
+                "metrics_available": False,
             }
 
         n = len(records)
@@ -261,9 +268,11 @@ class DriftAndCalibrationMonitor:
         ece = round(ece, 4)
 
         times_list = [float(r["time_taken"]) for r in records]
-        baseline_times = [65.0, 85.0, 110.0] * max(1, n // 3)
+        baseline_times = CORPUS_IDEAL_TIMES if CORPUS_IDEAL_TIMES else times_list
+        ref_mean = sum(baseline_times) / len(baseline_times)
+        ref_sd = math.sqrt(sum((x - ref_mean) ** 2 for x in baseline_times) / max(1, len(baseline_times) - 1))
         w_time = self.compute_wasserstein_1d(baseline_times, times_list)
-        ks_time = self.compute_ks_statistic(times_list, reference_mean=85.0, reference_sd=25.0)
+        ks_time = self.compute_ks_statistic(times_list, reference_mean=ref_mean, reference_sd=max(1.0, ref_sd))
 
         effective_psi = psi_diff if n >= 30 else round(psi_diff * (n / 30.0), 4)
         recal_needed = effective_psi > 0.20 or (n >= 30 and ece > 0.08)
@@ -279,6 +288,9 @@ class DriftAndCalibrationMonitor:
             "drift_status": "DRIFT_WARNING" if recal_needed else "HEALTHY",
             "recalibration_required": recal_needed,
             "sample_size": n,
+            "metrics_available": True,
+            "small_sample_psi_shrinkage": n < 30,
+            "response_time_reference": RESPONSE_TIME_REFERENCE_NOTE,
         }
 
 

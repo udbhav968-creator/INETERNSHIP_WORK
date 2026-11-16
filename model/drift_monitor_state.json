@@ -1,22 +1,28 @@
 {
   "drift_detected": false,
+  "metrics_source": "live_drift_monitor",
+  "sample_size": 0,
+  "min_sample_size": 30,
+  "threshold_basis": "validation_report baseline x (1 + 0.25); PSI 0.2 is the conventional major-shift cutoff",
   "metrics_monitored": {
     "psi": {
-      "value": 0.02,
+      "value": null,
       "threshold": 0.2,
       "alert": false
     },
     "brier": {
-      "value": 0.0078,
-      "threshold": 0.05,
+      "value": null,
+      "threshold": 0.3724,
+      "baseline": 0.29792,
       "alert": false
     },
     "ece": {
-      "value": 0.0011,
-      "threshold": 0.04,
+      "value": null,
+      "threshold": 0.04672,
+      "baseline": 0.03738,
       "alert": false
     }
   },
   "retrain_triggered": false,
-  "action_taken": "NOOP_STABLE"
+  "action_taken": "INSUFFICIENT_DATA"
 }

@@ -6,7 +6,29 @@ import numpy as np
 
 SCORE_ANCHORS = np.array([0.0, 80.0, 130.0, 165.0, 200.0, 300.0, 400.0, 500.0, 550.0, 600.0, 650.0, 680.0, 700.0, 715.0, 720.0], dtype=np.float64)
 PERCENTILE_ANCHORS = np.array([0.0, 12.0, 27.0, 38.5, 48.0, 71.0, 85.5, 93.8, 96.5, 98.6, 99.65, 99.92, 99.988, 99.998, 100.0], dtype=np.float64)
-TOTAL_NEET_CANDIDATES = 2400000
+
+NEET_YEAR_FACTS = {
+    2026: {"registered": 2279743, "appeared": 1999895, "qualified": 1121185, "general_cutoff_score": 213, "topper_score": 715},
+    2025: {"registered": 2276069, "appeared": 2209318, "qualified": 1236531, "general_cutoff_score": 144},
+    2024: {"registered": 2406079, "appeared": 2333297, "general_cutoff_score": 164},
+}
+REFERENCE_EXAM_YEAR = 2026
+TOTAL_NEET_CANDIDATES = NEET_YEAR_FACTS[REFERENCE_EXAM_YEAR]["appeared"]
+
+QUALIFYING_CUTOFF_SOURCE = {
+    "exam_year": REFERENCE_EXAM_YEAR,
+    "category": "General/EWS 50th percentile",
+    "general_cutoff_score": NEET_YEAR_FACTS[REFERENCE_EXAM_YEAR]["general_cutoff_score"],
+    "source": "NTA NEET UG 2026 result press coverage (re-exam June 21, result July 16, 2026)",
+}
+
+MODEL_ASSUMPTIONS = {
+    "candidate_count": {"value": TOTAL_NEET_CANDIDATES, "status": "sourced", "basis": "NEET UG 2026 candidates appeared"},
+    "qualifying_cutoff": {"value": QUALIFYING_CUTOFF_SOURCE["general_cutoff_score"], "status": "sourced", "basis": QUALIFYING_CUTOFF_SOURCE["source"]},
+    "score_to_percentile_curve": {"status": "approximate", "basis": "hand-set piecewise-linear anchors; NTA does not publish a full score-percentile table; year-to-year shifts of tens of marks are normal"},
+    "college_tier_thresholds": {"status": "approximate", "basis": "indicative closing scores/ranks from past counselling rounds; vary by year, category, quota and round"},
+    "rank_formula": {"status": "derived", "basis": "rank = (1 - percentile/100) x candidates appeared"},
+}
 
 COLLEGE_TIERS = [
     {"id": "aiims_delhi", "name": "AIIMS New Delhi", "score_threshold": 705, "air_threshold": 55},
@@ -15,7 +37,7 @@ COLLEGE_TIERS = [
     {"id": "peripheral_govt", "name": "All-India Govt MBBS Floor", "score_threshold": 595, "air_threshold": 32000},
     {"id": "state_quota_govt", "name": "State Quota Govt Medical Seats", "score_threshold": 540, "air_threshold": 75000},
     {"id": "deemed_semi_govt", "name": "Deemed / Semi-Govt Merit Seats", "score_threshold": 480, "air_threshold": 150000},
-    {"id": "qualifying_floor", "name": "NEET Qualifying Cutoff", "score_threshold": 165, "air_threshold": 1450000},
+    {"id": "qualifying_floor", "name": "NEET Qualifying Cutoff", "score_threshold": QUALIFYING_CUTOFF_SOURCE["general_cutoff_score"], "air_threshold": NEET_YEAR_FACTS[REFERENCE_EXAM_YEAR]["qualified"]},
 ]
 
 
@@ -58,6 +80,7 @@ def simulate_national_rank_and_college_cutoffs(
             "target_score_720": th,
             "target_air_cutoff": tier["air_threshold"],
             "admission_probability_percent": round(prob, 1),
+            "threshold_status": "sourced" if tier["id"] == "qualifying_floor" else "approximate",
             "status": "SECURE" if prob >= 80.0 else ("COMPETITIVE" if prob >= 40.0 else ("REACH" if prob >= 10.0 else "UNLIKELY")),
         })
 
@@ -68,4 +91,6 @@ def simulate_national_rank_and_college_cutoffs(
         "conformal_percentile_interval": [pct_low, pct_high],
         "projected_percentile_median": pct_median,
         "college_admission_probabilities": college_admissions,
+        "reference_exam_year": REFERENCE_EXAM_YEAR,
+        "model_assumptions": MODEL_ASSUMPTIONS,
     }
