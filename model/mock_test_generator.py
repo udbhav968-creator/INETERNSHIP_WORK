@@ -19,7 +19,7 @@ from .assessment_blueprint import (
     load_forms,
     load_question_bank,
 )
-from .question_similarity_audit import get_near_duplicate_siblings_map
+from .unified_similarity_guard import get_unified_siblings_map
 
 MOCK_VERSION = f"{BLUEPRINT_VERSION}-mock"
 REPEAT_PENALTY = 4.0
@@ -38,11 +38,15 @@ def _bank_bundle(source: str) -> tuple[list[dict], dict, dict]:
     return _BANK_CACHE[source]
 
 
-def reserved_initial_assessment_ids() -> set[str]:
+def reserved_initial_assessment_ids(include_siblings: bool = False) -> set[str]:
     try:
-        return {qid for f in load_forms()["forms"] for qid in f["question_ids"]}
+        ids = {qid for f in load_forms()["forms"] for qid in f["question_ids"]}
     except FileNotFoundError:
         return set()
+    if include_siblings:
+        sib = get_unified_siblings_map()
+        ids |= {s for q in list(ids) for s in sib.get(q, [])}
+    return ids
 
 
 def reference_curves(cache: dict, bank_by_id: dict) -> tuple[np.ndarray, np.ndarray]:
@@ -53,7 +57,7 @@ def reference_curves(cache: dict, bank_by_id: dict) -> tuple[np.ndarray, np.ndar
 
 def mock_capacity(source: str = "unified", reserve_initial_forms: bool = True) -> dict:
     bank, _, targets = _bank_bundle(source)
-    reserved = reserved_initial_assessment_ids() if reserve_initial_forms else set()
+    reserved = reserved_initial_assessment_ids(include_siblings=True) if reserve_initial_forms else set()
     avail_unit = Counter(q["unit"] for q in bank if q["question_id"] not in reserved)
     avail_tier = Counter((q["subject"], q["tier"]) for q in bank if q["question_id"] not in reserved)
     per_unit = {u: avail_unit.get(u, 0) // n for u, n in targets["chapter_quota"].items() if n > 0}
@@ -197,9 +201,10 @@ def generate_mock_180(
 ) -> dict:
     bank, cache, targets = _bank_bundle(source)
     by_id = {q["question_id"]: q for q in bank}
-    siblings = get_near_duplicate_siblings_map()
+    siblings = get_unified_siblings_map()
     seen = set(seen_question_ids or set())
-    reserved = reserved_initial_assessment_ids() if reserve_initial_forms else set()
+    seen |= {s for q in list(seen) for s in siblings.get(q, [])}
+    reserved = reserved_initial_assessment_ids(include_siblings=True) if reserve_initial_forms else set()
     seed = _stable_seed(MOCK_VERSION, source, student_id, attempt_index)
     rng = random.Random(seed)
 

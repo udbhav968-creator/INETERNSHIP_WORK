@@ -15,6 +15,9 @@
 | 4 | `model/mock_test_generator.py` | Unlimited 180-question mocks, equated to the initial assessment, fresh items first | suite 28 |
 | 5 | `model/student_profile_initializer.py` | Initial assessment → adaptive profile for all 65 chapters, predicted NEET score, spec-v1 rule output | suite 29 |
 | 6 | `model/test_analytics_engine.py` | Test-wise and question-wise analytics, equated score trend | suite 30 |
+| 7 | `model/difficulty_model_v2.py` | Difficulty-classifier leakage audit + leakage-free v2 candidate trained on verified tiers | suite 31 |
+| 8 | `model/unified_similarity_guard.py` | Near-duplicate guard over all 11,848 items, used by the mock generator | suite 32 |
+| 9 | `model/unified_corpus_report.py`, `model/ml_extension_registry.py` | Combined-bank readiness report; SHA-256 registry for the 6 new artifacts | suite 32 |
 
 ---
 
@@ -140,3 +143,32 @@ Tuning trade-off (`REPEAT_PENALTY` / `CHAPTER_PENALTY` in `mock_test_generator.p
 | 3 | No `source_type` on `Question` | PYQ vs sample-paper items can't be told apart |
 | 4 | Test type and per-test θ not stored | Needed for unlimited attempts with separate records and trends |
 | 5 | Loader skips "General …" chapters | 2,633 rows already quarantined here with suggestions for re-labelling |
+
+---
+
+## 9. Training status of every model
+
+| Model | Trained on | Learns from real students yet? | Status |
+|---|---|---|---|
+| Topic importance | 14 years of PYQ weightage | n/a | ✅ Correct as is (sample papers have no exam year) |
+| 3PL IRT item parameters | PYQ: tier heuristics; sample: cold-start + tier-anchored linking | ❌ 0 attempts | ⚠️ Priors only |
+| BKT chapter parameters | PYQ-derived heuristics | ❌ | ⚠️ Priors only |
+| DINA 8-skill parameters | PYQ Q-matrix heuristics | ❌ | ⚠️ Priors only |
+| LinUCB bandit prior | BKT priors + DAG | ❌ | ⚠️ Priors only |
+| Drift monitor / temperature scaling | RF out-of-fold probabilities | ❌ | ⚠️ Needs real outcomes |
+| Difficulty RF (production) | 2,400 PYQs incl. `ideal_time_sec` | n/a | ⚠️ 97.5% is leakage; 74.9% without the leaked feature |
+| Difficulty RF v2 candidate | 9,448 verified sample tiers, no leaked features | n/a | ✅ 78.5% on held-out papers (baseline 52.5%); not promoted |
+| Chapter resolver | PYQ + verified sample chapters | n/a | ✅ ≥ 90% precision where it labels |
+| Near-duplicate guard | All 11,848 items | n/a | ✅ |
+| NCERT RAG index | 65-chapter NCERT KB | n/a | ✅ |
+
+**What "fully trained" needs:** real student responses. `data/training/student_attempts.csv` has 0 rows. Once the initial assessment is live, about 300+ students × 180 responses lets the team re-estimate IRT a/b/c, BKT guess/slip/transit, DINA slip/guess, LinUCB and temperature scaling from data.
+
+## 10. Verification
+
+| Check | Result |
+|---|---|
+| Standalone ML suites | 32 / 32 pass |
+| Backend suites (`backend/tests/test_v2_engine.py`) | 29 / 29 pass (no backend files changed) |
+| Core SHA-256 registry | 21 / 21 unchanged |
+| ML extension registry | 6 / 6 verified |

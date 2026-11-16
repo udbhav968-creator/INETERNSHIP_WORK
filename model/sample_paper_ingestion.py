@@ -412,6 +412,13 @@ def main(argv: list[str]) -> dict:
         print(f"linking: anchors={lk['anchor_items']} raw_corr={lk['raw_b_correlation']} raw_rmse={lk['raw_b_rmse']} linked_rmse={lk['linked_b_rmse']} linked_corr={lk['linked_b_correlation']}")
     path = Path(argv[argv.index("--file") + 1]) if "--file" in argv else SAMPLE_BANK_PATH
     rep = ingest(sample_path=path, progress=True)
+    if rep.get("status") == "ingested" and "--no-registry" not in argv:
+        from .ml_extension_registry import build_extension_registry
+        from .unified_similarity_guard import build_unified_siblings
+
+        build_unified_siblings()
+        build_extension_registry()
+        print("  near-duplicate map and ML extension SHA-256 registry refreshed", flush=True)
     print(json.dumps({k: rep[k] for k in rep if k not in ("chapters_missing_a_tier",)}, indent=2))
     return rep
 

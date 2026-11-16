@@ -921,6 +921,49 @@ def ml_suite_30_test_analytics_and_equated_score_trend():
     assert score_trend(tests[:1])["trend"]["direction"] == "insufficient_tests"
 
 
+def ml_suite_31_difficulty_leakage_audit_and_v2_candidate():
+    rep = json.loads((MODEL_DIR / "difficulty_model_leakage_audit.json").read_text(encoding="utf-8"))
+    assert rep["provenance"]["pyq_ideal_time_source"] == ["synthetic_tier_formula"]
+    with_t = rep["pyq_with_ideal_time_5fold"]["accuracy"]
+    without_t = rep["pyq_without_ideal_time_5fold"]["accuracy"]
+    assert with_t - without_t > 0.1
+    v2 = rep["sample_only_grouped_by_paper_5fold"]
+    assert v2["accuracy"] > v2["majority_baseline"] + 0.15
+    assert "ideal_time_sec" in rep["v2_candidate"]["excluded_features"]
+    model = joblib.load(MODEL_DIR / rep["v2_candidate"]["artifact"])
+    from model.difficulty_model_v2 import featurize
+
+    pyq = json.loads((PROJECT_ROOT / "data" / "tagged_questions" / "neet_questions_clean.json").read_text(encoding="utf-8"))[:50]
+    preds = model.predict(featurize(pyq))
+    assert set(preds) <= {"basic", "medium", "advanced"} and len(preds) == 50
+
+
+def ml_suite_32_unified_near_duplicate_guard_in_mocks():
+    from model.mock_test_generator import generate_mock_180, reserved_initial_assessment_ids
+    from model.unified_similarity_guard import UNIFIED_SIBLINGS_PATH, get_unified_siblings_map
+
+    rep = json.loads(UNIFIED_SIBLINGS_PATH.read_text(encoding="utf-8"))
+    sib = get_unified_siblings_map()
+    for q, ss in list(sib.items())[:500]:
+        for s in ss:
+            assert q in sib.get(s, []), (q, s)
+    base = reserved_initial_assessment_ids()
+    full = reserved_initial_assessment_ids(include_siblings=True)
+    assert base <= full
+    seen: set[str] = set()
+    for attempt in range(3):
+        ids = generate_mock_180("guard-student", attempt, seen, source="unified")["question_ids"]
+        s_ids = set(ids)
+        assert not (s_ids & full)
+        assert sum(1 for q in s_ids for s in sib.get(q, []) if s in s_ids) == 0
+        seen |= s_ids
+    assert rep["items_scanned"] >= 2400
+    from model.ml_extension_registry import EXTENSION_ARTIFACTS, verify_extension_registry
+
+    ext = verify_extension_registry()
+    assert ext["status"] == "VERIFIED" and ext["extension_artifacts_verified"] == len(EXTENSION_ARTIFACTS)
+
+
 if __name__ == "__main__":
     suites = [
         ml_suite_01_question_bank_and_weightage_schema_validators,
@@ -953,6 +996,8 @@ if __name__ == "__main__":
         ml_suite_28_equated_unlimited_mock_180_generation,
         ml_suite_29_initial_assessment_profile_initialization,
         ml_suite_30_test_analytics_and_equated_score_trend,
+        ml_suite_31_difficulty_leakage_audit_and_v2_candidate,
+        ml_suite_32_unified_near_duplicate_guard_in_mocks,
     ]
     for fn in suites:
         fn()
