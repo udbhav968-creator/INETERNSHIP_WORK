@@ -7,6 +7,7 @@ import numpy as np
 from .dina_cognitive_diagnosis import compute_dina_and_rt_profile
 from .feature_store_and_drift import FEATURE_STORE
 from .irt_3pl_model import (
+    CALIBRATED_ITEMS,
     IRTItemParams,
     fisher_information,
     get_item_params,
@@ -238,6 +239,70 @@ def benchmark_linucb_vs_random_ablation(n_rounds: int = 120) -> dict:
     }
 
 
+def benchmark_linucb_cold_start_stochastic(n_rounds: int = 300, n_seeds: int = 20, n_arms: int = 30, noise_sd: float = 0.15) -> dict:
+    item_pool = list(CALIBRATED_ITEMS.items())
+    lin_regrets: list[float] = []
+    rand_regrets: list[float] = []
+    lin_late_hit: list[float] = []
+    for seed in range(n_seeds):
+        rng = np.random.default_rng(1000 + seed)
+        theta = float(rng.normal(0.0, 1.0))
+        picks = rng.choice(len(item_pool), size=min(n_arms, len(item_pool)), replace=False)
+        contexts = []
+        true_rewards = []
+        for k in picks:
+            raw = item_pool[int(k)][1]
+            params = IRTItemParams(
+                a=float(raw["a"] if isinstance(raw, dict) else raw.a),
+                b=float(raw["b"] if isinstance(raw, dict) else raw.b),
+                c=float(raw["c"] if isinstance(raw, dict) else raw.c),
+            )
+            p = irt_3pl_probability(theta, params)
+            info = fisher_information(theta, params)
+            zpd = max(0.0, 1.0 - abs(p - ZPD_TARGET_PROB) * 1.5)
+            x = np.array([zpd, min(1.0, info / 1.5), float(rng.uniform(0.2, 0.8)), float(rng.uniform(0.2, 1.0)), 0.85, 0.25])
+            contexts.append(x)
+            true_rewards.append(0.65 * zpd + 0.35 * min(1.0, info))
+        true_rewards_arr = np.array(true_rewards)
+        best = float(true_rewards_arr.max())
+        d = len(contexts[0])
+        A = np.eye(d)
+        b = np.zeros(d)
+        alpha = 0.35
+        lin_regret = 0.0
+        rand_regret = 0.0
+        late_hits = 0
+        for t in range(n_rounds):
+            A_inv = np.linalg.inv(A)
+            w = A_inv @ b
+            ucb = [float(x @ w) + alpha * float(np.sqrt(x @ A_inv @ x)) for x in contexts]
+            arm = int(np.argmax(ucb))
+            reward = true_rewards_arr[arm] + float(rng.normal(0.0, noise_sd))
+            A += np.outer(contexts[arm], contexts[arm])
+            b += reward * contexts[arm]
+            lin_regret += best - true_rewards_arr[arm]
+            rand_regret += best - true_rewards_arr[int(rng.integers(0, len(contexts)))]
+            if t >= n_rounds - 50:
+                late_hits += int(true_rewards_arr[arm] >= best - 0.05)
+        lin_regrets.append(lin_regret)
+        rand_regrets.append(rand_regret)
+        lin_late_hit.append(late_hits / 50.0)
+    return {
+        "setup": "no warm-start prior, noisy rewards, real calibrated items, random student theta per seed",
+        "reward_definition": "0.65 x ZPD alignment + 0.35 x Fisher information (design objective, not observed learning gains)",
+        "n_rounds": n_rounds,
+        "n_seeds": n_seeds,
+        "n_arms": n_arms,
+        "reward_noise_sd": noise_sd,
+        "linucb_cumulative_regret_mean": round(float(np.mean(lin_regrets)), 3),
+        "linucb_cumulative_regret_sd": round(float(np.std(lin_regrets)), 3),
+        "random_cumulative_regret_mean": round(float(np.mean(rand_regrets)), 3),
+        "regret_reduction_vs_random_percent": round(100.0 * (1.0 - float(np.mean(lin_regrets)) / max(1e-9, float(np.mean(rand_regrets)))), 1),
+        "near_optimal_pick_rate_last_50_rounds": round(float(np.mean(lin_late_hit)), 3),
+        "linucb_outperforms_random": bool(np.mean(lin_regrets) < np.mean(rand_regrets)),
+    }
+
+
 def benchmark_engine_latencies(iterations: int = 50) -> dict:
     irt_times: list[float] = []
     bkt_times: list[float] = []
@@ -339,6 +404,7 @@ def run_evaluation_harness(save_report: bool = True) -> dict:
     t0 = time.perf_counter()
     personas = simulate_student_personas()
     ablation = benchmark_linucb_vs_random_ablation(n_rounds=120)
+    cold_ablation = benchmark_linucb_cold_start_stochastic()
     latencies = benchmark_engine_latencies(iterations=50)
 
     all_passed = (
@@ -347,6 +413,7 @@ def run_evaluation_harness(save_report: bool = True) -> dict:
         and personas["impulsive_guesser_telemetry_audit"]["invariants_satisfied"]
         and personas["spaced_repetition_learner"]["invariants_satisfied"]
         and ablation["linucb_outperforms_random"]
+        and cold_ablation["linucb_outperforms_random"]
         and latencies["all_slas_met"]
     )
 
@@ -355,6 +422,8 @@ def run_evaluation_harness(save_report: bool = True) -> dict:
         "execution_time_seconds": round(time.perf_counter() - t0, 3),
         "persona_simulations": personas,
         "linucb_vs_random_ablation": ablation,
+        "linucb_vs_random_ablation_note": "warm-start prior was fitted to this same deterministic reward, so zero regret is expected and is not evidence of learning",
+        "linucb_cold_start_stochastic_ablation": cold_ablation,
         "latency_sla_benchmarks": latencies,
     }
 

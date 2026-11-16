@@ -17,7 +17,7 @@ from sklearn.metrics import (
     log_loss,
     precision_recall_fscore_support,
 )
-from sklearn.model_selection import StratifiedKFold, train_test_split
+from sklearn.model_selection import StratifiedGroupKFold
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
@@ -65,6 +65,35 @@ FEATURES = CATEGORICAL_FEATURES + NUMERIC_FEATURES
 TARGET = "difficulty_level"
 
 MIN_ACCURACY_GATE = 0.70
+SIMILARITY_REPORT_FILE = MODEL_DIR / "question_similarity_report.json"
+LABEL_VALIDITY_FILE = MODEL_DIR / "label_validity_report.json"
+SPLIT_SEED = 42
+
+
+def _near_duplicate_groups(question_ids: list[str]) -> np.ndarray:
+    parent = {q: q for q in question_ids}
+
+    def find(x: str) -> str:
+        while parent[x] != x:
+            parent[x] = parent[parent[x]]
+            x = parent[x]
+        return x
+
+    if SIMILARITY_REPORT_FILE.exists():
+        sib = json.loads(SIMILARITY_REPORT_FILE.read_text(encoding="utf-8")).get("near_duplicate_siblings", {}) or {}
+        for qid, others in sib.items():
+            for o in others if isinstance(others, list) else []:
+                oid = o.get("question_id") if isinstance(o, dict) else o
+                if qid in parent and oid in parent:
+                    parent[find(qid)] = find(oid)
+    roots = {r: i for i, r in enumerate(sorted({find(q) for q in question_ids}))}
+    return np.array([roots[find(q)] for q in question_ids])
+
+
+def _grouped_holdout_split(y: pd.Series, groups: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    sgkf = StratifiedGroupKFold(n_splits=5, shuffle=True, random_state=SPLIT_SEED)
+    train_idx, test_idx = next(sgkf.split(np.zeros(len(y)), y, groups))
+    return train_idx, test_idx
 
 
 def _artifact_canonical_size_and_sha256(path: Path) -> tuple[int, str]:
@@ -170,22 +199,33 @@ def build_model_registry_manifest() -> dict:
     }
 
 
+def _target_validity_summary() -> dict:
+    rep = json.loads(LABEL_VALIDITY_FILE.read_text(encoding="utf-8")) if LABEL_VALIDITY_FILE.exists() else {}
+    return {
+        "label_source": "chapter_text_complexity_quantile_heuristic",
+        "what_holdout_accuracy_measures": "agreement with the heuristic tier formula, not empirical difficulty",
+        "heuristic_reproduces_stored_labels": rep.get("heuristic_formula_reproduces_stored_labels"),
+        "heuristic_vs_human_verified_tiers": rep.get("heuristic_rule_vs_human_verified_sample_tiers"),
+        "difficulty_model_on_human_labels": "see difficulty_model_v21_report.json",
+    }
+
+
 def _read_cached_auxiliary_summary() -> dict:
     out: dict = {}
     bkt_p = MODEL_DIR / "bkt_chapter_parameters.json"
     if bkt_p.exists():
         bkt = json.loads(bkt_p.read_text(encoding="utf-8"))
         out["bkt_65_chapter_empirical_bayes"] = {
-            "total_chapters": bkt.get("total_chapters", 65),
-            "weighted_global_prior": bkt.get("weighted_global_prior", 0.40),
-            "min_chapter_prior": bkt.get("min_chapter_prior", 0.22),
-            "max_chapter_prior": bkt.get("max_chapter_prior", 0.54),
+            "total_chapters": bkt.get("total_chapters"),
+            "weighted_global_prior": bkt.get("weighted_global_prior"),
+            "min_chapter_prior": bkt.get("min_chapter_prior"),
+            "max_chapter_prior": bkt.get("max_chapter_prior"),
         }
     dina_p = MODEL_DIR / "dina_calibrated_parameters.json"
     if dina_p.exists():
         dina = json.loads(dina_p.read_text(encoding="utf-8"))
         out["dina_8_skill_calibrated"] = {
-            "total_corpus_items": dina.get("total_corpus_items", 2400),
+            "total_corpus_items": dina.get("total_corpus_items"),
             "skill_priors": {k: v["prior_mastery"] for k, v in dina.get("skills", {}).items()},
         }
     rag_p = MODEL_DIR / "ncert_rag_svd_meta.json"
@@ -198,8 +238,8 @@ def _read_cached_auxiliary_summary() -> dict:
         lin = json.loads(lin_p.read_text(encoding="utf-8"))
         lap = json.loads(lap_p.read_text(encoding="utf-8"))
         out["linucb_and_laplacian"] = {
-            "linucb_prior_r2": lin.get("prior_fit_r2", 0.99),
-            "laplacian_spectral_gap": lap.get("fiedler_positive_spectral_gap", 0.1),
+            "linucb_prior_r2": lin.get("prior_fit_r2"),
+            "laplacian_spectral_gap": lap.get("fiedler_positive_spectral_gap"),
         }
     return out
 
@@ -229,8 +269,15 @@ def run_deep_training_and_validation(save_artifacts: bool = True) -> dict:
     X = df[FEATURES]
     y = df[TARGET]
     classes = sorted(y.unique().tolist())
+    groups = _near_duplicate_groups(df["question_id"].astype(str).tolist())
 
-    skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+    train_idx_all, test_idx_all = _grouped_holdout_split(y, groups)
+    X_train, X_test = X.iloc[train_idx_all], X.iloc[test_idx_all]
+    y_train, y_test = y.iloc[train_idx_all], y.iloc[test_idx_all]
+    groups_train = groups[train_idx_all]
+
+    skf = StratifiedGroupKFold(n_splits=5, shuffle=True, random_state=SPLIT_SEED)
+    cv_splits = list(skf.split(X_train, y_train, groups_train))
 
     rf_param_grid = [
         {"max_features": 0.35, "criterion": "gini"},
@@ -244,25 +291,22 @@ def run_deep_training_and_validation(save_artifacts: bool = True) -> dict:
     best_fold_accs: list[float] = []
     best_fold_f1s: list[float] = []
     best_fold_losses: list[float] = []
-    best_oof_preds = np.empty(len(df), dtype=object)
-    best_oof_probs = np.zeros((len(df), len(classes)), dtype=np.float64)
+    best_oof_probs = np.zeros((len(X_train), len(classes)), dtype=np.float64)
 
     for cfg in rf_param_grid:
         cur_accs: list[float] = []
         cur_f1s: list[float] = []
         cur_losses: list[float] = []
-        cur_oof_p = np.empty(len(df), dtype=object)
-        cur_oof_pr = np.zeros((len(df), len(classes)), dtype=np.float64)
-        for _, (train_idx, val_idx) in enumerate(skf.split(X, y)):
+        cur_oof_pr = np.zeros((len(X_train), len(classes)), dtype=np.float64)
+        for train_idx, val_idx in cv_splits:
             pipe = _build_rf_pipeline(max_features=cfg["max_features"], criterion=cfg["criterion"])
-            pipe.fit(X.iloc[train_idx], y.iloc[train_idx])
-            preds = pipe.predict(X.iloc[val_idx])
-            probs = pipe.predict_proba(X.iloc[val_idx])
-            cur_oof_p[val_idx] = preds
+            pipe.fit(X_train.iloc[train_idx], y_train.iloc[train_idx])
+            preds = pipe.predict(X_train.iloc[val_idx])
+            probs = pipe.predict_proba(X_train.iloc[val_idx])
             cur_oof_pr[val_idx] = probs
-            cur_accs.append(float(accuracy_score(y.iloc[val_idx], preds)))
-            cur_f1s.append(float(f1_score(y.iloc[val_idx], preds, average="macro")))
-            cur_losses.append(float(log_loss(y.iloc[val_idx], probs, labels=classes)))
+            cur_accs.append(float(accuracy_score(y_train.iloc[val_idx], preds)))
+            cur_f1s.append(float(f1_score(y_train.iloc[val_idx], preds, average="macro")))
+            cur_losses.append(float(log_loss(y_train.iloc[val_idx], probs, labels=classes)))
         mean_f1 = float(np.mean(cur_f1s))
         mean_acc = float(np.mean(cur_accs))
         grid_search_records.append({
@@ -277,24 +321,19 @@ def run_deep_training_and_validation(save_artifacts: bool = True) -> dict:
             best_fold_accs = cur_accs
             best_fold_f1s = cur_f1s
             best_fold_losses = cur_losses
-            best_oof_preds = cur_oof_p
             best_oof_probs = cur_oof_pr
 
     fold_accuracies = best_fold_accs
     fold_macro_f1s = best_fold_f1s
     fold_log_losses = best_fold_losses
-    oof_preds = best_oof_preds
     oof_probs = best_oof_probs
 
     y_onehot = np.zeros_like(oof_probs)
     class_to_idx = {c: i for i, c in enumerate(classes)}
-    for idx, label in enumerate(y):
+    for idx, label in enumerate(y_train):
         y_onehot[idx, class_to_idx[label]] = 1.0
     multiclass_brier = float(np.mean(np.sum((oof_probs - y_onehot) ** 2, axis=1)))
 
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.20, random_state=42, stratify=y
-    )
     challenger_pipe = _build_rf_pipeline(max_features=best_rf_cfg["max_features"], criterion=best_rf_cfg["criterion"])
     challenger_pipe.fit(X_train, y_train)
     challenger_preds = challenger_pipe.predict(X_test)
@@ -331,6 +370,7 @@ def run_deep_training_and_validation(save_artifacts: bool = True) -> dict:
 
     champion_pipe = challenger_pipe
     test_preds = challenger_preds
+    test_probs = challenger_probs
     holdout_accuracy = challenger_acc
     challenger_promoted = True
 
@@ -344,6 +384,7 @@ def run_deep_training_and_validation(save_artifacts: bool = True) -> dict:
                 if existing_acc >= challenger_acc:
                     champion_pipe = existing_pipe
                     test_preds = existing_preds
+                    test_probs = existing_pipe.predict_proba(X_test)
                     holdout_accuracy = existing_acc
                     challenger_promoted = False
         except Exception:
@@ -397,6 +438,8 @@ def run_deep_training_and_validation(save_artifacts: bool = True) -> dict:
                 "accuracy": holdout_accuracy,
                 "classes": classes,
                 "features": FEATURES,
+                "split_protocol": "StratifiedGroupKFold(5, shuffle, seed 42) first fold as holdout; near-duplicates grouped",
+                "holdout_question_ids": df["question_id"].iloc[test_idx_all].astype(str).tolist(),
             }
             with open(METRICS_FILE, "w", encoding="utf-8") as f:
                 json.dump(metrics_payload, f, indent=2)
@@ -454,9 +497,11 @@ def run_deep_training_and_validation(save_artifacts: bool = True) -> dict:
     dist_audit = run_corpus_distribution_and_readiness_audit(save_report=save_artifacts)
     temp_cal = fit_and_save_rf_temperature_calibration(
         oof_probs=oof_probs,
-        y_labels=y.tolist(),
+        y_labels=y_train.tolist(),
         classes=classes,
         save_report=save_artifacts,
+        eval_probs=test_probs,
+        eval_labels=y_test.tolist(),
     )
     recal_audit = run_irt_tier_recalibration_audit(save_report=save_artifacts)
     sim_audit = run_question_similarity_audit(save_report=save_artifacts)
@@ -494,14 +539,23 @@ def run_deep_training_and_validation(save_artifacts: bool = True) -> dict:
             "confusion_matrix": conf_mat,
             "per_class_metrics": per_class_report,
         },
+        "evaluation_protocol": {
+            "holdout": "20% grouped stratified split made before any tuning; near-duplicate questions share a group",
+            "cross_validation": "StratifiedGroupKFold(5) on the training split only; used for hyperparameter selection",
+            "calibration": "temperature fitted on training out-of-fold probabilities, ECE reported on the untouched holdout",
+            "split_seed": SPLIT_SEED,
+        },
+        "target_validity": _target_validity_summary(),
         "stratified_5fold_cross_validation": {
             "n_splits": 5,
+            "computed_on": "training_split_only",
             "fold_accuracies": [round(a, 4) for a in fold_accuracies],
             "mean_cv_accuracy": round(float(np.mean(fold_accuracies)), 4),
             "std_cv_accuracy": round(float(np.std(fold_accuracies)), 4),
             "mean_cv_macro_f1": round(float(np.mean(fold_macro_f1s)), 4),
             "mean_cv_log_loss": round(float(np.mean(fold_log_losses)), 4),
             "oof_multiclass_brier_score": round(multiclass_brier, 5),
+            "note": "fold metrics belong to the selected configuration, so they are slightly optimistic; the holdout is the unbiased estimate",
         },
         "hyperparameter_fine_tuning": {
             "search_space": rf_param_grid,
@@ -509,6 +563,7 @@ def run_deep_training_and_validation(save_artifacts: bool = True) -> dict:
             "grid_evaluation_results": grid_search_records,
         },
         "champion_challenger_tournament": tournament,
+        "champion_selection_note": "the random forest stays champion because the serverless NumPy runtime only executes forests; the tournament shows which family fits the heuristic labels best on the holdout",
         "permutation_feature_importance": perm_importances,
         "serverless_compact_rf_parity": {
             "verified_rows": len(X),
@@ -517,6 +572,9 @@ def run_deep_training_and_validation(save_artifacts: bool = True) -> dict:
         },
         "temperature_calibration_summary": {
             "optimal_temperature": temp_cal["optimal_temperature"],
+            "metrics_evaluated_on": temp_cal.get("metrics_evaluated_on"),
+            "fitted_temperature": temp_cal.get("fitted_temperature"),
+            "temperature_decision": temp_cal.get("temperature_decision"),
             "pre_ece": temp_cal["pre_calibration"]["ece_10_bin"],
             "post_ece": temp_cal["post_calibration"]["ece_10_bin"],
             "pre_nll": temp_cal["pre_calibration"]["multiclass_nll"],

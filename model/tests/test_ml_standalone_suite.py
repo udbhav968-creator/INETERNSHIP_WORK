@@ -1006,7 +1006,34 @@ def ml_suite_33_side_by_side_models_trained_on_unified_bank():
     prod = json.loads(PRODUCTION_PATHS["BKT_CHAPTER_JSON"].read_text(encoding="utf-8"))
     assert prod["weighted_global_prior"] == rep["bkt_chapter_priors"]["weighted_global_prior_production"]
     rag = rep["ncert_rag_index"]
-    assert rag["heldout_chapter_retrieval_unified"]["questions"] == rag["heldout_chapter_retrieval_production"]["questions"]
+    assert rag["heldout_chapter_retrieval_unified"]["eval_questions"] == rag["heldout_chapter_retrieval_production"]["eval_questions"] > 0
+    assert rag["heldout_chapter_retrieval_production"]["top1_chapter_accuracy"] > 10 * rag["heldout_chapter_retrieval_production"]["random_baseline_top1"]
+
+
+def ml_suite_36_honest_training_protocol_and_rag_vocabulary():
+    from model.label_validity_audit import heuristic_vs_human_tiers
+    from model.train_psychometric_and_rag_models import RAG_SVD_META_JSON
+
+    rep = json.loads((PROJECT_ROOT / "model" / "validation_report.json").read_text(encoding="utf-8"))
+    assert rep["evaluation_protocol"]["cross_validation"].startswith("StratifiedGroupKFold")
+    assert rep["stratified_5fold_cross_validation"]["computed_on"] == "training_split_only"
+    assert rep["temperature_calibration_summary"]["metrics_evaluated_on"] == "untouched_holdout"
+    assert rep["target_validity"]["what_holdout_accuracy_measures"].startswith("agreement with the heuristic")
+    hold = rep["random_forest_holdout_evaluation"]
+    assert hold["training_rows"] + hold["testing_rows"] == 2400
+    cal = json.loads((PROJECT_ROOT / "model" / "rf_temperature_calibration.json").read_text(encoding="utf-8"))
+    if cal["temperature_decision"].startswith("rejected"):
+        assert cal["optimal_temperature"] == 1.0
+    meta = json.loads(RAG_SVD_META_JSON.read_text(encoding="utf-8"))
+    vocab = meta["vocab"]
+    assert len(vocab) == meta["vocab_size"] > 6000
+    assert max(vocab) > "t", "vocabulary must not be truncated alphabetically"
+    assert meta["heldout_chapter_retrieval"]["top1_chapter_accuracy"] >= 0.25
+    human = heuristic_vs_human_tiers()
+    assert human["available"] and human["cohens_kappa"] < 0.2
+    harness = json.loads((PROJECT_ROOT / "model" / "harness_benchmark_report.json").read_text(encoding="utf-8"))
+    cold = harness["linucb_cold_start_stochastic_ablation"]
+    assert cold["linucb_outperforms_random"] and cold["reward_noise_sd"] > 0
 
 
 def ml_suite_34_difficulty_v21_text_candidate_beats_v2_on_clean_rows():
@@ -1094,6 +1121,7 @@ if __name__ == "__main__":
         ml_suite_33_side_by_side_models_trained_on_unified_bank,
         ml_suite_34_difficulty_v21_text_candidate_beats_v2_on_clean_rows,
         ml_suite_35_honest_simulation_no_invented_penalties_and_sourced_facts,
+        ml_suite_36_honest_training_protocol_and_rag_vocabulary,
     ]
     for fn in suites:
         fn()

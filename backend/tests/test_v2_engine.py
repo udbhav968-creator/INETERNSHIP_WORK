@@ -7,7 +7,6 @@ from pathlib import Path
 import joblib
 import numpy as np
 import pandas as pd
-from sklearn.model_selection import train_test_split
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 BACKEND_DIR = PROJECT_ROOT / "backend"
@@ -78,7 +77,9 @@ def test_01_random_forest_model_and_live_inference():
     features = metrics["features"]
     X = df[features]
     y = df["difficulty_level"]
-    _, X_test, _, y_test = train_test_split(X, y, test_size=0.20, random_state=42, stratify=y)
+    holdout_mask = df["question_id"].astype(str).isin(set(metrics["holdout_question_ids"]))
+    assert int(holdout_mask.sum()) == metrics["testing_rows"]
+    X_test, y_test = X[holdout_mask], y[holdout_mask]
     preds = pipeline.predict(X_test)
     probas = pipeline.predict_proba(X_test[:5])
     live_acc = (preds == y_test).mean()
@@ -692,7 +693,8 @@ def test_18_cicd_pipeline_and_deployment_manifests():
     workflow_path = PROJECT_ROOT / ".github" / "workflows" / "ci_cd_mlops.yml"
     assert workflow_path.exists(), "Missing GitHub Actions CI/CD workflow"
     wf_text = workflow_path.read_text(encoding="utf-8")
-    assert "model.training_and_validation_pipeline" in wf_text
+    assert "model.run_full_ml_pipeline --verify-reproducible" in wf_text
+    assert "from .training_and_validation_pipeline import run_deep_training_and_validation" in (PROJECT_ROOT / "model" / "run_full_ml_pipeline.py").read_text(encoding="utf-8")
     assert "model.evaluation_harness" in wf_text
     assert "backend/tests/test_v2_engine.py" in wf_text
 

@@ -7,7 +7,7 @@ on:
 
 jobs:
   live-production-canary-and-artifact-audit:
-    name: Live Vercel Canary, Prometheus Scrape & 21-Artifact Checksum Gate
+    name: Live Vercel Canary, Prometheus Scrape & Core Artifact Checksum Gate
     runs-on: ubuntu-24.04
 
     steps:
@@ -26,9 +26,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r backend/requirements.txt
 
-      - name: Verify All 21 Registered SHA-256 Checksums Locally
+      - name: Verify Core and ML Extension SHA-256 Registries Locally
         run: |
           python -m model.verify_artifact_integrity
+          python -m model.ml_extension_registry
 
       - name: Probe Live Production Health, Corpus Audit & Prometheus Metrics
         run: |

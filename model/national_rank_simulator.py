@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import math
 from typing import Any
 import numpy as np
 
@@ -69,8 +68,6 @@ def simulate_national_rank_and_college_cutoffs(
     pct_median = round(score_to_neet_percentile(float(mean_score)), 3)
 
     college_admissions: list[dict[str, Any]] = []
-    n_trials = len(total_scores_trials) if len(total_scores_trials) > 0 else 1
-
     for tier in COLLEGE_TIERS:
         th = tier["score_threshold"]
         prob = float(np.mean(total_scores_trials >= th) * 100.0) if len(total_scores_trials) > 0 else (100.0 if mean_score >= th else 0.0)

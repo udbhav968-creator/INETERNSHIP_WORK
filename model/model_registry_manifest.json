@@ -5,18 +5,18 @@
   "artifacts": {
     "model/question_difficulty_model.joblib": {
       "exists": true,
-      "size_bytes": 19365114,
-      "sha256": "7797f5001d4c8018198fa2ebdbe6f2db2735cafb49df0559d6a3548154a1a33a"
+      "size_bytes": 19199738,
+      "sha256": "a2f55761804f0db652975fec240a7e46fb1c7c70b47f73240989275c8815fc85"
     },
     "model/rf_difficulty_forest.npz": {
       "exists": true,
-      "size_bytes": 1037847,
-      "sha256": "1e82121869826ef4a21e98b332a3eedca3b653d916286bf08dbd30fca85d2dd4"
+      "size_bytes": 1030702,
+      "sha256": "400973f901160c27183b4145de9e2f870c8bfd958835f3814a355e91e5879073"
     },
     "model/rf_difficulty_meta.json": {
       "exists": true,
-      "size_bytes": 13069,
-      "sha256": "27ad49d2467696ce2fb1139d01c8f12a09e863abee91fc41e8bb52e6e281af33"
+      "size_bytes": 12977,
+      "sha256": "81c189802c61dc383f14056498852c1115be1cc1b3782ece38ce1858b930515f"
     },
     "model/irt_item_parameters.json": {
       "exists": true,
@@ -40,13 +40,13 @@
     },
     "model/ncert_rag_svd_index.npz": {
       "exists": true,
-      "size_bytes": 288623,
-      "sha256": "7d063ac55c12d9f71bb06167352365654cefbc757e4e6624dc3b97881ad3545d"
+      "size_bytes": 3089728,
+      "sha256": "0d10f560a4bcfd978bc5c01c54233f50fc7489b3c12cb8a668b0f364e95ee9a9"
     },
     "model/ncert_rag_svd_meta.json": {
       "exists": true,
-      "size_bytes": 104562,
-      "sha256": "25c4fa4ea0b82d9120d347c782f1485569f2515a984aef1feb3f442ffaf08351"
+      "size_bytes": 1403048,
+      "sha256": "65fb624307f5b2ffb593c674eba82e78f5e177d627404d5963df88ac375caf03"
     },
     "model/linucb_prior_init.json": {
       "exists": true,
@@ -65,8 +65,8 @@
     },
     "model/rf_temperature_calibration.json": {
       "exists": true,
-      "size_bytes": 788,
-      "sha256": "8fbcf0c6c210b937759fa22fc50c2058bc4639c8f8c94b8305a50241aac0940d"
+      "size_bytes": 1169,
+      "sha256": "431799ed90600e3d10c344c4727c12af2fd8b68f5b352be1ac9bf89fa91b49f1"
     },
     "model/tier_recalibration_proposal.json": {
       "exists": true,

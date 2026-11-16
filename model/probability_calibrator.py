@@ -4,7 +4,6 @@ from pathlib import Path
 
 import numpy as np
 
-from .rf_compact_runtime import COMPACT_RF_RUNTIME
 
 MODEL_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = MODEL_DIR.parent
@@ -55,7 +54,7 @@ def compute_model_compression_benchmark() -> dict:
     npz_p = MODEL_DIR / "rf_difficulty_forest.npz"
     meta_p = MODEL_DIR / "rf_difficulty_meta.json"
 
-    joblib_bytes = joblib_p.stat().st_size if joblib_p.exists() else 7852154
+    joblib_bytes = joblib_p.stat().st_size if joblib_p.exists() else 0
     npz_bytes = npz_p.stat().st_size if npz_p.exists() else 0
     meta_bytes = meta_p.stat().st_size if meta_p.exists() else 0
     serverless_total = max(1, npz_bytes + meta_bytes)
@@ -65,8 +64,17 @@ def compute_model_compression_benchmark() -> dict:
         "compact_npz_forest_bytes": npz_bytes,
         "compact_vocab_meta_bytes": meta_bytes,
         "serverless_bundle_total_bytes": serverless_total,
-        "compression_ratio_x": round(joblib_bytes / serverless_total, 2),
-        "size_reduction_percent": round(100.0 * (1.0 - serverless_total / max(1, joblib_bytes)), 2),
+        "compression_ratio_x": round(joblib_bytes / serverless_total, 2) if joblib_bytes else None,
+        "size_reduction_percent": round(100.0 * (1.0 - serverless_total / max(1, joblib_bytes)), 2) if joblib_bytes else None,
+    }
+
+
+def _uncalibrated_report() -> dict:
+    return {
+        "calibration_method": "none_no_out_of_fold_probabilities_available",
+        "optimal_temperature": 1.0,
+        "status": "UNCALIBRATED",
+        "serverless_compression_benchmark": compute_model_compression_benchmark(),
     }
 
 
@@ -75,32 +83,11 @@ def fit_and_save_rf_temperature_calibration(
     y_labels: list[str] | None = None,
     classes: list[str] | None = None,
     save_report: bool = True,
+    eval_probs: np.ndarray | None = None,
+    eval_labels: list[str] | None = None,
 ) -> dict:
     if oof_probs is None or y_labels is None or classes is None:
-        with open(CLEAN_QUESTIONS_PATH, encoding="utf-8") as f:
-            qs = json.load(f)
-        classes = ["advanced", "basic", "medium"]
-        rows_p = []
-        rows_y = []
-        for q in qs:
-            label = str(q.get("difficulty") or q.get("difficulty_level") or "medium").lower()
-            if label not in classes:
-                continue
-            pred = COMPACT_RF_RUNTIME.predict_proba_single(
-                subject=str(q.get("subject") or "Physics"),
-                chapter=str(q.get("chapter") or q.get("topic_id") or ""),
-                topic_tag=str(q.get("topic_tag") or q.get("chapter") or ""),
-                question_type=str(q.get("question_type") or "Single_Choice_MCQ"),
-                ideal_time_sec=float(q.get("ideal_time_sec") or 90),
-                has_diagram=bool(q.get("has_diagram", False)),
-                marks=float(q.get("marks") or 4),
-                negative_marks=float(q.get("negative_marks") or -1),
-            )
-            if pred is not None:
-                rows_p.append([float(pred.get(c, 0.0)) for c in classes])
-                rows_y.append(label)
-        oof_probs = np.array(rows_p, dtype=np.float64)
-        y_labels = rows_y
+        return _uncalibrated_report()
 
     cls_to_idx = {c: i for i, c in enumerate(classes)}
     y_idx = np.array([cls_to_idx[lbl] for lbl in y_labels], dtype=np.int64)
@@ -119,12 +106,33 @@ def fit_and_save_rf_temperature_calibration(
 
     post_probs = _apply_temperature_matrix(oof_probs, best_t)
     post_nll, post_brier, post_ece = _compute_nll_brier_ece(post_probs, y_idx)
+    fit_metrics = {
+        "pre": {"multiclass_nll": round(pre_nll, 5), "ece_10_bin": round(pre_ece, 5)},
+        "post": {"multiclass_nll": round(post_nll, 5), "ece_10_bin": round(post_ece, 5)},
+    }
+    evaluated_on = "fit_set_out_of_fold"
+    if eval_probs is not None and eval_labels is not None:
+        e_idx = np.array([cls_to_idx[lbl] for lbl in eval_labels], dtype=np.int64)
+        pre_nll, pre_brier, pre_ece = _compute_nll_brier_ece(eval_probs, e_idx)
+        post_nll, post_brier, post_ece = _compute_nll_brier_ece(_apply_temperature_matrix(eval_probs, best_t), e_idx)
+        evaluated_on = "untouched_holdout"
+    fitted_t = best_t
+    decision = "applied"
+    if evaluated_on == "untouched_holdout" and post_nll + 0.5 * post_ece >= pre_nll + 0.5 * pre_ece:
+        best_t = 1.0
+        post_nll, post_brier, post_ece = pre_nll, pre_brier, pre_ece
+        decision = "rejected_on_holdout_identity_used"
 
     report = {
         "calibration_method": "Multiclass_Temperature_Scaling_NLL_ECE",
         "classes": list(classes),
         "sample_count": int(len(y_idx)),
+        "fit_on": "training_split_out_of_fold_probabilities",
+        "metrics_evaluated_on": evaluated_on,
+        "fit_set_metrics": fit_metrics,
         "optimal_temperature": round(best_t, 4),
+        "fitted_temperature": round(fitted_t, 4),
+        "temperature_decision": decision,
         "pre_calibration": {
             "multiclass_nll": round(pre_nll, 5),
             "multiclass_brier_score": round(pre_brier, 5),

@@ -16,7 +16,6 @@ import pandas as pd
 from model.data_integrity_gate import run_data_integrity_gate
 from model.irt_3pl_model import calibrate_question_bank
 from model.train_psychometric_and_rag_models import train_all_auxiliary_models
-from model.train_difficulty_model import main as train_rf_difficulty_model
 from model.training_and_validation_pipeline import run_deep_training_and_validation
 from model.probability_calibrator import fit_and_save_rf_temperature_calibration
 from model.monte_carlo_conformal_neet import run_monte_carlo_conformal_neet_simulation
@@ -75,7 +74,6 @@ def run_full_colab_genuine_training():
     print(f"  NCERT SVD-RAG Explained Variance: {aux['ncert_pyq_svd_rag']['lsa_explained_variance_ratio']:.4f}")
 
     print("\n[PHASE 3/7] Training Random Forest 300-Tree Classifier & Tournament Benchmark...")
-    train_rf_difficulty_model()
     val_report = run_deep_training_and_validation(save_artifacts=True)
     cv = val_report["stratified_5fold_cross_validation"]
     print(f"  5-Fold CV Accuracy: {cv['mean_cv_accuracy']:.4f} (+/- {cv['std_cv_accuracy']:.4f})")

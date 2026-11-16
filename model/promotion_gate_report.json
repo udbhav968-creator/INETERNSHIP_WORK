@@ -1,0 +1,25 @@
+{
+  "policy": "a candidate is promoted only after every gate passes and a reviewer signs off",
+  "decisions": [
+    {
+      "candidate": "difficulty_v21_text",
+      "compared_with": "difficulty_v2_structural on the same duplicate-free held-out papers",
+      "macro_f1_gain": 0.0405,
+      "ece": 0.0189,
+      "gates": {
+        "macro_f1_gain >= 0.02": true,
+        "ece <= 0.05": true
+      },
+      "decision": "ELIGIBLE_PENDING_HUMAN_REVIEW"
+    },
+    {
+      "candidate": "ncert_rag_retriever_unified",
+      "compared_with": "ncert_rag_retriever on the same held-out sample papers",
+      "top1_gain": 0.0085,
+      "gates": {
+        "top1_gain >= 0.02": false
+      },
+      "decision": "HOLD"
+    }
+  ]
+}

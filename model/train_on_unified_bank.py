@@ -1,5 +1,4 @@
 import json
-import math
 import random
 from collections import defaultdict
 from pathlib import Path
@@ -25,7 +24,6 @@ UNIFIED_PATHS = {
 }
 PRODUCTION_PATHS = {k: getattr(tp, k) for k in UNIFIED_PATHS}
 SEED = 20261116
-RAG_EVAL_SIZE = 3000
 
 
 def unified_rows_and_params() -> tuple[list[dict], dict[str, dict], int]:
@@ -44,30 +42,11 @@ def _rag_chapter_accuracy(npz_path: Path, meta_path: Path, questions: list[dict]
     meta = json.loads(meta_path.read_text(encoding="utf-8"))
     raw_vocab = meta["vocab"]
     vocab = {t: int(i) for t, i in raw_vocab.items()} if isinstance(raw_vocab, dict) else {t: i for i, t in enumerate(raw_vocab)}
-    idf = data["idf"].astype(np.float64)
-    mat = data["tfidf_matrix"].astype(np.float64)
-    norms = np.linalg.norm(mat, axis=1) + 1e-12
     kb_raw = json.loads(tp.NCERT_KB_PATH.read_text(encoding="utf-8"))
     chunks = kb_raw.get("chunks", kb_raw) if isinstance(kb_raw, dict) else kb_raw
-    chapters = [c["chapter"] for c in chunks]
-    top1 = top3 = 0
-    for q in questions:
-        counts: dict[int, int] = defaultdict(int)
-        for tok in tp._tokenize_rag(q["question_text"]):
-            if tok in vocab:
-                counts[vocab[tok]] += 1
-        if not counts:
-            continue
-        v = np.zeros(mat.shape[1])
-        for j, c in counts.items():
-            v[j] = (1.0 + math.log(c)) * idf[j]
-        sims = mat @ v / (norms * (np.linalg.norm(v) + 1e-12))
-        order = np.argsort(-sims)[:3]
-        ranked = [chapters[i] for i in order]
-        top1 += ranked[0] == q["chapter"]
-        top3 += q["chapter"] in ranked
-    n = len(questions)
-    return {"questions": n, "top1_chapter_accuracy": round(top1 / n, 4), "top3_chapter_accuracy": round(top3 / n, 4)}
+    return tp.evaluate_rag_chapter_retrieval(
+        data["idf"], data["tfidf_matrix"], data["svd_vt"], data["doc_lsa"], vocab, [c["chapter"] for c in chunks], questions
+    )
 
 
 def _set_paths(paths: dict[str, Path]) -> None:
@@ -78,20 +57,16 @@ def _set_paths(paths: dict[str, Path]) -> None:
 def train_unified(save_report: bool = True) -> dict:
     rows, items, n_sample = unified_rows_and_params()
     topic_imp = json.loads(tp.IMPORTANCE_PATH.read_text(encoding="utf-8")) if tp.IMPORTANCE_PATH.exists() else {}
-    in_rag_text: set[str] = set()
-    per_ch: dict[str, int] = defaultdict(int)
-    for q in rows:
-        if str(q.get("explanation", "")).strip() and per_ch[q["chapter"]] < 18:
-            per_ch[q["chapter"]] += 1
-            in_rag_text.add(q["question_id"])
-    eval_pool = [q for q in rows if q.get("source_type") == "sample_paper" and q["question_id"] not in in_rag_text]
-    rag_eval = random.Random(SEED + 1).sample(eval_pool, min(RAG_EVAL_SIZE, len(eval_pool)))
+    sample_papers = sorted({str(q.get("paper_source")) for q in rows if q.get("source_type") == "sample_paper"})
+    heldout_papers = set(random.Random(SEED + 1).sample(sample_papers, max(1, len(sample_papers) // 5)))
+    rag_eval = [q for q in rows if q.get("source_type") == "sample_paper" and str(q.get("paper_source")) in heldout_papers]
+    rag_index_rows = [q for q in rows if not (q.get("source_type") == "sample_paper" and str(q.get("paper_source")) in heldout_papers)]
 
     _set_paths(UNIFIED_PATHS)
     try:
         bkt = tp.train_chapter_wise_bkt_parameters(rows, items, topic_imp)
         dina = tp.train_dina_8skill_q_matrix_parameters(rows, items)
-        rag = tp.train_ncert_and_pyq_svd_rag_index(rows)
+        rag = tp.train_ncert_and_pyq_svd_rag_index(rag_index_rows, heldout_eval_rows=rag_eval)
         bandit = tp.train_linucb_warm_start_and_conformal_laplacian(rows, items, bkt, topic_imp)
     finally:
         _set_paths(PRODUCTION_PATHS)
@@ -126,12 +101,12 @@ def train_unified(save_report: bool = True) -> dict:
         },
         "ncert_rag_index": {
             "unified_metrics": rag,
+            "heldout_papers": len(heldout_papers),
             "heldout_chapter_retrieval_production": _rag_chapter_accuracy(
                 PRODUCTION_PATHS["RAG_SVD_NPZ"], PRODUCTION_PATHS["RAG_SVD_META_JSON"], rag_eval
             ),
-            "heldout_chapter_retrieval_unified": _rag_chapter_accuracy(
-                UNIFIED_PATHS["RAG_SVD_NPZ"], UNIFIED_PATHS["RAG_SVD_META_JSON"], rag_eval
-            ),
+            "heldout_chapter_retrieval_unified": rag["heldout_chapter_retrieval"],
+            "unified_index_excludes": "every question from the held-out sample papers",
         },
         "linucb_and_laplacian": bandit,
         "artifacts": {k: v.name for k, v in UNIFIED_PATHS.items()},

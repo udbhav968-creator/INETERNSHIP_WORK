@@ -12,14 +12,14 @@
     },
     "brier": {
       "value": null,
-      "threshold": 0.3724,
-      "baseline": 0.29792,
+      "threshold": 0.38398,
+      "baseline": 0.30718,
       "alert": false
     },
     "ece": {
       "value": null,
-      "threshold": 0.04672,
-      "baseline": 0.03738,
+      "threshold": 0.06501,
+      "baseline": 0.05201,
       "alert": false
     }
   },

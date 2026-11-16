@@ -50,27 +50,41 @@
   "ncert_rag_index": {
     "unified_metrics": {
       "model_type": "Hybrid_SublinearTFIDF_TruncatedSVD_LSA",
+      "index_text": "NCERT chapter notes + every training question stem, topic tag and explanation",
+      "heldout_chapter_retrieval": {
+        "eval_questions": 1747,
+        "eval_set": "questions not in the index (no chapter hint)",
+        "top1_chapter_accuracy": 0.3268,
+        "top3_chapter_accuracy": 0.5335,
+        "random_baseline_top1": 0.0154
+      },
       "n_chapters_indexed": 65,
-      "vocab_size": 6000,
+      "vocab_size": 167482,
       "lsa_dimensions": 32,
-      "lsa_explained_variance_ratio": 0.5607,
+      "lsa_explained_variance_ratio": 0.5751,
       "svd_variance_spectrum": {
-        "rank_16": 0.3172,
-        "rank_24": 0.4416,
-        "rank_32": 0.5607,
-        "rank_48": 0.7861
+        "rank_16": 0.3431,
+        "rank_24": 0.461,
+        "rank_32": 0.5751,
+        "rank_48": 0.7916
       }
     },
+    "heldout_papers": 16,
     "heldout_chapter_retrieval_production": {
-      "questions": 3000,
-      "top1_chapter_accuracy": 0.1093,
-      "top3_chapter_accuracy": 0.1783
+      "eval_questions": 1747,
+      "eval_set": "questions not in the index (no chapter hint)",
+      "top1_chapter_accuracy": 0.3183,
+      "top3_chapter_accuracy": 0.5031,
+      "random_baseline_top1": 0.0154
     },
     "heldout_chapter_retrieval_unified": {
-      "questions": 3000,
-      "top1_chapter_accuracy": 0.1083,
-      "top3_chapter_accuracy": 0.1727
-    }
+      "eval_questions": 1747,
+      "eval_set": "questions not in the index (no chapter hint)",
+      "top1_chapter_accuracy": 0.3268,
+      "top3_chapter_accuracy": 0.5335,
+      "random_baseline_top1": 0.0154
+    },
+    "unified_index_excludes": "every question from the held-out sample papers"
   },
   "linucb_and_laplacian": {
     "linucb_prior_r2": 0.99976,

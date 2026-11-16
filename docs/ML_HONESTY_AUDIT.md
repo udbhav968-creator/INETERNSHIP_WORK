@@ -48,3 +48,19 @@ v2.1 is registered in the ML extension registry as a candidate. The production c
 ## 4. What still cannot be made honest without student data
 
 IRT a/b/c, BKT parameters, DINA slip/guess, bandit rewards, score-interval calibration and drift baselines all need real responses. Trigger: about 300 students completing the 180-question initial assessment.
+
+## 5. Second deep audit — leakage, protocol and bugs
+
+| # | Severity | Where | Finding | Fix | Measured effect |
+|---|---|---|---|---|---|
+| 19 | Critical (label validity) | `remediate_and_calibrate_corpus.py` → PYQ tiers | PYQ tiers are a within-chapter rank of a text-complexity formula; the RF is trained on nearly the same features, so it re-learns the formula. `question_type` is also derived from those features | Recorded in `label_validity_report.json` and `validation_report.json → target_validity`; README states what the accuracy means; v2.1 (human labels) added to the cold-start output; relabel proposal written, not applied | Formula reproduces 93.8% of stored tiers; formula vs human tiers κ = 0.07 |
+| 20 | High (selection leakage) | `training_and_validation_pipeline.py` | Hyperparameters chosen on 5-fold CV over all 2,400 rows, then the "holdout" was drawn from those same rows | Holdout fixed first (grouped, stratified); CV and tuning on the training 80% only; near-duplicates grouped | Holdout 80.8% → **77.9%** (honest) |
+| 21 | Medium | `probability_calibrator.py` | Temperature fitted and ECE reported on the same out-of-fold data; fallback refit on training predictions with missing features | Fit on training OOF, evaluate on holdout, reject if worse; fallback returns "uncalibrated" | Temperature made holdout ECE worse (0.052 → 0.059), so T = 1 |
+| 22 | High (bug) | `train_psychometric_and_rag_models.py` | RAG vocabulary truncated to the first 6,000 terms **alphabetically** (74% of 23,291 terms dropped; the last kept term was "compounds_amine", so every word after "co…" was invisible); index used only 18 explanations per chapter; no retrieval evaluation | Full vocabulary, every PYQ stem + explanation, held-out evaluation stored in the meta file | Top-1 chapter retrieval 12.1% → **35.0%**, top-3 19.5% → **53.4%** (random 1.5%) |
+| 23 | Medium | `train_on_unified_bank.py` | Unified RAG was evaluated on sample questions, some of which were in its own index | Whole sample papers held out from the unified index | Unified 32.7% vs production 31.8% top-1 on the same 16 held-out papers → HOLD |
+| 24 | Medium | `evaluation_harness.py` | LinUCB "zero regret" came from a warm prior fitted to the same deterministic reward | Kept, labelled; added a cold-start, noisy-reward, 20-seed test on real items | Regret 96.8% below random; near-optimal pick rate 99.5% in the last 50 rounds |
+| 25 | Medium | `train_difficulty_model.py`, `run_authentic_training.py`, Colab script | A second trainer overwrote the production model with a different split; the orchestrators ran both | Second trainer now delegates to the pipeline; duplicate calls removed | One model, one split |
+| 26 | Low | `backend/tests/test_v2_engine.py` test 01 | Re-created the old random split to check accuracy; with the new split it scored training rows (96%) | Test uses the stored `holdout_question_ids` | Matches 77.9% exactly |
+| 27 | Low | `training_and_validation_pipeline.py`, `probability_calibrator.py` | Fake fallbacks (BKT prior 0.40/0.22/0.54, 2,400 items, LinUCB R² 0.99, joblib size 7,852,154) | Return `None` when the file is missing | |
+| 28 | Low | 9 modules | Unused imports, dead variable, f-string without placeholders | Removed; `pyflakes model/` is clean | |
+| 29 | Low (MLOps) | CI | Training libraries unpinned; suite counts in step names out of date | `model/ml-training-constraints.txt`; CI runs `run_full_ml_pipeline --verify-reproducible` | |

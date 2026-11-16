@@ -72,6 +72,23 @@
     "class_weight": "balanced"
   },
   "pyq_heuristic_tier_agreement_informational": 0.4088,
+  "pyq_relabel_proposal": {
+    "status": "PROPOSAL_NOT_APPLIED",
+    "why": "stored PYQ tiers come from a text-complexity rule with kappa ~0.07 against human-verified tiers; v2.1 is trained on human-verified tiers",
+    "model": "question_difficulty_model_v21_text_candidate.joblib",
+    "agreement_with_current_tiers": 0.4088,
+    "current_distribution": {
+      "medium": 1164,
+      "advanced": 639,
+      "basic": 597
+    },
+    "proposed_distribution": {
+      "basic": 1159,
+      "medium": 1017,
+      "advanced": 224
+    },
+    "domain_shift_warning": "v2.1 learned from sample papers; real PYQs may be harder, so review before adopting"
+  },
   "decision": {
     "macro_f1_gain_on_clean_rows": 0.0405,
     "status": "candidate: beats v2 on duplicate-free held-out papers",

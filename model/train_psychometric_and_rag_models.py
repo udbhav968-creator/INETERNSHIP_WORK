@@ -318,7 +318,65 @@ def _tokenize_rag(text: str) -> list[str]:
     return words + bigrams
 
 
-def train_ncert_and_pyq_svd_rag_index(clean_qs: list[dict[str, Any]]) -> dict[str, Any]:
+RAG_HYBRID_TFIDF_WEIGHT = 0.65
+
+
+def _default_rag_heldout_rows(index_rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    from .sample_paper_ingestion import load_accepted_sample_rows
+
+    indexed = {str(q.get("question_id")) for q in index_rows}
+    rows, _ = load_accepted_sample_rows()
+    return [r for r in rows if str(r.get("question_id")) not in indexed]
+
+
+def evaluate_rag_chapter_retrieval(
+    idf: np.ndarray,
+    tfidf_mat: np.ndarray,
+    svd_vt: np.ndarray,
+    doc_lsa: np.ndarray,
+    vocab: dict[str, int],
+    chapters: list[str],
+    rows: list[dict[str, Any]],
+) -> dict[str, Any]:
+    idf64 = idf.astype(np.float64)
+    mat = tfidf_mat.astype(np.float64)
+    vt = svd_vt.astype(np.float64)
+    lsa = doc_lsa.astype(np.float64)
+    chapter_set = set(chapters)
+    top1 = top3 = n = 0
+    for q in rows:
+        if q.get("chapter") not in chapter_set:
+            continue
+        n += 1
+        v = np.zeros(mat.shape[1])
+        for term, cnt in Counter(_tokenize_rag(str(q.get("question_text", "")))).items():
+            j = vocab.get(term)
+            if j is not None:
+                v[j] = (1.0 + math.log(cnt)) * idf64[j]
+        nv = float(np.linalg.norm(v))
+        if nv == 0.0:
+            continue
+        v /= nv
+        q_lsa = vt @ v
+        q_lsa /= float(np.linalg.norm(q_lsa)) or 1.0
+        sims = RAG_HYBRID_TFIDF_WEIGHT * (mat @ v) + (1.0 - RAG_HYBRID_TFIDF_WEIGHT) * np.maximum(0.0, lsa @ q_lsa)
+        order = np.argsort(-sims)[:3]
+        ranked = [chapters[i] for i in order]
+        top1 += int(ranked[0] == q["chapter"])
+        top3 += int(q["chapter"] in ranked)
+    return {
+        "eval_questions": n,
+        "eval_set": "questions not in the index (no chapter hint)",
+        "top1_chapter_accuracy": round(top1 / max(1, n), 4),
+        "top3_chapter_accuracy": round(top3 / max(1, n), 4),
+        "random_baseline_top1": round(1.0 / max(1, len(chapter_set)), 4),
+    }
+
+
+def train_ncert_and_pyq_svd_rag_index(
+    clean_qs: list[dict[str, Any]],
+    heldout_eval_rows: list[dict[str, Any]] | None = None,
+) -> dict[str, Any]:
     kb_raw = json.loads(NCERT_KB_PATH.read_text(encoding="utf-8"))
     chunks = kb_raw.get("chunks", kb_raw) if isinstance(kb_raw, dict) else kb_raw
 
@@ -326,13 +384,14 @@ def train_ncert_and_pyq_svd_rag_index(clean_qs: list[dict[str, Any]]) -> dict[st
     for q in clean_qs:
         expl = str(q.get("explanation", "")).strip()
         tag = str(q.get("topic_tag", "")).strip()
-        if expl:
-            pyq_expl_by_ch[q["chapter"]].append(f"{tag} {expl[:240]}")
+        stem = str(q.get("question_text", "")).strip()
+        if expl or stem:
+            pyq_expl_by_ch[q["chapter"]].append(f"{stem} {tag} {expl[:240]}")
 
     docs: list[str] = []
     for c in chunks:
         ch_name = c["chapter"]
-        sampled_expls = " ".join(pyq_expl_by_ch.get(ch_name, [])[:18])
+        sampled_expls = " ".join(pyq_expl_by_ch.get(ch_name, []))
         doc_txt = (
             f"{c['subject']} {ch_name} {c['core_concept']} "
             f"{' '.join(c.get('formulas', []))} {' '.join(c.get('common_misconceptions', []))} "
@@ -346,7 +405,7 @@ def train_ncert_and_pyq_svd_rag_index(clean_qs: list[dict[str, Any]]) -> dict[st
         for term in set(toks):
             df_counts[term] += 1
 
-    kept_terms = sorted(t for t, dfv in df_counts.items() if dfv >= 1)[:6000]
+    kept_terms = sorted(df_counts)
     vocab = {t: i for i, t in enumerate(kept_terms)}
     n_docs = len(docs)
     idf = np.array([math.log((1.0 + n_docs) / (1.0 + df_counts[t])) + 1.0 for t in kept_terms], dtype=np.float32)
@@ -385,8 +444,13 @@ def train_ncert_and_pyq_svd_rag_index(clean_qs: list[dict[str, Any]]) -> dict[st
         svd_vt=vt_k.astype(np.float16),
         doc_lsa=doc_lsa_normed.astype(np.float16),
     )
+    chapters = [c["chapter"] for c in chunks]
+    eval_rows = heldout_eval_rows if heldout_eval_rows is not None else _default_rag_heldout_rows(clean_qs)
+    retrieval = evaluate_rag_chapter_retrieval(idf, tfidf_mat, vt_k, doc_lsa_normed, vocab, chapters, eval_rows)
     meta_payload = {
         "model_type": "Hybrid_SublinearTFIDF_TruncatedSVD_LSA",
+        "index_text": "NCERT chapter notes + every training question stem, topic tag and explanation",
+        "heldout_chapter_retrieval": retrieval,
         "n_chapters_indexed": n_docs,
         "vocab_size": len(vocab),
         "lsa_dimensions": k_dim,

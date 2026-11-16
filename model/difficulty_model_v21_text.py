@@ -21,11 +21,54 @@ PROJECT_ROOT = MODEL_DIR.parent
 PYQ_PATH = PROJECT_ROOT / "data" / "tagged_questions" / "neet_questions_clean.json"
 V21_MODEL_PATH = MODEL_DIR / "question_difficulty_model_v21_text_candidate.joblib"
 V21_REPORT_PATH = MODEL_DIR / "difficulty_model_v21_report.json"
+PYQ_RELABEL_PROPOSAL_PATH = MODEL_DIR / "pyq_difficulty_relabel_proposal.json"
 
 LR_C = 2.0
 N_FOLDS = 5
 NEAR_DUP_COSINE = 0.80
 ECE_BINS = 10
+
+
+_V21_MODEL_CACHE: dict = {}
+
+
+def predict_tier_from_text(
+    question_text: str,
+    options: list[str] | None,
+    subject: str,
+    chapter: str,
+    has_diagram: bool = False,
+    question_type: str | None = None,
+) -> dict | None:
+    if "model" not in _V21_MODEL_CACHE:
+        try:
+            _V21_MODEL_CACHE["model"] = joblib.load(V21_MODEL_PATH) if V21_MODEL_PATH.exists() else None
+        except Exception:
+            _V21_MODEL_CACHE["model"] = None
+    model = _V21_MODEL_CACHE["model"]
+    if model is None:
+        return None
+    opts = list(options or []) + ["", "", "", ""]
+    row = {
+        "question_id": "cold_start",
+        "question_text": question_text or "",
+        "option_a": opts[0],
+        "option_b": opts[1],
+        "option_c": opts[2],
+        "option_d": opts[3],
+        "subject": subject,
+        "chapter": chapter,
+        "has_diagram": bool(has_diagram),
+        "question_type": question_type or "",
+    }
+    proba = _ordered_proba(model, featurize_with_text([row]))[0]
+    probs = {t: round(float(p), 4) for t, p in zip(TIERS, proba)}
+    return {
+        "tier": max(probs, key=probs.get),
+        "probabilities": probs,
+        "model": V21_MODEL_PATH.name,
+        "trained_on": "human-verified sample-paper tiers",
+    }
 
 
 def question_text_blob(row: dict) -> str:
@@ -137,9 +180,29 @@ def train_and_evaluate_v21(save: bool = True) -> dict:
 
     final = build_v21_pipeline().fit(df, labels)
     pyq_rows = json.loads(PYQ_PATH.read_text(encoding="utf-8"))
-    pyq_pred = final.predict(featurize_with_text(pyq_rows))
+    pyq_proba = _ordered_proba(final, featurize_with_text(pyq_rows))
+    pyq_pred = np.array([TIERS[i] for i in pyq_proba.argmax(axis=1)])
     pyq_lab = np.array([str(r.get("difficulty_level") or "").lower() for r in pyq_rows])
     report["pyq_heuristic_tier_agreement_informational"] = round(float(np.mean(pyq_pred == pyq_lab)), 4)
+    proposal = {
+        "status": "PROPOSAL_NOT_APPLIED",
+        "why": "stored PYQ tiers come from a text-complexity rule with kappa ~0.07 against human-verified tiers; v2.1 is trained on human-verified tiers",
+        "model": V21_MODEL_PATH.name,
+        "agreement_with_current_tiers": report["pyq_heuristic_tier_agreement_informational"],
+        "current_distribution": {k: int(v) for k, v in pd.Series(pyq_lab).value_counts().items()},
+        "proposed_distribution": {k: int(v) for k, v in pd.Series(pyq_pred).value_counts().items()},
+        "domain_shift_warning": "v2.1 learned from sample papers; real PYQs may be harder, so review before adopting",
+        "items": [
+            {
+                "question_id": r["question_id"],
+                "current_tier": cur,
+                "proposed_tier": str(pred),
+                "proposed_probabilities": {t: round(float(p), 4) for t, p in zip(TIERS, pr)},
+            }
+            for r, cur, pred, pr in zip(pyq_rows, pyq_lab, pyq_pred, pyq_proba)
+        ],
+    }
+    report["pyq_relabel_proposal"] = {k: v for k, v in proposal.items() if k != "items"}
 
     gain = report["near_duplicate_control"]["v21_tfidf_logreg_on_clean_rows"]["macro_f1"] - report["near_duplicate_control"]["v2_structural_rf_on_clean_rows"]["macro_f1"]
     report["decision"] = {
@@ -151,6 +214,7 @@ def train_and_evaluate_v21(save: bool = True) -> dict:
     if save:
         joblib.dump(final, V21_MODEL_PATH, compress=9)
         V21_REPORT_PATH.write_text(json.dumps(report, indent=2), encoding="utf-8")
+        PYQ_RELABEL_PROPOSAL_PATH.write_text(json.dumps(proposal, indent=1), encoding="utf-8")
     return report
 
 

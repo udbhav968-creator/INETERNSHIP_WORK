@@ -1,6 +1,6 @@
 {
   "pipeline_status": "PASSED",
-  "execution_time_seconds": 42.423,
+  "execution_time_seconds": 60.179,
   "data_validation_gates": {
     "question_bank_schema_valid": true,
     "weightage_schema_valid": true,
@@ -15,10 +15,10 @@
   "random_forest_holdout_evaluation": {
     "training_rows": 1920,
     "testing_rows": 480,
-    "correct_predictions": 388,
-    "holdout_accuracy": 0.8083333333333333,
-    "macro_f1": 0.8118,
-    "weighted_f1": 0.8071,
+    "correct_predictions": 374,
+    "holdout_accuracy": 0.7791666666666667,
+    "macro_f1": 0.7825,
+    "weighted_f1": 0.779,
     "confusion_matrix_labels": [
       "advanced",
       "basic",
@@ -26,56 +26,81 @@
     ],
     "confusion_matrix": [
       [
-        101,
+        107,
         0,
-        27
+        21
       ],
       [
         0,
-        110,
-        9
+        95,
+        24
       ],
       [
-        26,
-        30,
-        177
+        25,
+        36,
+        172
       ]
     ],
     "per_class_metrics": {
       "advanced": {
-        "precision": 0.7953,
-        "recall": 0.7891,
-        "f1_score": 0.7922,
+        "precision": 0.8106,
+        "recall": 0.8359,
+        "f1_score": 0.8231,
         "support": 128
       },
       "basic": {
-        "precision": 0.7857,
-        "recall": 0.9244,
-        "f1_score": 0.8494,
+        "precision": 0.7252,
+        "recall": 0.7983,
+        "f1_score": 0.76,
         "support": 119
       },
       "medium": {
-        "precision": 0.831,
-        "recall": 0.7597,
-        "f1_score": 0.7937,
+        "precision": 0.7926,
+        "recall": 0.7382,
+        "f1_score": 0.7644,
         "support": 233
       }
     }
   },
+  "evaluation_protocol": {
+    "holdout": "20% grouped stratified split made before any tuning; near-duplicate questions share a group",
+    "cross_validation": "StratifiedGroupKFold(5) on the training split only; used for hyperparameter selection",
+    "calibration": "temperature fitted on training out-of-fold probabilities, ECE reported on the untouched holdout",
+    "split_seed": 42
+  },
+  "target_validity": {
+    "label_source": "chapter_text_complexity_quantile_heuristic",
+    "what_holdout_accuracy_measures": "agreement with the heuristic tier formula, not empirical difficulty",
+    "heuristic_reproduces_stored_labels": {
+      "n": 2400,
+      "agreement": 0.9383
+    },
+    "heuristic_vs_human_verified_tiers": {
+      "available": true,
+      "n": 9448,
+      "accuracy": 0.4188,
+      "macro_f1": 0.3821,
+      "cohens_kappa": 0.0693,
+      "interpretation": "kappa near 0 means the PYQ tier rule barely agrees with human-verified tiers"
+    },
+    "difficulty_model_on_human_labels": "see difficulty_model_v21_report.json"
+  },
   "stratified_5fold_cross_validation": {
     "n_splits": 5,
+    "computed_on": "training_split_only",
     "fold_accuracies": [
-      0.8187,
-      0.7958,
-      0.8146,
-      0.7917,
-      0.7854
+      0.8177,
+      0.7839,
+      0.8099,
+      0.776,
+      0.7891
     ],
-    "mean_cv_accuracy": 0.8012,
-    "std_cv_accuracy": 0.0131,
-    "mean_cv_macro_f1": 0.8048,
-    "mean_cv_log_loss": 0.4954,
-    "oof_multiclass_brier_score": 0.29792
+    "mean_cv_accuracy": 0.7953,
+    "std_cv_accuracy": 0.0158,
+    "mean_cv_macro_f1": 0.7992,
+    "mean_cv_log_loss": 0.4979,
+    "oof_multiclass_brier_score": 0.30718,
+    "note": "fold metrics belong to the selected configuration, so they are slightly optimistic; the holdout is the unbiased estimate"
   },
   "hyperparameter_fine_tuning": {
     "search_space": [
@@ -106,100 +131,101 @@
           "max_features": 0.35,
           "criterion": "gini"
         },
-        "mean_cv_accuracy": 0.79292,
-        "mean_cv_macro_f1": 0.79689,
-        "mean_cv_log_loss": 0.5112
+        "mean_cv_accuracy": 0.79219,
+        "mean_cv_macro_f1": 0.7963,
+        "mean_cv_log_loss": 0.49794
       },
       {
         "hyperparameters": {
           "max_features": 0.3,
           "criterion": "gini"
         },
-        "mean_cv_accuracy": 0.79875,
-        "mean_cv_macro_f1": 0.8023,
-        "mean_cv_log_loss": 0.50845
+        "mean_cv_accuracy": 0.79479,
+        "mean_cv_macro_f1": 0.79865,
+        "mean_cv_log_loss": 0.51297
       },
       {
         "hyperparameters": {
           "max_features": 0.25,
           "criterion": "gini"
         },
-        "mean_cv_accuracy": 0.80125,
-        "mean_cv_macro_f1": 0.80479,
-        "mean_cv_log_loss": 0.49543
+        "mean_cv_accuracy": 0.79531,
+        "mean_cv_macro_f1": 0.79921,
+        "mean_cv_log_loss": 0.49785
       },
       {
         "hyperparameters": {
           "max_features": 0.3,
           "criterion": "entropy"
         },
-        "mean_cv_accuracy": 0.79583,
-        "mean_cv_macro_f1": 0.79961,
-        "mean_cv_log_loss": 0.47867
+        "mean_cv_accuracy": 0.79271,
+        "mean_cv_macro_f1": 0.79673,
+        "mean_cv_log_loss": 0.50854
       }
     ]
   },
   "champion_challenger_tournament": {
     "random_forest_300_balanced": {
-      "holdout_accuracy": 0.8083,
-      "macro_f1": 0.8118,
-      "log_loss": 0.5323
+      "holdout_accuracy": 0.7792,
+      "macro_f1": 0.7825,
+      "log_loss": 0.4937
     },
     "extra_trees_300_balanced": {
-      "holdout_accuracy": 0.7979,
-      "macro_f1": 0.7973,
-      "log_loss": 0.576
+      "holdout_accuracy": 0.7896,
+      "macro_f1": 0.7873,
+      "log_loss": 0.506
     },
     "multinomial_logistic_l2": {
-      "holdout_accuracy": 0.8208,
-      "macro_f1": 0.8248,
-      "log_loss": 0.4182
+      "holdout_accuracy": 0.8125,
+      "macro_f1": 0.8171,
+      "log_loss": 0.4285
     }
   },
+  "champion_selection_note": "the random forest stays champion because the serverless NumPy runtime only executes forests; the tournament shows which family fits the heuristic labels best on the holdout",
   "permutation_feature_importance": {
     "subject": {
-      "mean_accuracy_drop": 0.16625,
-      "std_accuracy_drop": 0.0069
+      "mean_accuracy_drop": 0.14458,
+      "std_accuracy_drop": 0.02689
     },
     "chapter": {
-      "mean_accuracy_drop": 0.025,
-      "std_accuracy_drop": 0.00186
+      "mean_accuracy_drop": 0.00875,
+      "std_accuracy_drop": 0.00333
     },
     "topic_tag": {
-      "mean_accuracy_drop": 0.01542,
-      "std_accuracy_drop": 0.00339
+      "mean_accuracy_drop": -0.00083,
+      "std_accuracy_drop": 0.00503
     },
     "question_type": {
-      "mean_accuracy_drop": 0.0875,
-      "std_accuracy_drop": 0.01407
+      "mean_accuracy_drop": 0.10167,
+      "std_accuracy_drop": 0.01415
     },
     "has_diagram": {
-      "mean_accuracy_drop": -0.00167,
-      "std_accuracy_drop": 0.00083
+      "mean_accuracy_drop": 0.0,
+      "std_accuracy_drop": 0.0
     },
     "word_count": {
-      "mean_accuracy_drop": 0.11542,
-      "std_accuracy_drop": 0.01183
+      "mean_accuracy_drop": 0.09167,
+      "std_accuracy_drop": 0.02125
     },
     "char_length": {
-      "mean_accuracy_drop": 0.06583,
-      "std_accuracy_drop": 0.01168
+      "mean_accuracy_drop": 0.04792,
+      "std_accuracy_drop": 0.01376
     },
     "formula_density": {
-      "mean_accuracy_drop": 0.00583,
-      "std_accuracy_drop": 0.00445
+      "mean_accuracy_drop": 0.0125,
+      "std_accuracy_drop": 0.00395
     },
     "numerical_complexity": {
-      "mean_accuracy_drop": 0.06875,
-      "std_accuracy_drop": 0.01363
+      "mean_accuracy_drop": 0.07833,
+      "std_accuracy_drop": 0.0124
     },
     "negation_trap": {
-      "mean_accuracy_drop": 0.05958,
-      "std_accuracy_drop": 0.00829
+      "mean_accuracy_drop": 0.05417,
+      "std_accuracy_drop": 0.00941
     },
     "distractor_similarity": {
-      "mean_accuracy_drop": 0.05708,
-      "std_accuracy_drop": 0.00819
+      "mean_accuracy_drop": 0.03292,
+      "std_accuracy_drop": 0.01952
     }
   },
   "serverless_compact_rf_parity": {
@@ -208,12 +234,15 @@
     "max_abs_probability_diff": 3.3e-05
   },
   "temperature_calibration_summary": {
-    "optimal_temperature": 0.96,
-    "pre_ece": 0.03791,
-    "post_ece": 0.03738,
-    "pre_nll": 0.48713,
-    "post_nll": 0.48602,
-    "compression_ratio_x": 18.43
+    "optimal_temperature": 1.0,
+    "metrics_evaluated_on": "untouched_holdout",
+    "fitted_temperature": 0.89,
+    "temperature_decision": "rejected_on_holdout_identity_used",
+    "pre_ece": 0.05201,
+    "post_ece": 0.05201,
+    "pre_nll": 0.49372,
+    "post_nll": 0.49372,
+    "compression_ratio_x": 18.4
   },
   "tier_recalibration_summary": {
     "chapters_missing_basic_before": 3,
@@ -290,15 +319,23 @@
     },
     "ncert_pyq_svd_rag": {
       "model_type": "Hybrid_SublinearTFIDF_TruncatedSVD_LSA",
+      "index_text": "NCERT chapter notes + every training question stem, topic tag and explanation",
+      "heldout_chapter_retrieval": {
+        "eval_questions": 9448,
+        "eval_set": "questions not in the index (no chapter hint)",
+        "top1_chapter_accuracy": 0.3496,
+        "top3_chapter_accuracy": 0.5341,
+        "random_baseline_top1": 0.0154
+      },
       "n_chapters_indexed": 65,
-      "vocab_size": 6000,
+      "vocab_size": 68936,
       "lsa_dimensions": 32,
-      "lsa_explained_variance_ratio": 0.5613,
+      "lsa_explained_variance_ratio": 0.5608,
       "svd_variance_spectrum": {
-        "rank_16": 0.3177,
-        "rank_24": 0.4425,
-        "rank_32": 0.5613,
-        "rank_48": 0.7848
+        "rank_16": 0.3259,
+        "rank_24": 0.4454,
+        "rank_32": 0.5608,
+        "rank_48": 0.7814
       }
     },
     "linucb_and_laplacian": {

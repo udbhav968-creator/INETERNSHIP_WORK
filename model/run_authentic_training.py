@@ -1,14 +1,10 @@
-import json
 import sys
 import time
-from pathlib import Path
 
 from model.data_integrity_gate import run_data_integrity_gate
 from model.irt_3pl_model import calibrate_question_bank
 from model.train_psychometric_and_rag_models import train_all_auxiliary_models
-from model.train_difficulty_model import main as train_rf_difficulty_model
 from model.training_and_validation_pipeline import run_deep_training_and_validation
-from model.probability_calibrator import fit_and_save_rf_temperature_calibration
 from model.verify_artifact_integrity import verify_all_ml_artifacts
 
 
@@ -34,7 +30,6 @@ def run_full_authentic_training():
     print(f"      RAG SVD Variance Explained: {aux_metrics['ncert_pyq_svd_rag']['lsa_explained_variance_ratio']:.4f}")
 
     print("\n[3/5] Training Random Forest 300-Tree Classifier & Tournament Benchmark...")
-    train_rf_difficulty_model()
     val_report = run_deep_training_and_validation(save_artifacts=True)
     cv_acc = val_report["stratified_5fold_cross_validation"]["mean_cv_accuracy"]
     cv_f1 = val_report["stratified_5fold_cross_validation"]["mean_cv_macro_f1"]

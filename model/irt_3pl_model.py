@@ -500,9 +500,16 @@ def predict_cold_start_difficulty_and_irt(
 
     from .probability_calibrator import calibrate_rf_probabilities
     calibrated_probs, cal_temp = calibrate_rf_probabilities(rf_probs)
+    try:
+        from .difficulty_model_v21_text import predict_tier_from_text
+        verified_label_model = predict_tier_from_text(question_text, options, subject, chapter, has_diagram, question_type)
+    except Exception:
+        verified_label_model = None
 
     return {
         "predicted_difficulty": tier,
+        "predicted_difficulty_basis": "heuristic text-complexity score (same rule that produced the PYQ tiers)",
+        "verified_label_model": verified_label_model,
         "rf_predicted_difficulty": rf_predicted_tier,
         "rf_engine": rf_engine,
         "irt_estimator": "multi_output_ridge_npz" if _IRT_RIDGE_WEIGHTS is not None else "analytic_fallback",

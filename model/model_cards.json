@@ -1,0 +1,245 @@
+{
+  "lineage": {
+    "generated_at_utc": "2026-11-16T11:50:35+00:00",
+    "git_commit": "78075d6f62d6dde2835062e34a3593d67c81b02d",
+    "libraries": {
+      "python": "3.13.18",
+      "numpy": "2.5.3",
+      "pandas": "3.0.5",
+      "sklearn": "1.9.1",
+      "scipy": "1.18.1",
+      "joblib": "1.6.0"
+    },
+    "datasets": {
+      "pyq_bank": {
+        "rows": 2400,
+        "sha256": "fc2dc78ec75dd52c91a33a5805faa275e3c4c16b61191fb1b119cb86a3af5833"
+      },
+      "pyq_features": {
+        "rows": 2400,
+        "sha256": "bdcf6e7308aaa89459b9b1f3fb5fca34fd44e619e3b6cc1fb9cfd5c9a4c352e5"
+      },
+      "sample_papers_verified": {
+        "rows": 16689,
+        "sha256": "5112d99a9a30e761382b9fe535eccab67f1f30f187efc9922e366056a4d0fabe"
+      },
+      "ncert_knowledge_base": {
+        "rows": 65,
+        "sha256": "a5a8f4311b92ce553c5385ff88c3c439eb02ff03c0d65d5248a04baab67d3ee1"
+      },
+      "student_attempts": {
+        "rows": 0,
+        "sha256": "d0790c7e03db72bd12892e6cd513c950509e18a8a64489f0fcbdcb961bf58714"
+      }
+    }
+  },
+  "models": [
+    {
+      "model": "difficulty_rf_production",
+      "status": "production",
+      "task": "predict the PYQ difficulty tier",
+      "artifacts": [
+        {
+          "path": "model/question_difficulty_model.joblib",
+          "sha256": "a2f55761804f0db652975fec240a7e46fb1c7c70b47f73240989275c8815fc85",
+          "size_bytes": 19199738
+        },
+        {
+          "path": "model/rf_difficulty_forest.npz",
+          "sha256": "400973f901160c27183b4145de9e2f870c8bfd958835f3814a355e91e5879073",
+          "size_bytes": 1030702
+        }
+      ],
+      "training_data": "2,400 official PYQs, 11 non-leaking features",
+      "labels": "chapter_text_complexity_quantile_heuristic",
+      "evaluation": {
+        "holdout": "20% grouped stratified split made before any tuning; near-duplicate questions share a group",
+        "cross_validation": "StratifiedGroupKFold(5) on the training split only; used for hyperparameter selection",
+        "calibration": "temperature fitted on training out-of-fold probabilities, ECE reported on the untouched holdout",
+        "split_seed": 42
+      },
+      "metrics": {
+        "holdout_accuracy": 0.7791666666666667,
+        "holdout_macro_f1": 0.7825,
+        "cv_accuracy_train_split": 0.7953,
+        "oof_brier": 0.30718,
+        "holdout_ece": 0.05201,
+        "temperature_decision": "rejected_on_holdout_identity_used"
+      },
+      "limitations": [
+        "agreement with the heuristic tier formula, not empirical difficulty",
+        "heuristic vs human-verified tiers: kappa 0.0693"
+      ]
+    },
+    {
+      "model": "difficulty_v21_text",
+      "status": "candidate",
+      "task": "predict the difficulty tier from question text",
+      "artifacts": [
+        {
+          "path": "model/question_difficulty_model_v21_text_candidate.joblib",
+          "sha256": "e1158b6dba209a44bf44f0b9cd99edba04d425cc73c72adf0541ae6e29aa93cf",
+          "size_bytes": 3073042
+        }
+      ],
+      "training_data": "9448 verified sample-paper questions from 83 papers",
+      "labels": "verified sample-paper tiers (papers 001-101 accepted rows)",
+      "evaluation": "GroupKFold(5) by paper_source; no paper appears in both train and test",
+      "metrics": {
+        "accuracy": 0.8238,
+        "macro_f1": 0.7705,
+        "ece": 0.0189,
+        "accuracy_duplicate_free_rows": 0.8141,
+        "majority_baseline": 0.5252
+      },
+      "limitations": [
+        "trained on sample papers; distribution may differ from real exam papers",
+        "advanced tier is 8% of labels, so its recall is the weakest"
+      ]
+    },
+    {
+      "model": "difficulty_v2_structural",
+      "status": "superseded_candidate",
+      "task": "predict the difficulty tier from structural features",
+      "artifacts": [
+        {
+          "path": "model/question_difficulty_model_v2_candidate.joblib",
+          "sha256": "86df54ccbc2057724c36a21f2139ec772af8ad464fff73b5fc569ed2a9501144",
+          "size_bytes": 3489996
+        }
+      ],
+      "training_data": "verified sample-paper questions",
+      "labels": "human-verified sample-paper tiers",
+      "evaluation": "GroupKFold(5) by paper",
+      "metrics": {
+        "accuracy": 0.7851,
+        "macro_f1": 0.7227,
+        "n": 9448,
+        "majority_baseline": 0.5252
+      },
+      "limitations": [
+        "superseded by v2.1"
+      ]
+    },
+    {
+      "model": "ncert_rag_retriever",
+      "status": "production",
+      "task": "retrieve the NCERT chapter note for a question",
+      "artifacts": [
+        {
+          "path": "model/ncert_rag_svd_index.npz",
+          "sha256": "0d10f560a4bcfd978bc5c01c54233f50fc7489b3c12cb8a668b0f364e95ee9a9",
+          "size_bytes": 3089728
+        },
+        {
+          "path": "model/ncert_rag_svd_meta.json",
+          "sha256": "65fb624307f5b2ffb593c674eba82e78f5e177d627404d5963df88ac375caf03",
+          "size_bytes": 1403048
+        }
+      ],
+      "training_data": "NCERT chapter notes + every training question stem, topic tag and explanation",
+      "labels": "chapter of the question",
+      "evaluation": "questions not in the index (no chapter hint)",
+      "metrics": {
+        "eval_questions": 9448,
+        "eval_set": "questions not in the index (no chapter hint)",
+        "top1_chapter_accuracy": 0.3496,
+        "top3_chapter_accuracy": 0.5341,
+        "random_baseline_top1": 0.0154
+      },
+      "limitations": [
+        "lexical retrieval; no dense embeddings",
+        "chapter retrieval is a proxy for answer usefulness"
+      ]
+    },
+    {
+      "model": "ncert_rag_retriever_unified",
+      "status": "candidate",
+      "task": "same retriever indexed on PYQ + sample papers",
+      "artifacts": [
+        {
+          "path": "model/ncert_rag_svd_index_unified.npz",
+          "sha256": "28701fa6c7e36a4161a5b8949ee8750514e47f7386c24eb1ee073ab3673329a1",
+          "size_bytes": 7781027
+        }
+      ],
+      "training_data": "every question from the held-out sample papers",
+      "labels": "chapter of the question",
+      "evaluation": "held-out sample papers",
+      "metrics": {
+        "unified": {
+          "eval_questions": 1747,
+          "eval_set": "questions not in the index (no chapter hint)",
+          "top1_chapter_accuracy": 0.3268,
+          "top3_chapter_accuracy": 0.5335,
+          "random_baseline_top1": 0.0154
+        },
+        "production_on_same_set": {
+          "eval_questions": 1747,
+          "eval_set": "questions not in the index (no chapter hint)",
+          "top1_chapter_accuracy": 0.3183,
+          "top3_chapter_accuracy": 0.5031,
+          "random_baseline_top1": 0.0154
+        }
+      },
+      "limitations": [
+        "small gain over production"
+      ]
+    },
+    {
+      "model": "irt_cold_start_ridge",
+      "status": "production_prior",
+      "task": "predict 3PL a/b/c for a new question",
+      "artifacts": [
+        {
+          "path": "model/irt_cold_start_ridge.npz",
+          "sha256": "48e28076ccb16772f4a412123f14fc69b4b2702345cc66d44a4cc4058be72c04",
+          "size_bytes": 1173
+        }
+      ],
+      "training_data": "2,400 PYQs",
+      "labels": "a/b/c priors derived from tier and metadata, not fitted to responses",
+      "evaluation": "5-fold CV",
+      "metrics": {
+        "a_5fold_r2": 0.94799,
+        "b_5fold_r2": 0.99491,
+        "c_5fold_r2": 0.81801
+      },
+      "limitations": [
+        "high R2 reflects that targets are a function of the inputs (tier, time)"
+      ]
+    },
+    {
+      "model": "bkt_dina_linucb_priors",
+      "status": "production_prior",
+      "task": "student-state priors and item selection",
+      "artifacts": [
+        {
+          "path": "model/bkt_chapter_parameters.json",
+          "sha256": "f2a214d8adeb8ff28afc2898faaca02898892a972ffebcc56a0d943b50079ecb",
+          "size_bytes": 25915
+        },
+        {
+          "path": "model/dina_calibrated_parameters.json",
+          "sha256": "0e38945e64c69e373cdf3291ec6528dccbced744712140e0d9b84a0380a5d488",
+          "size_bytes": 5837
+        },
+        {
+          "path": "model/linucb_prior_init.json",
+          "sha256": "7424ceec594fa2a34071a3cb5eaa54b1485e2dd56891d1002a4748247cb631f0",
+          "size_bytes": 1014
+        }
+      ],
+      "training_data": "question metadata only",
+      "labels": "none (no student responses)",
+      "evaluation": "simulation",
+      "metrics": {
+        "student_attempts_available": 0,
+        "linucb_cold_start_regret_reduction_vs_random_percent": 96.8
+      },
+      "limitations": [
+        "cannot be validated until real attempts exist"
+      ]
+    }
+  ]
+}

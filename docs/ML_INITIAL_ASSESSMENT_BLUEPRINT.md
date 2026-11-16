@@ -155,8 +155,8 @@ Tuning trade-off (`REPEAT_PENALTY` / `CHAPTER_PENALTY` in `mock_test_generator.p
 | BKT chapter parameters | PYQ-derived heuristics | ❌ | ⚠️ Priors only |
 | DINA 8-skill parameters | PYQ Q-matrix heuristics | ❌ | ⚠️ Priors only |
 | LinUCB bandit prior | BKT priors + DAG | ❌ | ⚠️ Priors only |
-| Drift monitor / temperature scaling | Leak-free RF out-of-fold probabilities (T* = 0.96) | ❌ | ⚠️ Re-fit on real outcomes later |
-| Difficulty RF (production) | 2,400 PYQs, leaked features (`ideal_time_sec`, `marks`, `negative_marks`) removed | n/a | ✅ Retrained: 80.8% holdout, 80.1% 5-fold CV (previously reported 99.79% was leakage) |
+| Drift monitor / temperature scaling | Fitted on training out-of-fold probabilities (T = 0.89), rejected on the holdout, so T = 1 | ❌ | ⚠️ Re-fit on real outcomes later |
+| Difficulty RF (production) | 2,400 PYQs, leaked features (`ideal_time_sec`, `marks`, `negative_marks`) removed | n/a | ✅ Retrained with a grouped holdout fixed before tuning: 77.9% holdout. It measures agreement with the PYQ tier formula, which agrees with human tiers at κ = 0.07 |
 | Difficulty RF v2 candidate | 9,448 verified sample tiers, no leaked features | n/a | ✅ 78.5% on held-out papers (baseline 52.5%); not promoted |
 | Chapter resolver | PYQ + verified sample chapters | n/a | ✅ ≥ 90% precision where it labels |
 | Near-duplicate guard | All 11,848 items | n/a | ✅ |
@@ -168,7 +168,7 @@ Tuning trade-off (`REPEAT_PENALTY` / `CHAPTER_PENALTY` in `mock_test_generator.p
 |---|---|---|
 | BKT chapter priors | Global prior 0.403 → 0.441; mean chapter change 0.047 | No: the shift comes from the easier sample-paper mix (39% basic / 8% advanced vs 25% / 27% in PYQs), not from student evidence |
 | DINA 8-skill priors | 4–15× more items per skill; priors +0.00–0.09 | No: same mix effect; the log/exp skill regex over-fires on sample formatting (162 → 2,435 items) |
-| NCERT RAG index | Held-out chapter retrieval top-1 10.9% → 10.8% | No: no gain |
+| NCERT RAG index | Same 16 held-out papers: top-1 31.8% → 32.7% (after the vocabulary fix) | No: gain below the 2-point gate |
 | LinUCB warm start + Laplacian | Rebuilt from the unified BKT priors | No: depends on BKT |
 
 Not retrained: the cold-start IRT ridge (circular, since the sample parameters came from it) and topic importance (sample papers have no exam year).

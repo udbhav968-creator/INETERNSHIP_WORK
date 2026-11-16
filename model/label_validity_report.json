@@ -12,6 +12,18 @@
     "cohens_kappa": 0.0968,
     "changed_from_original": 1170
   },
+  "heuristic_formula_reproduces_stored_labels": {
+    "n": 2400,
+    "agreement": 0.9383
+  },
+  "heuristic_rule_vs_human_verified_sample_tiers": {
+    "available": true,
+    "n": 9448,
+    "accuracy": 0.4188,
+    "macro_f1": 0.3821,
+    "cohens_kappa": 0.0693,
+    "interpretation": "kappa near 0 means the PYQ tier rule barely agrees with human-verified tiers"
+  },
   "student_responses_available": 0,
   "empirical_difficulty_validation_possible": false,
   "interpretation": "Tiers are within-chapter text-complexity quantiles and ideal_time_sec is a function of the tier, so high accuracy here shows the labelling rule is learnable, not that difficulty is predicted. Empirical validation needs logged student responses."

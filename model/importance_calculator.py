@@ -1,6 +1,3 @@
-import json
-
-
 def compute_importance(frequency_by_topic_year: dict, current_year: int, decay: float = 0.9) -> dict:
     raw_scores = {}
     for topic_id, year_counts in frequency_by_topic_year.items():

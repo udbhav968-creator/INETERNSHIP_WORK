@@ -1,0 +1,129 @@
+{
+  "status": "PASSED",
+  "total_seconds": 181.23,
+  "stages": [
+    {
+      "stage": "data_gates",
+      "status": "PASSED",
+      "seconds": 0.06,
+      "output": {
+        "status": "PASSED",
+        "warnings": 5
+      }
+    },
+    {
+      "stage": "label_validity",
+      "status": "PASSED",
+      "seconds": 2.71,
+      "output": {
+        "heuristic_vs_human": {
+          "available": true,
+          "n": 9448,
+          "accuracy": 0.4188,
+          "macro_f1": 0.3821,
+          "cohens_kappa": 0.0693,
+          "interpretation": "kappa near 0 means the PYQ tier rule barely agrees with human-verified tiers"
+        }
+      }
+    },
+    {
+      "stage": "production_training",
+      "status": "PASSED",
+      "seconds": 60.45,
+      "output": {
+        "holdout": {
+          "holdout_accuracy": 0.7791666666666667,
+          "macro_f1": 0.7825,
+          "testing_rows": 480
+        }
+      }
+    },
+    {
+      "stage": "difficulty_v21",
+      "status": "PASSED",
+      "seconds": 94.71,
+      "output": {
+        "v21": {
+          "accuracy": 0.8238,
+          "macro_f1": 0.7705,
+          "log_loss": 0.4616,
+          "ece_top_label": 0.0189,
+          "n": 9448
+        },
+        "decision": "candidate: beats v2 on duplicate-free held-out papers"
+      }
+    },
+    {
+      "stage": "unified_side_by_side",
+      "status": "PASSED",
+      "seconds": 20.89,
+      "output": {
+        "rag": {
+          "heldout_papers": 16,
+          "heldout_chapter_retrieval_production": {
+            "eval_questions": 1747,
+            "eval_set": "questions not in the index (no chapter hint)",
+            "top1_chapter_accuracy": 0.3183,
+            "top3_chapter_accuracy": 0.5031,
+            "random_baseline_top1": 0.0154
+          },
+          "heldout_chapter_retrieval_unified": {
+            "eval_questions": 1747,
+            "eval_set": "questions not in the index (no chapter hint)",
+            "top1_chapter_accuracy": 0.3268,
+            "top3_chapter_accuracy": 0.5335,
+            "random_baseline_top1": 0.0154
+          },
+          "unified_index_excludes": "every question from the held-out sample papers"
+        }
+      }
+    },
+    {
+      "stage": "evaluation_harness",
+      "status": "PASSED",
+      "seconds": 1.03,
+      "output": {
+        "status": "PASSED"
+      }
+    },
+    {
+      "stage": "artifact_registries",
+      "status": "PASSED",
+      "seconds": 0.96,
+      "output": {
+        "core": "VERIFIED",
+        "extension": {
+          "extension_artifacts_verified": 14,
+          "status": "VERIFIED"
+        }
+      }
+    },
+    {
+      "stage": "model_cards_and_promotion_gates",
+      "status": "PASSED",
+      "seconds": 0.4,
+      "output": {
+        "models": 7,
+        "promotion_decisions": {
+          "difficulty_v21_text": "ELIGIBLE_PENDING_HUMAN_REVIEW",
+          "ncert_rag_retriever_unified": "HOLD"
+        }
+      }
+    }
+  ],
+  "reproducibility": {
+    "tolerance": 0.005,
+    "metrics_checked": 7,
+    "out_of_tolerance": {},
+    "reproducible": true
+  },
+  "metrics": {
+    "validation_report.json:random_forest_holdout_evaluation.holdout_accuracy": 0.7791666666666667,
+    "validation_report.json:random_forest_holdout_evaluation.macro_f1": 0.7825,
+    "validation_report.json:stratified_5fold_cross_validation.mean_cv_accuracy": 0.7953,
+    "difficulty_model_v21_report.json:v21_tfidf_logreg.accuracy": 0.8238,
+    "difficulty_model_v21_report.json:v21_tfidf_logreg.macro_f1": 0.7705,
+    "ncert_rag_svd_meta.json:heldout_chapter_retrieval.top1_chapter_accuracy": 0.3496,
+    "ncert_rag_svd_meta.json:heldout_chapter_retrieval.top3_chapter_accuracy": 0.5341
+  }
+}

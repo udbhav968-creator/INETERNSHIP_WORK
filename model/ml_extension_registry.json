@@ -43,13 +43,13 @@
     },
     "model/ncert_rag_svd_index_unified.npz": {
       "exists": true,
-      "size_bytes": 291996,
-      "sha256": "eefe1be29d3fea5693419cf5566843394536330d17477c356fb9c66119c82995"
+      "size_bytes": 7781027,
+      "sha256": "28701fa6c7e36a4161a5b8949ee8750514e47f7386c24eb1ee073ab3673329a1"
     },
     "model/ncert_rag_svd_meta_unified.json": {
       "exists": true,
-      "size_bytes": 108061,
-      "sha256": "2953eaa57ba030447b48441062cb2b71f5f0e50113415b0d73c489e57e2b0555"
+      "size_bytes": 3618181,
+      "sha256": "5cf1c29ad8aad943e4032c1b767714e558338da9056e625c99a0022a3bb841d1"
     },
     "model/linucb_prior_init_unified.json": {
       "exists": true,
@@ -68,8 +68,8 @@
     },
     "model/difficulty_model_v21_report.json": {
       "exists": true,
-      "size_bytes": 2098,
-      "sha256": "5d2ce2456db4b3c898a4cd9b80f4cbce4df228bc4575df90605d81ede38245f8"
+      "size_bytes": 2750,
+      "sha256": "6b234f1ffbffcf643443b3b5c6d678a3ca08fd2700f4f6d41fe88e93ed357eac"
     }
   }
 }

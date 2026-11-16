@@ -63,7 +63,7 @@ def main():
 
     df.to_csv(OUTPUT_FILE, index=False, encoding="utf-8")
 
-    print(f"\nSaved to:")
+    print("\nSaved to:")
     print(OUTPUT_FILE)
 
     print("\nDifficulty distribution:")
