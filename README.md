@@ -49,7 +49,7 @@ The adaptive loop: select questions (LinUCB + IRT information) → student answe
 | Source | Items | Difficulty labels | IRT parameters |
 |---|---|---|---|
 | NEET PYQs 2013–2026 (`neet_questions_clean.json`) | 2,400 | **Heuristic**: `chapter_text_complexity_quantile_heuristic` | Tier defaults + metadata heuristics (no student data) |
-| Sample Papers 1–101 (`neet_samples_001_to_101_verified.json`, ML branch) | 9,448 accepted of 16,689 | Verified by the content team | Cold-start ridge, linked to the PYQ scale per subject × tier |
+| Sample Papers 1–101 (`neet_samples_001_to_101_verified.json`) | 9,448 accepted of 16,689 | Verified by the content team | Cold-start ridge, linked to the PYQ scale per subject × tier |
 
 | Subject (PYQ) | Subject–chapter units | Basic | Medium | Advanced | Total |
 |---|---|---|---|---|---|
@@ -92,7 +92,7 @@ Known gaps:
 | 14 | Near-duplicate guard | `question_similarity_report.json`, `unified_near_duplicate_map.json` | PYQ map + 11,848-item map used by mocks |
 | 15 | Study plan & coverage | `model/study_plan_and_coverage_engine.py` | Coverage, weak chapters, spaced re-test queue |
 
-**Added for the 180-Q roadmap (ML branch):** `assessment_blueprint.py` (3 IRT-equated initial-assessment forms), `mock_test_generator.py` (unlimited equated mocks), `student_profile_initializer.py`, `test_analytics_engine.py`, `chapter_resolver.py`, `sample_paper_ingestion.py`, `difficulty_model_v2.py` (leak audit + v2 candidate), `unified_similarity_guard.py`, `unified_corpus_report.py`, `ml_extension_registry.py`.
+**Added for the 180-Q roadmap:** `assessment_blueprint.py` (3 IRT-equated initial-assessment forms), `mock_test_generator.py` (unlimited equated mocks), `student_profile_initializer.py`, `test_analytics_engine.py`, `chapter_resolver.py`, `sample_paper_ingestion.py`, `difficulty_model_v2.py` (leak audit + v2 candidate), `unified_similarity_guard.py`, `unified_corpus_report.py`, `ml_extension_registry.py`.
 
 ---
 
@@ -114,7 +114,7 @@ The PYQ tier labels agree with the verified labels only 43% of the time, so tier
 | Needs | Status |
 |---|---|
 | Question-content models (difficulty RF, chapter resolver, near-duplicate guard, RAG) | ✅ Trained on available data |
-| New dataset calibration (9,448 items) | ✅ Done on the ML branch |
+| New dataset calibration (9,448 items) | ✅ Done |
 | BKT, DINA, RAG, LinUCB re-trained on PYQ + sample papers | ✅ Trained side-by-side (`model/train_on_unified_bank.py`, `unified_training_report.json`); not promoted, because gains come from the easier item mix, not from student evidence |
 | Student-response models (IRT a/b/c, BKT, DINA, LinUCB, temperature on outcomes, drift baselines) | ❌ **Not trainable yet: 0 student attempts** |
 
@@ -167,4 +167,4 @@ python -m model.sample_paper_ingestion
 cd frontend && npm install && npm run build
 ```
 
-`python -m model.sample_paper_ingestion` re-ingests the sample papers (≈ 6 min). It needs `data/tagged_questions/assets/diagrams/` from the dataset branch for the 930 diagram items.
+`python -m model.sample_paper_ingestion` re-ingests the sample papers (≈ 6 min). Diagram images are not committed in this repo; copy `data/tagged_questions/assets/diagrams/` from the dataset branch (930 referenced).
