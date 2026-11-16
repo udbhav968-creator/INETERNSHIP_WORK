@@ -8,6 +8,7 @@ import pandas as pd
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DB_FILE = PROJECT_ROOT / "backend" / "klassed.db"
 QUESTION_FILE = PROJECT_ROOT / "data" / "tagged_questions" / "neet_questions_clean.json"
+SAMPLE_QUESTION_FILE = PROJECT_ROOT / "data" / "tagged_questions" / "neet_samples_001_to_101_verified.json"
 OUTPUT_DIR = PROJECT_ROOT / "data" / "training"
 OUTPUT_FILE = OUTPUT_DIR / "student_attempts.csv"
 
@@ -39,7 +40,15 @@ def main():
     with open(QUESTION_FILE, encoding="utf-8") as f:
         questions = json.load(f)
 
+    if SAMPLE_QUESTION_FILE.exists():
+        with open(SAMPLE_QUESTION_FILE, encoding="utf-8") as f:
+            samples = json.load(f)
+        known = {q["question_id"] for q in questions}
+        questions = questions + [q for q in (samples if isinstance(samples, list) else []) if q.get("question_id") not in known]
     question_df = pd.DataFrame(questions)
+    for col in ("paper_source", "subject", "chapter", "topic_tag", "skill", "difficulty_level", "question_type", "ideal_time_sec", "has_diagram", "marks", "negative_marks"):
+        if col not in question_df:
+            question_df[col] = None
 
     db = sqlite3.connect(DB_FILE)
     query = (

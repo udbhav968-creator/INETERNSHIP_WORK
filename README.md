@@ -97,7 +97,8 @@ Known gaps:
 | 16 | National rank / college simulator | `model/national_rank_simulator.py` | Candidates (1,999,895 appeared) and General cutoff (213) are NEET UG 2026 figures; the score→percentile curve and college thresholds are **approximate** and flagged in `model_assumptions` |
 | 17 | Drift and retraining trigger | `model/feature_store_and_drift.py`, `model/continuous_retraining_engine.py` | Reads live metrics; below 30 attempts returns `INSUFFICIENT_DATA`. Brier/ECE alerts are 25% above the validation-report baseline (0.307 / 0.052) |
 | 18 | Difficulty v2.1 text candidate | `model/difficulty_model_v21_text.py`, `question_difficulty_model_v21_text_candidate.joblib` | TF-IDF (word + char) logistic regression on human-verified tiers; also returned by the cold-start endpoint as `verified_label_model`; see §5 |
-| 19 | MLOps pipeline | `model/run_full_ml_pipeline.py`, `model/mlops_registry_and_cards.py` | One command runs 8 gated stages, checks reproducibility, rebuilds registries and publishes model cards and promotion decisions |
+| 19 | MLOps pipeline | `model/run_full_ml_pipeline.py`, `model/mlops_registry_and_cards.py` | One command runs 10 gated stages, checks reproducibility, rebuilds registries and publishes model cards and promotion decisions |
+| 20 | Student-response training | `model/student_response_training.py` | Waits for 200 students / 20,000 answers, then fits 3PL IRT (MML-EM) and per-chapter BKT (EM) on real attempts, tests them on held-out students, validates the difficulty labels and checks score-interval coverage. Promotion needs the gates plus a reviewer. Self-test on simulated students: difficulty recovered at r = 0.98 |
 
 **Added for the 180-Q roadmap:** `assessment_blueprint.py` (3 IRT-equated initial-assessment forms), `mock_test_generator.py` (unlimited equated mocks), `student_profile_initializer.py`, `test_analytics_engine.py`, `chapter_resolver.py`, `sample_paper_ingestion.py`, `difficulty_model_v2.py` (leak audit + v2 candidate), `unified_similarity_guard.py`, `unified_corpus_report.py`, `ml_extension_registry.py`.
 
@@ -136,7 +137,7 @@ See `docs/ML_HONESTY_AUDIT.md` for every value that was changed and why.
 | BKT, DINA, RAG, LinUCB re-trained on PYQ + sample papers | ✅ Trained side-by-side (`model/train_on_unified_bank.py`, `unified_training_report.json`); not promoted, because gains come from the easier item mix, not from student evidence |
 | Student-response models (IRT a/b/c, BKT, DINA, LinUCB, temperature on outcomes, drift baselines) | ❌ **Not trainable yet: 0 student attempts** |
 
-Retraining trigger: once real students take the initial assessment (≈ 300 students × 180 responses), re-estimate IRT, BKT, DINA and the bandit from `test_attempts`, and replace the Monte Carlo interval with a calibrated one.
+Once real students take the initial assessment, `python -m model.run_full_ml_pipeline` trains IRT and BKT from their answers automatically (see `docs/ML_SYSTEM_DESIGN.md` §7). Until then that stage reports `SKIPPED_INSUFFICIENT_DATA` and lists what is missing.
 
 ---
 
@@ -144,8 +145,8 @@ Retraining trigger: once real students take the initial assessment (≈ 300 stud
 
 | Suite | Command | Result |
 |---|---|---|
-| Full ML pipeline + reproducibility | `python -m model.run_full_ml_pipeline --verify-reproducible` | 8 / 8 stages pass; 7 / 7 metrics within 0.005 |
-| Standalone ML suites | `python -m model.tests.test_ml_standalone_suite` | 36 / 36 pass |
+| Full ML pipeline + reproducibility | `python -m model.run_full_ml_pipeline --verify-reproducible` | 10 / 10 stages pass; 7 / 7 metrics within 0.005 |
+| Standalone ML suites | `python -m model.tests.test_ml_standalone_suite` | 37 / 37 pass |
 | Backend integration suites | `python backend/tests/test_v2_engine.py` | 29 / 29 pass |
 | Core SHA-256 registry | `python -m model.verify_artifact_integrity` | 21 / 21 verified |
 | ML extension registry | `python -m model.ml_extension_registry` | 14 / 14 |

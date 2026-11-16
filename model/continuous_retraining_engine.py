@@ -121,6 +121,10 @@ def evaluate_drift_and_retrain_if_needed(
         report["retrain_execution_status"] = pipe_report.get("pipeline_status", "UNKNOWN")
         report["verification_status"] = "PASSED" if verified else "FAILED"
         report["tier_proposals_count"] = len(tier_prop.get("proposals", []))
+        from .student_response_training import run_student_response_training
+
+        student = run_student_response_training()
+        report["student_response_training_status"] = student["status"]
 
     DRIFT_STATE_PATH.write_text(json.dumps(report, indent=2), encoding="utf-8")
     return report

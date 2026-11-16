@@ -88,6 +88,7 @@ def build_model_cards() -> list[dict]:
     rag = _load("ncert_rag_svd_meta.json")
     uni = _load("unified_training_report.json")
     harness = _load("harness_benchmark_report.json")
+    student = _load("student_models/student_response_training_report.json")
     aux = val.get("auxiliary_models_training", {})
     ridge = aux.get("irt_cold_start_ridge_regressor", {})
     hold = val.get("random_forest_holdout_evaluation", {})
@@ -185,6 +186,25 @@ def build_model_cards() -> list[dict]:
             "evaluation": "5-fold CV",
             "metrics": {k: ridge.get(k) for k in ("a_5fold_r2", "b_5fold_r2", "c_5fold_r2")},
             "limitations": ["high R2 reflects that targets are a function of the inputs (tier, time)"],
+        },
+        {
+            "model": "student_response_models",
+            "status": "trained_candidate" if student.get("status") == "TRAINED" else "waiting_for_data",
+            "task": "fit IRT a/b/c and per-chapter BKT from real student answers",
+            "artifacts": [
+                _artifact("model/student_models/irt_item_parameters_fitted.json"),
+                _artifact("model/student_models/bkt_chapter_parameters_fitted.json"),
+            ],
+            "training_data": f"{(student.get('readiness') or {}).get('responses', 0)} responses from {(student.get('readiness') or {}).get('students', 0)} students",
+            "labels": "observed correct/incorrect answers",
+            "evaluation": "held-out students; predict the second half of each student's answers",
+            "metrics": {
+                "status": student.get("status"),
+                "readiness_checks": (student.get("readiness") or {}).get("checks"),
+                "irt": ((student.get("irt_3pl") or {}).get("evaluation") or {}).get("models"),
+                "bkt": (((student.get("bkt") or {}).get("evaluation") or {}).get("models")),
+            },
+            "limitations": ["DINA and LinUCB are not re-fitted here (Q-matrix validation and logged propensities needed)"],
         },
         {
             "model": "bkt_dina_linucb_priors",

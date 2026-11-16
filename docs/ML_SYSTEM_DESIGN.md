@@ -19,6 +19,7 @@ flowchart LR
     V21[Difficulty v2.1 on human labels]
     UNI[Unified side-by-side models]
     H[Evaluation harness]
+    ST[Student-response training<br/>IRT + BKT from real answers]
     REG[SHA-256 registries]
     MC[Model cards + promotion gates]
   end
@@ -31,11 +32,12 @@ flowchart LR
     DM[Drift monitor: PSI, Brier, ECE, Wasserstein, KS]
     RE[Retraining trigger]
   end
-  PYQ & SP & KB --> G --> LV --> TR --> V21 --> UNI --> H --> REG --> MC
+  PYQ & SP & KB --> G --> LV --> TR --> V21 --> UNI --> H --> ST --> REG --> MC
+  ATT --> ST
   REG -->|verified artifacts| RT
   RT --> MCS
   RT -->|attempts| ATT
-  ATT --> FS --> DM --> RE -->|">=30 attempts and alert"| TR
+  ATT --> FS --> DM --> RE -->|">=30 attempts and alert"| ST
 ```
 
 ## 2. Pipeline stages
@@ -48,8 +50,10 @@ flowchart LR
 | 4 | Difficulty v2.1 | `difficulty_model_v21_text.py` | Training error |
 | 5 | Unified side-by-side | `train_on_unified_bank.py` | Training error |
 | 6 | Evaluation harness | `evaluation_harness.py` | A persona invariant, latency SLA or bandit ablation fails |
-| 7 | Artifact registries | `verify_artifact_integrity.py`, `ml_extension_registry.py` | Any SHA-256 mismatch |
-| 8 | Model cards + promotion gates | `mlops_registry_and_cards.py` | Never; it publishes decisions |
+| 7 | Student pipeline self-test (simulated) | `student_response_training.py` | Difficulty recovery r < 0.9, or fitted IRT not better than item p-values |
+| 8 | Student-response models (real data) | `student_response_training.py` | Never; reports `SKIPPED_INSUFFICIENT_DATA` until ready, then publishes gate decisions |
+| 9 | Artifact registries | `verify_artifact_integrity.py`, `ml_extension_registry.py` | Any SHA-256 mismatch |
+| 10 | Model cards + promotion gates | `mlops_registry_and_cards.py` | Never; it publishes decisions |
 
 `--verify-reproducible` re-runs everything and fails if any headline metric moves more than 0.005 from the committed value. CI installs the exact training library versions from `model/ml-training-constraints.txt`.
 
@@ -95,12 +99,52 @@ Promotion rule: a candidate is compared with the incumbent on the same held-out 
 
 When an alert fires with enough data, `continuous_retraining_engine.py` re-runs tier recalibration, training and registry verification, and records the outcome in `drift_monitor_state.json`.
 
-## 7. What changes once students arrive
+## 7. Student-response training pipeline
 
-| Model | Today | After about 300 students × 180 responses |
+Module: `model/student_response_training.py`. It runs inside the full pipeline as two stages: a simulation self-test that always runs, and real-data training that waits until there is enough data.
+
+```mermaid
+flowchart LR
+  A[(test_attempts<br/>SQLite / PostgreSQL / CSV)] --> B[Load + clean<br/>join both question banks]
+  B --> C{Readiness gate<br/>200 students · 20,000 answers<br/>50 items with 30+ answers}
+  C -->|not ready| S[SKIPPED_INSUFFICIENT_DATA report]
+  C -->|ready| D[Split by student 80 / 20]
+  D --> E[3PL IRT · MML-EM]
+  D --> F[BKT · Baum-Welch EM per chapter]
+  E --> G[Held-out evaluation<br/>AUC · log loss · Brier · ECE]
+  F --> G
+  E --> H[Difficulty-label validation<br/>tiers vs fitted b]
+  E --> I[Score-interval coverage<br/>paper k predicts paper k+1]
+  G --> J{Promotion gates}
+  J -->|pass| K[ELIGIBLE_PENDING_HUMAN_REVIEW]
+  J -->|fail| L[HOLD]
+  K -->|reviewer runs --promote| M[Back up, link scale, write production file, rebuild registry]
+```
+
+| Step | What it does | Pass condition |
 |---|---|---|
-| IRT a/b/c | Priors from tier and metadata | Fitted by marginal maximum likelihood on responses |
-| BKT, DINA | Priors | EM on response sequences |
-| Difficulty | Heuristic tier; v2.1 candidate | Empirical p-values and IRT b replace both |
-| Score interval | Monte Carlo quantile | Split-conformal calibration on real mock-to-exam scores |
-| LinUCB | Synthetic reward | Reward from observed mastery gain |
+| Load | Reads `data/training/student_attempts.csv`; if empty, reads `test_attempts` from `DATABASE_URL` or the local SQLite DB. Adds chapter and subject from both question banks | — |
+| Readiness | Counts students, answers, and items with enough answers | 200 students, 20,000 answers, 50 items with 30+ answers |
+| Split | Random 80 / 20 split **by student**, fixed seed | No student appears in both sides |
+| IRT 3PL | Marginal maximum likelihood EM, 21-point quadrature, priors on a, b, c; only items with 30+ answers | — |
+| BKT | Baum-Welch EM per chapter (30+ student sequences); guess and slip capped at 0.40 | — |
+| Evaluation | For held-out students, the first half of their answers estimate ability; the second half is predicted. Compared: global rate, item p-value, current prior IRT, fitted IRT; prior vs fitted BKT | Metrics: AUC, log loss, Brier, ECE |
+| Difficulty validation | Spearman correlation of fitted b with PYQ heuristic tiers, human-verified tiers and v2.1 tiers | Settles which difficulty labels are real |
+| Score check | For students with two papers of 150+ answers, predicts the next paper's score with a 90% interval | Coverage near 90% |
+| Promotion gate | Fitted vs prior on the same held-out answers | Log loss at least 1% better, AUC no more than 0.005 worse, ECE ≤ 0.05 |
+| Promote | `python -m model.student_response_training --promote irt` (or `bkt`) after review. Backs up the old file, links non-fitted items onto the fitted scale (mean-sigma), writes the production file, rebuilds the registry | Refuses unless the decision is ELIGIBLE and the data label is real |
+
+**Self-test on simulated students (always runs, clearly labelled SIMULATED):** 500 students × 120 answers from known parameters. It recovers difficulty at r = 0.98 and discrimination at r = 0.65; fitted IRT reaches AUC 0.81 vs 0.71 for item p-values. A BKT recovery check gets every parameter within 0.04 of the truth.
+
+**Not re-fitted here:** DINA (needs a validated Q-matrix first) and LinUCB (needs logged selection propensities for offline evaluation). Both are recorded in the report.
+
+**Runbook once students arrive:**
+
+```bash
+python -m model.build_attempt_training_dataset       # optional: export DB attempts to CSV
+python -m model.run_full_ml_pipeline                 # trains, evaluates, publishes decisions
+cat model/student_models/student_response_training_report.json
+python -m model.student_response_training --promote irt   # only after review
+python -m model.run_full_ml_pipeline --verify-reproducible
+python -m model.tests.test_ml_standalone_suite
+```

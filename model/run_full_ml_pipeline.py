@@ -69,6 +69,32 @@ def _stage_harness() -> dict:
     return {"status": rep["harness_status"]}
 
 
+def _stage_student_pipeline_self_test() -> dict:
+    import tempfile
+
+    from .student_response_training import run_simulation_self_test
+
+    with tempfile.TemporaryDirectory() as tmp:
+        rep = run_simulation_self_test(Path(tmp))
+    rec = rep["parameter_recovery_correlation"]
+    fit = rep["held_out_metrics"]["fitted_irt"]
+    base = rep["held_out_metrics"]["item_p_value"]
+    if rec["b"] < 0.9 or fit["auc"] <= base["auc"]:
+        raise RuntimeError(f"student pipeline self-test failed: recovery={rec}, fitted_auc={fit['auc']}, baseline_auc={base['auc']}")
+    return {"label": rep["label"], "recovery": rec, "fitted_auc": fit["auc"], "item_p_value_auc": base["auc"]}
+
+
+def _stage_student_response_models() -> dict:
+    from .student_response_training import run_student_response_training
+
+    rep = run_student_response_training()
+    out = {"status": rep["status"], "readiness": rep["readiness"]}
+    if rep["status"] == "TRAINED":
+        out["irt_decision"] = (rep["irt_3pl"].get("promotion") or {}).get("decision")
+        out["bkt_decision"] = (rep["bkt"].get("promotion") or {}).get("decision")
+    return out
+
+
 def _stage_registries() -> dict:
     from .ml_extension_registry import build_extension_registry, verify_extension_registry
     from .training_and_validation_pipeline import REGISTRY_MANIFEST_FILE, build_model_registry_manifest
@@ -96,6 +122,8 @@ STAGES = [
     ("difficulty_v21", _stage_difficulty_v21),
     ("unified_side_by_side", _stage_unified_side_by_side),
     ("evaluation_harness", _stage_harness),
+    ("student_pipeline_self_test", _stage_student_pipeline_self_test),
+    ("student_response_models", _stage_student_response_models),
     ("artifact_registries", _stage_registries),
     ("model_cards_and_promotion_gates", _stage_model_cards),
 ]

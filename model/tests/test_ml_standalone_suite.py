@@ -1084,6 +1084,55 @@ def ml_suite_35_honest_simulation_no_invented_penalties_and_sourced_facts():
     assert empty["metrics_available"] is False and empty["drift_status"] == "NO_ATTEMPTS_YET"
 
 
+def ml_suite_37_student_response_training_pipeline():
+    import tempfile
+    from model.student_response_training import (
+        bkt_one_step_predictions,
+        data_readiness,
+        fit_bkt_em,
+        load_attempts,
+        run_simulation_self_test,
+        run_student_response_training,
+    )
+
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp = Path(tmp)
+        empty_csv = tmp / "empty.csv"
+        empty_csv.write_text("student_id,question_id,paper_number,is_correct,timestamp\n", encoding="utf-8")
+        skipped = run_student_response_training(csv_path=empty_csv, output_dir=tmp / "real")
+        assert skipped["status"] == "SKIPPED_INSUFFICIENT_DATA"
+        assert skipped["readiness"]["ready"] is False
+
+        rep = run_simulation_self_test(tmp / "sim")
+        assert rep["label"].startswith("SIMULATED")
+        assert rep["parameter_recovery_correlation"]["b"] >= 0.9
+        assert rep["parameter_recovery_correlation"]["a"] >= 0.4
+        m = rep["held_out_metrics"]
+        assert m["fitted_irt"]["auc"] > m["item_p_value"]["auc"] > m["global_rate"]["auc"]
+        assert m["fitted_irt"]["log_loss"] < m["item_p_value"]["log_loss"]
+        assert m["fitted_irt"]["ece"] < 0.05
+
+        df, _ = load_attempts(tmp / "sim" / "simulated_attempts.csv")
+        assert data_readiness(df)["students"] == 500
+
+    rng = np.random.default_rng(3)
+    true = {"p_init": 0.3, "p_transit": 0.12, "p_guess": 0.2, "p_slip": 0.08}
+    seqs = []
+    for _ in range(600):
+        known = rng.random() < true["p_init"]
+        s = []
+        for _ in range(int(rng.integers(3, 12))):
+            s.append(float(rng.random() < ((1 - true["p_slip"]) if known else true["p_guess"])))
+            if not known and rng.random() < true["p_transit"]:
+                known = True
+        seqs.append(np.array(s))
+    fit = fit_bkt_em(seqs[:480])
+    for k in ("p_init", "p_guess", "p_slip"):
+        assert abs(fit[k] - true[k]) < 0.06, (k, fit[k])
+    assert abs(fit["p_transit"] - true["p_transit"]) < 0.06
+    assert len(bkt_one_step_predictions(seqs[480:], fit)) == sum(len(s) for s in seqs[480:])
+
+
 if __name__ == "__main__":
     suites = [
         ml_suite_01_question_bank_and_weightage_schema_validators,
@@ -1122,6 +1171,7 @@ if __name__ == "__main__":
         ml_suite_34_difficulty_v21_text_candidate_beats_v2_on_clean_rows,
         ml_suite_35_honest_simulation_no_invented_penalties_and_sourced_facts,
         ml_suite_36_honest_training_protocol_and_rag_vocabulary,
+        ml_suite_37_student_response_training_pipeline,
     ]
     for fn in suites:
         fn()

@@ -9,7 +9,7 @@ on:
 
 jobs:
   standalone-mlops-governance-and-training:
-    name: Reproducible ML Pipeline, Grouped CV, Artifact Registries, Model Cards & 36-Suite ML Gate
+    name: Reproducible ML Pipeline, Grouped CV, Artifact Registries, Model Cards & 37-Suite ML Gate
     runs-on: ubuntu-24.04
 
     steps:
@@ -36,7 +36,7 @@ jobs:
           python -m model.validate_weightage_file data/taxonomy/NEET_Unified_Weightage_And_Marks_2013_2026.json
           python -m model.corpus_distribution_and_readiness_audit
 
-      - name: Stage 2 — Full ML Pipeline (data gates, label validity, training, v2.1, RAG, harness, registries, model cards) with reproducibility check
+      - name: Stage 2 — Full ML Pipeline (data gates, label validity, training, v2.1, RAG, harness, student-response training, registries, model cards) with reproducibility check
         run: |
           python -m model.run_full_ml_pipeline --verify-reproducible
 
@@ -48,7 +48,7 @@ jobs:
         run: |
           python -m model.evaluation_harness
 
-      - name: Stage 5 — 36 Standalone Pure-ML & MLOps Verification Suites
+      - name: Stage 5 — 37 Standalone Pure-ML & MLOps Verification Suites
         run: |
           python -m model.tests.test_ml_standalone_suite
 
@@ -74,6 +74,7 @@ jobs:
             model/linucb_prior_init.json
             model/conformal_laplacian_model.json
             model/ml_pipeline_run.json
+            model/student_models/student_response_training_report.json
             model/model_cards.json
             model/promotion_gate_report.json
             model/label_validity_report.json

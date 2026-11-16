@@ -1,0 +1,19 @@
+{
+  "generated_at_utc": "2026-11-16T12:28:43+00:00",
+  "data_label": "real",
+  "source": "data/training/student_attempts.csv",
+  "readiness": {
+    "students": 0,
+    "responses": 0,
+    "unique_items": 0,
+    "items_with_enough_responses": 0,
+    "checks": {
+      "students >= 200": false,
+      "responses >= 20000": false,
+      "items with >= 30 responses >= 50": false
+    },
+    "ready": false
+  },
+  "status": "SKIPPED_INSUFFICIENT_DATA",
+  "next_step": "collect initial-assessment attempts until every readiness check is true, then re-run"
+}

@@ -1,11 +1,11 @@
 {
   "status": "PASSED",
-  "total_seconds": 181.23,
+  "total_seconds": 190.2,
   "stages": [
     {
       "stage": "data_gates",
       "status": "PASSED",
-      "seconds": 0.06,
+      "seconds": 0.08,
       "output": {
         "status": "PASSED",
         "warnings": 5
@@ -14,7 +14,7 @@
     {
       "stage": "label_validity",
       "status": "PASSED",
-      "seconds": 2.71,
+      "seconds": 2.46,
       "output": {
         "heuristic_vs_human": {
           "available": true,
@@ -29,7 +29,7 @@
     {
       "stage": "production_training",
       "status": "PASSED",
-      "seconds": 60.45,
+      "seconds": 62.77,
       "output": {
         "holdout": {
           "holdout_accuracy": 0.7791666666666667,
@@ -41,7 +41,7 @@
     {
       "stage": "difficulty_v21",
       "status": "PASSED",
-      "seconds": 94.71,
+      "seconds": 91.9,
       "output": {
         "v21": {
           "accuracy": 0.8238,
@@ -56,7 +56,7 @@
     {
       "stage": "unified_side_by_side",
       "status": "PASSED",
-      "seconds": 20.89,
+      "seconds": 22.4,
       "output": {
         "rag": {
           "heldout_papers": 16,
@@ -81,15 +81,50 @@
     {
       "stage": "evaluation_harness",
       "status": "PASSED",
-      "seconds": 1.03,
+      "seconds": 0.93,
       "output": {
         "status": "PASSED"
       }
     },
     {
+      "stage": "student_pipeline_self_test",
+      "status": "PASSED",
+      "seconds": 8.41,
+      "output": {
+        "label": "SIMULATED data, used only to verify the estimation code; not a model result",
+        "recovery": {
+          "a": 0.6514,
+          "b": 0.9815,
+          "c": 0.617
+        },
+        "fitted_auc": 0.8148,
+        "item_p_value_auc": 0.7148
+      }
+    },
+    {
+      "stage": "student_response_models",
+      "status": "PASSED",
+      "seconds": 0.18,
+      "output": {
+        "status": "SKIPPED_INSUFFICIENT_DATA",
+        "readiness": {
+          "students": 0,
+          "responses": 0,
+          "unique_items": 0,
+          "items_with_enough_responses": 0,
+          "checks": {
+            "students >= 200": false,
+            "responses >= 20000": false,
+            "items with >= 30 responses >= 50": false
+          },
+          "ready": false
+        }
+      }
+    },
+    {
       "stage": "artifact_registries",
       "status": "PASSED",
-      "seconds": 0.96,
+      "seconds": 0.7,
       "output": {
         "core": "VERIFIED",
         "extension": {
@@ -101,9 +136,9 @@
     {
       "stage": "model_cards_and_promotion_gates",
       "status": "PASSED",
-      "seconds": 0.4,
+      "seconds": 0.35,
       "output": {
-        "models": 7,
+        "models": 8,
         "promotion_decisions": {
           "difficulty_v21_text": "ELIGIBLE_PENDING_HUMAN_REVIEW",
           "ncert_rag_retriever_unified": "HOLD"
