@@ -1,5 +1,6 @@
 import concurrent.futures
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -13,6 +14,15 @@ MODEL_DIR = PROJECT_ROOT / "model"
 for p in (str(PROJECT_ROOT), str(BACKEND_DIR), str(MODEL_DIR)):
     if p not in sys.path:
         sys.path.insert(0, p)
+
+if not (os.environ.get("DATABASE_URL") or os.environ.get("KLASSED_DB_URL")):
+    import shutil
+    import tempfile
+
+    _TEST_DB = Path(tempfile.mkdtemp(prefix="klassed_test_")) / "klassed_test.db"
+    shutil.copy2(BACKEND_DIR / "klassed.db", _TEST_DB)
+    os.environ["DATABASE_URL"] = f"sqlite:///{_TEST_DB.as_posix()}"
+os.environ.setdefault("KLASSED_BANDIT_CHECKPOINT", str(Path(__import__("tempfile").mkdtemp(prefix="klassed_bandit_")) / "linucb_state.json"))
 
 from fastapi.testclient import TestClient
 from app.main import app
@@ -1806,6 +1816,108 @@ def test_29_section4_recommendations_empirical_quarantine_postgres_multilingual(
     assert soc_data["multilingual_support"] is not None
     assert soc_data["multilingual_support"]["language"] == "hi"
 
+def test_30_decision_logging_ab_assignment_score_snapshots_state_store_and_privacy_switch():
+    import os
+
+    from app.db_models import ScorePredictionSnapshot, SelectionDecision
+    from model.experiments import ARM_ADAPTIVE, ARM_CONTROL, assign_arm
+    from model.privacy_settings import minimise_behavioural_signals
+    from model.state_store import SharedStateStore, set_shared_store
+
+    client = TestClient(app)
+    email = "decision_logging_probe@klassed.in"
+    db = SessionLocal()
+    old = db.query(Student).filter_by(email=email).first()
+    if old:
+        db.query(SelectionDecision).filter_by(student_id=old.student_id).delete()
+        db.query(ScorePredictionSnapshot).filter_by(student_id=old.student_id).delete()
+        db.query(TestAttempt).filter_by(student_id=old.student_id).delete()
+        db.query(StudentTopicState).filter_by(student_id=old.student_id).delete()
+        db.delete(old)
+        db.commit()
+    db.close()
+
+    body = client.post("/auth/signup", json={"name": "Decision Probe", "email": email, "password": "strongpassword123"}).json()
+    sid = body["student_id"]
+    hdr = {"Authorization": f"Bearer {body['access_token']}", "X-Klassed-Vault": body["vault_token"]}
+    client.post(f"/students/{sid}/onboarding", json={"class_level": "12", "target_neet_year": 2027}, headers=hdr)
+    paper = client.get(f"/students/{sid}/next_paper?total_length=12", headers=hdr).json()
+    assert len(paper) == 12
+
+    db = SessionLocal()
+    rows = db.query(SelectionDecision).filter_by(student_id=sid).all()
+    assert len(rows) == 12
+    assert {r.question_id for r in rows} == {q["question_id"] for q in paper}
+    assert all(r.policy == "linucb_greedy" and r.arm == ARM_ADAPTIVE and r.propensity == 1.0 for r in rows)
+    assert all(r.candidate_count >= 1 and r.candidate_ids for r in rows)
+    db.close()
+
+    q0 = paper[0]
+    r_sub = client.post("/submit_attempt", json={"student_id": sid, "question_id": q0["question_id"], "paper_number": 1, "selected_option": "a", "time_taken_seconds": 45}, headers=hdr)
+    assert r_sub.status_code == 200
+    db = SessionLocal()
+    d0 = db.query(SelectionDecision).filter_by(student_id=sid, question_id=q0["question_id"]).first()
+    assert d0.reward is not None and 0.0 <= d0.reward <= 1.0 and d0.attempt_id is not None
+    db.close()
+
+    assert client.get(f"/students/{sid}/v2_insights", headers=hdr).status_code == 200
+    db = SessionLocal()
+    snaps = db.query(ScorePredictionSnapshot).filter_by(student_id=sid).all()
+    assert len(snaps) == 1 and snaps[0].low_90 <= snaps[0].expected_score <= snaps[0].high_90
+    db.query(SelectionDecision).filter_by(student_id=sid).delete()
+    db.query(ScorePredictionSnapshot).filter_by(student_id=sid).delete()
+    db.query(TestAttempt).filter_by(student_id=sid).delete()
+    db.query(StudentTopicState).filter_by(student_id=sid).delete()
+    db.query(Student).filter_by(student_id=sid).delete()
+    db.commit()
+    db.close()
+
+    arms = [assign_arm(f"S{i}", force_enabled=True) for i in range(4000)]
+    share = arms.count(ARM_CONTROL) / len(arms)
+    assert 0.46 < share < 0.54
+    assert all(assign_arm(f"S{i}", force_enabled=False) == ARM_ADAPTIVE for i in range(50))
+    assert assign_arm("S7", force_enabled=True) == assign_arm("S7", force_enabled=True)
+
+    os.environ["KLASSED_BEHAVIOURAL_TELEMETRY"] = "off"
+    try:
+        assert minimise_behavioural_signals(3, 900, 40000, 40.0) == (0, 0, 40000)
+    finally:
+        os.environ.pop("KLASSED_BEHAVIOURAL_TELEMETRY", None)
+    assert minimise_behavioural_signals(3, 900, 41000, 40.0) == (3, 900, 41000)
+
+    class _Fake:
+        def __init__(self):
+            self.d = {}
+
+        def get(self, k):
+            return self.d.get(k)
+
+        def set(self, k, v, ex=None):
+            self.d[k] = v
+
+        def delete(self, k):
+            self.d.pop(k, None)
+
+        def ping(self):
+            return True
+
+    fake = _Fake()
+    set_shared_store(SharedStateStore(fake, "fake"))
+    try:
+        from model import linucb_bandit as lb
+
+        lb.record_bandit_feedback("STATE_PROBE", "NEET2013_BIO_091", "medium", 90, 0.0, 0.5, 2.0, 0.8, None, True, 60)
+        assert any(k.endswith("linucb:STATE_PROBE") for k in fake.d)
+        lb._STUDENT_BANDITS.pop("STATE_PROBE", None)
+        assert lb.get_student_bandit("STATE_PROBE").total_updates == 1
+        health = client.get("/mlops/health_and_drift").json()
+        assert health["shared_state_store"]["active"] is True
+        assert health["privacy"]["behavioural_telemetry"] == "on"
+    finally:
+        set_shared_store(None)
+        lb._STUDENT_BANDITS.pop("STATE_PROBE", None)
+
+
 if __name__ == "__main__":
     suites = [
         test_01_random_forest_model_and_live_inference,
@@ -1837,6 +1949,7 @@ if __name__ == "__main__":
         test_27_tier_recalibration_near_duplicate_guard_temperature_scaling_and_prometheus_metrics,
         test_28_zero_hardcoded_cold_start_priors_unified_score_and_15_trained_models,
         test_29_section4_recommendations_empirical_quarantine_postgres_multilingual,
+        test_30_decision_logging_ab_assignment_score_snapshots_state_store_and_privacy_switch,
     ]
     for fn in suites:
         fn()

@@ -1,6 +1,6 @@
 # Model Cards
 
-Generated 2026-11-16T13:15:25+00:00 from commit `fc5dbb33b7c13a515705640eec5daefccf4730c3` by `python -m model.mlops_registry_and_cards`.
+Generated 2026-11-16T15:03:03+00:00 from commit `764ceb033e0ba7886c91a1daa53b15d3b28b64fb` by `python -m model.mlops_registry_and_cards`.
 
 ## Summary
 
@@ -13,6 +13,8 @@ Generated 2026-11-16T13:15:25+00:00 from commit `fc5dbb33b7c13a515705640eec5daef
 | ncert_rag_retriever_unified | candidate | unified: eval_questions: 1747; eval_set: questions not in the index (no chapter hint); top1_chapter_accuracy: 0.3268; top3_chapter_accuracy: 0.5335; random_baseline_top1: 0.0154; production_on_same_set: eval_questions: 1747; eval_set: questions not in the index (no chapter hint); top1_chapter_accuracy: 0.3183; top3_chapter_accuracy: 0.5031; random_baseline_top1: 0.0154 |
 | irt_cold_start_ridge | production_prior | a_5fold_r2: 0.948; b_5fold_r2: 0.9949; c_5fold_r2: 0.818 |
 | student_response_models | waiting_for_data | status: SKIPPED_INSUFFICIENT_DATA; readiness_checks: students >= 200: False; responses >= 20000: False; items with >= 30 responses >= 50: False; irt: —; bkt: — |
+| learning_analytics | waiting_for_data | offline_policy_evaluation: INSUFFICIENT_DATA; selection_ab_test: INSUFFICIENT_DATA; score_prediction_validation: INSUFFICIENT_DATA; fairness: INSUFFICIENT_DATA; empirical_item_times: INSUFFICIENT_DATA; anomalies: INSUFFICIENT_DATA; knowledge_tracing_challenger: INSUFFICIENT_DATA |
+| retrieval_challenger | hold | challenger: retriever: char_ngram_tfidf (offline stand-in, lexical); eval_questions: 9448; top1_chapter_accuracy: 0.3237; top3_chapter_accuracy: 0.488; random_baseline_top1: 0.0154; top1_gain: -0.0259 |
 | bkt_dina_linucb_priors | production_prior | student_attempts_available: 0; linucb_cold_start_regret_reduction_vs_random_percent: 96.8 |
 
 ## difficulty_rf_production
@@ -105,6 +107,32 @@ Generated 2026-11-16T13:15:25+00:00 from commit `fc5dbb33b7c13a515705640eec5daef
 | metrics | status: SKIPPED_INSUFFICIENT_DATA; readiness_checks: students >= 200: False; responses >= 20000: False; items with >= 30 responses >= 50: False; irt: —; bkt: — |
 | limitations | DINA and LinUCB are not re-fitted here (Q-matrix validation and logged propensities needed) |
 | artifacts | model/student_models/irt_item_parameters_fitted.json (None); model/student_models/bkt_chapter_parameters_fitted.json (None) |
+
+## learning_analytics
+
+| Field | Value |
+|---|---|
+| status | waiting_for_data |
+| task | bandit off-policy evaluation, selection A/B test, score-prediction validation, fairness, real solve times, anomaly flags, BKT vs PFA challenger |
+| training_data | 0 attempts, 0 logged selection decisions |
+| labels | observed answers, logged propensities and rewards, real NEET scores when supplied |
+| evaluation | each section reports INSUFFICIENT_DATA until its minimum sample is met; methods are checked on simulations in the learning_analytics_self_test stage |
+| metrics | offline_policy_evaluation: INSUFFICIENT_DATA; selection_ab_test: INSUFFICIENT_DATA; score_prediction_validation: INSUFFICIENT_DATA; fairness: INSUFFICIENT_DATA; empirical_item_times: INSUFFICIENT_DATA; anomalies: INSUFFICIENT_DATA; knowledge_tracing_challenger: INSUFFICIENT_DATA |
+| limitations | anomaly flags are for human review only; unbiased bandit evaluation needs the A/B control arm or exploration (KLASSED_BANDIT_EXPLORATION_EPSILON) |
+| artifacts | model/student_models/learning_analytics_report.json (ddee680fcb2a) |
+
+## retrieval_challenger
+
+| Field | Value |
+|---|---|
+| status | hold |
+| task | candidate chapter retriever compared with production on the same held-out questions |
+| training_data | NCERT chapter documents and PYQ stems/explanations (same as production) |
+| labels | chapter tags of held-out sample-paper questions |
+| evaluation | top-1 / top-3 chapter accuracy on questions not in the index |
+| metrics | challenger: retriever: char_ngram_tfidf (offline stand-in, lexical); eval_questions: 9448; top1_chapter_accuracy: 0.3237; top3_chapter_accuracy: 0.488; random_baseline_top1: 0.0154; top1_gain: -0.0259 |
+| limitations | the offline run uses a lexical stand-in; the semantic model needs torch and a model download (GPU) |
+| artifacts | model/retrieval_challenger_report.json (53061e39a29a) |
 
 ## bkt_dina_linucb_priors
 

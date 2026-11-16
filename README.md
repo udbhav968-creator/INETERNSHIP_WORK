@@ -13,6 +13,7 @@
 | [`docs/DATASET_BRIEF_SAMPLE_PAPERS_001_101.md`](docs/DATASET_BRIEF_SAMPLE_PAPERS_001_101.md) | Review of the 16,689-row sample-paper dataset |
 | [`docs/ML_SYSTEM_DESIGN.md`](docs/ML_SYSTEM_DESIGN.md) | ML system design: pipeline, evaluation protocol, registry, promotion, monitoring |
 | [`docs/MODEL_CARDS.md`](docs/MODEL_CARDS.md) | Generated model cards with metrics, lineage and promotion decisions |
+| [`docs/ML_OPERATIONS_RUNBOOK.md`](docs/ML_OPERATIONS_RUNBOOK.md) | Switches, commands and who does what: experiments, exploration, Redis, releases, retraining, review packs, privacy |
 | [`docs/ML_HONESTY_AUDIT.md`](docs/ML_HONESTY_AUDIT.md) | Every invented value, leak and bug found, and how it was fixed |
 | [`docs/spec.md`](docs/spec.md) | Original v1 technical spec (Pranay) |
 | [`docs/POSTGRES_MIGRATION_PLAN.md`](docs/POSTGRES_MIGRATION_PLAN.md) | Persistence plan (needed before production use, see §10) |
@@ -139,16 +140,31 @@ See `docs/ML_HONESTY_AUDIT.md` for every value that was changed and why.
 
 Once real students take the initial assessment, `python -m model.run_full_ml_pipeline` trains IRT and BKT from their answers automatically (see `docs/ML_SYSTEM_DESIGN.md` §7). Until then that stage reports `SKIPPED_INSUFFICIENT_DATA` and lists what is missing.
 
+**Learning analytics, ready for real data** (`python -m model.learning_analytics_reports`, `docs/ML_SYSTEM_DESIGN.md` §8). Every section reports `INSUFFICIENT_DATA` today and switches on by itself as data arrives:
+
+| Section | Needs |
+|---|---|
+| Bandit decision logging (every question choice, candidates, propensity, reward) | Live now in `selection_decisions` |
+| Off-policy evaluation of the bandit (IPS / SNIPS) | 2,000 rewarded decisions with propensity < 1 (A/B control arm or `KLASSED_BANDIT_EXPLORATION_EPSILON`) |
+| A/B test: adaptive vs random selection (`KLASSED_EXPERIMENT_SELECTION_AB=on`) | 100 students per arm with 2+ papers |
+| Score prediction vs real NEET score | Daily snapshots (live now) + `data/training/neet_actual_scores.csv`, 100 students |
+| Fairness by group | `data/training/student_attributes.csv` (with consent), 50 students per group |
+| Real solve times | 30 answers per question |
+| Anomaly flags (rapid guessing, copying, misfit) — for human review only | Any data |
+| BKT vs PFA challenger | 200 students, 20,000 answers |
+
+The method behind each section is checked on simulations in every pipeline run (`learning_analytics_self_test`).
+
 ---
 
 ## 8. Tests
 
 | Suite | Command | Result |
 |---|---|---|
-| Full ML pipeline + reproducibility | `python -m model.run_full_ml_pipeline --verify-reproducible` | 10 / 10 stages pass; 7 / 7 metrics within 0.005 |
-| Standalone ML suites | `python -m model.tests.test_ml_standalone_suite` | 38 / 38 pass |
+| Full ML pipeline + reproducibility | `python -m model.run_full_ml_pipeline --verify-reproducible` | 14 / 14 stages pass; 7 / 7 metrics within 0.005 |
+| Standalone ML suites | `python -m model.tests.test_ml_standalone_suite` | 39 / 39 pass |
 | Train/serve library parity | `python -m model.serving_runtime_parity` | serving versions = training pins |
-| Backend integration suites | `python backend/tests/test_v2_engine.py` | 29 / 29 pass |
+| Backend integration suites | `python backend/tests/test_v2_engine.py` | 30 / 30 pass (runs on a temporary copy of the database) |
 | Core SHA-256 registry | `python -m model.verify_artifact_integrity` | 21 / 21 verified |
 | ML extension registry | `python -m model.ml_extension_registry` | 14 / 14 |
 
@@ -169,6 +185,8 @@ Measured with `scripts/million_user_scale_benchmark.py`, 16 threads, 5,000 simul
 | The old JWT secret is in this public repo's git history (removed from code and `vercel.json` on 16 Nov 2026; production now refuses to start without `KLASSED_JWT_SECRET`) | Anyone with the old value can forge tokens for any deployment still using it | DevOps: set a **new** secret (≥ 32 characters) in Vercel/Render before the next deploy; never reuse the old value |
 | Vercel SQLite lives in `/tmp`; recovery relies on a browser journal capped at 75 attempts (server replays 80) | A 180-question paper loses most answers after a cold start; nothing persists across devices | Backend: PostgreSQL migration |
 | `extract_year()` defaults to 2024 when the source has no year | Sample papers display as "NEET 2024" | Backend loader |
+| 131 of 2,400 PYQ explanations are generic templates; 4 of them name a different option than the (correct) key; some PYQs carry wrong chapter tags | Students see explanations that explain nothing | Content: `data/review/explanation_rewrite_list.csv`, chapter column in `data/review/difficulty_tier_review.csv` |
+| Behavioural telemetry (answer switches, hesitation) from students under 18 | DPDP Rules 2025 need verifiable parental consent and limit behavioural monitoring of children | Legal decides; `KLASSED_BEHAVIOURAL_TELEMETRY=off` stops collection immediately |
 
 ---
 

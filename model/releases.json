@@ -1,0 +1,74 @@
+{
+  "schema": 1,
+  "releases": [
+    {
+      "version": "r0001-58bd667",
+      "artifact_digest": "58bd667187d0",
+      "created_at_utc": "2026-11-16T15:03:13+00:00",
+      "git_commit": "764ceb033e0ba7886c91a1daa53b15d3b28b64fb",
+      "stage": "production",
+      "canary_percent": 100,
+      "artifacts": {
+        "data/ncert_knowledge_base.json": "a5a8f4311b92ce553c5385ff88c3c439eb02ff03c0d65d5248a04baab67d3ee1",
+        "data/tagged_questions/neet_questions_clean.json": "fc2dc78ec75dd52c91a33a5805faa275e3c4c16b61191fb1b119cb86a3af5833",
+        "data/tagged_questions/neet_samples_001_to_101_verified.json": "5112d99a9a30e761382b9fe535eccab67f1f30f187efc9922e366056a4d0fabe",
+        "data/taxonomy/NEET_Unified_Weightage_And_Marks_2013_2026.json": "c8ece0b8ba786a1ddee16bc0fe243c30f4345700caaa49f82785818cb66e8be5",
+        "data/taxonomy/chapter_wise_neet_pyq_summary.json": "9eb1f78245259774a2bc69c20b88d08d57ef408d1d600866e506fb10f753a492",
+        "data/training/chapter_wise_features.csv": "e4478d86cc47cb3106f8028454b89672deea14678c6f026c636dfad797bc1c64",
+        "data/training/question_features.csv": "bdcf6e7308aaa89459b9b1f3fb5fca34fd44e619e3b6cc1fb9cfd5c9a4c352e5",
+        "model/assessment_forms.json": "7631bc80d59d76c51b8b1d71ebcc44b71a9385ab8be8ef480c8c8618e7dc8d77",
+        "model/bkt_chapter_parameters.json": "f2a214d8adeb8ff28afc2898faaca02898892a972ffebcc56a0d943b50079ecb",
+        "model/bkt_chapter_parameters_unified.json": "a6220e37c1572eced80b8662b88c3c7b64548b2ecbc1244f1495deb8acccafe1",
+        "model/cold_start_irt_linking.json": "716d038c17f04a76a9dbe189b3d2007539c5f8c473421832cead1b704e31baf1",
+        "model/conformal_laplacian_model.json": "f9b18eb3e87979b383a541263cf669ad5c3724a4c35918e57a54273c92d25031",
+        "model/conformal_laplacian_model_unified.json": "f9b18eb3e87979b383a541263cf669ad5c3724a4c35918e57a54273c92d25031",
+        "model/difficulty_model_v21_report.json": "6b234f1ffbffcf643443b3b5c6d678a3ca08fd2700f4f6d41fe88e93ed357eac",
+        "model/dina_calibrated_parameters.json": "0e38945e64c69e373cdf3291ec6528dccbced744712140e0d9b84a0380a5d488",
+        "model/dina_calibrated_parameters_unified.json": "587b9969f04658cb855682c39d56d0d667da9e437c36073a01c078f3b47933aa",
+        "model/irt_cold_start_ridge.npz": "f8717be1f496213bf61aa36ed83d4f558bcb7ceee79f44bcd5d12c508611dc35",
+        "model/irt_item_parameters.json": "a8907417ffc46466cd2fd5bdb63b9a8b505fae57d202b898146c84f91646d73a",
+        "model/linucb_prior_init.json": "7424ceec594fa2a34071a3cb5eaa54b1485e2dd56891d1002a4748247cb631f0",
+        "model/linucb_prior_init_unified.json": "7a58fb03e8832b65a7e765de225ffc3482289de1ea80b66de2f3baffce8740a8",
+        "model/ncert_rag_svd_index.npz": "43bd1232ed96264fadaf75c5cb57464520e9049dba79d3d55798430c21a3d969",
+        "model/ncert_rag_svd_index_unified.npz": "f355a356f5bda827ba3f3bbfabea96c7d6a1ec42abfed929d648d8714e249fb7",
+        "model/ncert_rag_svd_meta.json": "65fb624307f5b2ffb593c674eba82e78f5e177d627404d5963df88ac375caf03",
+        "model/ncert_rag_svd_meta_unified.json": "5cf1c29ad8aad943e4032c1b767714e558338da9056e625c99a0022a3bb841d1",
+        "model/question_difficulty_model.joblib": "a2f55761804f0db652975fec240a7e46fb1c7c70b47f73240989275c8815fc85",
+        "model/question_difficulty_model_v21_text_candidate.joblib": "e1158b6dba209a44bf44f0b9cd99edba04d425cc73c72adf0541ae6e29aa93cf",
+        "model/question_difficulty_model_v2_candidate.joblib": "86df54ccbc2057724c36a21f2139ec772af8ad464fff73b5fc569ed2a9501144",
+        "model/question_similarity_report.json": "8e0b82a10f9f82d86b3310c8fd6882651633f691c5f589c5252cc28948a45c1a",
+        "model/rf_difficulty_forest.npz": "cdfd08124ba13b1366034ed072dfb56b0f58e513f8b9c3432533106d9e08b5ae",
+        "model/rf_difficulty_meta.json": "81c189802c61dc383f14056498852c1115be1cc1b3782ece38ce1858b930515f",
+        "model/rf_temperature_calibration.json": "11c8c6071ab2ce4238cecda8361089fe3fce277ab829d13ae803a15e394ef4f0",
+        "model/sample_paper_irt_parameters.json": "49828da65b105f618b58b5ed7a398db0119cbbe29b0c1376140be7a08ff5d010",
+        "model/tier_recalibration_proposal.json": "3481eee75eebd7be8636aed58f0c3642cd5bd5504f1624aa318a9ac47571a4d7",
+        "model/topic_importance.json": "4d0e58c43f195b31dd917b6b7650fb35976959e72ebe191d8bb1e005394e0680",
+        "model/unified_near_duplicate_map.json": "e4c986056825048287d243a3f321e36a83d1dbd0bdadb05ac34781086be78bfc"
+      },
+      "metrics": {
+        "validation_report.json:random_forest_holdout_evaluation.holdout_accuracy": 0.7791666666666667,
+        "validation_report.json:random_forest_holdout_evaluation.macro_f1": 0.7825,
+        "validation_report.json:stratified_5fold_cross_validation.mean_cv_accuracy": 0.7953,
+        "difficulty_model_v21_report.json:v21_tfidf_logreg.accuracy": 0.8238,
+        "difficulty_model_v21_report.json:v21_tfidf_logreg.macro_f1": 0.7705,
+        "ncert_rag_svd_meta.json:heldout_chapter_retrieval.top1_chapter_accuracy": 0.3496,
+        "ncert_rag_svd_meta.json:heldout_chapter_retrieval.top3_chapter_accuracy": 0.5341
+      },
+      "notes": "baseline: the model set served at commit 764ceb0 (recorded when the release registry was introduced)",
+      "history": [
+        {
+          "at": "2026-11-16T15:03:13+00:00",
+          "event": "-> staging",
+          "reviewer": "",
+          "canary_percent": 100
+        },
+        {
+          "at": "2026-11-16T15:03:13+00:00",
+          "event": "-> production",
+          "reviewer": "baseline record (no new model)",
+          "canary_percent": 100
+        }
+      ]
+    }
+  ]
+}

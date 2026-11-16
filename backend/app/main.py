@@ -1,6 +1,7 @@
 import base64
 import importlib.util as _importlib_util
 import json
+import logging
 import math
 import os
 from pathlib import Path
@@ -15,7 +16,7 @@ from sqlalchemy.orm import Session
 from . import schemas, auth
 from .analytics import build_analytics
 from .database import get_db, init_db
-from .db_models import Question, Student, StudentTopicState, TestAttempt, Topic
+from .db_models import Question, ScorePredictionSnapshot, SelectionDecision, Student, StudentTopicState, TestAttempt, Topic
 from .state_machine import process_answer
 from .time_tracking import update_pace, expected_time
 from .paper_generator import generate_paper
@@ -35,6 +36,8 @@ from model.irt_3pl_model import (
     rf_serving_status,
 )
 from model.serving_runtime_parity import check_runtime_parity
+from model.state_store import shared_store
+from model.privacy_settings import minimise_behavioural_signals, privacy_status
 from model.knowledge_graph_dag import (
     DAG_NODES,
     is_prerequisite_graph_acyclic,
@@ -95,6 +98,47 @@ SERVING_RUNTIME_PARITY = check_runtime_parity()
 
 with open(MODEL_DIR / "topic_importance.json", encoding="utf-8") as f:
     _TOPIC_IMPORTANCE = json.load(f)
+
+
+def _attach_decision_reward(db: Session, student_id: str, question_id: str, reward: float, attempt_row) -> None:
+    try:
+        decision = (
+            db.query(SelectionDecision)
+            .filter(
+                SelectionDecision.student_id == student_id,
+                SelectionDecision.question_id == question_id,
+                SelectionDecision.reward.is_(None),
+            )
+            .order_by(SelectionDecision.decision_id.desc())
+            .first()
+        )
+        if decision is None:
+            return
+        db.flush()
+        decision.reward = float(reward)
+        decision.attempt_id = getattr(attempt_row, "attempt_id", None)
+        decision.rewarded_at = datetime.now(timezone.utc)
+    except Exception as exc:
+        logging.getLogger("klassed.selection").warning("Could not attach reward to selection decision: %s", exc)
+
+
+def _store_score_snapshot(db: Session, student_id: str, mc: dict, expected: int, theta: float, n_attempts: int) -> None:
+    try:
+        today = datetime.now(timezone.utc).date().isoformat()
+        interval = mc.get("conformal_90_interval") or [expected, expected]
+        row = db.query(ScorePredictionSnapshot).filter_by(student_id=student_id, snapshot_date=today).first()
+        if row is None:
+            row = ScorePredictionSnapshot(student_id=student_id, snapshot_date=today)
+            db.add(row)
+        row.expected_score = float(expected)
+        row.low_90 = float(interval[0])
+        row.high_90 = float(interval[1])
+        row.global_theta = float(theta) if theta is not None else None
+        row.attempts_so_far = int(n_attempts)
+        db.commit()
+    except Exception as exc:
+        db.rollback()
+        logging.getLogger("klassed.score_validation").warning("Could not store score snapshot: %s", exc)
 
 
 def _read_json_safe(p: Path) -> dict:
@@ -206,9 +250,12 @@ def _process_single_attempt_no_commit(
     safe_time_taken = max(0.5, min(3600.0, float(attempt.time_taken_seconds) if attempt.time_taken_seconds is not None else float(exp_sec or 60.0)))
     time_ratio = safe_time_taken / max(1.0, float(exp_sec))
 
-    opt_switches = int(attempt.option_switches or 0)
-    hesitation = int(attempt.hesitation_ms or 0)
-    dwell = int(attempt.dwell_time_ms if attempt.dwell_time_ms is not None else (safe_time_taken * 1000.0))
+    opt_switches, hesitation, dwell = minimise_behavioural_signals(
+        int(attempt.option_switches or 0),
+        int(attempt.hesitation_ms or 0),
+        int(attempt.dwell_time_ms if attempt.dwell_time_ms is not None else (safe_time_taken * 1000.0)),
+        safe_time_taken,
+    )
 
     prev_topic_attempt = (
         db.query(TestAttempt)
@@ -230,19 +277,18 @@ def _process_single_attempt_no_commit(
     if not student:
         raise HTTPException(status_code=404, detail=f"Student {attempt.student_id} not found")
 
-    db.add(
-        TestAttempt(
-            student_id=attempt.student_id,
-            question_id=attempt.question_id,
-            paper_number=attempt.paper_number,
-            is_correct=is_correct,
-            time_taken_seconds=safe_time_taken,
-            selected_option=attempt.selected_option,
-            option_switches=opt_switches,
-            hesitation_ms=hesitation,
-            dwell_time_ms=dwell,
-        )
+    attempt_row = TestAttempt(
+        student_id=attempt.student_id,
+        question_id=attempt.question_id,
+        paper_number=attempt.paper_number,
+        is_correct=is_correct,
+        time_taken_seconds=safe_time_taken,
+        selected_option=attempt.selected_option,
+        option_switches=opt_switches,
+        hesitation_ms=hesitation,
+        dwell_time_ms=dwell,
     )
+    db.add(attempt_row)
 
     state = (
         db.query(StudentTopicState)
@@ -344,7 +390,7 @@ def _process_single_attempt_no_commit(
 
     prereq_ready = compute_prerequisite_readiness(question.topic_id, mastery_map)
 
-    record_bandit_feedback(
+    bandit_reward = record_bandit_feedback(
         student_id=attempt.student_id,
         question_id=question.question_id,
         difficulty=question.difficulty,
@@ -358,6 +404,7 @@ def _process_single_attempt_no_commit(
         time_taken_seconds=safe_time_taken,
         prior_mastery_prob=prior_mastery,
     )
+    _attach_decision_reward(db, attempt.student_id, question.question_id, bandit_reward, attempt_row)
 
     FEATURE_STORE.put_student_features(
         attempt.student_id,
@@ -902,6 +949,8 @@ def _compute_v2_student_insights(student_id: str, db: Session) -> schemas.V2Stud
         else None
     )
     percentile_val = percentile if attempt_rows else None
+    if attempt_rows and predicted_score is not None:
+        _store_score_snapshot(db, student_id, mc_simulator, predicted_score, global_theta, len(attempt_rows))
 
     return schemas.V2StudentInsightsOut(
         student_id=student_id,
@@ -1396,6 +1445,8 @@ def get_mlops_health_and_drift(db: Session = Depends(get_db)):
             "chapter_wise_65_pyq_corpus": (PROJECT_ROOT / "data" / "taxonomy" / "chapter_wise_neet_pyq_summary.json").exists(),
         },
         "rf_serving_backend": rf_serving_status(),
+        "shared_state_store": shared_store().health(),
+        "privacy": privacy_status(),
         "serving_runtime_parity": SERVING_RUNTIME_PARITY,
         "advanced_ml_services": {
             "national_air_rank_simulator": _module_available("model.national_rank_simulator"),

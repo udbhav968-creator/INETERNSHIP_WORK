@@ -78,3 +78,38 @@ class TestAttempt(Base):
     hesitation_ms = Column(Integer, default=0, nullable=False)
     dwell_time_ms = Column(Integer, default=0, nullable=False)
     timestamp = Column(DateTime, default=lambda: datetime.datetime.now(datetime.timezone.utc))
+
+
+class SelectionDecision(Base):
+    __tablename__ = "selection_decisions"
+    decision_id = Column(Integer, primary_key=True, autoincrement=True)
+    request_id = Column(String, nullable=False, index=True)
+    student_id = Column(String, nullable=False, index=True)
+    topic_id = Column(String, nullable=True)
+    question_id = Column(String, nullable=False, index=True)
+    slot = Column(Integer, nullable=False)
+    policy = Column(String, nullable=False)
+    arm = Column(String, nullable=False)
+    epsilon = Column(Float, default=0.0, nullable=False)
+    propensity = Column(Float, nullable=False)
+    chosen_score = Column(Float, nullable=True)
+    candidate_ids = Column(JSON, nullable=True)
+    candidate_scores = Column(JSON, nullable=True)
+    candidate_count = Column(Integer, nullable=False)
+    reward = Column(Float, nullable=True)
+    attempt_id = Column(Integer, nullable=True)
+    created_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.timezone.utc))
+    rewarded_at = Column(DateTime, nullable=True)
+
+
+class ScorePredictionSnapshot(Base):
+    __tablename__ = "score_prediction_snapshots"
+    snapshot_id = Column(Integer, primary_key=True, autoincrement=True)
+    student_id = Column(String, nullable=False, index=True)
+    snapshot_date = Column(String, nullable=False)
+    expected_score = Column(Float, nullable=False)
+    low_90 = Column(Float, nullable=False)
+    high_90 = Column(Float, nullable=False)
+    global_theta = Column(Float, nullable=True)
+    attempts_so_far = Column(Integer, nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.timezone.utc))

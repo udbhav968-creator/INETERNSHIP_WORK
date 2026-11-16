@@ -1,0 +1,25 @@
+{
+  "protocol": "same held-out sample-paper questions as the production retriever (none of them in the index)",
+  "production": {
+    "retriever": "TF-IDF + 32-d LSA hybrid",
+    "eval_questions": 9448,
+    "eval_set": "questions not in the index (no chapter hint)",
+    "top1_chapter_accuracy": 0.3496,
+    "top3_chapter_accuracy": 0.5341,
+    "random_baseline_top1": 0.0154
+  },
+  "challenger": {
+    "retriever": "char_ngram_tfidf (offline stand-in, lexical)",
+    "eval_questions": 9448,
+    "top1_chapter_accuracy": 0.3237,
+    "top3_chapter_accuracy": 0.488,
+    "random_baseline_top1": 0.0154
+  },
+  "top1_gain": -0.0259,
+  "gate": {
+    "min_top1_gain": 0.02
+  },
+  "comparable": true,
+  "decision": "HOLD",
+  "how_to_run_semantic": "python -m model.retrieval_backends --encoder sentence_transformers --model intfloat/multilingual-e5-small (needs torch, sentence-transformers and model download; a GPU is recommended)"
+}

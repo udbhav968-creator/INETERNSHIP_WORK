@@ -1,12 +1,27 @@
 import json
+import logging
 import random
 from sqlalchemy.orm import Session, make_transient
-from .db_models import Question, StudentTopicState, Student, TestAttempt, Topic
+from .db_models import Question, SelectionDecision, StudentTopicState, Student, TestAttempt, Topic
 from .paths import MODEL_DIR
 from model.linucb_bandit import build_context_vector, score_candidate_ucb
 from model.knowledge_graph_dag import compute_prerequisite_readiness
 from model.question_similarity_audit import get_near_duplicate_siblings_map
 from model.state_machine.bkt_model import get_chapter_bkt_prior
+from model.decision_logging import (
+    POLICY_EPSILON,
+    POLICY_GREEDY,
+    POLICY_UNIFORM,
+    active_decision_log,
+    exploration_epsilon,
+    finish_decision_log,
+    rank_with_propensities,
+    record_choice,
+    start_decision_log,
+)
+from model.experiments import ARM_CONTROL, assign_arm
+
+_LOGGER = logging.getLogger("klassed.selection")
 
 with open(MODEL_DIR / "topic_importance.json", encoding="utf-8") as f:
     _TOPIC_IMPORTANCE = json.load(f)
@@ -44,40 +59,44 @@ def _get_question_pools(db: Session) -> dict[tuple[str, str], list[Question]]:
     return _QUESTION_POOL_CACHE
 
 
-def _select_with_bandit(
+def _rank_with_policy(
     pool: list[Question],
-    k: int,
     student_id: str,
     student_theta: float,
     mastery_prob: float,
     topic_importance: float,
     prereq_readiness: float,
     pace_flag: str | None,
-) -> list[Question]:
-    if not pool or k <= 0:
-        return []
-    if len(pool) <= k:
-        return list(pool)
-
+):
+    if not pool:
+        return [], {}
+    log = active_decision_log()
+    arm = log.arm if log is not None else None
     candidates = list(pool)
     random.shuffle(candidates)
-    scored: list[tuple[float, Question]] = []
-    for q in candidates:
-        x = build_context_vector(
-            question_id=q.question_id,
-            difficulty=q.difficulty,
-            expected_time_seconds=q.expected_time_seconds or 90,
-            student_theta=student_theta,
-            topic_mastery_prob=mastery_prob,
-            topic_importance=topic_importance,
-            prereq_readiness=prereq_readiness,
-            pace_flag=pace_flag,
-        )
-        ucb_score, _, _ = score_candidate_ucb(student_id, x)
-        scored.append((ucb_score, q))
-
-    scored.sort(key=lambda pair: pair[0], reverse=True)
-    return [q for _, q in scored[:k]]
+    if arm == ARM_CONTROL:
+        policy, epsilon, scores = POLICY_UNIFORM, 0.0, None
+    else:
+        epsilon = exploration_epsilon()
+        policy = POLICY_EPSILON if epsilon > 0 else POLICY_GREEDY
+        scores = []
+        for q in candidates:
+            x = build_context_vector(
+                question_id=q.question_id,
+                difficulty=q.difficulty,
+                expected_time_seconds=q.expected_time_seconds or 90,
+                student_theta=student_theta,
+                topic_mastery_prob=mastery_prob,
+                topic_importance=topic_importance,
+                prereq_readiness=prereq_readiness,
+                pace_flag=pace_flag,
+            )
+            ucb_score, _, _ = score_candidate_ucb(student_id, x)
+            scores.append(ucb_score)
+    slots = rank_with_propensities([q.question_id for q in candidates], scores, policy, epsilon)
+    by_id = {q.question_id: q for q in candidates}
+    meta = {"policy": policy, "epsilon": epsilon, "slots": {s.question_id: s for s in slots}, "all": slots}
+    return [by_id[s.question_id] for s in slots], meta
 
 
 def _select_topic_questions(
@@ -134,9 +153,8 @@ def _select_topic_questions(
                 continue
 
             siblings_map = get_near_duplicate_siblings_map()
-            ranked_candidates = _select_with_bandit(
+            ranked_candidates, rank_meta = _rank_with_policy(
                 candidates,
-                len(candidates),
                 student_id,
                 topic_theta,
                 mastery_prob,
@@ -153,6 +171,9 @@ def _select_topic_questions(
                 for sib_id in siblings_map.get(q.question_id, []):
                     excluded_ids.add(sib_id)
                 selected.append(q)
+                slot = rank_meta["slots"].get(q.question_id)
+                if slot is not None:
+                    record_choice(topic_id, slot, rank_meta["policy"], rank_meta["epsilon"], rank_meta["all"])
 
     return selected
 
@@ -164,6 +185,53 @@ def generate_paper(
     topic_id: str | None = None,
     mode: str = "mock_45",
     syllabus_mode: str = "all",
+) -> list[Question]:
+    start_decision_log(student_id, assign_arm(student_id))
+    try:
+        paper = _generate_paper_inner(db, student_id, total_length, topic_id, mode, syllabus_mode)
+    finally:
+        log = finish_decision_log()
+    if log is not None and log.records:
+        _persist_decisions(db, log, {q.question_id for q in paper})
+    return paper
+
+
+def _persist_decisions(db: Session, log, served_ids: set[str]) -> None:
+    try:
+        rows = [
+            SelectionDecision(
+                request_id=r.request_id,
+                student_id=r.student_id,
+                topic_id=r.topic_id,
+                question_id=r.question_id,
+                slot=r.slot,
+                policy=r.policy,
+                arm=r.arm,
+                epsilon=r.epsilon,
+                propensity=r.propensity,
+                chosen_score=r.chosen_score,
+                candidate_ids=r.candidate_ids,
+                candidate_scores=r.candidate_scores,
+                candidate_count=r.candidate_count,
+            )
+            for r in log.records
+            if r.question_id in served_ids
+        ]
+        if rows:
+            db.add_all(rows)
+            db.commit()
+    except Exception as exc:
+        db.rollback()
+        _LOGGER.warning("Could not store selection decisions: %s", exc)
+
+
+def _generate_paper_inner(
+    db: Session,
+    student_id: str,
+    total_length: int,
+    topic_id: str | None,
+    mode: str,
+    syllabus_mode: str,
 ) -> list[Question]:
     paper: list[Question] = []
     pools = _get_question_pools(db)

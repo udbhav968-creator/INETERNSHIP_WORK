@@ -1,0 +1,476 @@
+﻿review_id,question_id,subject,chapter,question_text,option_a,option_b,option_c,option_d,correct_option,reviewer_tier,chapter_tag_ok,correct_chapter,reviewer_name,notes
+R0001,NEET2022_BIO_115,Biology,Cell: The Unit of Life,Which of the following is not observed during apoplastic pathway ?,Movement of water occurs through intercellular spaces and wall of the cells,The movement does not involve crossing of cell membrane,The movement is aided by cytoplasmic streaming,Apoplast is continuous and does not provide any barrier to water movement,c,,,,,
+R0002,NEET2018_BIO_108,Biology,Morphology of Flowering Plants,Offsets are produced by,Parthenocarpy,Mitotic divisions,Meiotic divisions,Parthenogenesis,b,,,,,
+R0003,NEET2023_PHY_017,Physics,Kinematics,A vehicletravels half the distance with speed vand the remainingdistance with speed2v.Its average speed is,4v / 3,2v / 3,3v / 4,v / 2,c,,,,,
+R0004,NEET2020_PHY_148,Physics,Rotational Motion,Two particles of mass 5 kg and 10 kg respectively are attached to the two ends of a rigid rod of length 1 m with negligible mass. The centre of mass of the system from the 5 kg particle is nearly at a distance of :,33 cm,50 cm,67 cm,80 cm,c,,,,,
+R0005,NEET2023_BIO_114,Biology,Cell Cycle & Cell Division,"Among eukaryotes, replication of nuclear DNA takes place during which phase of the cell cycle?",M phase,S phase,G1 phase,G2 phase,b,,,,,
+R0006,NEET2020_CHEM_115,Chemistry,Hydrocarbons,The mixture which shows positive deviation from Raoult’s law is,Ethanol + Acetone,Benzene + Toluene,Acetone + Chloroform,Chloroethane + Bromoethane,a,,,,,
+R0007,NEET2025_PHY_050,Physics,Kinematics,"Energy and radius of first Bohr orbit of He' and Li2 are [Given RH= 2.18 × 10-18 J, ao= 52.9 pm] [ sr-0 * 96T-(.)3 (t) rn(Li2*) = 17.6 pm En(He') = 8.72 × 10-18 ]; r(He') = 26.4 pm
+(2) En(LI2*) = 8.72 × 10-18 ]; r(Li2*)= 26.4 pm En(He') = 19.62 × 10-18 ]; rn(He') = 17.6 pm
+(3) En(Li2*) = 19.62 × 10-16 ]; rn(Li2*) = 17.6 pm En(He') = 8.72 × 10-16 ]; rn(He') = 26.4 pm",En[Li2*) = 8.72 × 10-16 ];,rs(Li2*) = 17.6 pm,En(He') = 19.62 × 10-16 ];,r:(He') = 17.6 pm,a,,,,,
+R0008,NEET2014_BIO_103,Biology,Cell: The Unit of Life,Which structures perform the function of mitochondria in bacteria ?,Nucleoid,Ribosomes,Cell wall,Mesosomes,d,,,,,
+R0009,NEET2024_BIO_172,Biology,Reproduction & Human Development,"Arrange the following parts in human Mammary gland, traversing the route of milk ejection. B. A. Mammary duct Lactiferous duct C. Mammaryalveolus D. Ampulla E. Mammary tubule Choose the correct answer from the options given below:",D→C→E→A→B,( C→E→B→A-→D,C→E→A→D→B,A→C→E→D→B,c,,,,,
+R0010,NEET2014_BIO_095,Biology,Plant Kingdom,Which one of the following is wrong about Chara ?,Upper oogonium and lower round antheridium,Globule and nuclue present on the same plant,Upper antheridium and lower oogonium,Globule is male reproductive structure,c,,,,,
+R0011,NEET2021_BIO_116,Biology,Cell: The Unit of Life,Match List-I with List-II for Cell: The Unit of Life (Golgi) and select the correct combination:,(iv) (iii) (ii) (i),(i) (iv) (iii) (ii),(iii) (iv) (i) (ii),(ii) (iii) (iv) (i),c,,,,,
+R0012,NEET2017_BIO_116,Biology,Ecology & Environment,Mycorrhizae are the example of,Fungistasis,Amensalism,Antibiosis,Mutualism,d,,,,,
+R0013,NEET2016_BIO_133,Biology,Reproduction & Human Development,Identify the correct statement on ‘inhibin’:,"Inhibits the secretion of LH, FSH and Prolactin",Is produced by granulose cells in ovary and inhibits the secretion of FSH,Is produced by granulose cells in ovary and inhibits the secretion of LH,Is produced by nurse cells in testes and inhibits the secretion of LH,b,,,,,
+R0014,NEET2016_BIO_146,Biology,"Human Health, Disease & Microbes",Which of the following statements is not true for cancer cells in relation to mutations?,Mutations in proto – oncogenes accelerate the cell cycle,Mutations destroy telomerase inhibitor,Mutations inactivate the cell control,Mutations inhibit production of telomerase,d,,,,,
+R0015,NEET2016_PHY_010,Physics,Oscillations & Waves,"A uniform rope of length L and mass m1, hangs vertically from a rigid support. A block of mass m2 is attached to the free end of the rope. A transverse pulse of wavelength λ1 is produced at the lower end of the rope. The wavelength of the pulse when it reaches the top of the rope is λ2. The ratio λ2/λ1 is:
+(1) √ m1 m2
+(2) √ m1+m2 m2
+(3) √ m1",m2,√,m1+m2,m1,b,,,,,
+R0016,NEET2013_PHY_039,Physics,Ray Optics,"A plano convex lens fits exactly into a plano concave lens. Their plane surfaces are parallel to each other. If lenses are made of different materials of refractive indices µ1 and µ2 and R is the radius of curvature of the curved surface of the lenses, then the focal length of the combination is -",) ( 2 R 2 1 µ + µ,) ( 2 R 2 1 µ − µ,) ( R 2 1 µ − µ,) ( R 2 1 2 µ − µ,c,,,,,
+R0017,NEET2018_CHEM_071,Chemistry,Mole Concept / Stoichiometry,"Iron carbonyl, Fe(CO)5 is",Trinuclear,Mononuclear,Tetranuclear,Dinuclear NEET (UG) - 2018 (Code-AA) ACHLA,b,,,,,
+R0018,NEET2024_CHEM_065,Chemistry,General Organic Chemistry,The correct IUPAC name of the compound 4-ethyl-1-fluoro-2-nitrobenzene is:,ethyl-1-fluoro-2-nitrobenzene,ethyl-4-fluoro-3-nitrobenzene,fluoro-5-ethylnitrobenzene,fluoro-4-ethyl-2-nitrobenzene,a,,,,,
+R0019,RENEET2026_PHY_028,Physics,Ray Optics,"The lens combination as shown in the figure, consists of two lenses, Li and L2, of the focal lengths +10 cm and 10 cm, respectively. The position of the image formed is: 30 cm 3 cm 60 cm to the left of the concave lens",30 cm to the right of the concave lens,60 cm to the right of the concave lens,20 cm to the left of the concave lens,40 cm,a,,,,,
+R0020,NEET2022_CHEM_060,Chemistry,Chemical Bonding,Amongst the following which one will have maximum ‘lone pair - lone pair’ electron repulsions?,CIF3,IF5,SF4,XeF2,d,,,,,
+R0021,NEET2014_PHY_027,Physics,Current Electricity,"The resistance in the two arms of the meter bridge are 5 Ω and R Ω, respectively. When the resistance R is shunted with an equal resistance, the new balance points is at 1.6 l1. The resistance 'R', is : G 5Ω RΩ A B l1 100 – l1",10 Ω,15 Ω,20 Ω,25 Ω,b,,,,,
+R0022,NEET2014_BIO_145,Biology,Biomolecules,Which one of the following is a non-reducing carbohydrate ?,Maltose,Sucrose,Lactose,Ribose 5-phophate,b,,,,,
+R0023,NEET2017_BIO_162,Biology,Structural Organisation in Animals,Select the correct route for the passage of sperms in male frogs :,Testes → Bidder's canal → Kidney → Vasa efferentia → Urinogenital duct → Cloaca,Testes → Vasa efferentia → Kidney → Seminal Vesicle → Urinogenital duct → Cloaca,Testes → Vasa efferentia → Bidder's canal → Ureter → Cloaca,Testes → Vasa efferentia → Kidney → Bidder's canal → Urinogenital duct → Cloaca,d,,,,,
+R0024,NEET2014_BIO_154,Biology,Locomotion & Neuro-Endocrine Control,Stimulation of a muscle fiber by a motor neuron occurs at -,the neuromuscular junction,the transverse tubules,the myofibril,the sacroplasmic reticulum,a,,,,,
+R0025,NEET2017_PHY_044,Physics,Ray Optics,A thin prism having refracting angle 10° is made of glass of refractive index 1.42. This prism is combined with another thin prism of glass of refractive index 1.7. This combination produces dispersion without deviation. The refracting angle of second prism should be,4°,6°,8°,10°,b,,,,,
+R0026,NEET2017_BIO_117,Biology,Biological Classification,Viroids differ from viruses in having :,DNA molecules with protein coat,DNA molecules without protein coat,RNA molecules with protein coat,RNA molecules without protein coat,d,,,,,
+R0027,NEET2019_BIO_091,Biology,Ecology & Environment,The Earth Summit held in Rio de Janeiro in 1992 was called,to reduce CO2 emissions and global warming,for conservation of biodiversity and sustainable utilization of its benefits,to assess threat posed to native species by invasive weed species,for immediate steps to discontinue use of CFCs that were damaging the ozone layer,b,,,,,
+R0028,RENEET2026_BIO_143,Biology,Biotechnology,"During PCR, primers bind to the DNA strands in the step.",extension,annealing,ligation,denaturation,b,,,,,
+R0029,NEET2016_CHEM_054,Chemistry,"Aldehydes, Ketones & Carboxylic Acids","The correct statement regarding a carbonyl compound with a hydrogen atom on its alpha carbon, is:",A carbonyl compound with a hydrogen atom on its alpha-carbon never equilibrates with its corresponding enol.,A carbonyl compound with a hydrogen atom on its alpha-carbon rapidly equilibrates with its corresponding enol and this process is known as aldehyde-ketone equilibration.,A carbonyl compound with a hydrogen atom on its alpha-carbon rapidly equilibrates with its corresponding enol and this process is known as carbonylation.,A carbonyl compound with a hydrogen atom on its alpha-carbon rapidly equilibrates with its corresponding enol and this process is known as keto-enol tautomerism.,d,,,,,
+R0030,NEET2024_BIO_125,Biology,Plant Physiology,A. Cellular respiration is the breaking of C-C bonds of complex organic molecules by oxidation. B. The entire cellular respiration takes place in Mitochondria. Fermentation takes place under anaerobic condition in germinating seeds. D. Water is formed during respiration as a result of O2 accepting electrons and getting reduced. Choose the correct answer from the options given below:,"A, C, D, E only","A, B, E only","A, B, C, E only","B, C, D, E only",a,,,,,
+R0031,NEET2016_BIO_108,Biology,Locomotion & Neuro-Endocrine Control,Which of the following pairs of hormones are not antagonistic (having opposite effects) to each other?,Parathormone - Calcitonin,Insulin - Glucagon,Aldosterone - Atrial Natriuretic Factor,Relaxin - Inhibin,d,,,,,
+R0032,RENEET2026_BIO_105,Biology,Plant Physiology,How many molecules of pyruvic acid are produced at the end of glycolysis from 206 molecules of glucose?,309,103,412,206,c,,,,,
+R0033,NEET2016_CHEM_064,Chemistry,Thermodynamics,The correct thermodynamic conditions for the spontaneous reaction at all temperatures is:,∆H < 0 and ∆S = 0,∆H > 0 and ∆S < 0,∆H < 0 and ∆S > 0,∆H < 0 and ∆S < 0,c,,,,,
+R0034,RENEET2026_BIO_154,Biology,Reproduction & Human Development,Sponges exchange O2 with CO2 by,moist cuticle,tracheal tubes,gills,simple diffusion over their entire body surfaces,d,,,,,
+R0035,NEET2023_BIO_160,Biology,Genetics & Molecular Inheritance,"Given below are two statements:
+Statement I: RNA mutates at a faster rate.
+Statement II: Viruses having RNA genome and shorter life span mutate and evolve faster. In the light of the above statements, choose the correct answer from the options given below:",Both Statement I and Statement II are true,Both Statement I and Statement II are false,Statement I is true but Statement II is false,Statement I is false but Statement II is true,a,,,,,
+R0036,NEET2018_BIO_097,Biology,Biological Classification,In which of the following forms is iron absorbed by plants?,Free element,Ferrous,Ferric,Both ferric and ferrous,c,,,,,
+R0037,NEET2017_CHEM_053,Chemistry,Chemical Bonding,"The species, having bond angles of 120° is",PH3,CIF3,NCl3,BCl3,d,,,,,
+R0038,NEET2021_BIO_167,Biology,The Living World & Taxonomy,"Match the following:
+List-I
+List-II
+(a)
+(b)
+(c)
+(d) ( ) i
+(ii)
+(iii) (iv) Physalia Pearl oyster Portuguese Man of War Limulus Ancylost ma o Pinctada Living fossil Hookworm Choose the correct answer from the options given below.
+(a)
+(b)
+(c)
+(d)",(ii) (iii) (i) (iv),(iv) (i) (iii) (ii),(ii) (iii) (iv) (i),(i) (iv) (iii) (ii),c,,,,,
+R0039,RENEET2026_BIO_140,Biology,Locomotion & Neuro-Endocrine Control,Which of the following hormone is not secreted by human placenta?,Estrogen,Progesterone,LH,hCG,c,,,,,
+R0040,NEET2014_CHEM_062,Chemistry,Mole Concept / Stoichiometry,1.0 g of magnesium is burnt with 0.56g O2 in a closed vessel. Which reactant is left in excess and how much ? (At. wt. Mg = 24; O = 16),"Mg, 0.16g","O2, 0.16 g","Mg, 0.44 g","O2, 0.28 g",a,,,,,
+R0041,NEET2015_BIO_117,Biology,Locomotion & Neuro-Endocrine Control,"Which one of the following hormones though synthesis elsewhere, is stored and released by the master gland?",Melanocyte stimulating hormone,Antidiuretic hormone,Luteinizing hormone,Prolactin,b,,,,,
+R0042,RENEET2026_BIO_128,Biology,Structural Organisation in Animals,"In frogs, the number of pairs of cranial nerves arising from the brain are
+(1) 9",10,12,9,0,b,,,,,
+R0043,NEET2021_BIO_151,Biology,Biological Classification,Identify the incorrect pair,Alkaloids – Codeine,Toxin – Abrin,Lectins – Concanavalin A,Drugs – Ricin,d,,,,,
+R0044,NEET2014_CHEM_047,Chemistry,Mole Concept / Stoichiometry,"Calculate the energy in joule corresponding to light of wavelength 45 nm: (Planck constant h = 6.63 × 1034 Js, speed of light c = 3 × 108 ms–1)",6.67 × 1015,6.67 × 1011,42 × 10–15,42 × 10–18,d,,,,,
+R0045,NEET2020_BIO_083,Biology,Genetics & Molecular Inheritance,Experimental verification of the chromosomal theory of inheritance was done by,Mendel,Sutton,Boveri,Morgan,d,,,,,
+R0046,NEET2014_BIO_113,Biology,Plant Physiology,Which one of the following growth regulators is known as 'stress hormone' ?,Abscissic acid,Ethylene,GA3,Indole acetic acid,a,,,,,
+R0047,NEET2023_CHEM_066,Chemistry,Chemical Bonding,"The number of bonds, bonds and lone pair of electrons in pyr i dine, respectively are:","11,2, 0","12, 3, 0","11, 3, 1","12, 2, 1",c,,,,,
+R0048,NEET2018_BIO_171,Biology,The Living World & Taxonomy,Select the incorrect match :,Submetacentric – L-shaped chromosomes chromosomes,Allosomes – Sex chromosomes,Lampbrush – Diplotene bivalents chromosomes,Polytene – Oocytes of chromosomes amphibians,d,,,,,
+R0049,RENEET2026_BIO_138,Biology,Biotechnology,"Match List-I with List-lI.
+List-I
+ListI Transformation Restriction enzyme B. Cloning site Transfer DNA to host bacteria C. Selection Replication D. IV. Antibiotic Choose the correct answer from the options given below:","A-I, B-I, C-IV, D-II","A-, B-IV, C-, D-I","A-IV, B-, C-, D-II","A-, B-I, C-IV, D-II",d,,,,,
+R0050,NEET2015_PHY_151,Physics,Gravitation,"A remote-sensing satellite of earth revolves in a circular orbit at a height of 0.25 × 106 m above the surface of earth. If earth’s radius is 6.38 × 106 m and g = 9.8 ms−2, then the orbital speed of the satellite is:",6.67 km s−1,7.76 km s−1,8.56 km s−1,9.13 km s−1,b,,,,,
+R0051,NEET2025_BIO_133,Biology,Ecology & Environment,Who is known as the Indian Father of Paleobotany?,Birbal Sahni,Ram Udar,P. Maheshwari,K.C. Mehta,a,,,,,
+R0052,NEET2022_BIO_110,Biology,Biomolecules,"Given below are two statements :
+Statement I : The primary CO2 acceptor in C4 plants is phosphoenolpyruvate and is found in the mesophyll cells.
+Statement II : Mesophyll cells of C4 plants lack RuBisCo enzyme. In the light of the above statements, choose the correct answer from the options given below:",Both Statement I and Statement II are correct,Both Statement I and Statement II are incorrect,Statement I is correct but Statement II is incorrect,Statement I is incorrect but Statement II is correct,a,,,,,
+R0053,NEET2018_PHY_003,Physics,Kinematics,At what temperature will the rms speed of oxygen molecules become just sufficient for escaping from the Earth's atmosphere? (Given : Mass of oxygen molecule (m) = 2.76 × 10–26 kg Boltzmann's constant kB = 1.38 × 10–23 JK–1),5.016 × 104 K,8.360 × 104 K,508 × 104 K,254 × 104 K,b,,,,,
+R0054,NEET2022_PHY_019,Physics,Kinematics,"In the given nuclear reaction, the element X is 22 11Na + → + + ν X e",23 11Na,23 10Ne,22 10Ne,22 12Mg,c,,,,,
+R0055,NEET2021_PHY_037,Physics,Ray Optics,"A point object is placed at a distance of 60 cm from a convex lens of focal length 30 cm. If a plane mirror were put perpendicular to the principal axis of the lens and at a distance of 40 cm from it, the final image would be formed at a distance of 60 cm 40 cm","20 cm from the lens, it would be a real image","30 cm from the lens, it would be a real image","30 cm from the plane mirror, it would be a virtual image","20 cm from the plane mirror, it would be a virtual image",d,,,,,
+R0056,NEET2024_PHY_025,Physics,Wave Optics,Two slits in Young's double slit experiment are 1.5mm apart and the screen is placed at a distance of 1m from the slits. if the wavelength of light used is 600 × 10-9m then the fringe separation is,×10~5m,9×10-8m,×10-7m,4×104m,d,,,,,
+R0057,NEET2014_BIO_123,Biology,Morphology of Flowering Plants,Fruit colour in squash is an example of -,Recessive epistasis,Dominant epistasis,Complementary genes,Inhibitory genes,b,,,,,
+R0058,RENEET2026_PHY_038,Physics,Oscillations & Waves,Which of the following measurements require index correction'?,Measurement of gravitational acceleration using simple pendulum,Measurement of focal length of lenses using optical bench,Measurement of speed of sound using resonance tube,Measurement of resistance of a wire using meter bridge,b,,,,,
+R0059,NEET2016_CHEM_071,Chemistry,s-Block Elements,The product obtained as a result of a reaction of nitrogen with CaC2 is:,Ca(CN)2,CaCN,CaCN3,Ca2CN,b,,,,,
+R0060,NEET2018_CHEM_085,Chemistry,Mole Concept / Stoichiometry,"The bond dissociation energies of X2, Y2 and XY are in the ratio of 1 : 0.5 : 1. ΔH for the formation of XY is –200 kJ mol–1. The bond dissociation energy of X2 will be",800 kJ mol–1,100 kJ mol–1,200 kJ mol–1,400 kJ mol–1,a,,,,,
+R0061,NEET2014_CHEM_075,Chemistry,d- and f-Block Elements,Reason of lanthanoid contraction is :,Negligible screening effect of 'f' orbitals,Increasing nuclear charge,Decreasing nuclear charge,Decreasing screening effect,a,,,,,
+R0062,NEET2023_BIO_150,Biology,Biotechnology,"Main steps in the formation of Recombinant DNA are given below. Arrange these steps in a correct sequence:
+A. Insertion of recombinant DNA into the host cell
+B. Cutting of DNA at specific location by restriction enzyme
+C. Isolation of desired DNA fragment
+D. Amplification of gene of interest using PCR Choose the correct answer from the options given below:","B, C, D, A","C, A, B, D","C, B, D, A","B, D, A, C",a,,,,,
+R0063,NEET2024_BIO_177,Biology,Structural Organisation in Animals,"In which of the following connective tissues, the cells secrete fibres of collagen or elastin? Cartilage B.Bone A.
+C. Adipose tissue E.Areolar tissue D. Blood","B, C, D and E only","A, B, C and E only","B, C and D only","A, C and D only",b,,,,,
+R0064,NEET2014_CHEM_089,Chemistry,Mole Concept / Stoichiometry,Identity Z in the sequence of reactions : Z Y CH CH CH CH on a H C O H / HBr 2 2 3 5 2 2 2 → → → → → → → → → → → =,CH3 – (CH2)3 – O – CH2CH3,(CH3)2CH2 – O – CH2CH3,CH3(CH2)4 – O – CH3,CH3CH2 – CH(CH3)– O – CH2CH3,a,,,,,
+R0065,NEET2020_BIO_026,Biology,Animal Kingdom,"Which of the following statements are true for the phylum-Chordata?
+(a) In Urochordata notochord extends from head to tail and it is present throughout their life.
+(b) In Vertebrata notochord is present during the embryonic period only.
+(c) Central nervous system is dorsal and hollow.
+(d) Chordata is divided into 3 subphyla : Hemichordata, Tunicata and Cephalochordata.",(d) and (c),(c) and (a),(a) and (b),(b) and (c),d,,,,,
+R0066,NEET2020_PHY_174,Physics,Kinematics,The quantities of heat required to raise the temperature of two solid copper spheres of radii r1 and r2 (r1 = 1.5 r2) through 1 K are in the ratio :,27 8,9 4,2,5 3,a,,,,,
+R0067,NEET2020_PHY_140,Physics,Ray Optics,"A ray is incident at an angle of incidence i on one surface of a small angle prism (with angle of prism A) and emerges normally from the opposite surface. If the refractive index of the material of the prism is μ, then the angle of incidence is nearly equal to :",A 2μ,2A μ,μA,A 2 μ,c,,,,,
+R0068,NEET2024_PHY_002,Physics,Laws of Motion,"A bob is whirled in a horizontal circle by means of a string at an initial speed of 10 rpm. If the tension in the string is quadrupled, the new speed of the bob is:",20 rpm,10 rpm,40 rpm,5 rpm,a,,,,,
+R0069,NEET2013_CHEM_057,Chemistry,Mole Concept / Stoichiometry,A metal has a fcc lattice. The edge length of the unit cell is 404 pm. The density of the metal is 2.72 g cm–3. The molar mass of the metal is : [NA Avogadro's constant = 6.02 × 1023 mol–1],40 g mol–1,30 g mol–1,27 g mol–1,20 g mol–1,c,,,,,
+R0070,NEET2023_CHEM_073,Chemistry,Structure of Atom,"Consider the following reaction and identify the product (P). CH,-CH-CH-CH, HBr> Product (P) CH3 OH 3-Methylbutan-2-ol Br",CH-C-CH2-CHa,"CH3CH=CH-CH3 CH CH,","CH, CH-CHCH,","CH-C-CH, Br CH, Br CH",a,,,,,
+R0071,NEET2020_BIO_069,Biology,Plant Physiology,"In relation to Gross primary productivity and Net primary productivity of an ecosystem, which one of the following statements is correct?",Gross primary productivity is always less than net primary productivity,Gross primary productivity is always more than net primary productivity,Gross primary productivity and Net primary productivity are one and same,There is no relationship between Gross primary productivity and Net primary productivity,b,,,,,
+R0072,NEET2023_PHY_023,Physics,Kinematics,The temperature of a gas is-5o°C.To what temperature the gas should be heated so that the rms speed is increasedby3times?,669℃C,3295℃C,3097 K,223K,b,,,,,
+R0073,NEET2023_CHEM_058,Chemistry,Haloalkanes & Haloarenes,The given compound CH=CH-CH-CH2 CH3 is an example of,Benzylic halide,Aryl halide,Allylic halide,Vinylic halide,c,,,,,
+R0074,NEET2021_CHEM_091,Chemistry,Thermodynamics,In which one of the following arrangements the given sequence is not strictly according to the properties indicated against it?,HF < HCl : Increasing acidic < HBr < HI strength,H2O < H2S : Increasing pKa < H2Se < H2Te values,NH3 < PH3 : Increasing < AsH3 < SbH3 acidic character,CO2 < SiO2 : Increasing < SnO2 < PbO2 oxidizing power,b,,,,,
+R0075,NEET2019_BIO_094,Biology,Cell: The Unit of Life,The shorter and longer arms of a submetacentric chromosome are referred to as,s-arm and l-arm respectively,p-arm and q-arm respectively,q-arm and p-arm respectively,m-arm and n-arm respectively,b,,,,,
+R0076,NEET2022_BIO_108,Biology,Biomolecules,Match List-I with List-II for Biomolecules (Enzyme) and select the correct combination:,"(a)-(iii), (b)-(iv), (c)-(i), (d)-(ii)","(a)-(iv), (b)-(iii), (c)-(ii), (d)-(i)","(a)-(iv), (b)-(i), (c)-(ii), (d)-(iii","(a)-(iii), (b)-(i), (c)-(ii), (d)-(iv)",b,,,,,
+R0077,NEET2020_CHEM_107,Chemistry,"Aldehydes, Ketones & Carboxylic Acids",Reaction between benzaldehyde and acetophenone in presence of dilute NaOH is known as,Aldol condensation,Cannizzaro’s reaction,Cross Cannizzaro’s reaction,Cross Aldol condensation,d,,,,,
+R0078,NEET2022_BIO_142,Biology,Genetics & Molecular Inheritance,Which of the following occurs due to the presence of autosome linked dominant trait ?,Sickle cell anaemia,Myotonic dystrophy,Haemophilia,Thalessemia,b,,,,,
+R0079,NEET2023_BIO_192,Biology,Structural Organisation in Animals,"Match List I with List II:
+List I:
+A. Mast cells
+B. Inner surface of bronchiole
+C. Blood
+D. Tubular parts of nephron
+List II: I. Ciliated epithelium II. Areolar connective tissue III. Cuboidal epithelium IV. Specialised connective tissue Choose the correct answer from the options given below:","A-II, B-I, C-IV, D-III","A-II, B-III, C-I, D-IV","A-I, B-II, C-IV, D-III","A-III, B-IV, C-I, D-II",a,,,,,
+R0080,NEET2014_BIO_155,Biology,Locomotion & Neuro-Endocrine Control,Injury localized to the hypothalamus would most likely disrupt -,short-term memory,co-ordination during locomotion,"executive functions, such as decision making",regulation of body temperature,d,,,,,
+R0081,NEET2022_CHEM_058,Chemistry,General Organic Chemistry,The IUPAC name of the complex- [Ag(H2O)2][Ag(CN)2] is:,dicyanidosilver(II) diaquaargentate(II),diaquasilver(II) dicyanidoargentate(II),dicyanidosilver(I) diaquaargentate(I),diaquasilver(I) dicyanidoargentate(I),d,,,,,
+R0082,NEET2024_BIO_174,Biology,Structural Organisation in Animals,Which of the following is/are present in female cockroach? A. Collateralgland B. Mushroom gland Sperm a the ca D. C. Anal style E.Phallic gland Choose the most appropriate answer from the options given below:,Band D only,B and E only,Aonly,A and C only,d,,,,,
+R0083,NEET2016_BIO_131,Biology,Reproduction & Human Development,Which of the following approaches does not give the defined action of contraceptive?,Barrier methods Prevent fertilization,"Intra uterine devices Increase phagocytosis of sperms, suppress sperm motility and fertilizing capacity of sperms","Hormonal contraceptives Prevent retard ⁄ entry of sperms, prevent ovulation and fertilization",Vasectomy Prevents spermatogenesis,d,,,,,
+R0084,NEET2017_PHY_026,Physics,Rotational Motion,"Which of the following statements are correct?
+(a) Centre of mass of a body always coincides with the centre of gravity of the body.
+(b) Centre of mass of a body is the point at which the total gravitational torque on the body is zero
+(c) A couple on a body produce both translational and rotational motion in a body.
+(d) Mechanical advantage greater than one means that small effort can be used to lift a large load.",(b) and (d),(a) and (b),(b) and (c),(c) and (d),a,,,,,
+R0085,NEET2018_CHEM_084,Chemistry,Chemical Kinetics,"When initial concentration of the reactant is doubled, the half-life period of a zero order reaction",Is tripled,Is doubled,Is halved,Remains unchanged,b,,,,,
+R0086,NEET2014_BIO_094,Biology,Biological Classification,Archaebacteria differ from eubacteria in -,Cell membrane structure,Mode of nutrition,Cell shape,Mode of reproduction,a,,,,,
+R0087,NEET2023_BIO_145,Biology,Anatomy of Flowering Plants,"Identify the correct statements:
+A. Lenticels are the lens-shaped openings permitting the exchange of gases.
+B. Bark formed early in the season is called hard bark.
+C. Bark is a technical term that refers to all tissues exterior to vascular cambium.
+D. Bark refers to periderm and secondary phloem.
+E. Phellogen is single-layered in thickness. Choose the correct answer from the options given below:","B, C and E only",A and D only,"A, B and D only",B and C only,b,,,,,
+R0088,NEET2014_BIO_170,Biology,Evolution,"Forelimbs of cat, lizard used in walking; forelimbs of whale used in swimming and forelimbs of bats used in flying are an example of-",Analogous organs,Adaptive radiation,Homologous organs,Convergent evolution,c,,,,,
+R0089,NEET2020_BIO_060,Biology,The Living World & Taxonomy,"Match the trophic levels with their correct species examples in grassland ecosystem.
+(a) Fourth trophic level (i) Crow
+(b) Second trophic level (ii) Vulture
+(c) First trophic level (iii) Rabbit
+(d) Third trophic level (iv) Grass",(ii) (iii) (iv) (i),(iii) (ii) (i) (iv),(iv) (iii) (ii) (i),(i) (ii) (iii) (iv),a,,,,,
+R0090,NEET2016_BIO_164,Biology,Reproduction & Human Development,Depletion of which gas in the atmosphere can lead to an increased incidence of skin cancers:,Nitrous oxide,Ozone,Ammonia,Methane,b,,,,,
+R0091,NEET2025_CHEM_065,Chemistry,Thermodynamics,"For the formation reaction: C(s) + 2 H2(g) -> CH4(g); ΔH = -74.8 kJ/mol, which of the following energy diagrams gives an accurate representation of the reaction?",Exothermic diagram where product CH4 has lower enthalpy than reactants C(s) + 2 H2(g),Endothermic diagram where product CH4 has higher enthalpy than reactants,Horizontal enthalpy profile showing zero enthalpy change,Spontaneous barrierless profile with zero activation energy,a,,,,,
+R0092,NEET2022_PHY_027,Physics,Kinematics,"The ratio of the distances travelled by a freely falling body in the 1st, 2nd, 3rd and 4th second",: 2 : 3 : 4,: 4 : 9 : 16,: 3 : 5 : 7,: 1 : 1 : 1,c,,,,,
+R0093,NEET2024_CHEM_061,Chemistry,Equilibrium,"At a given temperature and pressure, the equilibrium constant values for the equilibria are: 3A2 + B2 ⇌ 2A3B (K1); A3B ⇌ 3/2 A2 + 1/2 B2 (K2). The relation between K1 and K2 is:",K1 = 2K2,K1 = K2^2,K1 = 1 / K2,K1 = 1 / K2^2,d,,,,,
+R0094,NEET2017_BIO_119,Biology,Morphology of Flowering Plants,Coconut fruit is a,Drupe,Berry,Nut,Capsule,a,,,,,
+R0095,NEET2014_BIO_178,Biology,Ecology & Environment,Given below is the representation of the extent of global diversity of invertebrates. What groups do the four portions (A-D) represent respectively?,"A: Insects, B: Crustaceans, C: Other animal groups, D: Molluscs","A: Crustaceans, B: Insects, C: Molluscs, D: Other animal groups","A: Molluscs, B: Other animal groups, C: Crustaceans, D: Insects","A: Insects, B: Molluscs, C: Crustaceans, D: Other animal groups",d,,,,,
+R0096,NEET2018_PHY_045,Physics,Thermodynamics,"A sample of 0.1 g of water at 100°C and normal pressure (1.013 × 105 Nm–2) requires 54 cal of heat energy to convert to steam at 100°C. If the volume of the steam produced is 167.1 cc, the change in internal energy of the sample, is",42.2 J,208.7 J,104.3 J,84.5 J,b,,,,,
+R0097,NEET2019_BIO_138,Biology,Reproduction & Human Development,"Placentation in which ovules develop on the inner wall of the ovary or in peripheral part, is",Basal,Axile,Parietal,Free central,c,,,,,
+R0098,NEET2024_BIO_109,Biology,Plant Kingdom,Which one of the following is not found in Gymnosperms?,Sieve cells,Albuminous cells,Tracheids,Vessels,d,,,,,
+R0099,NEET2013_BIO_146,Biology,Cell: The Unit of Life,A stage in cell division is shown in the figure. Select the answer which gives correct identification of the stage with its characteristics.,"Telophase nuclear envelop reforms, golgi complex reforms","Late anaphase chromosomes move away from equatorial plate, golgi complex not present","Cytokinesis cell plate formed, mitochondria distributed between two daughter cells",Telophase endoplasmic reticulum and nucleolus not reformed yet,a,,,,,
+R0100,NEET2016_PHY_021,Physics,Rotational Motion,A disk and a sphere of same radius but different masses roll off on two inclined planes of the same altitude and length. Which one of the two objects gets to the bottom of the plane first?,Disk,Sphere,Both reach at the same time,Depends on their masses,b,,,,,
+R0101,NEET2021_BIO_198,Biology,Evolution,"Match List - I with List - II
+List - I
+List - II","(a)-(iv), (b)-(iii), (c)-(ii), (d)-(i)","(a)-(iii), (b)-(ii), (c)-(i), (d)-(iv)","(a)-(ii), (b)-(i), (c)-(iv), (d)-(iii)","(a)-(i), (b)-(iv), (c)-(iii), (d)-(ii)",a,,,,,
+R0102,NEET2013_CHEM_070,Chemistry,Mole Concept / Stoichiometry,An excess of AgNO3 is added to 100 mL of a 0.01 M solution of dichlorotetraaquachrominum (III) chloride. The number of moles of AgCl precipitated would be-,0.001,0.002,0.003,0.01,a,,,,,
+R0103,NEET2014_PHY_023,Physics,Electrostatics,"Two thin dielectric slabs of dielectric constants K1 and K2 (K1 < K2) are inserted between plates of a parallel plate capacitor, as shown in the figure. The variation of electric field 'E' between the plates with distance 'd' as measured from plate P is correctly shown by : + + + + + + K1 – – – – – – K2 P Q
+(1) d → 0 ↑ E
+(2) d → 0 ↑ E
+(3) d → 0 ↑ E",d →,0,↑,E,c,,,,,
+R0104,NEET2018_BIO_174,Biology,Cell: The Unit of Life,Many ribosomes may associate with a single mRNA to form multiple copies of a polypeptide simultaneously. Such strings of ribosomes are termed as,Plastidome,Polyhedral bodies,Polysome,Nucleosome,c,,,,,
+R0105,NEET2017_CHEM_077,Chemistry,Thermodynamics,"For a given reaction, ΔH = 35.5 kJ mol–1 and ΔS = 83.6 JK–1 mol–1. The reaction is spontaneous at : (Assume that ΔH and ΔS do not vary with temperature)",T < 425 K,T > 425 K,All temperatures,T > 298 K,b,,,,,
+R0106,NEET2016_BIO_101,Biology,Cell: The Unit of Life,"Mitochondria and chloroplast are:
+(i) Semi – autonomous organelles
+(ii) Formed by division of pre – existing organelles and they contain DNA but lack protein synthesizing machinery Which one of the following options is correct?",Both (i) and (ii) are correct,(ii) is true but (i) is false,(i) is true but (ii) is false,Both (i) and (ii) are false,c,,,,,
+R0107,NEET2021_BIO_162,Biology,Genetics & Molecular Inheritance,"Which is the ""Only enzyme"" that has ""Capability"" to catalyse Initiation, Elongation and Termination in the process of transcription in prokaryotes?",DNA dependent DNA polymerase,DNA dependent RNA polymerase,DNA Ligase,DNase,b,,,,,
+R0108,NEET2020_PHY_163,Physics,Current Electricity,Which of the following graphs accurately represents the variation of electrical resistivity (ρ) with temperature (T) for copper (a metallic conductor)?,Non-linear convex curve rising sharply with increasing temperature above 50 K,Straight line passing through the origin with constant positive slope,Hyperbolic curve decreasing asymptotically to zero as temperature increases,Horizontal straight line independent of temperature,a,,,,,
+R0109,NEET2013_BIO_097,Biology,Morphology of Flowering Plants,"Among bitter gourd, mustard, brinjal, pumpkin, china rose, lupin, cucumber, sunnhemp, gram, guava, bean, chilli, plum, petunia, tomato, rose, withania, potato, onion, aloe and tulip how many plants have hypogynous flower ?",Six,Ten,Fifteen,Eighteen,c,,,,,
+R0110,NEET2018_BIO_148,Biology,Animal Kingdom,Identify the vertebrate group of animals characterized by crop and gizzard in its digestive system,Aves,Reptilia,Amphibia,Osteichthyes,a,,,,,
+R0111,NEET2023_CHEM_070,Chemistry,Biomolecules & Polymers,Some tranquilizers are listed below. Which one from the following belongs to barbiturates?,Chlordiazepoxide,Meprobamate,Valium,Veronal,d,,,,,
+R0112,RENEET2026_PHY_040,Physics,Laws of Motion,"A photon and an electron, each of 20 eV energy, move in free space. The ratio of linear momentum of electron Pe. is: Pe to that of photon pph, Pph [Take speed of light = 3 × 10° ms=1, charge of electron = 1.6 × 10-19 C and mass of electron = 9 × 10-31 kg]
+(1)
+(2) 250 225",275,450,112.5,900,b,,,,,
+R0113,NEET2024_PHY_003,Physics,Kinematics,A metal cube of side 5 cm is charged with 6μC. The surface charge density on the cube is,0.125×10-3 C m-2,0.25 × 10-3 C m-2,×10-3 C m-2,0.4 ×10-3 Cm2,d,,,,,
+R0114,NEET2024_BIO_156,Biology,Circulation & Excretion,"A person with blood group A Rh- can receive blood transfusion from which of the following types?
+A. B Rh-
+B. AB Rh-
+C. O Rh-
+D. A Rh-
+E. A Rh+ Choose the correct answer from the options given below:",C and D only,D and E only,D only,A and B only,a,,,,,
+R0115,NEET2023_BIO_132,Biology,Biotechnology,"In gene gun method used to introduce alien DNA into host cells, microparticles of which metal are used?",Copper,Zinc,Tungsten or gold,Silver,c,,,,,
+R0116,NEET2013_PHY_042,Physics,Wave Optics,"A parallel beam of fast moving electrons is incident normally on a narrow slit. A fluorescent screen is placed at a large distance from the slit. If the speed of the electrons is increased, which of the following statements is correct ?",Diffraction pattern is not observed on the screen in the case of electrons,The angular width of the central maximum of the diffraction pattern will increase,The angular width of the central maximum will decrease,The angular width of the central maximum will be unaffected,c,,,,,
+R0117,NEET2013_BIO_111,Biology,The Living World & Taxonomy,Which of the following criteria does not pertain to facilitated transport ?,Requirement of special membrane proteins,High selectivity,Transport saturation,Uphill transport,d,,,,,
+R0118,NEET2016_CHEM_069,Chemistry,Hydrocarbons,"Consider the nitration of benzene using mixed conc. H2SO4 and HNO3. If a large amount of KHSO4 is added to the mixture, the rate of nitration will be:",Faster,Slower,Unchanged,Doubled,b,,,,,
+R0119,NEET2023_CHEM_071,Chemistry,p-Block Elements,The element expected to form largest ion to achieve the nearest noble gas configuration is:,F,Na,N,O,c,,,,,
+R0120,NEET2013_CHEM_073,Chemistry,Mole Concept / Stoichiometry,Which of the following is electron-deficient ?,(CH3)2,(SiH3)2,(BH3)2,PH3,c,,,,,
+R0121,NEET2023_CHEM_064,Chemistry,Structure of Atom,"Amongst the following, the total number of species NOT having eight electrons around central atom in its outermost shell, is NH3, AlCl3, BeCl2, CCl4, PCl5:",3,2,4,1,a,,,,,
+R0122,NEET2025_CHEM_096,Chemistry,Biomolecules & Polymers,"Given below are two statements :
+Statement I : In the RNA world, RNA is considered the first genetic material evolved to carry out essential life systems. Belng reactive, RNA Is unstable.
+Statement Il: DNA evolved from RNA and is a more stable genetic material. Its double helical strands being In the light of the above statements, choose the most appropriate answer from the options given below: Both statement I and statement Il are correct (2]",Both Statement I and Statement II are correct,Both Statement I and Statement II are incorrect,Statement I is correct but Statement II is incorrect,Statement I is incorrect but Statement II is correct,a,,,,,
+R0123,NEET2025_BIO_147,Biology,Reproduction & Human Development,"The first menstruation is called : Menopause
+(1)
+(2) Menarche",as ned eid,(E),[4],Ovulation,b,,,,,
+R0124,NEET2022_CHEM_093,Chemistry,Redox Reactions & Electrochemistry,"Find the emf of the cell in which the following reaction takes place at 298 K ( ) ( ) ( ) ( ) 2 Ni s 2Ag 0.001M Ni 0.001M 2Ag s + + + → + cell 2.303 RT Given that E 10.5 V, 0.059 at 298 K F ° ( ) = = ) )",0385 V,385 V,0.9615 V,05 V Answer (NA),a,,,,,
+R0125,NEET2022_CHEM_070,Chemistry,Chemical Bonding,Choose the correct statement:,Diamond and graphite have two dimensional network.,Diamond is covalent and graphite is ionic.,Diamond is sp3 hybridised and graphite is sp2 hybridized.,Both diamond and graphite are used as dry lubricants. - 28 -,c,,,,,
+R0126,NEET2017_BIO_109,Biology,"Human Health, Disease & Microbes","Match the following sexually transmitted diseases (Column - I) with their causative agent (Column - II) and select the correct option.
+Column - I
+Column- II
+(a) Gonorrhea (i) HIV
+(b) Syphilis (ii) Neisseria
+(c) Genital Warts (iii) Treponema
+(d) AIDS (iv) Human Papilloma virus Options :",(ii) (iii) (iv) (i),(iii) (iv) (i) (ii),(iv) (ii) (iii) (i),(iv) (iii) (ii) (i),a,,,,,
+R0127,NEET2023_PHY_030,Physics,Properties of Matter,The venturi-meter works on,Huygen's principle,Bernoulli's principle,The principle of parallel axes,The principle of perpendicular axes,b,,,,,
+R0128,NEET2024_BIO_154,Biology,Evolution,"Match List-I with List-II:
+List-I:
+A. Gene pool
+B. Genetic drift
+C. Gene flow
+D. Gene frequency
+List-II: I. Stable within a generation II. Change in gene frequency by chance III. Transfer of genes into or out of population IV. Total number of genes and their alleles Choose the correct answer from the options given below:","A-IV, B-II, C-III, D-I","A-III, B-II, C-I, D-IV","A-I, B-II, C-III, D-IV","A-II, B-III, C-IV, D-I",a,,,,,
+R0129,NEET2021_BIO_119,Biology,Morphology of Flowering Plants,"The term used for transfer of pollen grains from anthers of one plant to stigma of a different plant which, during pollination, brings genetically different types of pollen grains to stigma, is :",Xenogamy,Geitonogamy,Chasmogamy,Cleistogamy,a,,,,,
+R0130,NEET2025_PHY_038,Physics,Oscillations & Waves,Which of the following options represent the variation of photoelectric current with property of light shown on the X-axis? Photoelectric Photoelectric current A. B. Intensity of light Intensity of light Photoelectric current Frequency of light Frequency of light Aonly,A and c,AandD,Independent of parameters (Frequency),Exponentially decreasing (Frequency),a,,,,,
+R0131,NEET2015_CHEM_002,Chemistry,Structure of Atom,Gadolinium belongs of 4f series. Its atomic number is 64. Which of the following is the correct electronic configuration of gadolinium?,[Xe]4f 75d16s2,[Xe]4f 65d26s2,[Xe]4f 86d2,[Xe]4f 95s1,a,,,,,
+R0132,NEET2020_CHEM_124,Chemistry,Structure of Atom,"The number of protons, neutrons and electrons in 175 71Lu, respectively, are","71, 104 and 71","104, 71 and 71","71, 71 and 104","175, 104 and 71",a,,,,,
+R0133,NEET2022_BIO_172,Biology,Cell: The Unit of Life,Which of the following statements with respect to Endoplasmic Reticulum is incorrect?,RER has ribosomes attached to ER,SER is devoid of ribosomes,In prokaryotes only RER are present,SER are the sites for lipid synthesis,c,,,,,
+R0134,NEET2015_CHEM_008,Chemistry,Biomolecules & Polymers,Caprolactum is used for the manufacture of:,Terylene,"Nylon-6,6",Nylon-6,Teflon,c,,,,,
+R0135,NEET2017_CHEM_046,Chemistry,Chemical Bonding,"With respect to the conformers of ethane, which of the following statements is true?",Bond angle remains same but bond length changes,Bond angle changes but bond length remains same,Both bond angle and bond length change,Both bond angles and bond length remains same,d,,,,,
+R0136,NEET2015_CHEM_024,Chemistry,Mole Concept / Stoichiometry,The heat of combustion of carbon to CO2 is -393.5 kJ/mol. The heat released upon formation of 35.2 g of CO2 from carbon and oxygen gas is:,−630 kJ,−3.15 kJ,−315 kJ,+315 kJ,c,,,,,
+R0137,NEET2021_BIO_197,Biology,Ecology & Environment,"Match List-I with List - II
+List - I
+List - II","(a)-(iv), (b)-(i), (c)-(ii), (d)-(iii)","(a)-(iv), (b)-(iii), (c)-(ii), (d)-(i)","(a)-(iv), (b)-(ii), (c)-(iii), (d)-(i)","(a)-(i), (b)-(iv), (c)-(ii), (d)-(iii)",a,,,,,
+R0138,NEET2019_BIO_118,Biology,Genetics & Molecular Inheritance,"Variations caused by mutation, as proposed by Hugo de Vries are",random and directional,random and directionless,small and directional,small and directionless,b,,,,,
+R0139,NEET2017_PHY_030,Physics,Gravitation,Two astronauts are floating in gravitational free space after having lost contact with their spaceship. The two will:,Keep floating at the same distance between them,Move towards each other,Move away from each other,Will become stationary,b,,,,,
+R0140,NEET2020_CHEM_131,Chemistry,Mole Concept / Stoichiometry,"Match the following : Oxide Nature
+(a) CO (i) Basic
+(b) BaO (ii) Neutral
+(c) Al2O3 (iii) Acidic
+(d) Cl2O7 (iv) Amphoteric is correct option?",(i) (ii) (iii) (iv),(ii) (i) (iv) (iii),(iii) (iv) (i) (ii),(iv) (iii) (ii) (i),b,,,,,
+R0141,NEET2025_PHY_009,Physics,Electrostatics,"The electric field in a plane electromagnetic wave is given by E, = 60 co5 (5x+ 1.5 × 10° t) V/m. Then expression for the corresponding magnetic field is (here subscripts denote the direction of the field) :","B,=2 ×10-7 cos [5x+1.5 ×109 t) T",Bx= 2 × 107 co5 (5x + 1.5 × 10° t) T,Bz = 60cos (5x + 1.5 × 10° t) T,By = 60 sin [5x + 1.5 × 10° t) T,a,,,,,
+R0142,NEET2015_CHEM_030,Chemistry,Amines & Nitrogen Compounds,The following reaction is known by the name:,Acetylation reaction,Schotten-Baumen reaction,Friedel-Craft’s reaction,Perkin’s reaction,b,,,,,
+R0143,NEET2017_BIO_122,Biology,Plant Kingdom,Select the mismatch regarding Plant Kingdom (Cycas):,Pinus – Dioecious,Cycas – Dioecious,Salvinia – Heterosporous,Equisetum – Homosporous,a,,,,,
+R0144,NEET2020_BIO_053,Biology,Plant Kingdom,Which of the following pairs is of unicellular algae?,Laminaria and Sargassum,Gelidium and Gracilaria,Anabaena and Volvox,Chlorella and Spirulina,d,,,,,
+R0145,NEET2021_CHEM_061,Chemistry,Thermodynamics,"Statement I : Acid strength increases in the order given as HF << HCl << HBr << HI.
+Statement II : As the size of the elements F, Cl, Br, I increases down the group, the bond strength of HF, HCl, HBr and HI decreases and so the acid strength increases. In the light of the above statements, choose the correct answer from the options given below.",Both statement I and Statement II are true,Both Statement I and Statement II are false,Statement I is correct but statement II is false,Statement I is incorrect but Statement II is true,a,,,,,
+R0146,NEET2016_BIO_124,Biology,Animal Kingdom,Which of the following features is not present in Periplaneta americana?,Schizocoelom as body cavity,Indeterminate and radial cleavage during embryonic development,Exoskeleton composed of N – acetylglucosamine,Metamerically segmented body,b,,,,,
+R0147,NEET2024_BIO_158,Biology,Cell Cycle & Cell Division,"Match List-I with List-l.
+List-1
+ListI Event Stage of Prophase-I (Meiosis-l) A. Chiasmata formation Pachytene B. Crossing over Diakinesis C. Synaptonemal complexformation Diplotene D. Terminal is ation of chiasmata IV. Zygotene Choose the correct answer from the options given below:","A-II, B-I, C-IV, D-I","A-, B-I, C-I, D-IV","A-I, B-I, C-I, D-IV","A-, B-II, C-IV, D-I",a,,,,,
+R0148,NEET2024_BIO_163,Biology,Animal Kingdom,"Match List-I with List-Il.
+List-1
+List-ll A. Chondrichthyes Clarias B. Cyclostomata Carcharodon C. Myxine Osteichthyes D. IV. Ichthyophis Amphibia Choose the correct answer from the options given below:
+(1) A-, B-IV, C-I, D-II","A-IV, B-III, C-I, D-II","A-III, B-I, C-IV, D-II","A-II, B-IV, C-I, D-III","A-I, B-II, C-III, D-IV",c,,,,,
+R0149,NEET2019_PHY_011,Physics,Ray Optics,"Two similar thin equi-convex lenses, of focal length f each, are kept coaxially in contact with each other such that the focal length of the combination is F1. When the space between the two lenses is filled with glycerine (which has the same refractive index (μ = 1.5) as that of glass) then the equivalent focal length is F2. The ratio F1 : F2 will be :",: 1,: 2,: 3,: 4,b,,,,,
+R0150,NEET2021_BIO_132,Biology,Biotechnology,Which of the following is not an application of PCR (Polymerase Chain Reaction)?,Molecular diagnosis,Gene amplification,Purification of isolated protein,Detection of gene mutation,c,,,,,
+R0151,NEET2022_CHEM_066,Chemistry,Haloalkanes & Haloarenes,The incorrect statement regarding chirality is,SN1 reaction yields 1 : 1 mixture of both enantiomers,The product obtained by SN2 reaction of haloalkane having chirality at the reactive site shows inversion of configuration,Enantiomers are superimposable mirror images on each other,A racemic mixture shows zero optical rotation,c,,,,,
+R0152,NEET2015_PHY_145,Physics,Rotational Motion,"An automobile moves on a road with a speed of 54 km h−1. The radius of its wheels is 0.45 m and the moment of inertia of the wheel about its axis of rotation is 3 kg m2. If the vehicle is brought to rest in 15s, the magnitude of average torque transmitted by its brakes to the wheel is:",86 kg m2 s−2,6.66 kg m2s−2,8.58 kg m2s−2,10.86 kg m2 s−2,b,,,,,
+R0153,NEET2021_PHY_034,Physics,Gravitation,"The escape velocity from the Earth's surface is v. The escape velocity from the surface of another planet having a radius, four times that of Earth and same mass density is",v,2v,3v,4v,d,,,,,
+R0154,NEET2014_BIO_128,Biology,Plant Kingdom,An alga which can be employed as food for human being is -,Ulothrix,Chlorella,Spirogyra,Polysiphonia,b,,,,,
+R0155,NEET2016_BIO_180,Biology,Biomolecules,A typical fat molecules is made up of:,Three glycerol molecules and one fatty acid molecules,One glycerol and three fatty acid molecules,One glycerol and one fatty acid molecule,Three glycerol and three fatty acid molecules,b,,,,,
+R0156,NEET2024_BIO_166,Biology,Cell Cycle & Cell Division,"Match List-I with List-ll.
+List-1
+List-l A. Cells are metabolically active and proliferate G2 phase B. G1 phase DNA replication takes place C. Go phase Proteins are synthesised D. Quiescent stage with metabolically active cells IV. S phase Choose the correct answer from the options given below:
+(1) A-IV, B-, C-, D-I A-I, B-II, C-IV, D-II","A-IV, B-III, C-I, D-II","A-III, B-I, C-IV, D-II","A-II, B-IV, C-I, D-III","A-I, B-II, C-III, D-IV",d,,,,,
+R0157,NEET2013_CHEM_056,Chemistry,Mole Concept / Stoichiometry,Maximum deviation from ideal gas is expected from :,H2(g),N2(g),CH4(g),NH3(g),d,,,,,
+R0158,NEET2015_CHEM_044,Chemistry,Structure of Atom,Which is the correct order of increasing energy of the listed orbitals in the atom of titanium? (At. No. Z = 22),3s 3p 3d 4s,3s 3p 4s 3d,3s 4s 3p 3d,4s 3s 3p 3d,b,,,,,
+R0159,NEET2013_BIO_103,Biology,Biomolecules,Transition state structure of the substate formed during an enzymatic reaction is,Transient but stable,Permanent but unstable,Transient and unstable,Permanent and stable,c,,,,,
+R0160,NEET2017_BIO_115,Biology,Biotechnology,The process of separation and purification of expressed protein before marketing is called,Upstream processing,Downstream processing,Bioprocessing,Postproduction processing,b,,,,,
+R0161,RENEET2026_CHEM_058,Chemistry,Biomolecules & Polymers,"A protein undergoes reversible thermal denaturation from its initial state N to denatured state D according to ND. At 60°C, the concentrations of both N and D are equal at equilibrium, and the standard protein upon denaturation at 60°C is closest to",2000.0,333.0,11.1,0,d,,,,,
+R0162,NEET2024_CHEM_080,Chemistry,Mole Concept / Stoichiometry,1.0 g of H2 has same number of molecules as in:,14 g of N2,18 g of H2O,16 g of CO,28 g of N2,a,,,,,
+R0163,NEET2018_CHEM_054,Chemistry,Biomolecules & Polymers,"Regarding cross-linked or network polymers, which of the following statements is incorrect?",Examples are bakelite and melamine.,They are formed from bi- and tri-functional monomers.,They contain covalent bonds between various linear polymer chains.,They contain strong covalents bonds in their polymer chains.,d,,,,,
+R0164,NEET2017_CHEM_052,Chemistry,"Aldehydes, Ketones & Carboxylic Acids","Of the following, which is the product formed when cyclohexanone undergoes aldol condensation followed by heating?",OH O,O,OH,O O,b,,,,,
+R0165,NEET2024_CHEM_099,Chemistry,General Principles & Metallurgy,[Mn2(CO)10] and [Co2(CO)] structures have Metal-Metal linkage Terminal CO groups A. B. C. Bridging CO groups D. Metal in zero oxidation state Choose the correct answer from the options given below,"Only A, B, C","Only B, C, D","Only A, C, D","Only A, B, D",d,,,,,
+R0166,NEET2025_PHY_003,Physics,Kinematics,"An electron (mass 9 × 10-31 kg and charge 1.6 ×10-19 C) moving with speed c/100 (c = speed of light) is injected into a magnetic field B of magnitude 9 ×1o*Tperpendicular to Its directlon of motion. We wish to apply an uniform electric field E together with the magnetic field so that the electron does not deflect from its path. Then (speed of light c=3 × 10° ms""]",E is perpendicular to B and its magnitude is 27 × 10* V m-l,E is perpendicular to B and its magnitude is 27×102Vm,E is parallel to B and its magnitude is 27×102 Vm-1,E is parallel to B and its magnitude is 27 ×10°Vm-1,b,,,,,
+R0167,NEET2021_PHY_027,Physics,Oscillations & Waves,"A body is executing simple harmonic motion with frequency 'n', the frequency of its potential energy is",n,2n,3n,4n,b,,,,,
+R0168,NEET2020_BIO_019,Biology,Human Digestion & Respiration,Identify the wrong statement with reference to transport of oxygen,Binding of oxygen with haemoglobin is mainly related to partial pressure of O2,Partial pressure of CO2 can interfere with O2 binding with haemoglobin,Higher H+ conc. in alveoli favours the formation of oxyhaemoglobin,Low pCO2 in alveoli favours the formation of oxyhaemoglobin,c,,,,,
+R0169,NEET2013_PHY_016,Physics,"Work, Energy & Power","A gas is taken through the cycle A → B → C → A, as shown. What is the net work done by the gas ? 1 P(105 Pa) 2 3 4 5 6 7 0 2 B C A 4 6 8 V(10–3 m3)",2000 J,1000 J,zero,– 2000 J,b,,,,,
+R0170,NEET2023_BIO_165,Biology,Animal Kingdom,"Match List I with List II:
+List I:
+A. Taenia
+B. Paramecium
+C. Periplaneta
+D. Pheretima
+List II: I. Nephridia II. Contractile vacuole III. Flame cells IV. Urecose gland Choose the correct answer from the options given below:","A-I, B-II, C-III, D-IV","A-III, B-I, C-IV, D-II","A-III, B-II, C-IV, D-I","A-II, B-I, C-IV, D-III",c,,,,,
+R0171,NEET2017_CHEM_063,Chemistry,Redox Reactions & Electrochemistry,"In the electrochemical cell : Zn|ZnSO4(0.01M)||CuSO4(1.0 M)|Cu, the emf of this Daniel cell is E1. When the concentration of ZnSO4 is changed to 1.0 M and that of CuSO4 changed to 0.01 M, the emf changes to E2. From the following, which one is the relationship between E1 and E2? (Given, RT F = 0.059)",E1 = E2,E1 < E2,E1 > E2,E2 = 0 ≠ E1,c,,,,,
+R0172,NEET2018_BIO_151,Biology,Reproduction & Human Development,Which of the following animals does not undergo metamorphosis?,Moth,Tunicate,Earthworm,Starfish,c,,,,,
+R0173,NEET2021_BIO_125,Biology,Anatomy of Flowering Plants,"Match List-I with List-II. Lenticels Cork cambium Secondary cortex Cork Phellogen Suberin deposition Exchange of gases Phelloderm
+List-I
+List-II
+(a)
+(b)
+(c)
+(d)
+(i)
+(ii)
+(iii) (iv) Choose the correct answer from the options given below.
+(a)
+(b)
+(c)
+(d)",(iv) (i) (iii) (ii),(iii) (i) (iv) (ii),(ii) (iii) (iv) (i),(iv) (ii) (i) (iii),b,,,,,
+R0174,RENEET2026_PHY_014,Physics,"Work, Energy & Power","A beam of light falls on a metal surface such that photo-electrons are generated. If power of the light source starts to decrease linearly with time t, then variation of the photocurrent / and magnitude of the stopping potential [V with time is best represented by: IM IM",IM,Inversely proportional (Power Of),Independent of parameters (Power Of),Exponentially decreasing (Power Of),d,,,,,
+R0175,NEET2016_CHEM_089,Chemistry,Biomolecules & Polymers,Which one given below is a non-reducing sugar?,Maltose,Lactose,Glucose,Sucrose,d,,,,,
+R0176,NEET2014_BIO_100,Biology,Morphology of Flowering Plants,Which one of the following statements is correct ?,The seed in grasses is not endospermic,Mango is a parthenocarpic fruit,A proteinaceous aleurone layer is present in maize grain,A sterile pistil is called a staminode,c,,,,,
+R0177,NEET2014_CHEM_077,Chemistry,Hydrocarbons,Which of the following will be most stable diazonium salt − +X RN2 ?,− +X N CH 2 3,− +X N H C 2 5 6,− +X N CH CH 2 2 3,− +X N CH H C 2 2 5 6,b,,,,,
+R0178,NEET2014_BIO_152,Biology,Circulation & Excretion,Which of the following causes an increase in sodium reabsorption in the distal convoluted tubule -,Increase in aldosterone levels,Increase in antidiuretic hormone levels,Decrease in aldosteron levels,Decrease in antidiuretic hormone levels,a,,,,,
+R0179,NEET2015_BIO_060,Biology,Reproduction & Human Development,Ectopic pregnancies are referred to as :,Pregnancies terminated due to hormonal imbalance,Pregnancies with genetic abnormality.,Implantation of embryo at site other than uterus.,Implantation of defective embryo in the uterus,c,,,,,
+R0180,NEET2014_BIO_177,Biology,Ecology & Environment,Given below is a simplified model of phosphorus cycling in a terrestrial ecosystem with four blanks (A-,Rock minerals Detritus Litter fall Producers,Litter fall Producers Rock minerals Detritus,Detritus Rock minerals Producers Litter fall (4) Producers Litter fall Rock minerals Detritus,. Identify the blanks. Consumers C A Soil solution B Run off D Uptake Options : A B C D,c,,,,,
+R0181,NEET2013_BIO_118,Biology,The Living World & Taxonomy,Monoecious plant of Chara shows occurrence of :,Antheridiophore and archegoniophore on the same plant,Stamen and carpel on the same plant,Upper antheridium and lower oogonium on the same plant,Upper oogonium and lower antheridium on the same plant,d,,,,,
+R0182,NEET2014_BIO_139,Biology,Reproduction & Human Development,A marine cartilaginous fish that can produce electric current is -,Pristis,Torpedo,Trygon,Scoliodon,b,,,,,
+R0183,NEET2018_CHEM_068,Chemistry,"Alcohols, Phenols & Ethers","Compound A, C8H10O, is found to react with NaOI (produced by reacting Y with NaOH) and yields a yellow precipitate with characteristic smell. A and Y are respectively",CH – CH 3 and I2 OH,CH2 – CH – OH and I 2 2,H3C CH2 – OH and I2,OH and I2 CH3 CH3,a,,,,,
+R0184,NEET2024_CHEM_052,Chemistry,General Principles & Metallurgy,"Following data is for a reaction between reactants a and b: [A] [a] Rate mol L-1 s-1 2 × 10-3 0.1M 0.1M 4 ×10-3 0.2M 0.1M 0.2M 0.2M 1.6 × 10-2 The order of the reaction with respect to Aand B, respectively, are","1, 0","0, 1","1,2","2,1",c,,,,,
+R0185,NEET2017_CHEM_058,Chemistry,Equilibrium,Which one of the following statements is not correct?,Catalyst does not initiate any reaction,The value of equilibrium constant is changed in the presence of a catalyst in the reaction at equilibrium,Enzymes catalyse mainly bio-chemical reactions,Coenzymes increase the catalytic activity of enzyme,b,,,,,
+R0186,NEET2015_CHEM_039,Chemistry,Mole Concept / Stoichiometry,"What is the mass of the precipitate formed when 50 mL of 16.9% (w/v) solution of AgNO3 is mixed with 50 mL of 5.8% (w/v) NaCl solution? (Ag = 107.87, N = 14, O = 16, Na = 23, Cl = 35.5)",7 g,14 g,5 g,28 g,a,,,,,
+R0187,NEET2020_BIO_046,Biology,Biological Classification,By which method was a new breed ‘Hisardale’ of sheep formed by using Bikaneri ewes and Marino rams?,Out crossing,Mutational breeding,Cross breeding,Inbreeding,c,,,,,
+R0188,NEET2024_BIO_107,Biology,Genetics & Molecular Inheritance,"Match List-I with List-ll:
+List-1
+List-l Type of Inheritance Example A. Incomplete dominance Blood groups in human B. Co-dominance Flower colour in Antirrhinum Pleiotropy C. Skin colour in human IV. Polygenic inheritance Phenylketonuria D. Choose the correct answer from the options given below:","A-II, B-IV, C-, D-I","A-II, B-I, C-IV, D-1II","A-I, B-, C-I, D-IV","A-IV, B-I, C-I, D-I",b,,,,,
+R0189,NEET2014_PHY_025,Physics,Electrostatics,"In a region the potential is represented by V(x, y, z) = 6x – 8xy – 8y + 6yz, where V is in volts and x, y, z are in meters. The electric force experienced by a charge of 2 coulomb situated at point (1, 1, 1) is",N 5 6,30N,24 N,N 35 4,d,,,,,
+R0190,NEET2022_PHY_005,Physics,Ray Optics,"A biconvex lens has radii of curvature, 20 cm each. If the refractive index of the material of the lens is 1.5, the power of the lens is",+2 D,+20 D,+5 D,Infinity,c,,,,,
+R0191,RENEET2026_PHY_013,Physics,Gravitation,"(q<<Q) with mass m is released from rest at a distance of 3R from the centre of the charged sphere. When the point charge reaches the surface of the sphere, its speed is: (eo is the permit iv it y of vacuum, neglect gravitational forces). 2Qq
+(1)
+(2) Qq V3元E0mR 3EomR Qq",3Qq,V4mEomR,4omR,16,b,,,,,
+R0192,NEET2021_CHEM_065,Chemistry,Redox Reactions & Electrochemistry,Which one of the following methods can be used to obtain highly pure metal which is liquid at room temperature?,Electrolysis,Chromatography,Distillation,Zone refining,c,,,,,
+R0193,NEET2018_BIO_156,Biology,Biological Classification,"In a growing population of a country,",reproductive and pre-reproductive individuals are equal in number.,reproductive individuals are less than the post-reproductive individuals.,pre-reproductive individuals are more than the reproductive individuals.,pre-reproductive individuals are less than the reproductive individuals.,c,,,,,
+R0194,NEET2017_CHEM_066,Chemistry,Mole Concept / Stoichiometry,"The correct order of the stoichiometries of AgCl formed when AgNO3 in excess is treated with the complexes : CoCl3·6NH3, CoCl3·5NH3, CoCl3·4NH3 respectively is","AgCl, 3 AgCl, 2 AgCl","AgCl, 1 AgCl, 2 AgCl","AgCl, 2 AgCl, 1 AgCl","AgCl, 3 AgCl, 1 AgCl",c,,,,,
+R0195,NEET2019_BIO_105,Biology,The Living World & Taxonomy,"Match the Column-I with Column-II
+Column-I
+Column-II
+(a) P - wave (i) Depolarisation of ventricles
+(b) QRS complex (ii) Repolarisation of ventricles
+(c) T - wave (iii) Coronary ischemia
+(d) Reduction in the (iv) Depolarisation of size of T-wave atria (v) Repolarisation of atria",(iv) (i) (ii) (iii),(iv) (i) (ii) (v),(ii) (i) (v) (iii),(ii) (iii) (v) (iv),a,,,,,
+R0196,NEET2015_PHY_150,Physics,Current Electricity,"In the given figure, a diode D is connected to an external resistance R = 100 Ω and an e.m.f. of 3.5 V. If the barrier potential developed across the diode is 0.5 V, the current in the circuit will be:",35 mA,30 mA,40 mA,20 mA,b,,,,,
+R0197,NEET2017_PHY_038,Physics,Current Electricity,"A long solenoid of diameter 0.1 m has 2 × 104 turns per meter. At the centre of the solenoid, a coil of 100 turns and radius 0.01 m is placed with its axis coinciding with the solenoid axis. The current in the solenoid reduces at a constant rate to 0 A from 4 A in 0.05 s. If the resistance of the coil is 10π2 Ω, the total charge flowing through the coil during this time is",32π μC,16 μC,32 μC,16π μC,c,,,,,
+R0198,NEET2020_BIO_023,Biology,Reproduction & Human Development,Which of the following is put into Anaerobic sludge digester for further sewage treatment?,Primary sludge,Floating debris,Effluents of primary treatment,Activated sludge,d,,,,,
+R0199,NEET2025_CHEM_081,Chemistry,Mole Concept / Stoichiometry,5 moles of liquid X and 10 moles of liquid Y make a solution having a vapour pressure of 70 torr. The vapour pressures of pure X and Y are 63 torr and 78 torr respectively. Which of the following is true regarding the described solution?,The solution shows positive deviation.,The solution shows negative deviation.,The solution is ideal.,The solution has volume greater than the sum of individual volumes.,b,,,,,
+R0200,NEET2014_BIO_093,Biology,Biological Classification,Which one of the following fungi contains hallucinogens ?,Morchella esculenta,Amantia muscaria,Neurospora sp.,Ustilago sp.,b,,,,,
+R0201,NEET2018_BIO_167,Biology,The Living World & Taxonomy,Which of the following is an occupational respiratory disorder?,Botulism,Silicosis,Anthracis,Emphysema,b,,,,,
+R0202,NEET2025_PHY_008,Physics,Semiconductor Electronics,The output (M) of the given logic implementation is similar to the output of an/a gate. BO OY AO,AND,NAND,OR,NOR,d,,,,,
+R0203,NEET2013_BIO_138,Biology,The Living World & Taxonomy,Which group of animals belong to the same phylum ?,"Malarial parasite, Amoeba, Mosquito","Earthworm, Pinworm, Tapeworm","Prawn, Scorpion, Locusta","Sponge, Sea anemone, Starfish",c,,,,,
+R0204,NEET2023_PHY_002,Physics,Rotational Motion,The ratio of radius of gyration of a solid sphere of mass M and radius R about its own axis to the radius of gyration of the thin hollow sphere of same mass and radius about its axis is,3:5,5:3,2:5,5:2,a,,,,,
+R0205,NEET2024_BIO_152,Biology,Locomotion & Neuro-Endocrine Control,"List!
+List II Type of Joint Location of Joint A. between Gliding joint Joint and humerus pectoral girdle B. Knee joint Ball and Socket joint Hinge joint Joint between atlas and axis Joint between carpals IV. Pivot joint Chose the correct answer from the options given below:","A-II, B-I, C-IV, D-I","A-I, B-l, C-I, D-IV","A-I, B-IV, C-I, D-I","A-I, B-I, C-I, D-IV",a,,,,,
+R0206,NEET2022_PHY_001,Physics,Electromagnetic Waves,"Match List-I with List-II
+List-I (Electromagnetic waves)
+List-II (Wavelength)","(a) - (iv), (b) - (iii), (c) - (ii), (d) - (i)","(a) - (iii), (b) - (ii), (c) - (i), (d) - (iv)","(a) - (iii), (b) - (iv), (c) - (ii), (d) - (i)","(a) - (ii), (b) - (iii), (c) - (iv), (d) - (i)",d,,,,,
+R0207,NEET2014_PHY_005,Physics,Laws of Motion,The force ‘F’ acting on a particle of mass ‘m’ is indicated by the force-time graph shown below. The change in momentum of the particle over the time interval from zero to 8 s is - 6 3 0 –3 6 8 4 2 t(s) F(N),24 Ns,20 Ns,12 Ns,6 Ns,c,,,,,
+R0208,NEET2014_PHY_042,Physics,Atoms & Nuclei,"The Binding energy per nucleon of Li 7 3 and He 4 2 nuclei are 5.60 MeV and 7.06 MeV, respectively. In the nuclear reaction Q He He H Li 4 2 4 2 1 1 7 3 + + → + , the value of energy Q released is",19.6 MeV,–2.4 MeV,8.4 MeV,17.3 MeV,d,,,,,
+R0209,RENEET2026_BIO_117,Biology,Plant Physiology,Photorespiration reaction catalyzed by RuBisCo is shown below: RuBP + O2 → 3-Phosphoglycerate + X. Identify *X° from the given options:,Phosphoglycolate,Oxaloacetate,Malate,F Phosphoenolpyruvate,a,,,,,
+R0210,NEET2020_BIO_055,Biology,Biotechnology,"Match the following columns in Biotechnology (Pcr) and select the correct option:
+(a) Bt cotton (i) Gene therapy
+(b) Adenosine (ii) Cellular defence deaminase deficiency
+(c) RNAi (iii) Detection of HIV infection
+(d) PCR (iv) Bacillus thuringiensis",(iv) (i) (ii) (iii),(iii) (ii) (i) (iv),(ii) (iii) (iv) (i),(i) (ii) (iii) (iv),a,,,,,
+R0211,NEET2023_PHY_029,Physics,Oscillations & Waves,"In a series LCRcircuit, the inductance Lis 10 mH, capacitance C is 1μF and resistance Ris 100 2.The frequency at which resonance occurs is",15.9 rad/s,15.9kHz,59 rad/s,59kHz,d,,,,,
+R0212,NEET2019_BIO_141,Biology,Human Digestion & Respiration,"Tidal Volume and Expiratory Reserve Volume of an athlete is 500 mL and 1000 mL, respectively. What will be his Expiratory Capacity if the Residual Volume is 1200 mL?",1500 mL,1700 mL,2200 mL,2700 mL,a,,,,,
+R0213,NEET2019_PHY_007,Physics,Properties of Matter,"A soap bubble, having radius of 1 mm, is blown from a detergent solution having a surface tension of 2.5 × 10–2 N/m. The pressure inside the bubble equals at a point Z0 below the free surface of water in a container. Taking g = 10 m/s2, density of water = 103 kg/m3, the value of Z0 is :",100 cm,10 cm,cm,0.5 cm,c,,,,,
+R0214,NEET2016_PHY_004,Physics,Oscillations & Waves,"A siren emitting a sound of frequency 800 Hz moves away from an observer towards a cliff at a speed of 15 ms−1. Then, the frequency of sound that the observer hears in the echo reflected from the cliff is : (Take velocity of sound in air = 330 ms−1) 3",765 Hz,800 Hz,838 Hz,885 Hz,c,,,,,
+R0215,NEET2022_BIO_184,Biology,Cell Cycle & Cell Division,Select the incorrect statement with reference to mitosis:,All the chromosomes lie at the equator at metaphase,Spindle fibres attach to centromere of chromosomes,Chromosomes decondense at telophase,Splitting of centromere occurs at anaphase,b,,,,,
+R0216,NEET2018_BIO_138,Biology,Human Digestion & Respiration,"Match the items given in Column I with those in Column II and select the correct option given below:
+Column I
+Column II a. Tidal volume i. 2500 – 3000 mL b. Inspiratory Reserve ii. 1100 – 1200 mL volume c. Expiratory Reserve iii. 500 – 550 mL volume d. Residual volume iv. 1000 – 1100 mL a b c d",i iv ii iii,iii i iv ii,iii ii i iv,iv iii ii i,b,,,,,
+R0217,NEET2013_CHEM_060,Chemistry,General Principles & Metallurgy,"Roasting of sulphides gives the gas X as a byproduct. This is colorless gas with choking smell of burnt sulphur and causes great damage to respiratory organs as a result of acid rain. Its aqueous solution is acidic, acts as a reducing agent and its acid has never been isolated. The gas X is -",H2S,SO2,CO2,SO3,b,,,,,
+R0218,NEET2019_BIO_117,Biology,Evolution,"Match the hominids with their correct brain size :
+(a) Homo habilis (i) 900 cc
+(b) Homo neanderthalensis (ii) 1350 cc
+(c) Homo erectus (iii) 650-800 cc
+(d) Homo sapiens (iv) 1400 cc",(iii) (i) (iv) (ii),(iii) (ii) (i) (iv),(iii) (iv) (i) (ii),(iv) (iii) (i) (ii),c,,,,,
+R0219,NEET2021_PHY_035,Physics,Units & Dimensions,"If force [F], acceleration [A] and time [T] are chosen as the fundamental physical quantities. Find the dimensions of energy.",[F][A][T],[F][A][T2],[F][A][T–1],[F][A–1][T],b,,,,,
+R0220,NEET2014_PHY_018,Physics,"Work, Energy & Power",A thermodynamic system undergoes cyclic process ABCDA as shown in figure. The work done by the system in the cycle is - P 3P0 2P0 P0 A D B C V0 2V0 V,P0V0,2P0V0,V P 0 0,Zero,d,,,,,
+R0221,NEET2025_BIO_155,Biology,Morphology of Flowering Plants,"Which of the following is an example of a zygomorphic flower?
+(1) Petunia
+(2) Datura",atura,(E),Pea,hili,c,,,,,
+R0222,NEET2017_PHY_041,Physics,Rotational Motion,A rope is wound around a hollow cylinder of mass 3 kg and radius 40 cm. What is the angular acceleration of the cylinder if the rope is pulled with a force of 30 N?,25 m/s2,0.25 rad/s2,25 rad/s2,5 m/s2,c,,,,,
+R0223,NEET2015_BIO_105,Biology,Morphology of Flowering Plants,Which one of the following fruits is parthenocarpic?,Banana,Brinjal,Apple,Jackfruit,a,,,,,
+R0224,NEET2019_BIO_164,Biology,Biomolecules,Which of the following statements is correct? [NEET 2019 - Protein],"Cornea is an external, transparent and protective proteinacious covering of the eye-ball.",Cornea consists of dense connective tissue of elastin and can repair itself.,"Cornea is convex, transparent layer which is highly vascularised.",Cornea consists of dense matrix of collagen and is the most sensitive portion the eye.,d,,,,,
+R0225,NEET2017_BIO_112,Biology,Plant Kingdom,An example of colonial alga is,Chlorella,Volvox,Ulothrix,Spirogyra,b,,,,,
+R0226,NEET2015_PHY_162,Physics,Current Electricity,A series R-C circuit is connected to an alternating voltage source. Consider two situations: i. When capacitor is air filled. ii. When capacitor is mica filled. Current through resistor is i and voltage across capacitor is V then:,Va = Vb,Va < Vb,Va > Vb,ia > ib,c,,,,,
+R0227,NEET2016_BIO_121,Biology,Ecology & Environment,Which one of the following is a characteristic feature of cropland ecosystem?,Absence of soil organisms,Least genetic diversity,Absence of weeds,Ecological succession,b,,,,,
+R0228,NEET2018_PHY_010,Physics,Ray Optics,"An astronomical refracting telescope will have large angular magnification and high angular resolution, when it has an objective lens of",Large focal length and large diameter,Large focal length and small diameter,Small focal length and large diameter,Small focal length and small diameter,a,,,,,
+R0229,NEET2024_CHEM_100,Chemistry,General Principles & Metallurgy,"In an AC circuit, an ideal inductor of inductance L is connected across an alternating voltage source. The current flowing through the inductor is I = I0 * sin(ωt). The voltage drop (V_L) across the inductor is:",I0 * ωL * cos(ωt),-I0 * ωL * sin(ωt),I0 * ωL * sin(ωt),-I0 * ωL * cos(ωt),a,,,,,
+R0230,NEET2016_CHEM_080,Chemistry,Mole Concept / Stoichiometry,"Which of the following statements about the composition of the vapour over an ideal 1 : 1 molar mixture of benzene and toluene is correct? Assume that the temperature is constant at 25𝑜𝐶. (Given vapour pressure data at 25𝑜𝐶, benzene = 12.8 kPa, toluene = 3.85 kPa)",The vapour will contain a higher percentage of benzene.,The vapour will contain a higher percentage of toluene.,The vapour will contain equal amounts of benzene and toluene.,Not enough information is given to make a prediction.,a,,,,,
+R0231,NEET2018_PHY_022,Physics,Electrostatics,"An electron falls from rest through a vertical distance h in a uniform and vertically upward directed electric field E. The direction of electric field is now reversed, keeping its magnitude the same. A proton is allowed to fall from rest in it through the same vertical distance h. The time of fall of the electron, in comparison to the time of fall of the proton is",10 times greater,5 times greater,Smaller,Equal,c,,,,,
+R0232,NEET2023_BIO_177,Biology,Genetics & Molecular Inheritance,"Match List I with List II:
+List I:
+A. Gene 'i'
+B. Gene 'z'
+C. Gene 'y'
+D. Gene 'a'
+List II: I. beta-galactosidase II. Permease III. Transacetylase IV. Repressor protein Choose the correct answer from the options given below:","A-IV, B-I, C-II, D-III","A-II, B-I, C-IV, D-III","A-IV, B-III, C-II, D-I","A-III, B-IV, C-I, D-II",a,,,,,
+R0233,NEET2017_CHEM_067,Chemistry,p-Block Elements,"Match the interhalogen compounds of column I with the geometry in column II and assign the correct code
+Column I
+Column II
+(a) XX' (i) T-shape
+(b) XX' (ii) Pentagonal bipyramidal
+(c) 5 XX' (iii) Linear
+(d) 7 XX' (iv) Square-pyramidal (v) Tetrahedral Code :",(iii) (iv) (i) (ii),(iii) (i) (iv) (ii),(v) (iv) (iii) (ii),(iv) (iii) (ii) (i),b,,,,,
+R0234,NEET2024_PHY_001,Physics,Magnetic Effects of Current,"The magnetic potential energy, when a magnetic bar of magnetic moment m is placed perpendicular to the magnetic field B is:",-mB,Zero,mB,-(1/2) mB,b,,,,,
+R0235,NEET2020_BIO_066,Biology,Morphology of Flowering Plants,Which of the following is not an inhibitory substance governing seed dormancy?,Gibberellic acid,Abscisic acid,Phenolic acid,Para-ascorbic acid,a,,,,,
+R0236,NEET2015_BIO_064,Biology,Biomolecules,Which of the following biomolecules does have a phosphodiester bond?,Nucleic acids in a nucleotide,Fatty acids in a diglyceride,Monosaccharides in a polysaccharide,Amino acids in a polypeptide,a,,,,,
+R0237,NEET2014_BIO_173,Biology,"Human Health, Disease & Microbes",At which stage of HIV infection does one usually show symptoms of AIDS ?,Within 15 days of sexual contact with an infected person,When the infected retro virus enters host cells,When HIV damages large number of helper T-Lymphocytes,When the viral DNA is produced by reverse transcriptase,c,,,,,
+R0238,NEET2013_BIO_169,Biology,Biomolecules,Which enzyme/s will be produced in a cell in which there is a non-sense mutation in the lac Y gene ?,b-galactosidase,Lactose permease,Transacetylase,Lactose permease and transacetylase,a,,,,,
+R0239,NEET2022_CHEM_081,Chemistry,General Principles & Metallurgy,"Given below are half cell reactions: − + − + + + → + 2 4 2 MnO 8H 5e Mn 4H O , + −= − 2 4 º Mn /MnO E 1.510 V + − + + → 2 2 1O 2H 2e H O 2 , = + 2 2 º O /H O E 1.223 V Will the permanganate ion, – 4 MnO liberate O2 from water in the presence of an acid?","Yes, because ° = + cell E 0.287 V","No, because ° = cell E – 0.287 V","Yes, because ° = + cell E 2.733 V","No, because ° = − cell E 2.733 V",a,,,,,
+R0240,NEET2021_PHY_005,Physics,Ray Optics,A lens of large focal length and large aperture is best suited as an objective of an astronomical telescope since,A large aperture contributes to the quality and visibility of the images.,A large area of the objective ensures better light gathering power.,A large aperture provides a better resolution.,All of the above,d,,,,,
+R0241,NEET2017_BIO_111,Biology,Biological Classification,Spliceosomes are not found in cells of,Plants,Fungi,Animals,Bacteria,d,,,,,
+R0242,NEET2014_PHY_021,Physics,Oscillations & Waves,The number of possible natural oscillations of air column in a pipe closed at one end of length 85 cm whose frequencies lie below 1250 Hz are - (velocity of sound = 340 ms–1),6.0,12,3,24,d,,,,,
+R0243,NEET2015_BIO_122,Biology,The Living World & Taxonomy,During ecological succession:,The changes lead to a community that is in near equilibrium with the environment and is called pioneer community,The gradual and predictable change in species composition occurs in a given area,The establishment of a new biotic community is very fast in its primary phase,The number and types of animals remain constant,b,,,,,
+R0244,NEET2021_BIO_107,Biology,Cell Cycle & Cell Division,The factor that leads to Founder effect in a population is :,Natural selection,Genetic recombination,Mutation,Genetic drift,d,,,,,
+R0245,NEET2015_BIO_085,Biology,Reproduction & Human Development,"Among china rose, mustard, brinjal, potato, guava, cucumber, onion and tulip, how many plants have superior ovary?",Four,Five,Six,Three,c,,,,,
+R0246,NEET2019_CHEM_064,Chemistry,Biomolecules & Polymers,The non-essential amino acid among the following is:,Valine,Leucine,Alanine,Lysine,c,,,,,
+R0247,NEET2025_BIO_122,Biology,Animal Kingdom,"Match List I with List Il:
+List- A. Chlorophyll a Yellow-green B. Chlorophyll b Yellow Xanthophylls Blue-green D. Carotenoids (IV) Yellow to Yellow-orange Choose the option with all correct matches. A-I, B-IV, C-, D-I","A-I, B-I, C-, D-IV",(E),"A-I, B-I, C-IV, D-I1I","A-I, B-IV, C-, D-I",b,,,,,
+R0248,NEET2024_BIO_179,Biology,Human Digestion & Respiration,"Match List-I with List-ll:
+List-I
+List-lI A. Residual Volume Maximum volume of air that can be breathed in after forced expiration B. Volume of air inspired or expired during normal respiration Vital Capacity C. Expiratory Capacity Volume of air remaining in lungs after forcible expiration D. Tidal Volume IV. Total volume of air expired after normal inspiration choose the correct answer from the options given below: ) A-IV, B-I, C-II, D-I","A-IV, B-III, C-I, D-II","A-III, B-I, C-IV, D-II","A-II, B-IV, C-I, D-III","A-I, B-II, C-III, D-IV",c,,,,,
+R0249,NEET2014_BIO_176,Biology,Ecology & Environment,"Just as a person moving from Delhi to Shimla to escape the heat for the duration of hot summer, thousands of migratory birds from Siberia and other extremely cold northern regions move to -",Western Ghat,Meghalaya,Corbett National Park,Keolado National Park,d,,,,,
+R0250,NEET2016_PHY_035,Physics,Thermal Physics,A piece of ice falls from a height h so that it melts completely. Only one-quarter of the heat produced is absorbed by the ice and all energy of ice gets converted into heat during its fall. The value of h is: [Latent heat of ice is 3.4 × 15 J/kg and g = 10 N/kg] 23,34 km,544 km,136 km,68 km,c,,,,,
+R0251,NEET2013_BIO_108,Biology,Plant Physiology,"The three boxes in this diagram represent the three major biosynthetic pathways in aerobic respiration. Arrows represent net reactants or products Arrows numbered 4, 8, and 12 can all be",NADH,ATP,H2O,FAD+ or FADH2,b,,,,,
+R0252,NEET2013_PHY_021,Physics,Oscillations & Waves,"It we study the vibration of a pipe open at both ends, then the following statement is not true -",Open end will be antinode,Odd harmonics of the fundamental frequency will be generated,All harmonics of the fundamental frequency will be generated,Pressure change will be maximum at both ends,d,,,,,
+R0253,NEET2016_BIO_118,Biology,Cell Cycle & Cell Division,In meiosis crossing over is initiated at:,Pachytene,Leptotene,Zygotene,Diplotene,a,,,,,
+R0254,NEET2019_BIO_116,Biology,Reproduction & Human Development,Select the correct sequence for transport of sperm cells in male reproductive system.,Testis → Epididymis → Vasa efferentia → Rete testis → Inguinal canal → Urethra,Seminiferous tubules → Rete testis → Vasa efferentia → Epididymis → Vas deferens → Ejaculatory duct → Urethra → Urethral meatus,Seminiferous tubules → Vasa efferentia → Epididymis → Inguinal canal → Urethra,Testis → Epididymis → Vasa efferentia → Vas deferens → Ejaculatory duct → Inguinal canal → Urethra → Urethral meatus,b,,,,,
+R0255,NEET2016_BIO_158,Biology,Reproduction & Human Development,Which one of the following is the starter codon?,AUG,UGA,UAA,UAG,a,,,,,
+R0256,NEET2018_CHEM_072,Chemistry,Coordination Chemistry,The type of isomerism shown by the complex [CoCl2(en)2] is,Ionization isomerism,Coordination isomerism,Geometrical isomerism,Linkage isomerism,c,,,,,
+R0257,NEET2016_CHEM_086,Chemistry,Solutions,"At 100𝑜𝐶 the vapour pressure of a solution of 6.5 g of a solute in 100 g water is 732 mm. If 𝐾𝑏= 0.52, the boiling point of this solution will be:",101𝑜𝐶,100𝑜𝐶,102𝑜𝐶,103𝑜𝐶,a,,,,,
+R0258,NEET2015_PHY_148,Physics,Thermodynamics,"Two vessels separately contain two ideal gases A and B at the same temperature, the pressure of a being twice that of B. Under such conditions, the density of A is found to be 1.5 times the density if B. The ratio of molecular weight of A and B is:",2,3,4,16,c,,,,,
+R0259,NEET2023_BIO_146,Biology,Cell Cycle & Cell Division,"Match List I with List II:
+List I:
+A. M Phase
+B. G2 Phase
+C. Quiescent stage (G0)
+D. G1 Phase
+List II: I. Proteins are synthesized II. Inactive phase III. Interval between mitosis and initiation of DNA replication IV. Equational division Choose the correct answer from the options given below:","A-I, B-II, C-IV, D-III","A-IV, B-II, C-I, D-III","A-IV, B-I, C-II, D-III","A-II, B-IV, C-I, D-III",c,,,,,
+R0260,NEET2020_PHY_141,Physics,Thermodynamics,Two cylinders A and B of equal capacity are connected to each other via a stop cock. A contains an ideal gas at standard temperature and pressure. B is completely evacuated. The entire system is thermally insulated. The stop cock is suddenly opened. The process is :,isothermal,adiabatic,isochoric,isobaric,b,,,,,
+R0261,NEET2021_CHEM_079,Chemistry,s-Block Elements,"Among the following alkaline earth metal halides, one which is covalent and soluble in organic solvents is :",Calcium chloride,Strontium chloride,Magnesium chloride,Beryllium chloride,d,,,,,
+R0262,NEET2015_PHY_160,Physics,Dual Nature of Matter,Light of wavelength 500 nm is incident on a metal with work function 2.258 eV. The de Broglie wavelength of the emitted electron is:,≤2.8 × 10−12 m,< 2.8 × 10−10 m,< 2.8 × 10−9 m,≥2.8 × 10−9 m,d,,,,,
+R0263,NEET2015_BIO_087,Biology,Biological Classification,Golden rice is a genetically modified crop plant where the incorporated gene is meant for biosynthesis of :,Vitamin A,Vitamin B,Vitamin C,Omega 3,a,,,,,
+R0264,NEET2018_CHEM_049,Chemistry,Periodic Table,The correct order of atomic radii in group 13 elements is,B < Ga < Al < Tl < In,B < Al < Ga < In < Tl,B < Al < In < Ga < Tl,B < Ga < Al < In < Tl,d,,,,,
+R0265,NEET2020_PHY_136,Physics,Atoms & Nuclei,"For which one of the following, Bohr model is not valid ?",Hydrogen atom,Singly ionised helium atom (He+),Deuteron atom,Singly ionised neon atom (Ne+),d,,,,,
+R0266,NEET2019_BIO_095,Biology,Plant Physiology,Respiratory Quotient (RQ) value of tripalmitin is,0.9,0.7,0.07,0.09,b,,,,,
+R0267,NEET2014_PHY_006,Physics,Laws of Motion,A balloon with mass ‘m’ is descending down with an acceleration ‘a’ (where a < g). How much mass should be removed from it so that it starts moving up with an acceleration ‘a’ ?,a g ma 2 +,a g ma 2 −,a g ma +,a g ma −,a,,,,,
+R0268,NEET2024_BIO_159,Biology,Biomolecules,"Match List-I with List-ll.
+List-1
+List-lI A. Primary structure of protein Human haemoglobin B. Secondary structure of protein Disulphide bonds C. Polypeptide chain Tertiary structure of protein D. Quaternary structure of protein IV. Alpha helix and β sheet choose the correct answer from the options given below:","A-I, B-IV, C-I, D-I","A-, B-I, C-I, D-IV","A-I, B-, C-, D-IV","A-IV, B-II, C-, D-I",a,,,,,
+R0269,NEET2013_CHEM_076,Chemistry,d- and f-Block Elements,Which of the following statements about the interstitial compounds is incorrect ?,They retain metallic conductivity,They are chemically reactive,They are much harder than the pure metal,They have higher melting points than the pure metal,b,,,,,
+R0270,NEET2021_BIO_181,Biology,Cell Cycle & Cell Division,Which stage of meiotic prophase shows terminalisation of chiasmata as its distinctive feature?,Leptotene,Zygotene,Diakinesis,Pachytene,c,,,,,
+R0271,NEET2021_BIO_145,Biology,Genetics & Molecular Inheritance,What is the role of RNA polymerase III in the process of transcription in eukaryotes?,"Transcribes rRNAs (28S, 18S and 5.8S)","Transcribes tRNA, 5s rRNA and snRNA",Transcribes precursor of mRNA,Transcribes only snRNAs,b,,,,,
+R0272,NEET2015_BIO_052,Biology,Plant Physiology,The oxygen evolved during photosynthesis comes from water molecules. Which one of the following pairs of elements is involved in this reaction?,Magnesium and Chlorine,Manganese and Chlorine,Manganese and Potassium,Magnesium and Molybdenum,b,,,,,
+R0273,NEET2017_BIO_170,Biology,The Living World & Taxonomy,Alexander Von Humbolt described for the first time,Ecological Biodiversity,Laws of limiting factor,Species area relationships,Population Growth equation,c,,,,,
+R0274,NEET2025_BIO_148,Biology,Circulation & Excretion,"Match List-I with List-ll.
+List-1 11-151 A. Heart Erythropoietin kidney B. Aldosterone Gastro-intestinal tract Atrial natriuretic factor D. IV. Adrenal Cortex Secret in Choose the correct answer from the options given below : A-, B-I, C-I, D-IV
+(1)
+(2) A-IV, B-I, C-, D-I","A-IV, B-III, C-I, D-II","A-III, B-I, C-IV, D-II","A-II, B-IV, C-I, D-III","A-I, B-II, C-III, D-IV",d,,,,,
+R0275,NEET2023_PHY_011,Physics,Current Electricity,Resistance of a carbon resistor determined from colour codes is (22000±5%)2.The colour of third band must be,Red,Green,Orange,Yellow,c,,,,,
+R0276,NEET2023_BIO_164,Biology,Biomolecules,"Given below are two statements:
+Statement I: Low temperature preserves the enzyme in a temporarily inactive state whereas high temperature destroys enzymatic activity because proteins are denatured by heat.
+Statement II: When the inhibitor closely resembles the substrate in its molecular structure and inhibits the activity of the enzyme, it is known as competitive inhibitor. In the light of the above statements, choose the correct answer from the options given below:",Both Statement I and Statement II are true,Both Statement I and Statement II are false,Statement I is true but Statement II is false,Statement I is false but Statement II is true,a,,,,,
+R0277,NEET2023_CHEM_098,Chemistry,Environmental Chemistry,"Given below are two statements:
+Statement I: The nutrient deficient water bodies lead to eu troph i cation Statement ll :Eutrophication leads to decrease in the level of oxygen in the water bodies. In the light of the above statements, choose the correct answer from the options given below:",Both Statement I and statement ll are true,Both statement i and statement ll are false,Statement i is correct but statement ll is false,Statement i is incorrect but statement ll is true,d,,,,,
+R0278,NEET2014_PHY_009,Physics,Rotational Motion,A solid cylinder of mass 50 kg and radius 0.5 m is free to rotate about the horizontal axis. A massless string is wound round the cylinder with one end attached to it and other hanging freely. Tension in the string required to produce an angular acceleration of 2 revolutions s–2 is -,25 N,50 N,78.5 N,157 N,d,,,,,
+R0279,NEET2023_CHEM_088,Chemistry,Structure of Atom,"Which complex compound is most stable?
+(1) [Co(NH3)4 (H20) Br](NO3)2",[co(NH3);(NO3)3],(3）,[CoCl2(en)2 ]NO3,[Co(NH3)。]2(SO4)3,c,,,,,
+R0280,NEET2021_BIO_104,Biology,Cell: The Unit of Life,"When the centromere is situated in the middle of two equal arms of chromosomes, the chromosome is referred as :",Metacentric,Telocentric,Sub-metacentric,Acrocentric,a,,,,,
+R0281,RENEET2026_CHEM_066,Chemistry,Biomolecules & Polymers,The correct statement about peptides and proteins is:,"In α-helices, the polypeptide chain is twisted into a right-handed screw through intermolecular H-bonds","In α-helices, the polypeptide chain is twisted into a right-handed screw through intramolecular H-bonds","In α-helices, the polypeptide chain is twisted into a left-handed screw through intramolecular H-bonds",Tertiary structure of proteins has two or more polypeptide subunits,b,,,,,
+R0282,NEET2022_BIO_118,Biology,Cell: The Unit of Life,XO type of sex determination can be found in :,Drosophila,Birds,Grasshoppers,Monkeys,c,,,,,
+R0283,NEET2014_CHEM_082,Chemistry,Environmental Chemistry,Which one of the following is not a common component of Photochemical Smog?,Ozone,Acrolein,Peroxyacetyl nitrate,Chlorofluorocarbons,d,,,,,
+R0284,NEET2013_CHEM_048,Chemistry,Chemical Kinetics,What is the activation energy for a reaction if its rate doubles when the temperature is raised from 20ºC to 35ºC ? (R = 8.314 J mol–1 K–1),342 kJ mol–1,269 kJ mol–1,34.7 kJ mol–1,15.1 kJ mol–1,c,,,,,
+R0285,RENEET2026_PHY_019,Physics,Gravitation,"A car travels on a circular racetrack of radius 50 m, which is banked at an angle . If the car travels at a speed 10 ms~1, then the wear and tear on its tyres is minimum. Taking the acceleration due to gravity to be 10 ms~2, the value of e is: tan-(2)
+(1)
+(2) tan""(V3 /2) tan-(2/3)",tan'(),(5）,1,8,d,,,,,
+R0286,NEET2020_CHEM_111,Chemistry,General Principles & Metallurgy,Identify the correct statement from the following :,Wrought iron is impure iron with 4% carbon.,Blister copper has blistered appearance due to evolution of CO2.,Vapour phase refining is carried out for Nickel by Van Arkel method.,Pig iron can be moulded into a variety of shapes.,d,,,,,
+R0287,NEET2013_CHEM_068,Chemistry,Equilibrium,Identify the correct order of solubility in aqueous medium-,CuS > ZnS > Na2S,ZnS > Na2S > CuS,Na2S > CuS > ZnS,Na2S > ZnS > CuS,d,,,,,
+R0288,NEET2015_CHEM_026,Chemistry,Solutions,What is the mole fraction of the solute in a 1.00 m aqueous solution?,0.0354,0.0177,0.177,770,b,,,,,
+R0289,NEET2017_CHEM_079,Chemistry,Chemical Bonding,Which one of the following pairs of species have the same bond order?,"CO, NO","O2, NO+","CN–, CO","N2, O2 –",c,,,,,
+R0290,NEET2023_BIO_108,Biology,Biotechnology,"Upon exposure to UV radiation, DNA stained with ethidium bromide will show:",Bright red colour,Bright blue colour,Bright yellow colour,Bright orange colour,d,,,,,
+R0291,NEET2021_BIO_150,Biology,Biotechnology,Plasmid pBR322 has Pstl restriction enzyme site within gene ampR that confers ampicillin resistance. If this enzyme is used for inserting a gene for β-galactoside production and the recombinant plasmid is inserted in an E.coli strain,It will not be able to confer ampicillin resistance to the host cell,The transformed cells will have the ability to resist ampicillin as well as produce β-galactoside,It will lead to lysis of host cell,It will be able to produce a novel protein with dual ability,a,,,,,
+R0292,RENEET2026_PHY_050,Chemistry,"Aldehydes, Ketones & Carboxylic Acids","The compound that CANNOT be obtained from the aldol condensation reaction shown below, is H, C + PhCHO NaOH, H, C H, C H, C Ph
+(1)
+(2) CHs H, Ph",Ph,H9,"H, C","H, C CHs",d,,,,,
+R0293,NEET2021_PHY_011,Physics,Ray Optics,"A convex lens 'A' of focal length 20 cm and a concave lens 'B' of focal length 5 cm are kept along the same axis with a distance 'd' between them. If a parallel beam of light falling on 'A' leaves 'B' as a parallel beam, then the distance 'd' in cm will be",25,15,50,30,b,,,,,
+R0294,NEET2019_BIO_098,Biology,The Living World & Taxonomy,Which of the following is the most important cause for animals and plants being driven to extinction?,Habitat loss and fragmentation,Drought and floods,Economic exploitation,Alien species invasion,a,,,,,
+R0295,NEET2024_PHY_015,Physics,Rotational Motion,"A particle is moving along X-axis with its position (x) varying with time (t) as x = att + βf2 + t + 8. The ratio of its initial velocity to its initial acceleration, respectively, is:",2α:8,:28,4α:β,:2β,d,,,,,
+R0296,NEET2016_CHEM_085,Chemistry,Haloalkanes & Haloarenes,For the following reactions: a. 𝐶𝐻3𝐶𝐻2𝐶𝐻2𝐵𝑟+ 𝐾𝑂𝐻→𝐶𝐻3𝐶𝐻= 𝐶𝐻2 + 𝐾𝐵𝑟+ 𝐻2𝑂 b. 43 c. Which of the following statements is correct?,a and b are elimination reactions and c is addition reaction.,"a is elimination, b is substitution and c is addition reaction.","a is elimination, b and c are substitution reactions.","a is substitution, b and c are addition reactions.",b,,,,,
+R0297,NEET2017_BIO_146,Biology,Plant Kingdom,Functional megaspore in an angiosperm develops into,Ovule,Endosperm,Embryo sac,Embryo,c,,,,,
+R0298,NEET2016_BIO_175,Biology,Biological Classification,Which of the following guards the opening of hepatopancreatic duct into the duodenum?,Semilunar valve,Ileocaecal valve,Pyloric sphincter 73,Sphincter of Oddi,d,,,,,
+R0299,NEET2014_CHEM_088,Chemistry,"Aldehydes, Ketones & Carboxylic Acids",Which one is most reactive towards Nucleophilic addition reaction ?,→CHO,→COCH3,| | CHO CH3,| | CHO NO2,d,,,,,
+R0300,NEET2016_BIO_100,Biology,Biological Classification,A system of rotating crops with legume or grass pasture to improve soil structure and fertility is called:,Ley farming,Contour farming,Strip farming,Shifting agriculture,a,,,,,

@@ -19,6 +19,8 @@ TABLE_ORDER = [
     "fatigue_logs",
     "socratic_conversations",
     "ncert_alignment_manifest",
+    "selection_decisions",
+    "score_prediction_snapshots",
 ]
 
 
@@ -53,7 +55,7 @@ def get_database_telemetry() -> dict[str, Any]:
 
 def check_postgres_connection(db_url: str | None = None) -> dict[str, Any]:
     target_url = db_url or os.environ.get("DATABASE_URL") or os.environ.get("KLASSED_DB_URL")
-    if not target_url:
+    if not target_url or not target_url.startswith(("postgres://", "postgresql")):
         return {
             "status": "SKIPPED",
             "detail": "No PostgreSQL connection URL provided or configured in environment",
@@ -62,6 +64,8 @@ def check_postgres_connection(db_url: str | None = None) -> dict[str, Any]:
 
     if target_url.startswith("postgres://"):
         target_url = target_url.replace("postgres://", "postgresql://", 1)
+    if target_url.startswith("postgresql://"):
+        target_url = target_url.replace("postgresql://", "postgresql+psycopg://", 1)
 
     t0 = time.perf_counter()
     try:
@@ -109,6 +113,8 @@ def migrate_sqlite_to_postgres(
 
     if target_url.startswith("postgres://"):
         target_url = target_url.replace("postgres://", "postgresql://", 1)
+    if target_url.startswith("postgresql://"):
+        target_url = target_url.replace("postgresql://", "postgresql+psycopg://", 1)
 
     t0 = time.perf_counter()
     pg_engine = create_engine(target_url, pool_pre_ping=True)

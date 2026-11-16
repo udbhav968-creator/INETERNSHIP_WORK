@@ -92,6 +92,8 @@ def _read_database() -> pd.DataFrame:
     url = os.environ.get("DATABASE_URL") or os.environ.get("KLASSED_DB_URL")
     if url and url.startswith("postgres://"):
         url = url.replace("postgres://", "postgresql://", 1)
+    if url and url.startswith("postgresql://"):
+        url = url.replace("postgresql://", "postgresql+psycopg://", 1)
     if not url and SQLITE_DB.exists():
         url = f"sqlite:///{SQLITE_DB.as_posix()}"
     if not url:

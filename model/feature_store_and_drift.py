@@ -6,6 +6,7 @@ import os
 from collections import deque, OrderedDict
 from pathlib import Path
 from typing import Dict, Any, List, Optional
+from .state_store import shared_store
 
 MODEL_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = MODEL_DIR.parent
@@ -48,6 +49,9 @@ def _compute_real_corpus_baselines() -> tuple[dict[str, float], list[float]]:
     return ({"basic": 1 / 3, "medium": 1 / 3, "advanced": 1 / 3}, [1 / 3, 1 / 3, 1 / 3])
 
 
+FEATURE_TTL_SECONDS = 30 * 86400
+
+
 class InMemoryFeatureStore:
     def __init__(self, max_latency_samples: int = 1000, max_capacity: int = 50000):
         self._lock = threading.RLock()
@@ -68,7 +72,16 @@ class InMemoryFeatureStore:
                 self._student_cache.move_to_end(student_id)
             else:
                 self._misses += 1
-            return dict(record) if record is not None else None
+        if record is None:
+            store = shared_store()
+            if store.active:
+                remote = store.get_json(f"features:{student_id}")
+                if isinstance(remote, dict):
+                    with self._lock:
+                        self._student_cache[student_id] = remote
+                        self._student_cache.move_to_end(student_id)
+                    return dict(remote)
+        return dict(record) if record is not None else None
 
     def put_student_features(self, student_id: str, features: Dict[str, Any]) -> float:
         t0 = time.perf_counter()
@@ -80,13 +93,20 @@ class InMemoryFeatureStore:
             self._student_cache.move_to_end(student_id)
             if len(self._student_cache) > self.max_capacity:
                 self._student_cache.popitem(last=False)
+            record = dict(self._student_cache[student_id])
             elapsed_ms = (time.perf_counter() - t0) * 1000.0
             self._latencies_ms.append(elapsed_ms)
-            return elapsed_ms
+        store = shared_store()
+        if store.active:
+            store.set_json(f"features:{student_id}", record, ttl_seconds=FEATURE_TTL_SECONDS)
+        return elapsed_ms
 
     def evict_student(self, student_id: str) -> None:
         with self._lock:
             self._student_cache.pop(student_id, None)
+        store = shared_store()
+        if store.active:
+            store.delete(f"features:{student_id}")
 
     def get_latency_percentiles(self) -> Dict[str, float]:
         with self._lock:

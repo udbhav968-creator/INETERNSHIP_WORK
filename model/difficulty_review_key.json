@@ -1,0 +1,1805 @@
+{
+  "note": "kept out of the reviewer sheet so reviewers label blind",
+  "rows": [
+    {
+      "review_id": "R0001",
+      "question_id": "NEET2022_BIO_115",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0002",
+      "question_id": "NEET2018_BIO_108",
+      "current_tier": "basic",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0003",
+      "question_id": "NEET2023_PHY_017",
+      "current_tier": "basic",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0004",
+      "question_id": "NEET2020_PHY_148",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0005",
+      "question_id": "NEET2023_BIO_114",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0006",
+      "question_id": "NEET2020_CHEM_115",
+      "current_tier": "basic",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0007",
+      "question_id": "NEET2025_PHY_050",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0008",
+      "question_id": "NEET2014_BIO_103",
+      "current_tier": "basic",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0009",
+      "question_id": "NEET2024_BIO_172",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0010",
+      "question_id": "NEET2014_BIO_095",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0011",
+      "question_id": "NEET2021_BIO_116",
+      "current_tier": "advanced",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0012",
+      "question_id": "NEET2017_BIO_116",
+      "current_tier": "basic",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0013",
+      "question_id": "NEET2016_BIO_133",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0014",
+      "question_id": "NEET2016_BIO_146",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0015",
+      "question_id": "NEET2016_PHY_010",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0016",
+      "question_id": "NEET2013_PHY_039",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0017",
+      "question_id": "NEET2018_CHEM_071",
+      "current_tier": "basic",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0018",
+      "question_id": "NEET2024_CHEM_065",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0019",
+      "question_id": "RENEET2026_PHY_028",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0020",
+      "question_id": "NEET2022_CHEM_060",
+      "current_tier": "medium",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0021",
+      "question_id": "NEET2014_PHY_027",
+      "current_tier": "advanced",
+      "proposed_tier": "advanced"
+    },
+    {
+      "review_id": "R0022",
+      "question_id": "NEET2014_BIO_145",
+      "current_tier": "basic",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0023",
+      "question_id": "NEET2017_BIO_162",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0024",
+      "question_id": "NEET2014_BIO_154",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0025",
+      "question_id": "NEET2017_PHY_044",
+      "current_tier": "medium",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0026",
+      "question_id": "NEET2017_BIO_117",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0027",
+      "question_id": "NEET2019_BIO_091",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0028",
+      "question_id": "RENEET2026_BIO_143",
+      "current_tier": "basic",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0029",
+      "question_id": "NEET2016_CHEM_054",
+      "current_tier": "medium",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0030",
+      "question_id": "NEET2024_BIO_125",
+      "current_tier": "advanced",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0031",
+      "question_id": "NEET2016_BIO_108",
+      "current_tier": "advanced",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0032",
+      "question_id": "RENEET2026_BIO_105",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0033",
+      "question_id": "NEET2016_CHEM_064",
+      "current_tier": "basic",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0034",
+      "question_id": "RENEET2026_BIO_154",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0035",
+      "question_id": "NEET2023_BIO_160",
+      "current_tier": "advanced",
+      "proposed_tier": "advanced"
+    },
+    {
+      "review_id": "R0036",
+      "question_id": "NEET2018_BIO_097",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0037",
+      "question_id": "NEET2017_CHEM_053",
+      "current_tier": "basic",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0038",
+      "question_id": "NEET2021_BIO_167",
+      "current_tier": "advanced",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0039",
+      "question_id": "RENEET2026_BIO_140",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0040",
+      "question_id": "NEET2014_CHEM_062",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0041",
+      "question_id": "NEET2015_BIO_117",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0042",
+      "question_id": "RENEET2026_BIO_128",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0043",
+      "question_id": "NEET2021_BIO_151",
+      "current_tier": "advanced",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0044",
+      "question_id": "NEET2014_CHEM_047",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0045",
+      "question_id": "NEET2020_BIO_083",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0046",
+      "question_id": "NEET2014_BIO_113",
+      "current_tier": "basic",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0047",
+      "question_id": "NEET2023_CHEM_066",
+      "current_tier": "medium",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0048",
+      "question_id": "NEET2018_BIO_171",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0049",
+      "question_id": "RENEET2026_BIO_138",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0050",
+      "question_id": "NEET2015_PHY_151",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0051",
+      "question_id": "NEET2025_BIO_133",
+      "current_tier": "basic",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0052",
+      "question_id": "NEET2022_BIO_110",
+      "current_tier": "advanced",
+      "proposed_tier": "advanced"
+    },
+    {
+      "review_id": "R0053",
+      "question_id": "NEET2018_PHY_003",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0054",
+      "question_id": "NEET2022_PHY_019",
+      "current_tier": "basic",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0055",
+      "question_id": "NEET2021_PHY_037",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0056",
+      "question_id": "NEET2024_PHY_025",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0057",
+      "question_id": "NEET2014_BIO_123",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0058",
+      "question_id": "RENEET2026_PHY_038",
+      "current_tier": "basic",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0059",
+      "question_id": "NEET2016_CHEM_071",
+      "current_tier": "medium",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0060",
+      "question_id": "NEET2018_CHEM_085",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0061",
+      "question_id": "NEET2014_CHEM_075",
+      "current_tier": "basic",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0062",
+      "question_id": "NEET2023_BIO_150",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0063",
+      "question_id": "NEET2024_BIO_177",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0064",
+      "question_id": "NEET2014_CHEM_089",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0065",
+      "question_id": "NEET2020_BIO_026",
+      "current_tier": "medium",
+      "proposed_tier": "advanced"
+    },
+    {
+      "review_id": "R0066",
+      "question_id": "NEET2020_PHY_174",
+      "current_tier": "medium",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0067",
+      "question_id": "NEET2020_PHY_140",
+      "current_tier": "medium",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0068",
+      "question_id": "NEET2024_PHY_002",
+      "current_tier": "medium",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0069",
+      "question_id": "NEET2013_CHEM_057",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0070",
+      "question_id": "NEET2023_CHEM_073",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0071",
+      "question_id": "NEET2020_BIO_069",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0072",
+      "question_id": "NEET2023_PHY_023",
+      "current_tier": "basic",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0073",
+      "question_id": "NEET2023_CHEM_058",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0074",
+      "question_id": "NEET2021_CHEM_091",
+      "current_tier": "basic",
+      "proposed_tier": "advanced"
+    },
+    {
+      "review_id": "R0075",
+      "question_id": "NEET2019_BIO_094",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0076",
+      "question_id": "NEET2022_BIO_108",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0077",
+      "question_id": "NEET2020_CHEM_107",
+      "current_tier": "medium",
+      "proposed_tier": "advanced"
+    },
+    {
+      "review_id": "R0078",
+      "question_id": "NEET2022_BIO_142",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0079",
+      "question_id": "NEET2023_BIO_192",
+      "current_tier": "advanced",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0080",
+      "question_id": "NEET2014_BIO_155",
+      "current_tier": "basic",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0081",
+      "question_id": "NEET2022_CHEM_058",
+      "current_tier": "medium",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0082",
+      "question_id": "NEET2024_BIO_174",
+      "current_tier": "advanced",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0083",
+      "question_id": "NEET2016_BIO_131",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0084",
+      "question_id": "NEET2017_PHY_026",
+      "current_tier": "medium",
+      "proposed_tier": "advanced"
+    },
+    {
+      "review_id": "R0085",
+      "question_id": "NEET2018_CHEM_084",
+      "current_tier": "basic",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0086",
+      "question_id": "NEET2014_BIO_094",
+      "current_tier": "basic",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0087",
+      "question_id": "NEET2023_BIO_145",
+      "current_tier": "advanced",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0088",
+      "question_id": "NEET2014_BIO_170",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0089",
+      "question_id": "NEET2020_BIO_060",
+      "current_tier": "advanced",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0090",
+      "question_id": "NEET2016_BIO_164",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0091",
+      "question_id": "NEET2025_CHEM_065",
+      "current_tier": "medium",
+      "proposed_tier": "advanced"
+    },
+    {
+      "review_id": "R0092",
+      "question_id": "NEET2022_PHY_027",
+      "current_tier": "basic",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0093",
+      "question_id": "NEET2024_CHEM_061",
+      "current_tier": "medium",
+      "proposed_tier": "advanced"
+    },
+    {
+      "review_id": "R0094",
+      "question_id": "NEET2017_BIO_119",
+      "current_tier": "basic",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0095",
+      "question_id": "NEET2014_BIO_178",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0096",
+      "question_id": "NEET2018_PHY_045",
+      "current_tier": "advanced",
+      "proposed_tier": "advanced"
+    },
+    {
+      "review_id": "R0097",
+      "question_id": "NEET2019_BIO_138",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0098",
+      "question_id": "NEET2024_BIO_109",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0099",
+      "question_id": "NEET2013_BIO_146",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0100",
+      "question_id": "NEET2016_PHY_021",
+      "current_tier": "basic",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0101",
+      "question_id": "NEET2021_BIO_198",
+      "current_tier": "advanced",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0102",
+      "question_id": "NEET2013_CHEM_070",
+      "current_tier": "medium",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0103",
+      "question_id": "NEET2014_PHY_023",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0104",
+      "question_id": "NEET2018_BIO_174",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0105",
+      "question_id": "NEET2017_CHEM_077",
+      "current_tier": "advanced",
+      "proposed_tier": "advanced"
+    },
+    {
+      "review_id": "R0106",
+      "question_id": "NEET2016_BIO_101",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0107",
+      "question_id": "NEET2021_BIO_162",
+      "current_tier": "medium",
+      "proposed_tier": "advanced"
+    },
+    {
+      "review_id": "R0108",
+      "question_id": "NEET2020_PHY_163",
+      "current_tier": "basic",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0109",
+      "question_id": "NEET2013_BIO_097",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0110",
+      "question_id": "NEET2018_BIO_148",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0111",
+      "question_id": "NEET2023_CHEM_070",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0112",
+      "question_id": "RENEET2026_PHY_040",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0113",
+      "question_id": "NEET2024_PHY_003",
+      "current_tier": "medium",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0114",
+      "question_id": "NEET2024_BIO_156",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0115",
+      "question_id": "NEET2023_BIO_132",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0116",
+      "question_id": "NEET2013_PHY_042",
+      "current_tier": "medium",
+      "proposed_tier": "advanced"
+    },
+    {
+      "review_id": "R0117",
+      "question_id": "NEET2013_BIO_111",
+      "current_tier": "advanced",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0118",
+      "question_id": "NEET2016_CHEM_069",
+      "current_tier": "medium",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0119",
+      "question_id": "NEET2023_CHEM_071",
+      "current_tier": "basic",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0120",
+      "question_id": "NEET2013_CHEM_073",
+      "current_tier": "basic",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0121",
+      "question_id": "NEET2023_CHEM_064",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0122",
+      "question_id": "NEET2025_CHEM_096",
+      "current_tier": "advanced",
+      "proposed_tier": "advanced"
+    },
+    {
+      "review_id": "R0123",
+      "question_id": "NEET2025_BIO_147",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0124",
+      "question_id": "NEET2022_CHEM_093",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0125",
+      "question_id": "NEET2022_CHEM_070",
+      "current_tier": "basic",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0126",
+      "question_id": "NEET2017_BIO_109",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0127",
+      "question_id": "NEET2023_PHY_030",
+      "current_tier": "basic",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0128",
+      "question_id": "NEET2024_BIO_154",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0129",
+      "question_id": "NEET2021_BIO_119",
+      "current_tier": "advanced",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0130",
+      "question_id": "NEET2025_PHY_038",
+      "current_tier": "basic",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0131",
+      "question_id": "NEET2015_CHEM_002",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0132",
+      "question_id": "NEET2020_CHEM_124",
+      "current_tier": "advanced",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0133",
+      "question_id": "NEET2022_BIO_172",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0134",
+      "question_id": "NEET2015_CHEM_008",
+      "current_tier": "medium",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0135",
+      "question_id": "NEET2017_CHEM_046",
+      "current_tier": "basic",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0136",
+      "question_id": "NEET2015_CHEM_024",
+      "current_tier": "medium",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0137",
+      "question_id": "NEET2021_BIO_197",
+      "current_tier": "advanced",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0138",
+      "question_id": "NEET2019_BIO_118",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0139",
+      "question_id": "NEET2017_PHY_030",
+      "current_tier": "basic",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0140",
+      "question_id": "NEET2020_CHEM_131",
+      "current_tier": "medium",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0141",
+      "question_id": "NEET2025_PHY_009",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0142",
+      "question_id": "NEET2015_CHEM_030",
+      "current_tier": "basic",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0143",
+      "question_id": "NEET2017_BIO_122",
+      "current_tier": "basic",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0144",
+      "question_id": "NEET2020_BIO_053",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0145",
+      "question_id": "NEET2021_CHEM_061",
+      "current_tier": "medium",
+      "proposed_tier": "advanced"
+    },
+    {
+      "review_id": "R0146",
+      "question_id": "NEET2016_BIO_124",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0147",
+      "question_id": "NEET2024_BIO_158",
+      "current_tier": "advanced",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0148",
+      "question_id": "NEET2024_BIO_163",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0149",
+      "question_id": "NEET2019_PHY_011",
+      "current_tier": "medium",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0150",
+      "question_id": "NEET2021_BIO_132",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0151",
+      "question_id": "NEET2022_CHEM_066",
+      "current_tier": "medium",
+      "proposed_tier": "advanced"
+    },
+    {
+      "review_id": "R0152",
+      "question_id": "NEET2015_PHY_145",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0153",
+      "question_id": "NEET2021_PHY_034",
+      "current_tier": "basic",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0154",
+      "question_id": "NEET2014_BIO_128",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0155",
+      "question_id": "NEET2016_BIO_180",
+      "current_tier": "medium",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0156",
+      "question_id": "NEET2024_BIO_166",
+      "current_tier": "advanced",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0157",
+      "question_id": "NEET2013_CHEM_056",
+      "current_tier": "basic",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0158",
+      "question_id": "NEET2015_CHEM_044",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0159",
+      "question_id": "NEET2013_BIO_103",
+      "current_tier": "basic",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0160",
+      "question_id": "NEET2017_BIO_115",
+      "current_tier": "basic",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0161",
+      "question_id": "RENEET2026_CHEM_058",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0162",
+      "question_id": "NEET2024_CHEM_080",
+      "current_tier": "medium",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0163",
+      "question_id": "NEET2018_CHEM_054",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0164",
+      "question_id": "NEET2017_CHEM_052",
+      "current_tier": "medium",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0165",
+      "question_id": "NEET2024_CHEM_099",
+      "current_tier": "medium",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0166",
+      "question_id": "NEET2025_PHY_003",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0167",
+      "question_id": "NEET2021_PHY_027",
+      "current_tier": "basic",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0168",
+      "question_id": "NEET2020_BIO_019",
+      "current_tier": "medium",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0169",
+      "question_id": "NEET2013_PHY_016",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0170",
+      "question_id": "NEET2023_BIO_165",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0171",
+      "question_id": "NEET2017_CHEM_063",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0172",
+      "question_id": "NEET2018_BIO_151",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0173",
+      "question_id": "NEET2021_BIO_125",
+      "current_tier": "advanced",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0174",
+      "question_id": "RENEET2026_PHY_014",
+      "current_tier": "basic",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0175",
+      "question_id": "NEET2016_CHEM_089",
+      "current_tier": "basic",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0176",
+      "question_id": "NEET2014_BIO_100",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0177",
+      "question_id": "NEET2014_CHEM_077",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0178",
+      "question_id": "NEET2014_BIO_152",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0179",
+      "question_id": "NEET2015_BIO_060",
+      "current_tier": "basic",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0180",
+      "question_id": "NEET2014_BIO_177",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0181",
+      "question_id": "NEET2013_BIO_118",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0182",
+      "question_id": "NEET2014_BIO_139",
+      "current_tier": "basic",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0183",
+      "question_id": "NEET2018_CHEM_068",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0184",
+      "question_id": "NEET2024_CHEM_052",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0185",
+      "question_id": "NEET2017_CHEM_058",
+      "current_tier": "basic",
+      "proposed_tier": "advanced"
+    },
+    {
+      "review_id": "R0186",
+      "question_id": "NEET2015_CHEM_039",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0187",
+      "question_id": "NEET2020_BIO_046",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0188",
+      "question_id": "NEET2024_BIO_107",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0189",
+      "question_id": "NEET2014_PHY_025",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0190",
+      "question_id": "NEET2022_PHY_005",
+      "current_tier": "basic",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0191",
+      "question_id": "RENEET2026_PHY_013",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0192",
+      "question_id": "NEET2021_CHEM_065",
+      "current_tier": "basic",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0193",
+      "question_id": "NEET2018_BIO_156",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0194",
+      "question_id": "NEET2017_CHEM_066",
+      "current_tier": "medium",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0195",
+      "question_id": "NEET2019_BIO_105",
+      "current_tier": "advanced",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0196",
+      "question_id": "NEET2015_PHY_150",
+      "current_tier": "medium",
+      "proposed_tier": "advanced"
+    },
+    {
+      "review_id": "R0197",
+      "question_id": "NEET2017_PHY_038",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0198",
+      "question_id": "NEET2020_BIO_023",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0199",
+      "question_id": "NEET2025_CHEM_081",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0200",
+      "question_id": "NEET2014_BIO_093",
+      "current_tier": "basic",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0201",
+      "question_id": "NEET2018_BIO_167",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0202",
+      "question_id": "NEET2025_PHY_008",
+      "current_tier": "medium",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0203",
+      "question_id": "NEET2013_BIO_138",
+      "current_tier": "basic",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0204",
+      "question_id": "NEET2023_PHY_002",
+      "current_tier": "medium",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0205",
+      "question_id": "NEET2024_BIO_152",
+      "current_tier": "advanced",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0206",
+      "question_id": "NEET2022_PHY_001",
+      "current_tier": "medium",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0207",
+      "question_id": "NEET2014_PHY_005",
+      "current_tier": "medium",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0208",
+      "question_id": "NEET2014_PHY_042",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0209",
+      "question_id": "RENEET2026_BIO_117",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0210",
+      "question_id": "NEET2020_BIO_055",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0211",
+      "question_id": "NEET2023_PHY_029",
+      "current_tier": "medium",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0212",
+      "question_id": "NEET2019_BIO_141",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0213",
+      "question_id": "NEET2019_PHY_007",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0214",
+      "question_id": "NEET2016_PHY_004",
+      "current_tier": "medium",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0215",
+      "question_id": "NEET2022_BIO_184",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0216",
+      "question_id": "NEET2018_BIO_138",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0217",
+      "question_id": "NEET2013_CHEM_060",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0218",
+      "question_id": "NEET2019_BIO_117",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0219",
+      "question_id": "NEET2021_PHY_035",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0220",
+      "question_id": "NEET2014_PHY_018",
+      "current_tier": "medium",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0221",
+      "question_id": "NEET2025_BIO_155",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0222",
+      "question_id": "NEET2017_PHY_041",
+      "current_tier": "medium",
+      "proposed_tier": "advanced"
+    },
+    {
+      "review_id": "R0223",
+      "question_id": "NEET2015_BIO_105",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0224",
+      "question_id": "NEET2019_BIO_164",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0225",
+      "question_id": "NEET2017_BIO_112",
+      "current_tier": "basic",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0226",
+      "question_id": "NEET2015_PHY_162",
+      "current_tier": "basic",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0227",
+      "question_id": "NEET2016_BIO_121",
+      "current_tier": "basic",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0228",
+      "question_id": "NEET2018_PHY_010",
+      "current_tier": "basic",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0229",
+      "question_id": "NEET2024_CHEM_100",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0230",
+      "question_id": "NEET2016_CHEM_080",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0231",
+      "question_id": "NEET2018_PHY_022",
+      "current_tier": "medium",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0232",
+      "question_id": "NEET2023_BIO_177",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0233",
+      "question_id": "NEET2017_CHEM_067",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0234",
+      "question_id": "NEET2024_PHY_001",
+      "current_tier": "basic",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0235",
+      "question_id": "NEET2020_BIO_066",
+      "current_tier": "advanced",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0236",
+      "question_id": "NEET2015_BIO_064",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0237",
+      "question_id": "NEET2014_BIO_173",
+      "current_tier": "basic",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0238",
+      "question_id": "NEET2013_BIO_169",
+      "current_tier": "medium",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0239",
+      "question_id": "NEET2022_CHEM_081",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0240",
+      "question_id": "NEET2021_PHY_005",
+      "current_tier": "basic",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0241",
+      "question_id": "NEET2017_BIO_111",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0242",
+      "question_id": "NEET2014_PHY_021",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0243",
+      "question_id": "NEET2015_BIO_122",
+      "current_tier": "basic",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0244",
+      "question_id": "NEET2021_BIO_107",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0245",
+      "question_id": "NEET2015_BIO_085",
+      "current_tier": "medium",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0246",
+      "question_id": "NEET2019_CHEM_064",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0247",
+      "question_id": "NEET2025_BIO_122",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0248",
+      "question_id": "NEET2024_BIO_179",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0249",
+      "question_id": "NEET2014_BIO_176",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0250",
+      "question_id": "NEET2016_PHY_035",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0251",
+      "question_id": "NEET2013_BIO_108",
+      "current_tier": "advanced",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0252",
+      "question_id": "NEET2013_PHY_021",
+      "current_tier": "medium",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0253",
+      "question_id": "NEET2016_BIO_118",
+      "current_tier": "basic",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0254",
+      "question_id": "NEET2019_BIO_116",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0255",
+      "question_id": "NEET2016_BIO_158",
+      "current_tier": "basic",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0256",
+      "question_id": "NEET2018_CHEM_072",
+      "current_tier": "basic",
+      "proposed_tier": "advanced"
+    },
+    {
+      "review_id": "R0257",
+      "question_id": "NEET2016_CHEM_086",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0258",
+      "question_id": "NEET2015_PHY_148",
+      "current_tier": "medium",
+      "proposed_tier": "advanced"
+    },
+    {
+      "review_id": "R0259",
+      "question_id": "NEET2023_BIO_146",
+      "current_tier": "advanced",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0260",
+      "question_id": "NEET2020_PHY_141",
+      "current_tier": "medium",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0261",
+      "question_id": "NEET2021_CHEM_079",
+      "current_tier": "medium",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0262",
+      "question_id": "NEET2015_PHY_160",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0263",
+      "question_id": "NEET2015_BIO_087",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0264",
+      "question_id": "NEET2018_CHEM_049",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0265",
+      "question_id": "NEET2020_PHY_136",
+      "current_tier": "basic",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0266",
+      "question_id": "NEET2019_BIO_095",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0267",
+      "question_id": "NEET2014_PHY_006",
+      "current_tier": "basic",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0268",
+      "question_id": "NEET2024_BIO_159",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0269",
+      "question_id": "NEET2013_CHEM_076",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0270",
+      "question_id": "NEET2021_BIO_181",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0271",
+      "question_id": "NEET2021_BIO_145",
+      "current_tier": "medium",
+      "proposed_tier": "advanced"
+    },
+    {
+      "review_id": "R0272",
+      "question_id": "NEET2015_BIO_052",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0273",
+      "question_id": "NEET2017_BIO_170",
+      "current_tier": "basic",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0274",
+      "question_id": "NEET2025_BIO_148",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0275",
+      "question_id": "NEET2023_PHY_011",
+      "current_tier": "basic",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0276",
+      "question_id": "NEET2023_BIO_164",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0277",
+      "question_id": "NEET2023_CHEM_098",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0278",
+      "question_id": "NEET2014_PHY_009",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0279",
+      "question_id": "NEET2023_CHEM_088",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0280",
+      "question_id": "NEET2021_BIO_104",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0281",
+      "question_id": "RENEET2026_CHEM_066",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0282",
+      "question_id": "NEET2022_BIO_118",
+      "current_tier": "basic",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0283",
+      "question_id": "NEET2014_CHEM_082",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0284",
+      "question_id": "NEET2013_CHEM_048",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0285",
+      "question_id": "RENEET2026_PHY_019",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0286",
+      "question_id": "NEET2020_CHEM_111",
+      "current_tier": "basic",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0287",
+      "question_id": "NEET2013_CHEM_068",
+      "current_tier": "basic",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0288",
+      "question_id": "NEET2015_CHEM_026",
+      "current_tier": "medium",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0289",
+      "question_id": "NEET2017_CHEM_079",
+      "current_tier": "basic",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0290",
+      "question_id": "NEET2023_BIO_108",
+      "current_tier": "medium",
+      "proposed_tier": "advanced"
+    },
+    {
+      "review_id": "R0291",
+      "question_id": "NEET2021_BIO_150",
+      "current_tier": "advanced",
+      "proposed_tier": "advanced"
+    },
+    {
+      "review_id": "R0292",
+      "question_id": "RENEET2026_PHY_050",
+      "current_tier": "advanced",
+      "proposed_tier": "advanced"
+    },
+    {
+      "review_id": "R0293",
+      "question_id": "NEET2021_PHY_011",
+      "current_tier": "medium",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0294",
+      "question_id": "NEET2019_BIO_098",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0295",
+      "question_id": "NEET2024_PHY_015",
+      "current_tier": "medium",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0296",
+      "question_id": "NEET2016_CHEM_085",
+      "current_tier": "advanced",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0297",
+      "question_id": "NEET2017_BIO_146",
+      "current_tier": "basic",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0298",
+      "question_id": "NEET2016_BIO_175",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    },
+    {
+      "review_id": "R0299",
+      "question_id": "NEET2014_CHEM_088",
+      "current_tier": "basic",
+      "proposed_tier": "medium"
+    },
+    {
+      "review_id": "R0300",
+      "question_id": "NEET2016_BIO_100",
+      "current_tier": "medium",
+      "proposed_tier": "basic"
+    }
+  ]
+}

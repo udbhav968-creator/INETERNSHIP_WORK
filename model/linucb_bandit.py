@@ -9,6 +9,8 @@ from pathlib import Path
 
 import numpy as np
 
+from .state_store import shared_store
+
 from .irt_3pl_model import fisher_information, get_item_params, irt_3pl_probability
 
 CONTEXT_DIM = 6
@@ -53,6 +55,9 @@ def reload_linucb_warm_start_prior() -> tuple[np.ndarray, np.ndarray]:
 
 
 def _resolve_checkpoint_path() -> Path:
+    override = os.environ.get("KLASSED_BANDIT_CHECKPOINT")
+    if override:
+        return Path(override)
     if os.environ.get("VERCEL") or not os.access(_MODEL_DIR, os.W_OK):
         return Path(tempfile.gettempdir()) / "klassed_linucb_state.json"
     return _MODEL_DIR / "linucb_state.json"
@@ -140,16 +145,28 @@ def flush_bandit_checkpoints() -> None:
 
 
 def reset_student_bandit(student_id: str, remove: bool = False) -> None:
+    store = shared_store()
     with _BANDIT_LOCK:
         if remove:
             _STUDENT_BANDITS.pop(student_id, None)
+            if store.active:
+                store.delete(f"linucb:{student_id}")
         else:
             _STUDENT_BANDITS[student_id] = LinUCBStudentState()
             _STUDENT_BANDITS.move_to_end(student_id)
+            if store.active:
+                store.set_json(f"linucb:{student_id}", _STUDENT_BANDITS[student_id].to_dict())
         _save_bandit_checkpoint(force=True)
 
 
 _load_bandit_checkpoint()
+
+
+BANDIT_STATE_TTL_SECONDS = 180 * 86400
+
+
+def _store_key(student_id: str) -> str:
+    return f"linucb:{student_id}"
 
 
 def get_student_bandit(student_id: str) -> LinUCBStudentState:
@@ -157,7 +174,14 @@ def get_student_bandit(student_id: str) -> LinUCBStudentState:
         if student_id in _STUDENT_BANDITS:
             _STUDENT_BANDITS.move_to_end(student_id)
             return _STUDENT_BANDITS[student_id]
-        new_state = LinUCBStudentState()
+        new_state = None
+        store = shared_store()
+        if store.active:
+            payload = store.get_json(_store_key(student_id))
+            if isinstance(payload, dict) and "A" in payload and "b" in payload:
+                new_state = LinUCBStudentState.from_dict(payload)
+        if new_state is None:
+            new_state = LinUCBStudentState()
         _STUDENT_BANDITS[student_id] = new_state
         if len(_STUDENT_BANDITS) > MAX_STUDENT_CACHE:
             _STUDENT_BANDITS.popitem(last=False)
@@ -253,6 +277,11 @@ def record_bandit_feedback(
         4,
     )
     with _get_student_lock(student_id):
-        get_student_bandit(student_id).update(x, reward)
-        _save_bandit_checkpoint()
+        state = get_student_bandit(student_id)
+        state.update(x, reward)
+        store = shared_store()
+        if store.active:
+            store.set_json(_store_key(student_id), state.to_dict(), ttl_seconds=BANDIT_STATE_TTL_SECONDS)
+        else:
+            _save_bandit_checkpoint()
     return reward

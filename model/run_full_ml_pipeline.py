@@ -95,6 +95,46 @@ def _stage_student_response_models() -> dict:
     return out
 
 
+def _stage_learning_analytics_self_test() -> dict:
+    from .learning_analytics_self_test import run_learning_analytics_self_test
+
+    rep = run_learning_analytics_self_test()
+    if not rep["passed"]:
+        raise RuntimeError(f"learning analytics self-test failed: {rep}")
+    return {"ope": rep["ope"], "ab_test": rep["ab_test"], "anomalies": rep["anomalies"]}
+
+
+def _stage_learning_analytics() -> dict:
+    from .learning_analytics_reports import run_learning_analytics
+
+    rep = run_learning_analytics(save=True)
+    return {"data": rep["data"], "sections_with_results": rep["sections_with_results"]}
+
+
+def _stage_content_and_language_audits() -> dict:
+    from .exam_registry import consistency_with_engine
+    from .explanation_guardrails import audit_stored_explanations
+    from .language_coverage import run_language_coverage
+
+    exam = consistency_with_engine()
+    if not exam["consistent"]:
+        raise RuntimeError(f"exam spec disagrees with engine constants: {exam['checks']}")
+    expl = audit_stored_explanations(save=True)
+    lang = run_language_coverage(save=True)
+    return {
+        "exam_spec": "consistent",
+        "explanations": {"passed": expl["passed"], "failed": expl["failed"]},
+        "languages": lang["status"],
+    }
+
+
+def _stage_retrieval_challenger() -> dict:
+    from .retrieval_backends import compare_with_production
+
+    rep = compare_with_production("char_ngram", save=True)
+    return {"challenger_top1": rep["challenger"]["top1_chapter_accuracy"], "production_top1": rep["production"].get("top1_chapter_accuracy"), "decision": rep["decision"]}
+
+
 def _stage_registries() -> dict:
     from .ml_extension_registry import build_extension_registry, verify_extension_registry
     from .training_and_validation_pipeline import REGISTRY_MANIFEST_FILE, build_model_registry_manifest
@@ -124,6 +164,10 @@ STAGES = [
     ("evaluation_harness", _stage_harness),
     ("student_pipeline_self_test", _stage_student_pipeline_self_test),
     ("student_response_models", _stage_student_response_models),
+    ("learning_analytics_self_test", _stage_learning_analytics_self_test),
+    ("learning_analytics", _stage_learning_analytics),
+    ("content_and_language_audits", _stage_content_and_language_audits),
+    ("retrieval_challenger", _stage_retrieval_challenger),
     ("artifact_registries", _stage_registries),
     ("model_cards_and_promotion_gates", _stage_model_cards),
 ]

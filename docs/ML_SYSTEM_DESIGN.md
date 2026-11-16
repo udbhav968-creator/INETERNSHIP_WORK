@@ -52,8 +52,12 @@ flowchart LR
 | 6 | Evaluation harness | `evaluation_harness.py` | A persona invariant, latency SLA or bandit ablation fails |
 | 7 | Student pipeline self-test (simulated) | `student_response_training.py` | Difficulty recovery r < 0.9, or fitted IRT not better than item p-values |
 | 8 | Student-response models (real data) | `student_response_training.py` | Never; reports `SKIPPED_INSUFFICIENT_DATA` until ready, then publishes gate decisions |
-| 9 | Artifact registries | `verify_artifact_integrity.py`, `ml_extension_registry.py` | Any SHA-256 mismatch |
-| 10 | Model cards + promotion gates | `mlops_registry_and_cards.py` | Never; it publishes decisions |
+| 9 | Learning-analytics self-test (simulated) | `learning_analytics_self_test.py` | Bandit OPE off by > 0.03, A/B misses a planted effect or finds a false one, anomaly detector misses a planted case |
+| 10 | Learning analytics (real data) | `learning_analytics_reports.py` | Never; each section reports `INSUFFICIENT_DATA` until ready |
+| 11 | Content and language audits | `exam_registry.py`, `explanation_guardrails.py`, `language_coverage.py` | Exam spec disagrees with engine constants |
+| 12 | Retrieval challenger (offline) | `retrieval_backends.py` | Never; publishes HOLD / ELIGIBLE_FOR_REVIEW |
+| 13 | Artifact registries | `verify_artifact_integrity.py`, `ml_extension_registry.py` | Any SHA-256 mismatch |
+| 14 | Model cards + promotion gates | `mlops_registry_and_cards.py` | Never; it publishes decisions |
 
 `--verify-reproducible` re-runs everything and fails if any headline metric moves more than 0.005 from the committed value. CI installs the exact training library versions from `model/ml-training-constraints.txt`.
 
@@ -140,7 +144,7 @@ flowchart LR
 
 **Self-test on simulated students (always runs, clearly labelled SIMULATED):** 500 students × 120 answers from known parameters. It recovers difficulty at r = 0.98 and discrimination at r = 0.65; fitted IRT reaches AUC 0.81 vs 0.71 for item p-values. A BKT recovery check gets every parameter within 0.04 of the truth.
 
-**Not re-fitted here:** DINA (needs a validated Q-matrix first) and LinUCB (needs logged selection propensities for offline evaluation). Both are recorded in the report.
+**Not re-fitted here:** DINA (needs a validated Q-matrix first) and LinUCB. LinUCB selection decisions and propensities are now logged (§8), so it can be evaluated offline once enough rewarded decisions with exploration exist.
 
 **Runbook once students arrive:**
 
@@ -152,3 +156,43 @@ python -m model.student_response_training --promote irt   # only after review
 python -m model.run_full_ml_pipeline --verify-reproducible
 python -m model.tests.test_ml_standalone_suite
 ```
+
+## 8. Learning analytics, experiments and scale
+
+```mermaid
+flowchart LR
+  A[next_paper] -->|arm = hash(student)| B{A/B arm}
+  B -->|adaptive| C[LinUCB scores, greedy or epsilon-greedy]
+  B -->|random_control| D[Uniform random within the same pools]
+  C --> E[(selection_decisions: candidates, scores, propensity, arm)]
+  D --> E
+  F[submit_attempt] -->|bandit reward| E
+  G[v2_insights] --> H[(score_prediction_snapshots, one per student per day)]
+  E --> I[learning_analytics_reports]
+  H --> I
+  J[test_attempts] --> I
+  K[neet_actual_scores.csv / student_attributes.csv] --> I
+  I --> L[OPE, A/B, score validation, fairness, solve times, anomalies, BKT vs PFA]
+```
+
+| Part | Module | Design |
+|---|---|---|
+| Decision logging | `decision_logging.py`, `backend/app/paper_generator.py` | Every served question records its candidate set (top 60), scores, the policy, the arm and the exact probability it had of being chosen. The bandit reward is attached when the answer arrives |
+| Exploration | env `KLASSED_BANDIT_EXPLORATION_EPSILON` (default 0, max 0.5) | Epsilon-greedy with exact propensities; at 0 the policy is unchanged (greedy) |
+| A/B test | `experiments.py`, env `KLASSED_EXPERIMENT_SELECTION_AB` (default off) | SHA-256 hash of student id → 50/50 adaptive vs random control; sample-ratio-mismatch check (chi-square, p < 0.001); outcome = accuracy change first→last paper; bootstrap 95% CI; minimum detectable effect |
+| Off-policy evaluation | `offline_policy_evaluation.py` | IPS and self-normalised IPS with weight clipping and effective sample size; needs logged propensities below 1 |
+| Score validation | `score_validation.py` | Latest snapshot at least 7 days before the exam vs the real score: MAE, RMSE, bias, coverage of the 90% range, calibration by decile |
+| Fairness | `fairness_report.py` | Per group: BKT next-answer AUC / log loss / ECE and score-range coverage; flags AUC gap > 0.05, ECE > 0.05, coverage gap > 10 points; groups under 50 students are not evaluated |
+| Real solve times | `empirical_item_times.py` | Median log-time per question shrunk toward the formula value with weight n/(n+20) |
+| Anomalies | `anomaly_detection.py` | lz* person-fit on 3PL, rapid-guess share, answer-copy index (binomial on identical wrong options). Human review only |
+| KT challenger | `kt_challenger.py` | PFA vs BKT on held-out students; deep KT (SAKT/AKT) deliberately deferred until about 1M answers |
+| Shared state | `state_store.py` | With `REDIS_URL`, bandit state and features are per-student Redis keys (TTL 180 / 30 days) shared by all servers; without it, behaviour is unchanged |
+| Releases | `release_registry.py`, `model/releases.json` | candidate → staging (canary %) → production (named reviewer) → archived; `rollback` restores the previous production set from git |
+| Weekly retraining | `.github/workflows/scheduled_retraining.yml` | Runs only when `KLASSED_ANALYTICS_DATABASE_URL` (read-only replica) is set; uploads reports and a candidate release; never promotes |
+| Exams | `exam_registry.py` | NEET-UG spec checked against engine constants every run; other exams follow the onboarding checklist |
+| Retrieval | `retrieval_backends.py` | Any encoder is compared with production on the same 9,448 held-out questions; gate top-1 gain ≥ 0.02 |
+| Explanations | `explanation_guardrails.py` | Grounded prompt + checks (answer key, boilerplate, numbers, grounding) for stored and AI-written explanations |
+| Languages | `language_coverage.py`, `data/translations/<lang>/questions.jsonl` | 12 Indian languages; numbers, formulas and script checked; approval needs a second person |
+| Privacy | `privacy_settings.py`, env `KLASSED_BEHAVIOURAL_TELEMETRY` | `off` stores no answer switches or hesitation |
+
+Runbook: see `docs/ML_OPERATIONS_RUNBOOK.md`.

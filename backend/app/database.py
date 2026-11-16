@@ -23,6 +23,8 @@ _DEFAULT_DB_PATH = _resolve_sqlite_path()
 DATABASE_URL = os.environ.get("DATABASE_URL") or os.environ.get("KLASSED_DB_URL") or f"sqlite:///{_DEFAULT_DB_PATH}"
 if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+if DATABASE_URL.startswith("postgresql://"):
+    DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg://", 1)
 
 _IS_SQLITE = DATABASE_URL.startswith("sqlite")
 engine_kwargs = {"pool_pre_ping": True}

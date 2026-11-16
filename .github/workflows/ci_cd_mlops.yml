@@ -9,7 +9,7 @@ on:
 
 jobs:
   standalone-mlops-governance-and-training:
-    name: Reproducible ML Pipeline, Grouped CV, Artifact Registries, Model Cards & 38-Suite ML Gate
+    name: Reproducible ML Pipeline, Grouped CV, Artifact Registries, Model Cards & 39-Suite ML Gate
     runs-on: ubuntu-24.04
 
     steps:
@@ -49,7 +49,7 @@ jobs:
         run: |
           python -m model.evaluation_harness
 
-      - name: Stage 5 — 38 Standalone Pure-ML & MLOps Verification Suites
+      - name: Stage 5 — 39 Standalone Pure-ML & MLOps Verification Suites
         run: |
           python -m model.tests.test_ml_standalone_suite
 
@@ -83,7 +83,7 @@ jobs:
             docs/MODEL_CARDS.md
 
   fullstack-integration-and-security-gate:
-    name: Full-Stack Psychometric, Concurrency, Security & 29-Suite Gate
+    name: Full-Stack Psychometric, Concurrency, Security & 30-Suite Gate
     needs: standalone-mlops-governance-and-training
     runs-on: ubuntu-24.04
 
@@ -106,7 +106,7 @@ jobs:
           pip install -r backend/requirements.txt -c model/ml-training-constraints.txt
           python -m model.serving_runtime_parity --strict
 
-      - name: Run All 29 Deep Unit, Integration, Concurrency & Forensic Suites
+      - name: Run All 30 Deep Unit, Integration, Concurrency & Forensic Suites
         run: |
           python backend/tests/test_v2_engine.py
 

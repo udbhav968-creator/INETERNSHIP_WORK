@@ -1,0 +1,106 @@
+{
+  "what": "how much of the question bank is available in each Indian language, with automatic checks on every translation",
+  "english_questions": 2400,
+  "chapters": 65,
+  "translation_file_format": "data/translations/<lang>/questions.jsonl, one JSON object per line with question_id, question_text, option_a, option_b, option_c, option_d, translator, reviewer, status and optional explanation",
+  "checks": "numbers unchanged, chemical formulas and symbols kept, target script used, status draft/reviewed/approved, approved items reviewed by a second person",
+  "languages": {
+    "hi": {
+      "language": "Hindi",
+      "questions_translated": 0,
+      "questions_approved_and_valid": 0,
+      "question_coverage": 0.0,
+      "failing_checks": [],
+      "chapter_names_and_glossary": 7
+    },
+    "mr": {
+      "language": "Marathi",
+      "questions_translated": 0,
+      "questions_approved_and_valid": 0,
+      "question_coverage": 0.0,
+      "failing_checks": [],
+      "chapter_names_and_glossary": 0
+    },
+    "bn": {
+      "language": "Bengali",
+      "questions_translated": 0,
+      "questions_approved_and_valid": 0,
+      "question_coverage": 0.0,
+      "failing_checks": [],
+      "chapter_names_and_glossary": 0
+    },
+    "as": {
+      "language": "Assamese",
+      "questions_translated": 0,
+      "questions_approved_and_valid": 0,
+      "question_coverage": 0.0,
+      "failing_checks": [],
+      "chapter_names_and_glossary": 0
+    },
+    "gu": {
+      "language": "Gujarati",
+      "questions_translated": 0,
+      "questions_approved_and_valid": 0,
+      "question_coverage": 0.0,
+      "failing_checks": [],
+      "chapter_names_and_glossary": 0
+    },
+    "pa": {
+      "language": "Punjabi",
+      "questions_translated": 0,
+      "questions_approved_and_valid": 0,
+      "question_coverage": 0.0,
+      "failing_checks": [],
+      "chapter_names_and_glossary": 0
+    },
+    "or": {
+      "language": "Odia",
+      "questions_translated": 0,
+      "questions_approved_and_valid": 0,
+      "question_coverage": 0.0,
+      "failing_checks": [],
+      "chapter_names_and_glossary": 0
+    },
+    "ta": {
+      "language": "Tamil",
+      "questions_translated": 0,
+      "questions_approved_and_valid": 0,
+      "question_coverage": 0.0,
+      "failing_checks": [],
+      "chapter_names_and_glossary": 0
+    },
+    "te": {
+      "language": "Telugu",
+      "questions_translated": 0,
+      "questions_approved_and_valid": 0,
+      "question_coverage": 0.0,
+      "failing_checks": [],
+      "chapter_names_and_glossary": 0
+    },
+    "kn": {
+      "language": "Kannada",
+      "questions_translated": 0,
+      "questions_approved_and_valid": 0,
+      "question_coverage": 0.0,
+      "failing_checks": [],
+      "chapter_names_and_glossary": 0
+    },
+    "ml": {
+      "language": "Malayalam",
+      "questions_translated": 0,
+      "questions_approved_and_valid": 0,
+      "question_coverage": 0.0,
+      "failing_checks": [],
+      "chapter_names_and_glossary": 0
+    },
+    "ur": {
+      "language": "Urdu",
+      "questions_translated": 0,
+      "questions_approved_and_valid": 0,
+      "question_coverage": 0.0,
+      "failing_checks": [],
+      "chapter_names_and_glossary": 0
+    }
+  },
+  "status": "NOT_STARTED"
+}

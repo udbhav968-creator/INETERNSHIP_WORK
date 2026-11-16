@@ -89,6 +89,8 @@ def build_model_cards() -> list[dict]:
     uni = _load("unified_training_report.json")
     harness = _load("harness_benchmark_report.json")
     student = _load("student_models/student_response_training_report.json")
+    analytics = _load("student_models/learning_analytics_report.json")
+    retrieval = _load("retrieval_challenger_report.json")
     aux = val.get("auxiliary_models_training", {})
     ridge = aux.get("irt_cold_start_ridge_regressor", {})
     hold = val.get("random_forest_holdout_evaluation", {})
@@ -205,6 +207,28 @@ def build_model_cards() -> list[dict]:
                 "bkt": (((student.get("bkt") or {}).get("evaluation") or {}).get("models")),
             },
             "limitations": ["DINA and LinUCB are not re-fitted here (Q-matrix validation and logged propensities needed)"],
+        },
+        {
+            "model": "learning_analytics",
+            "status": "waiting_for_data" if not analytics.get("sections_with_results") else "reporting",
+            "task": "bandit off-policy evaluation, selection A/B test, score-prediction validation, fairness, real solve times, anomaly flags, BKT vs PFA challenger",
+            "artifacts": [_artifact("model/student_models/learning_analytics_report.json")],
+            "training_data": f"{(analytics.get('data') or {}).get('attempts', 0)} attempts, {(analytics.get('data') or {}).get('selection_decisions', 0)} logged selection decisions",
+            "labels": "observed answers, logged propensities and rewards, real NEET scores when supplied",
+            "evaluation": "each section reports INSUFFICIENT_DATA until its minimum sample is met; methods are checked on simulations in the learning_analytics_self_test stage",
+            "metrics": {k: (v.get("status") if isinstance(v, dict) else None) for k, v in analytics.items() if isinstance(v, dict) and "status" in v},
+            "limitations": ["anomaly flags are for human review only", "unbiased bandit evaluation needs the A/B control arm or exploration (KLASSED_BANDIT_EXPLORATION_EPSILON)"],
+        },
+        {
+            "model": "retrieval_challenger",
+            "status": (retrieval.get("decision") or "not_run").lower(),
+            "task": "candidate chapter retriever compared with production on the same held-out questions",
+            "artifacts": [_artifact("model/retrieval_challenger_report.json")],
+            "training_data": "NCERT chapter documents and PYQ stems/explanations (same as production)",
+            "labels": "chapter tags of held-out sample-paper questions",
+            "evaluation": "top-1 / top-3 chapter accuracy on questions not in the index",
+            "metrics": {"challenger": retrieval.get("challenger"), "top1_gain": retrieval.get("top1_gain")},
+            "limitations": ["the offline run uses a lexical stand-in; the semantic model needs torch and a model download (GPU)"],
         },
         {
             "model": "bkt_dina_linucb_priors",

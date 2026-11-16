@@ -84,3 +84,17 @@ IRT a/b/c, BKT parameters, DINA slip/guess, bandit rewards, score-interval calib
 | 42 | Low (MLOps) | `backend/tests/test_v2_engine.py` tests 16–17, ML suites 11 and 14 | Tests saved over production files (model, calibration, registry, reports). The retrained model is identical (same 300 trees), but its pickle bytes differ, so after a local test run the committed checksums no longer matched | Tests run training and reports with saving turned off; only the pipeline writes artifacts | Running the tests leaves `model/` unchanged |
 
 ML suite 38 and backend tests 12 and 24 lock all of these in.
+
+## 7. Fourth pass — what was found while building learning analytics (16 Nov 2026)
+
+| # | Severity | Where | Finding | Fix |
+|---|---|---|---|---|
+| 43 | High (content) | `neet_questions_clean.json` explanations | 131 of 2,400 explanations (74 chemistry, 52 physics, 5 biology) are generic templates ("Step 1: Analyze the chemical species…", "…yields the final result corresponding to Option (D)") with no reasoning. In 4 of them the template names a different option than the answer key; the keys checked are correct (e.g. anisole + HI → phenol + methyl iodide; hydroboration of propene → propan-1-ol) | `model/explanation_guardrails.py` flags them in every pipeline run; `data/review/explanation_rewrite_list.csv` lists all 131 for the content team |
+| 44 | Medium (content) | chapter tags | Some PYQs carry wrong chapter tags (e.g. organic reaction sequences tagged "Structure of Atom"; apoplastic water movement tagged "Cell: The Unit of Life") | Review sheet collects `chapter_tag_ok` / `correct_chapter`; `review_pack score` reports the error rate |
+| 45 | High (backend) | `requirements.txt`, `database.py` | No PostgreSQL driver was installed, so `DATABASE_URL=postgresql://…` would fail on first connection | `psycopg[binary]` added; URLs routed to `postgresql+psycopg://` in the app, the migration adapter and the ML loaders; new tables added to the migration list |
+| 46 | Medium (ML) | `paper_generator.py` | Question choice was deterministic and nothing was logged, so the bandit could never be evaluated or improved offline | Decision logging with exact propensities; optional epsilon exploration; A/B random-control arm |
+| 47 | Medium (scale) | `linucb_bandit.py` | Every answer rewrote one JSON file holding every cached student's bandit state | With `REDIS_URL`, one key per student; without it, unchanged |
+| 48 | Low (tests) | `backend/tests/test_v2_engine.py` | Backend tests wrote into the committed seed database `backend/klassed.db` | Tests copy it to a temporary file first |
+| 49 | Medium (privacy) | behavioural telemetry | Answer switches and hesitation of minors are stored; the DPDP Rules 2025 require verifiable parental consent for under-18s and restrict behavioural monitoring of children | `KLASSED_BEHAVIOURAL_TELEMETRY=off` switch; decision left to legal |
+
+Nothing in this pass changed a model or a reported metric.

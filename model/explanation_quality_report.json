@@ -1,0 +1,983 @@
+{
+  "what": "automatic checks on the stored explanation of every PYQ (the same checks any AI-written explanation must pass)",
+  "questions": 2400,
+  "passed": 2269,
+  "failed": 131,
+  "issue_counts": {
+    "low_overlap_with_question": 288,
+    "answer_number_not_found_in_explanation": 151,
+    "boilerplate_template": 131,
+    "claims_option_b_but_key_is_c": 1,
+    "claims_option_d_but_key_is_b": 1,
+    "claims_option_c_but_key_is_a": 1,
+    "claims_option_b_but_key_is_a": 1
+  },
+  "failing_by_chapter": {
+    "Structure of Atom": 20,
+    "Kinematics": 10,
+    "Biomolecules & Polymers": 9,
+    "Mole Concept / Stoichiometry": 8,
+    "p-Block Elements": 6,
+    "Alcohols, Phenols & Ethers": 6,
+    "Thermodynamics": 6,
+    "Semiconductor Electronics": 5,
+    "Hydrocarbons": 4,
+    "Chemical Bonding": 4,
+    "Oscillations & Waves": 4,
+    "Properties of Matter": 3,
+    "Current Electricity": 3,
+    "Gravitation": 3,
+    "General Principles & Metallurgy": 2,
+    "General Organic Chemistry": 2,
+    "States of Matter": 2,
+    "Redox Reactions & Electrochemistry": 2,
+    "Rotational Motion": 2,
+    "Alternating Current": 2,
+    "Atoms & Nuclei": 2,
+    "Units & Dimensions": 2,
+    "Electrostatics": 2,
+    "Dual Nature of Matter": 2,
+    "Ray Optics": 2,
+    "Magnetic Effects of Current": 2,
+    "Plant Kingdom": 1,
+    "Morphology of Flowering Plants": 1,
+    "Biomolecules": 1,
+    "Surface Chemistry": 1,
+    "Aldehydes, Ketones & Carboxylic Acids": 1,
+    "d- and f-Block Elements": 1,
+    "Magnetism & Matter": 1,
+    "Wave Optics": 1,
+    "Amines & Nitrogen Compounds": 1,
+    "Haloalkanes & Haloarenes": 1,
+    "Solutions": 1,
+    "Environmental Chemistry": 1,
+    "Work, Energy & Power": 1,
+    "Electromagnetic Waves": 1,
+    "Electromagnetic Induction": 1,
+    "Laws of Motion": 1
+  },
+  "failing_questions": [
+    {
+      "question_id": "NEET2013_BIO_096",
+      "chapter": "Plant Kingdom",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2013_BIO_099",
+      "chapter": "Morphology of Flowering Plants",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2013_BIO_106",
+      "chapter": "Biomolecules",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2013_CHEM_069",
+      "chapter": "p-Block Elements",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2013_CHEM_080",
+      "chapter": "Biomolecules & Polymers",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2014_CHEM_050",
+      "chapter": "Surface Chemistry",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2015_CHEM_001",
+      "chapter": "Structure of Atom",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2015_CHEM_003",
+      "chapter": "Structure of Atom",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2015_CHEM_008",
+      "chapter": "Biomolecules & Polymers",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2015_CHEM_014",
+      "chapter": "Hydrocarbons",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2015_CHEM_040",
+      "chapter": "Hydrocarbons",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2016_CHEM_047",
+      "chapter": "Structure of Atom",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2016_CHEM_054",
+      "chapter": "Aldehydes, Ketones & Carboxylic Acids",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2016_CHEM_056",
+      "chapter": "Biomolecules & Polymers",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2016_CHEM_057",
+      "chapter": "Biomolecules & Polymers",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2016_CHEM_063",
+      "chapter": "Structure of Atom",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2016_CHEM_081",
+      "chapter": "General Principles & Metallurgy",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2016_CHEM_082",
+      "chapter": "Alcohols, Phenols & Ethers",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2016_CHEM_087",
+      "chapter": "Biomolecules & Polymers",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2016_PHY_034",
+      "chapter": "Kinematics",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2017_CHEM_053",
+      "chapter": "Chemical Bonding",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2017_CHEM_068",
+      "chapter": "d- and f-Block Elements",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2017_CHEM_070",
+      "chapter": "General Organic Chemistry",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2017_CHEM_083",
+      "chapter": "Alcohols, Phenols & Ethers",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2017_PHY_024",
+      "chapter": "Semiconductor Electronics",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2017_PHY_028",
+      "chapter": "Magnetism & Matter",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2018_CHEM_059",
+      "chapter": "Structure of Atom",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2019_CHEM_061",
+      "chapter": "Biomolecules & Polymers",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2019_CHEM_073",
+      "chapter": "Biomolecules & Polymers",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2019_CHEM_074",
+      "chapter": "Hydrocarbons",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2020_PHY_138",
+      "chapter": "Wave Optics",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2022_CHEM_094",
+      "chapter": "Alcohols, Phenols & Ethers",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_CHEM_051",
+      "chapter": "Amines & Nitrogen Compounds",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_CHEM_052",
+      "chapter": "Mole Concept / Stoichiometry",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_CHEM_053",
+      "chapter": "p-Block Elements",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_CHEM_054",
+      "chapter": "p-Block Elements",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_CHEM_056",
+      "chapter": "Mole Concept / Stoichiometry",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_CHEM_057",
+      "chapter": "p-Block Elements",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_CHEM_058",
+      "chapter": "Haloalkanes & Haloarenes",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_CHEM_059",
+      "chapter": "Alcohols, Phenols & Ethers",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_CHEM_060",
+      "chapter": "Solutions",
+      "issues": [
+        "claims_option_b_but_key_is_c",
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_CHEM_061",
+      "chapter": "Chemical Bonding",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_CHEM_062",
+      "chapter": "Structure of Atom",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_CHEM_063",
+      "chapter": "Structure of Atom",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_CHEM_064",
+      "chapter": "Structure of Atom",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_CHEM_065",
+      "chapter": "Mole Concept / Stoichiometry",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_CHEM_066",
+      "chapter": "Chemical Bonding",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_CHEM_067",
+      "chapter": "Chemical Bonding",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_CHEM_068",
+      "chapter": "Thermodynamics",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_CHEM_069",
+      "chapter": "Mole Concept / Stoichiometry",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_CHEM_070",
+      "chapter": "Biomolecules & Polymers",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_CHEM_071",
+      "chapter": "p-Block Elements",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_CHEM_072",
+      "chapter": "Structure of Atom",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_CHEM_073",
+      "chapter": "Structure of Atom",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_CHEM_074",
+      "chapter": "Thermodynamics",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_CHEM_075",
+      "chapter": "Structure of Atom",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_CHEM_076",
+      "chapter": "Mole Concept / Stoichiometry",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_CHEM_077",
+      "chapter": "Mole Concept / Stoichiometry",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_CHEM_079",
+      "chapter": "Structure of Atom",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_CHEM_080",
+      "chapter": "Mole Concept / Stoichiometry",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_CHEM_081",
+      "chapter": "Structure of Atom",
+      "issues": [
+        "claims_option_d_but_key_is_b",
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_CHEM_082",
+      "chapter": "States of Matter",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_CHEM_085",
+      "chapter": "Thermodynamics",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_CHEM_086",
+      "chapter": "p-Block Elements",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_CHEM_088",
+      "chapter": "Structure of Atom",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_CHEM_089",
+      "chapter": "General Organic Chemistry",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_CHEM_090",
+      "chapter": "States of Matter",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_CHEM_091",
+      "chapter": "Thermodynamics",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_CHEM_092",
+      "chapter": "Redox Reactions & Electrochemistry",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_CHEM_093",
+      "chapter": "Structure of Atom",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_CHEM_094",
+      "chapter": "Structure of Atom",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_CHEM_096",
+      "chapter": "Alcohols, Phenols & Ethers",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_CHEM_097",
+      "chapter": "Structure of Atom",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_CHEM_098",
+      "chapter": "Environmental Chemistry",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_CHEM_099",
+      "chapter": "Alcohols, Phenols & Ethers",
+      "issues": [
+        "claims_option_c_but_key_is_a",
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_CHEM_100",
+      "chapter": "General Principles & Metallurgy",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_PHY_001",
+      "chapter": "Properties of Matter",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_PHY_002",
+      "chapter": "Rotational Motion",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_PHY_006",
+      "chapter": "Work, Energy & Power",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_PHY_007",
+      "chapter": "Current Electricity",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_PHY_008",
+      "chapter": "Alternating Current",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_PHY_009",
+      "chapter": "Semiconductor Electronics",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_PHY_011",
+      "chapter": "Current Electricity",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_PHY_012",
+      "chapter": "Semiconductor Electronics",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_PHY_014",
+      "chapter": "Rotational Motion",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_PHY_015",
+      "chapter": "Thermodynamics",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_PHY_016",
+      "chapter": "Gravitation",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_PHY_017",
+      "chapter": "Kinematics",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_PHY_018",
+      "chapter": "Properties of Matter",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_PHY_019",
+      "chapter": "Oscillations & Waves",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_PHY_020",
+      "chapter": "Atoms & Nuclei",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_PHY_021",
+      "chapter": "Units & Dimensions",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_PHY_022",
+      "chapter": "Electromagnetic Waves",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_PHY_023",
+      "chapter": "Kinematics",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_PHY_024",
+      "chapter": "Electrostatics",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_PHY_025",
+      "chapter": "Oscillations & Waves",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_PHY_026",
+      "chapter": "Atoms & Nuclei",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_PHY_027",
+      "chapter": "Dual Nature of Matter",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_PHY_028",
+      "chapter": "Units & Dimensions",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_PHY_029",
+      "chapter": "Oscillations & Waves",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_PHY_030",
+      "chapter": "Properties of Matter",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_PHY_031",
+      "chapter": "Oscillations & Waves",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_PHY_033",
+      "chapter": "Kinematics",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_PHY_034",
+      "chapter": "Electromagnetic Induction",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_PHY_035",
+      "chapter": "Kinematics",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_PHY_036",
+      "chapter": "Ray Optics",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_PHY_037",
+      "chapter": "Alternating Current",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_PHY_040",
+      "chapter": "Kinematics",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_PHY_041",
+      "chapter": "Ray Optics",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_PHY_042",
+      "chapter": "Semiconductor Electronics",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_PHY_043",
+      "chapter": "Kinematics",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_PHY_044",
+      "chapter": "Current Electricity",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_PHY_046",
+      "chapter": "Gravitation",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_PHY_047",
+      "chapter": "Laws of Motion",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_PHY_049",
+      "chapter": "Kinematics",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2023_PHY_050",
+      "chapter": "Magnetic Effects of Current",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2024_CHEM_059",
+      "chapter": "Redox Reactions & Electrochemistry",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2024_CHEM_070",
+      "chapter": "Mole Concept / Stoichiometry",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2024_CHEM_077",
+      "chapter": "Structure of Atom",
+      "issues": [
+        "claims_option_b_but_key_is_a",
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2024_CHEM_088",
+      "chapter": "Structure of Atom",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2024_PHY_043",
+      "chapter": "Kinematics",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2024_PHY_045",
+      "chapter": "Magnetic Effects of Current",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2025_CHEM_060",
+      "chapter": "Hydrocarbons",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2025_CHEM_078",
+      "chapter": "Structure of Atom",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2025_PHY_008",
+      "chapter": "Semiconductor Electronics",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2025_PHY_014",
+      "chapter": "Kinematics",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "NEET2025_PHY_037",
+      "chapter": "Dual Nature of Matter",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "RENEET2026_CHEM_058",
+      "chapter": "Biomolecules & Polymers",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "RENEET2026_PHY_013",
+      "chapter": "Gravitation",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "RENEET2026_PHY_030",
+      "chapter": "Electrostatics",
+      "issues": [
+        "boilerplate_template"
+      ]
+    },
+    {
+      "question_id": "RENEET2026_PHY_035",
+      "chapter": "Thermodynamics",
+      "issues": [
+        "boilerplate_template"
+      ]
+    }
+  ],
+  "action": "content team rewrites failing explanations; warnings are for spot checks, not rejection"
+}

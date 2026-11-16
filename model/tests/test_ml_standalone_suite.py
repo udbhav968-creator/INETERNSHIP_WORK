@@ -1,3 +1,8 @@
+import os as _os_env
+import tempfile as _tmp_env
+
+_os_env.environ.setdefault("KLASSED_BANDIT_CHECKPOINT", _os_env.path.join(_tmp_env.mkdtemp(prefix="klassed_bandit_"), "linucb_state.json"))
+
 import ast
 import csv
 import json
@@ -1198,6 +1203,143 @@ def ml_suite_38_train_serve_parity_deterministic_artifacts_and_honest_ui_claims(
     assert "Split conformal" not in dashboard and "Conformal Score Interval" not in dashboard
 
 
+def ml_suite_39_learning_analytics_scale_infra_and_content_guardrails():
+    import csv as _csv
+    import os as _os
+    import tempfile
+
+    from model.decision_logging import POLICY_EPSILON, rank_with_propensities
+    from model.empirical_item_times import estimate_item_times
+    from model.exam_registry import NEET_UG, consistency_with_engine
+    from model.experiments import ARM_CONTROL, assign_arm, sample_ratio_mismatch
+    from model.explanation_guardrails import audit_stored_explanations, verify_explanation
+    from model.fairness_report import run_fairness_report
+    from model.kt_challenger import compare_knowledge_tracing
+    from model.language_coverage import validate_translation
+    from model.learning_analytics_self_test import ab_self_test, anomaly_self_test, ope_self_test
+    from model.privacy_settings import minimise_behavioural_signals
+    from model.release_registry import create_release, promote, rollback, serves_candidate, verify_against
+    from model.retrieval_backends import compare_with_production
+    from model.review_pack import TIERS, build_tier_review_sheet, score_tier_review
+    from model.score_validation import validate_score_predictions
+    from model.state_store import SharedStateStore
+    from model.student_response_training import _bank_metadata, simulate_attempts
+
+    eps, m = 0.2, 8
+    ids = [f"Q{i}" for i in range(m)]
+    scores = list(np.linspace(0.1, 0.9, m))
+    first = {}
+    rng = np.random.default_rng(0)
+    for _ in range(4000):
+        s0 = rank_with_propensities(ids, scores, POLICY_EPSILON, eps, rng)[0]
+        first[s0.question_id] = s0.propensity
+    assert abs(first["Q7"] - ((1 - eps) + eps / m)) < 1e-12 and abs(first["Q0"] - eps / m) < 1e-12
+    assert abs(sum(first.values()) - 1.0) < 1e-9
+
+    share = sum(assign_arm(f"X{i}", force_enabled=True) == ARM_CONTROL for i in range(4000)) / 4000
+    assert 0.46 < share < 0.54
+    assert sample_ratio_mismatch({"adaptive": 5000, "random_control": 4000})["srm_detected"] is True
+    assert sample_ratio_mismatch({"adaptive": 5010, "random_control": 4990})["srm_detected"] is False
+
+    assert ope_self_test()["passed"] and ab_self_test()["passed"] and anomaly_self_test()["passed"]
+
+    rng = np.random.default_rng(1)
+    actual = rng.normal(450, 80, 300)
+    snaps = pd.DataFrame({"student_id": [f"P{i}" for i in range(300)], "snapshot_date": "2027-04-01", "expected_score": actual + rng.normal(0, 30, 300), "low_90": actual - 50 + rng.normal(0, 30, 300), "high_90": actual + 50 + rng.normal(0, 30, 300), "attempts_so_far": 500})
+    acts = pd.DataFrame({"student_id": [f"P{i}" for i in range(300)], "exam_year": 2027, "exam_date": "2027-05-02", "actual_score": actual})
+    sv = validate_score_predictions(snaps, acts)
+    assert sv["paired_students"] == 300 and 15 < sv["mae"] < 35 and 0.75 < sv["coverage_of_90_range"] < 1.0
+    late = snaps.assign(snapshot_date="2027-04-30")
+    assert validate_score_predictions(late, acts)["paired_students"] == 0
+
+    sim, _ = simulate_attempts(n_students=260, n_items=150, per_student=80)
+    meta = _bank_metadata()
+    sim["chapter"] = sim["question_id"].map(lambda q: meta[q]["chapter"])
+    sim = sim.sort_values(["student_id", "timestamp"]).reset_index(drop=True)
+    attrs = pd.DataFrame({"student_id": sorted(sim["student_id"].unique())})
+    attrs["language"] = np.where(np.arange(len(attrs)) % 2 == 0, "hi", "en")
+    fr = run_fairness_report(sim, attrs, min_students=50)
+    assert fr["attributes_supplied"] == ["language"] and fr["by_attribute"][0]["groups_evaluated"] == 2
+    kt = compare_knowledge_tracing(sim)
+    assert kt["status"] in ("KEEP_BKT", "CHALLENGER_PASSES_GATE") and kt["bkt"]["n"] == kt["pfa"]["n"] > 0
+    assert compare_knowledge_tracing(sim.head(500))["status"] == "INSUFFICIENT_DATA"
+
+    times = pd.DataFrame({"question_id": ["A"] * 40 + ["B"] * 5, "time_taken_seconds": [120.0] * 40 + [10.0] * 5, "expected_time_seconds": [60] * 45})
+    it = estimate_item_times(times)
+    assert it["items"]["A"]["usable"] and 90 < it["items"]["A"]["estimated_seconds"] < 100 and it["items"]["A"]["observed_median_seconds"] == 120.0
+    assert not it["items"]["B"]["usable"] and it["items"]["B"]["estimated_seconds"] > 30
+
+    assert consistency_with_engine()["consistent"] and NEET_UG.max_score == 720 and abs(NEET_UG.guess_break_even_probability - 0.2) < 1e-12
+    assert abs(NEET_UG.expected_score(np.full(180, 0.2)) - 0.0) < 1e-9
+
+    data = {"schema": 1, "releases": []}
+    r1 = create_release("t", data)
+    promote(data, r1["version"], "staging", 10)
+    promote(data, r1["version"], "production", reviewer="t")
+    assert verify_against(r1)["matches"]
+    try:
+        rollback(data, "t")
+        raise AssertionError("rollback without history must fail")
+    except ValueError:
+        pass
+    assert abs(sum(serves_candidate(f"S{i}", 20) for i in range(10000)) / 10000 - 0.20) < 0.02
+
+    q = {"question_text": "Find pH of 0.01 M HCl", "option_a": "2", "option_b": "1", "option_c": "12", "option_d": "7", "correct_option": "a"}
+    assert verify_explanation(q, "HCl is a strong acid, so [H+] = 0.01 M and pH = 2. Option (a) is correct.")["passed"]
+    assert not verify_explanation(q, "Using pH = -log[H+], option (b) is the correct answer here.")["passed"]
+    ex = audit_stored_explanations(save=False)
+    assert ex["issue_counts"].get("boilerplate_template", 0) == 131 and ex["failed"] == 131
+
+    src = {"question_text": "Find pH of 0.01 M HCl at 298 K", "option_a": "2", "option_b": "1", "option_c": "12", "option_d": "7"}
+    tgt = {"question_id": "X", "question_text": "298 K पर 0.01 M HCl का pH ज्ञात करें", "option_a": "2", "option_b": "1", "option_c": "12", "option_d": "7", "translator": "A", "reviewer": "B", "status": "approved"}
+    assert validate_translation(src, tgt, "hi") == []
+    assert "question_text:numbers_changed" in validate_translation(src, dict(tgt, question_text="298 K पर 0.1 M HCl का pH"), "hi")
+
+    rr = compare_with_production("char_ngram", limit=400, save=False)
+    assert rr["challenger"]["eval_questions"] == 400 and rr["decision"] == "HOLD" and rr["comparable"] is False
+
+    with tempfile.TemporaryDirectory() as tmp:
+        sheet, key = Path(tmp) / "s.csv", Path(tmp) / "k.json"
+        build_tier_review_sheet(path=sheet, key_path=key)
+        k = {r["review_id"]: r for r in json.loads(key.read_text(encoding="utf-8"))["rows"]}
+        with open(sheet, encoding="utf-8-sig") as f:
+            rows = list(_csv.DictReader(f))
+        assert "reviewer_tier" in rows[0] and "proposed_tier" not in rows[0] and "current_tier" not in rows[0]
+        for r in rows:
+            r["reviewer_tier"] = k[r["review_id"]]["proposed_tier"]
+            r["chapter_tag_ok"] = "yes"
+        with open(sheet, "w", newline="", encoding="utf-8-sig") as f:
+            w = _csv.DictWriter(f, fieldnames=list(rows[0].keys()))
+            w.writeheader()
+            w.writerows(rows)
+        dec = score_tier_review(sheet, save=False, key_path=key)
+        assert dec["decision"] == "PROMOTE_V21" and dec["kappa_reviewer_vs_v21_tiers"] == 1.0 and set(TIERS)
+
+    _os.environ["KLASSED_BEHAVIOURAL_TELEMETRY"] = "off"
+    try:
+        assert minimise_behavioural_signals(2, 700, 30000, 30.0) == (0, 0, 30000)
+    finally:
+        _os.environ.pop("KLASSED_BEHAVIOURAL_TELEMETRY", None)
+
+    class _Fake:
+        def __init__(self):
+            self.d = {}
+
+        def get(self, k):
+            return self.d.get(k)
+
+        def set(self, k, v, ex=None):
+            self.d[k] = v
+
+        def delete(self, k):
+            self.d.pop(k, None)
+
+    st = SharedStateStore(_Fake(), "fake")
+    assert st.set_json("a", {"x": 1}) and st.get_json("a") == {"x": 1}
+    st.delete("a")
+    assert st.get_json("a") is None and SharedStateStore().active is False
+
+
 if __name__ == "__main__":
     suites = [
         ml_suite_01_question_bank_and_weightage_schema_validators,
@@ -1238,6 +1380,7 @@ if __name__ == "__main__":
         ml_suite_36_honest_training_protocol_and_rag_vocabulary,
         ml_suite_37_student_response_training_pipeline,
         ml_suite_38_train_serve_parity_deterministic_artifacts_and_honest_ui_claims,
+        ml_suite_39_learning_analytics_scale_infra_and_content_guardrails,
     ]
     for fn in suites:
         fn()

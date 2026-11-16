@@ -1,7 +1,7 @@
 {
   "lineage": {
-    "generated_at_utc": "2026-11-16T13:15:25+00:00",
-    "git_commit": "fc5dbb33b7c13a515705640eec5daefccf4730c3",
+    "generated_at_utc": "2026-11-16T15:03:03+00:00",
+    "git_commit": "764ceb033e0ba7886c91a1daa53b15d3b28b64fb",
     "libraries": {
       "python": "3.13.18",
       "numpy": "2.5.3",
@@ -240,6 +240,62 @@
       },
       "limitations": [
         "DINA and LinUCB are not re-fitted here (Q-matrix validation and logged propensities needed)"
+      ]
+    },
+    {
+      "model": "learning_analytics",
+      "status": "waiting_for_data",
+      "task": "bandit off-policy evaluation, selection A/B test, score-prediction validation, fairness, real solve times, anomaly flags, BKT vs PFA challenger",
+      "artifacts": [
+        {
+          "path": "model/student_models/learning_analytics_report.json",
+          "sha256": "ddee680fcb2a1ec3b5a85562f2d82d383ba69c68636715aebddd0acccccc4e3f",
+          "size_bytes": 2952
+        }
+      ],
+      "training_data": "0 attempts, 0 logged selection decisions",
+      "labels": "observed answers, logged propensities and rewards, real NEET scores when supplied",
+      "evaluation": "each section reports INSUFFICIENT_DATA until its minimum sample is met; methods are checked on simulations in the learning_analytics_self_test stage",
+      "metrics": {
+        "offline_policy_evaluation": "INSUFFICIENT_DATA",
+        "selection_ab_test": "INSUFFICIENT_DATA",
+        "score_prediction_validation": "INSUFFICIENT_DATA",
+        "fairness": "INSUFFICIENT_DATA",
+        "empirical_item_times": "INSUFFICIENT_DATA",
+        "anomalies": "INSUFFICIENT_DATA",
+        "knowledge_tracing_challenger": "INSUFFICIENT_DATA"
+      },
+      "limitations": [
+        "anomaly flags are for human review only",
+        "unbiased bandit evaluation needs the A/B control arm or exploration (KLASSED_BANDIT_EXPLORATION_EPSILON)"
+      ]
+    },
+    {
+      "model": "retrieval_challenger",
+      "status": "hold",
+      "task": "candidate chapter retriever compared with production on the same held-out questions",
+      "artifacts": [
+        {
+          "path": "model/retrieval_challenger_report.json",
+          "sha256": "53061e39a29a370bb8e71dec55c416d60ae83dcda93681f867b6299d45105248",
+          "size_bytes": 928
+        }
+      ],
+      "training_data": "NCERT chapter documents and PYQ stems/explanations (same as production)",
+      "labels": "chapter tags of held-out sample-paper questions",
+      "evaluation": "top-1 / top-3 chapter accuracy on questions not in the index",
+      "metrics": {
+        "challenger": {
+          "retriever": "char_ngram_tfidf (offline stand-in, lexical)",
+          "eval_questions": 9448,
+          "top1_chapter_accuracy": 0.3237,
+          "top3_chapter_accuracy": 0.488,
+          "random_baseline_top1": 0.0154
+        },
+        "top1_gain": -0.0259
+      },
+      "limitations": [
+        "the offline run uses a lexical stand-in; the semantic model needs torch and a model download (GPU)"
       ]
     },
     {

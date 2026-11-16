@@ -1,0 +1,71 @@
+{
+  "generated_at_utc": "2026-11-16T15:02:55+00:00",
+  "data": {
+    "attempts": 0,
+    "students": 0,
+    "selection_decisions": 0,
+    "score_snapshots": 0,
+    "actual_neet_scores": 0
+  },
+  "offline_policy_evaluation": {
+    "decisions_logged": 0,
+    "decisions_with_reward": 0,
+    "decisions_with_exploration": 0,
+    "uniform_random_decisions": 0,
+    "min_decisions": 2000,
+    "note": "Unbiased estimates need logged propensities below 1: run the A/B control arm or set KLASSED_BANDIT_EXPLORATION_EPSILON > 0.",
+    "status": "INSUFFICIENT_DATA"
+  },
+  "selection_ab_test": {
+    "status": "INSUFFICIENT_DATA"
+  },
+  "score_prediction_validation": {
+    "what": "latest score prediction made at least 7 days before the exam vs the student's real NEET score",
+    "snapshots_available": 0,
+    "actual_scores_available": 0,
+    "paired_students": 0,
+    "min_students": 100,
+    "how_to_supply_results": "data/training/neet_actual_scores.csv with columns student_id, exam_year, exam_date, actual_score (collected with consent)",
+    "status": "INSUFFICIENT_DATA"
+  },
+  "fairness": {
+    "what": "next-answer prediction quality (BKT) and score-range accuracy, split by student group",
+    "thresholds": {
+      "max_auc_gap": 0.05,
+      "max_ece": 0.05,
+      "max_coverage_gap": 0.1,
+      "min_students_per_group": 50
+    },
+    "attributes_supplied": [],
+    "how_to_supply_attributes": "data/training/student_attributes.csv (student_id plus any of language, region, state, device, gender, board, school_type), collected with consent; class_level is read from the students table",
+    "status": "INSUFFICIENT_DATA"
+  },
+  "empirical_item_times": {
+    "status": "INSUFFICIENT_DATA",
+    "items_estimated": 0
+  },
+  "anomalies": {
+    "what": "patterns that suggest guessing without reading, answer copying, or answers inconsistent with a student's level",
+    "methods": {
+      "person_fit": "lz* statistic on the 3PL model (flag below -2.33, about the lowest 1%)",
+      "rapid_guessing": "answer faster than 10% of the item's expected time (min 5s); flag a student when over 30% of answers are rapid",
+      "answer_copying": "pairs on the same paper whose identical wrong options are very unlikely by chance (binomial p < 1e-06)"
+    },
+    "use": "flags are for human review only; never penalise a student automatically",
+    "status": "INSUFFICIENT_DATA"
+  },
+  "knowledge_tracing_challenger": {
+    "champion": "BKT (per-chapter EM)",
+    "challenger": "PFA (per-chapter logistic regression on prior successes and failures)",
+    "protocol": "students split 80/20 by student; one-step-ahead prediction on held-out students",
+    "gate": {
+      "min_logloss_gain": 0.01,
+      "max_auc_drop": 0.005
+    },
+    "deep_models": "SAKT/AKT are not trained: they need about 1,000,000 responses to beat these baselines reliably",
+    "status": "INSUFFICIENT_DATA",
+    "students": 0,
+    "responses": 0
+  },
+  "sections_with_results": []
+}

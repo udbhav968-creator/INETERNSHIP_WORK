@@ -1,0 +1,64 @@
+name: Scheduled Retraining & Learning Analytics (weekly)
+
+on:
+  schedule:
+    - cron: "17 21 * * 6"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  retrain-on-student-data:
+    name: Retrain on logged student answers and publish reports for review
+    runs-on: ubuntu-24.04
+    env:
+      DATABASE_URL: ${{ secrets.KLASSED_ANALYTICS_DATABASE_URL }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v7
+
+      - name: Set up Python (version from .python-version)
+        uses: actions/setup-python@v7
+        with:
+          python-version-file: ".python-version"
+          cache: "pip"
+          cache-dependency-path: |
+            backend/requirements.txt
+            model/ml-training-constraints.txt
+
+      - name: Install Dependencies (training pins)
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt -c model/ml-training-constraints.txt
+          python -m model.serving_runtime_parity --strict
+
+      - name: Skip cleanly when no read-only database secret is configured
+        if: env.DATABASE_URL == ''
+        run: echo "KLASSED_ANALYTICS_DATABASE_URL is not set; nothing to retrain. Add a read-only replica URL as a repository secret to enable this job."
+
+      - name: Full ML pipeline on student data (reproducibility check included)
+        if: env.DATABASE_URL != ''
+        run: python -m model.run_full_ml_pipeline --verify-reproducible
+
+      - name: Learning analytics (bandit OPE, A/B, score validation, fairness, item times, anomalies, KT challenger)
+        if: env.DATABASE_URL != ''
+        run: python -m model.learning_analytics_reports
+
+      - name: Record a candidate release (never promoted automatically)
+        if: env.DATABASE_URL != ''
+        run: python -m model.release_registry create --notes "weekly retrain ${{ github.run_id }}"
+
+      - name: Upload reports and candidate artifacts for human review
+        if: env.DATABASE_URL != ''
+        uses: actions/upload-artifact@v7
+        with:
+          name: weekly-retrain-${{ github.run_id }}
+          retention-days: 30
+          path: |
+            model/student_models/
+            model/ml_pipeline_run.json
+            model/model_cards.json
+            model/promotion_gate_report.json
+            model/releases.json
