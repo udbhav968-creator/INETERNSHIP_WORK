@@ -1,6 +1,7 @@
 import ast
 import csv
 import json
+import math
 import tokenize
 from pathlib import Path
 
@@ -691,6 +692,63 @@ def ml_suite_25_section4_empirical_recalibration_and_quarantine_audit():
     assert qa_res["engine_mode"] == "NCERT_DETERMINISTIC_LSA_FALLBACK"
     assert "ncert_reference" in qa_res
 
+def ml_suite_26_irt_equated_180q_initial_assessment_forms():
+    from model.assessment_blueprint import (
+        MAX_MARKS,
+        SUBJECT_QUOTAS,
+        build_equated_forms,
+        form_index_for_student,
+        load_forms,
+        load_question_bank,
+        score_initial_assessment,
+    )
+
+    bank = load_question_bank()
+    out = build_equated_forms(bank=bank)
+    rep = out["report"]
+    assert rep["all_checks_passed"] is True, rep["checks"]
+    assert rep["max_pairwise_overlap"] == 0
+    assert rep["max_expected_marks_gap_across_theta"] <= 6.0
+    assert rep["max_test_information_ratio_gap"] <= 0.05
+    for f in rep["forms"]:
+        assert f["n_items"] == 180
+        assert f["by_subject"] == SUBJECT_QUOTAS
+        assert f["sem_at_theta0"] <= 0.25
+
+    stored = load_forms()
+    assert stored["forms"] == out["forms"]["forms"]
+    assert stored["max_marks"] == MAX_MARKS == 720
+    sections = [q for q in stored["forms"][0]["question_ids"]]
+    by_id = {q["question_id"]: q for q in bank}
+    subj_seq = [by_id[qid]["subject"] for qid in sections]
+    assert subj_seq == ["Physics"] * 45 + ["Chemistry"] * 45 + ["Biology"] * 90
+
+    assert form_index_for_student("student-x") == form_index_for_student("student-x")
+    assert {form_index_for_student(f"s{i}") for i in range(200)} == {0, 1, 2}
+
+    ids = stored["forms"][0]["question_ids"]
+    strong = score_initial_assessment([{"question_id": q, "is_correct": True} for q in ids], bank=bank)
+    weak = score_initial_assessment([{"question_id": q, "is_correct": False} for q in ids], bank=bank)
+    assert strong["marks"] == 720 and weak["marks"] == -180
+    import random as _random
+    from model.irt_3pl_model import D_SCALING as _D
+
+    estimates = []
+    for true_theta in (-1.5, 0.0, 1.0, 2.0):
+        rng = _random.Random(7)
+        sim = []
+        for qid in ids:
+            it = by_id[qid]
+            p = it["c"] + (1.0 - it["c"]) / (1.0 + math.exp(-_D * it["a"] * (true_theta - it["b"])))
+            sim.append({"question_id": qid, "is_correct": rng.random() < p})
+        res = score_initial_assessment(sim, bank=bank)
+        assert abs(res["theta_eap"] - true_theta) < 0.4, (true_theta, res["theta_eap"])
+        assert res["theta_sem"] < 0.25
+        assert sum(res["subject_marks"].values()) == res["marks"]
+        estimates.append(res["theta_eap"])
+    assert weak["theta_eap"] < estimates[0] < estimates[1] < estimates[2] < estimates[3] < strong["theta_eap"]
+
+
 if __name__ == "__main__":
     suites = [
         ml_suite_01_question_bank_and_weightage_schema_validators,
@@ -718,6 +776,7 @@ if __name__ == "__main__":
         ml_suite_23_online_streaming_calibration_and_continuous_retraining,
         ml_suite_24_multilingual_hindi_glossary_and_socratic_audio_script,
         ml_suite_25_section4_empirical_recalibration_and_quarantine_audit,
+        ml_suite_26_irt_equated_180q_initial_assessment_forms,
     ]
     for fn in suites:
         fn()
