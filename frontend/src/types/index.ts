@@ -168,10 +168,19 @@ export interface MonteCarloConformalSimulator {
     recommended_skip_questions_per_180: number;
     recommended_attempt_questions_per_180: number;
   };
+  interval_method?: string;
   cutoff_probabilities: {
     qualifying_cutoff_165_percent: number;
     state_govt_mbbs_550_percent: number;
     top_aiims_650_percent: number;
+    fixed_thresholds_note?: string;
+    sourced_qualifying_cutoff?: {
+      score: number;
+      probability_percent: number;
+      exam_year?: number;
+      category?: string;
+      source?: string;
+    };
   };
   national_air_projection?: {
     total_national_candidates: number;
@@ -606,6 +615,20 @@ export interface MlopsAuditOverview {
       random_cumulative_regret: number;
       linucb_outperforms_random: boolean;
     };
+    linucb_cold_start_stochastic_ablation?: {
+      setup: string;
+      reward_definition: string;
+      n_rounds: number;
+      n_seeds: number;
+      n_arms: number;
+      reward_noise_sd: number;
+      linucb_cumulative_regret_mean: number;
+      linucb_cumulative_regret_sd: number;
+      random_cumulative_regret_mean: number;
+      regret_reduction_vs_random_percent: number;
+      near_optimal_pick_rate_last_50_rounds: number;
+      linucb_outperforms_random: boolean;
+    };
     latency_sla_benchmarks?: Record<
       string,
       | boolean
@@ -730,6 +753,15 @@ export interface MlopsAuditOverview {
       chapters: number;
       official_pyq_provenance_verified: number;
     };
+    answer_key?: {
+      overall?: {
+        n: number;
+        counts: Record<string, number>;
+        percent: Record<string, number>;
+        chi_square_df3: number;
+        skewed_p_lt_0_001: boolean;
+      };
+    };
     chi_square_uniformity?: Record<
       string,
       {
@@ -776,6 +808,20 @@ export interface MlopsAuditOverview {
     is_sqlite: boolean;
     pool_class: string;
     ping_latency_ms: number;
+  };
+  difficulty_v21_candidate?: {
+    available: boolean;
+    labels?: string | null;
+    evaluation?: string | null;
+    accuracy?: number | null;
+    macro_f1?: number | null;
+    ece_top_label?: number | null;
+    n_rows?: number | null;
+    majority_baseline?: number | null;
+    status?: string | null;
+    production_model_changed?: boolean | null;
+    formula_labels_vs_human_kappa?: number | null;
+    formula_labels_vs_human_accuracy?: number | null;
   };
   quarantine_audit?: {
     status: string;

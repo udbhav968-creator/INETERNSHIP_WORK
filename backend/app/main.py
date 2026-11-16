@@ -1,4 +1,5 @@
 import base64
+import importlib.util as _importlib_util
 import json
 import math
 import os
@@ -31,9 +32,12 @@ from model.irt_3pl_model import (
     compute_mirt_3d_profile,
     predict_cold_start_difficulty_and_irt,
     recalibrate_item_parameters_online,
+    rf_serving_status,
 )
+from model.serving_runtime_parity import check_runtime_parity
 from model.knowledge_graph_dag import (
     DAG_NODES,
+    is_prerequisite_graph_acyclic,
     compute_prerequisite_readiness,
     compute_hierarchical_shrinkage_prior,
     diagnose_prerequisite_bottlenecks,
@@ -74,10 +78,20 @@ from model.response_data_pipeline import get_pipeline_response_audit, get_item_c
 from model.quarantine_provenance_audit import audit_quarantine_expansion_readiness
 from .postgres_adapter import get_database_telemetry, check_postgres_connection
 from model.verify_artifact_integrity import REGISTRY_MANIFEST_FILE, verify_all_ml_artifacts
-from model.multilingual_glossary import get_chapter_multilingual_metadata, translate_distractor_trap_to_hindi
+from model.multilingual_glossary import get_chapter_multilingual_metadata
 from model.socratic_audio_script_generator import generate_socratic_audio_script
-from backend.app.telemetry import LatencyWatchdog, get_subsystem_telemetry_metrics
+from backend.app.telemetry import get_subsystem_telemetry_metrics
 from model.streaming_online_calibration import STREAMING_CALIBRATION_ENGINE
+
+
+def _module_available(name: str) -> bool:
+    try:
+        return _importlib_util.find_spec(name) is not None
+    except Exception:
+        return False
+
+
+SERVING_RUNTIME_PARITY = check_runtime_parity()
 
 with open(MODEL_DIR / "topic_importance.json", encoding="utf-8") as f:
     _TOPIC_IMPORTANCE = json.load(f)
@@ -1311,7 +1325,7 @@ def get_socratic_hint(payload: schemas.SocraticHintIn, db: Session = Depends(get
         concept_summary=raw.get("core_concept_anchor", ""),
         key_formula=formulas[0] if formulas else f"Standard NCERT relation for {topic_id}",
         diagnosed_misconception=raw.get("misconception_diagnosis", ""),
-        socratic_hint=socratic_qs[0] if socratic_qs else f"What fundamental NCERT principle governs this question?",
+        socratic_hint=socratic_qs[0] if socratic_qs else "What fundamental NCERT principle governs this question?",
         verified_step_by_step=" ".join(steps),
         retrieval_similarity=float(raw.get("retrieval_confidence", 0.88)),
         distractor_trap_taxonomy=trap_cat,
@@ -1371,7 +1385,7 @@ def get_mlops_health_and_drift(db: Session = Depends(get_db)):
             "bkt_65_chapter_empirical_bayes": len(CHAPTER_BKT_REGISTRY) == 65,
             "irt_3pl_psychometric_engine": len(CALIBRATED_ITEMS) > 0,
             "irt_cold_start_ridge_regressor": (MODEL_DIR / "irt_cold_start_ridge.npz").exists(),
-            "mirt_3d_skill_profiler": True,
+            "mirt_3d_skill_profiler": callable(compute_mirt_3d_profile),
             "ncert_prerequisite_dag_nodes": len(DAG_NODES),
             "linucb_contextual_bandit": len(_TOPIC_IMPORTANCE) == 65,
             "linucb_ridge_warm_start": (MODEL_DIR / "linucb_prior_init.json").exists(),
@@ -1381,11 +1395,13 @@ def get_mlops_health_and_drift(db: Session = Depends(get_db)):
             "monte_carlo_conformal_neet_simulator": len(_TOPIC_IMPORTANCE) == 65,
             "chapter_wise_65_pyq_corpus": (PROJECT_ROOT / "data" / "taxonomy" / "chapter_wise_neet_pyq_summary.json").exists(),
         },
+        "rf_serving_backend": rf_serving_status(),
+        "serving_runtime_parity": SERVING_RUNTIME_PARITY,
         "advanced_ml_services": {
-            "national_air_rank_simulator": True,
-            "continuous_retraining_engine": True,
-            "multilingual_glossary_engine": True,
-            "socratic_audio_script_generator": True,
+            "national_air_rank_simulator": _module_available("model.national_rank_simulator"),
+            "continuous_retraining_engine": _module_available("model.continuous_retraining_engine"),
+            "multilingual_glossary_engine": callable(get_chapter_multilingual_metadata),
+            "socratic_audio_script_generator": callable(generate_socratic_audio_script),
         },
     }
 
@@ -1452,6 +1468,14 @@ def get_mlops_audit_overview(db: Session = Depends(get_db)):
     data_integrity_report = _read_json_safe(data_integ_path)
     label_val_path = MODEL_DIR / "label_validity_report.json"
     label_validity_report = _read_json_safe(label_val_path)
+    v21_report = _read_json_safe(MODEL_DIR / "difficulty_model_v21_report.json")
+    v21_metrics = v21_report.get("v21_tfidf_logreg", {}) if isinstance(v21_report, dict) else {}
+    v21_decision = v21_report.get("decision", {}) if isinstance(v21_report, dict) else {}
+    human_label_check = (
+        label_validity_report.get("heuristic_rule_vs_human_verified_sample_tiers", {})
+        if isinstance(label_validity_report, dict)
+        else {}
+    )
     integrity = verify_all_ml_artifacts(allow_serverless_omissions=True, require_clean_bandit=False)
 
     return {
@@ -1465,7 +1489,7 @@ def get_mlops_audit_overview(db: Session = Depends(get_db)):
             "calibrated_irt_items": len(CALIBRATED_ITEMS),
             "dag_nodes_count": len(DAG_NODES),
             "dag_edges_count": dag_edges_count,
-            "dag_acyclic": True,
+            "dag_acyclic": is_prerequisite_graph_acyclic(),
         },
         "validation_report": validation_report,
         "auxiliary_models_training": validation_report.get("auxiliary_models_training", {}),
@@ -1482,6 +1506,20 @@ def get_mlops_audit_overview(db: Session = Depends(get_db)):
         "live_integrity_verification": integrity,
         "data_integrity_audit": data_integrity_report,
         "label_validity_audit": label_validity_report,
+        "difficulty_v21_candidate": {
+            "available": bool(v21_metrics),
+            "labels": v21_report.get("labels") if isinstance(v21_report, dict) else None,
+            "evaluation": v21_report.get("evaluation") if isinstance(v21_report, dict) else None,
+            "accuracy": v21_metrics.get("accuracy"),
+            "macro_f1": v21_metrics.get("macro_f1"),
+            "ece_top_label": v21_metrics.get("ece_top_label"),
+            "n_rows": v21_metrics.get("n"),
+            "majority_baseline": v21_report.get("majority_baseline") if isinstance(v21_report, dict) else None,
+            "status": v21_decision.get("status"),
+            "production_model_changed": v21_decision.get("production_model_changed"),
+            "formula_labels_vs_human_kappa": human_label_check.get("cohens_kappa"),
+            "formula_labels_vs_human_accuracy": human_label_check.get("accuracy"),
+        },
         "distribution_summary": {
             "subject_difficulty_matrix": dist_report.get("subject_difficulty_matrix", {}),
             "gap_summary": dist_report.get("gap_summary", {}),

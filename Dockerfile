@@ -1,11 +1,12 @@
-FROM node:20-alpine AS frontend-builder
+FROM node:24-alpine AS frontend-builder
 WORKDIR /app/frontend
 COPY frontend/package*.json ./
 RUN npm ci
 COPY frontend/ ./
 RUN npm run build
 
-FROM python:3.11-slim
+# Same interpreter as training (.python-version) so pickled models load with the versions they were trained with.
+FROM python:3.13-slim
 WORKDIR /app
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -16,7 +17,8 @@ RUN groupadd --gid 10001 appgroup && \
     useradd --uid 10001 --gid appgroup --create-home --shell /sbin/nologin appuser
 
 COPY backend/requirements.txt ./backend/requirements.txt
-RUN pip install --no-cache-dir -r backend/requirements.txt
+COPY model/ml-training-constraints.txt ./model/ml-training-constraints.txt
+RUN pip install --no-cache-dir -r backend/requirements.txt -c model/ml-training-constraints.txt
 
 COPY model/ ./model/
 COPY data/ ./data/
@@ -24,6 +26,7 @@ COPY backend/ ./backend/
 COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
 
 RUN python -m model.verify_artifact_integrity && \
+    python -m model.serving_runtime_parity --strict && \
     chown -R appuser:appgroup /app
 
 USER appuser

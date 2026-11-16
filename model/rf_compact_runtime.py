@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
+from .deterministic_artifacts import save_npz_deterministic
 
 MODEL_DIR = Path(__file__).resolve().parent
 COMPACT_FOREST_NPZ = MODEL_DIR / "rf_difficulty_forest.npz"
@@ -209,7 +210,7 @@ def export_rf_compact_forest(
         norm_probs = (vals / sums).astype(np.float16)
         probs_parts.append(norm_probs)
 
-    np.savez_compressed(
+    save_npz_deterministic(
         npz_path,
         tree_offsets=np.array(offsets, dtype=np.int32),
         children_left=np.concatenate(c_left_parts),

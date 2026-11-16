@@ -155,3 +155,27 @@ def propagate_dag_belief_update(
                 updates[dep] = new_m
 
     return updates
+
+
+def is_prerequisite_graph_acyclic(nodes: dict | None = None) -> bool:
+    graph = DAG_NODES if nodes is None else nodes
+    state: dict[str, int] = {}
+    for root in graph:
+        if state.get(root) == 2:
+            continue
+        stack = [(root, iter(graph.get(root, {}).get("prerequisites", [])))]
+        state[root] = 1
+        while stack:
+            node, it = stack[-1]
+            nxt = next(it, None)
+            if nxt is None:
+                state[node] = 2
+                stack.pop()
+                continue
+            mark = state.get(nxt, 0)
+            if mark == 1:
+                return False
+            if mark == 0 and nxt in graph:
+                state[nxt] = 1
+                stack.append((nxt, iter(graph[nxt].get("prerequisites", []))))
+    return True

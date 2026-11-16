@@ -68,8 +68,8 @@ const MODEL_LABELS: Record<string, string> = {
   rag_ncert_socratic_engine: "NCERT Hybrid Sublinear TF-IDF Vector RAG Engine",
   ncert_pyq_svd_lsa_rag: "32D Truncated-SVD Latent Semantic Analysis (LSA) RAG Index",
   dina_8_skill_q_matrix: "8-Skill Marginal-IRT Calibrated DINA + van der Linden RT",
-  monte_carlo_conformal_neet_simulator: "500-Trial Monte Carlo Conformal & 65x65 Graph Laplacian",
-  chapter_wise_65_pyq_corpus: "65-Chapter Complete 3-Tier NEET PYQ Corpus (2,400 Items)",
+  monte_carlo_conformal_neet_simulator: "500-Trial Monte Carlo Score Simulator (empirical quantiles) & 65x65 Graph Laplacian",
+  chapter_wise_65_pyq_corpus: "65-Chapter NEET PYQ Corpus (2,400 Items, heuristic tiers)",
 };
 
 const SLA_LABELS: Record<string, string> = {
@@ -224,6 +224,13 @@ export function ModelAuditView() {
   const cvEval = audit.validation_report.stratified_5fold_cross_validation;
   const irtSummary = audit.validation_report.irt_3pl_calibration_summary;
   const ablation = audit.harness_benchmark.linucb_vs_random_ablation;
+  const coldStart = audit.harness_benchmark.linucb_cold_start_stochastic_ablation;
+  const v21 = audit.difficulty_v21_candidate;
+  const integrity = audit.data_integrity_audit;
+  const answerKey = integrity?.answer_key?.overall;
+  const quarantinedTotal = audit.quarantine_audit?.total_quarantined_items;
+  const fmtPct = (v: number | null | undefined, digits = 1) =>
+    typeof v === "number" ? `${(v * 100).toFixed(digits)}%` : "—";
   const personas = audit.harness_benchmark.persona_simulations;
   const slas = audit.harness_benchmark.latency_sla_benchmarks ?? {};
   const drift = audit.health_and_drift.drift_and_calibration;
@@ -257,13 +264,19 @@ export function ModelAuditView() {
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card className="p-5">
-          <p className="text-xs font-medium text-midnight-700/60">RF Holdout Accuracy</p>
+          <p className="text-xs font-medium text-midnight-700/60">Difficulty Model Accuracy</p>
           <p className="mt-1 font-display text-2xl font-semibold text-midnight-950">
-            {rfEval ? `${(rfEval.holdout_accuracy * 100).toFixed(2)}%` : "—"}
+            {rfEval ? `${(rfEval.holdout_accuracy * 100).toFixed(1)}%` : "—"}
+            <span className="ml-1 text-xs font-normal text-midnight-700/60">vs formula labels</span>
           </p>
           <p className="mt-1 text-xs text-midnight-700/60">
-            {rfEval ? `${rfEval.correct_predictions} / ${rfEval.testing_rows} test items` : "—"} · Macro F1{" "}
-            {rfEval ? rfEval.macro_f1.toFixed(4) : "—"}
+            Production RF, {rfEval ? `${rfEval.correct_predictions} / ${rfEval.testing_rows}` : "—"} held-out items. It
+            re-learns a text-complexity formula; that formula agrees with human labels at κ{" "}
+            {typeof v21?.formula_labels_vs_human_kappa === "number" ? v21.formula_labels_vs_human_kappa.toFixed(2) : "—"}.
+          </p>
+          <p className="mt-1 text-xs text-midnight-700/60">
+            v2.1 on human-verified labels: <span className="font-semibold text-midnight-900">{fmtPct(v21?.accuracy)}</span>{" "}
+            (majority baseline {fmtPct(v21?.majority_baseline)}) · awaiting review, not serving
           </p>
         </Card>
 
@@ -273,27 +286,29 @@ export function ModelAuditView() {
             {corpus.verified_questions_in_db.toLocaleString()} PYQs
           </p>
           <p className="mt-1 text-xs text-midnight-700/60">
-            {corpus.canonical_chapters_in_db} NCERT chapters · 815 unverified quarantined ·{" "}
+            {corpus.canonical_chapters_in_db} NCERT chapters ·{" "}
+            {typeof quarantinedTotal === "number" ? quarantinedTotal.toLocaleString() : "—"} unverified quarantined ·{" "}
             {corpus.dag_acyclic ? "DAG Acyclic" : "Cycle Detected"}
           </p>
         </Card>
 
         <Card className="p-5">
-          <p className="text-xs font-medium text-midnight-700/60">120-Round Bandit Regret</p>
+          <p className="text-xs font-medium text-midnight-700/60">Bandit Regret (cold start, noisy)</p>
           <p className="mt-1 font-display text-2xl font-semibold text-midnight-950">
-            {ablation ? ablation.linucb_cumulative_regret.toFixed(2) : "—"} vs{" "}
-            {ablation ? ablation.random_cumulative_regret.toFixed(1) : "—"}
+            {coldStart ? `${coldStart.linucb_cumulative_regret_mean.toFixed(1)} ± ${coldStart.linucb_cumulative_regret_sd.toFixed(1)}` : "—"} vs{" "}
+            {coldStart ? coldStart.random_cumulative_regret_mean.toFixed(1) : "—"}
           </p>
           <p className="mt-1 text-xs text-midnight-700/60">
-            LinUCB ZPD {ablation ? `${(ablation.linucb_mean_zpd_alignment * 100).toFixed(1)}%` : "—"} vs Random{" "}
-            {ablation ? `${(ablation.random_mean_zpd_alignment * 100).toFixed(1)}%` : "—"}
+            {coldStart
+              ? `LinUCB vs random, ${coldStart.n_rounds} rounds × ${coldStart.n_seeds} seeds, no warm start: −${coldStart.regret_reduction_vs_random_percent.toFixed(1)}% regret. Reward is a design objective, not measured learning.`
+              : "Cold-start benchmark not available"}
           </p>
         </Card>
 
         <Card className="p-5">
           <p className="text-xs font-medium text-midnight-700/60">Drift & Feature Store SLA</p>
           <p className="mt-1 font-display text-2xl font-semibold text-midnight-950">
-            {drift.drift_status ?? "HEALTHY"}
+            {drift.drift_status ?? "UNKNOWN"}
           </p>
           <p className="mt-1 text-xs text-midnight-700/60">
             PSI {(drift.effective_psi ?? 0).toFixed(4)} · p50 {(fstore.p50_ms ?? 0).toFixed(3)} ms ·{" "}
@@ -820,11 +835,19 @@ export function ModelAuditView() {
               </p>
             </div>
             <div>
-              <p className="text-white/60">120-Round Cumulative Bandit Regret</p>
-              <p className="mt-0.5 font-mono text-sm font-semibold text-emerald-300">
+              <p className="text-white/60">
+                {ablation.n_rounds}-Round Regret, warm-start prior (optimistic: prior fitted to the same reward)
+              </p>
+              <p className="mt-0.5 font-mono text-sm font-semibold text-white/80">
                 LinUCB {ablation.linucb_cumulative_regret.toFixed(2)} vs Random{" "}
                 {ablation.random_cumulative_regret.toFixed(2)}
               </p>
+              {coldStart && (
+                <p className="mt-1 font-mono text-[11px] text-emerald-300">
+                  Fair test (cold start, noisy, {coldStart.n_seeds} seeds): {coldStart.linucb_cumulative_regret_mean.toFixed(1)} vs{" "}
+                  {coldStart.random_cumulative_regret_mean.toFixed(1)}
+                </p>
+              )}
             </div>
           </div>
         </Card>
@@ -1184,7 +1207,16 @@ export function ModelAuditView() {
               <h2 className="font-display text-lg font-semibold text-midnight-950">
                 Data Integrity, Provenance & Label Validity Gate
               </h2>
-              <Badge className="bg-emerald-500/10 text-emerald-700 font-semibold">Passed · 0 Blocking Failures</Badge>
+              <Badge
+                className={
+                  integrity?.status === "PASSED"
+                    ? "bg-emerald-500/10 text-emerald-700 font-semibold"
+                    : "bg-amber-500/10 text-amber-800 font-semibold"
+                }
+              >
+                {integrity?.status ?? "NOT RUN"} · {integrity?.blocking_failures?.length ?? "—"} Blocking Failures ·{" "}
+                {integrity?.warnings?.length ?? 0} Warnings
+              </Badge>
             </div>
             <p className="mt-0.5 text-xs text-midnight-700/65">
               Automated provenance verification, Chi-square answer key uniformity tests, zero synthetic data in live mock papers, and transparent metric interpretation.
@@ -1199,13 +1231,17 @@ export function ModelAuditView() {
               {audit.data_integrity_audit?.totals?.official_pyq_provenance_verified ?? corpus.verified_questions_in_db}
             </p>
             <p className="mt-1 text-[11px] text-midnight-700/70">
-              100% official NTA/CBSE NEET papers (2013–2026) with verified item provenance.
+              {integrity?.totals
+                ? `${integrity.totals.official_pyq_provenance_verified} of ${integrity.totals.questions} items have verified official NEET provenance (2013–2026).`
+                : "Provenance report not available."}
             </p>
           </div>
 
           <div className="rounded-xl border border-midnight-900/10 bg-midnight-900/[0.02] p-4 text-xs">
             <p className="text-[11px] font-medium text-midnight-700/60">Quarantined Synthetic Items</p>
-            <p className="mt-1 font-display text-2xl font-semibold text-amber-700">815 Items</p>
+            <p className="mt-1 font-display text-2xl font-semibold text-amber-700">
+              {typeof quarantinedTotal === "number" ? `${quarantinedTotal.toLocaleString()} Items` : "—"}
+            </p>
             <p className="mt-1 text-[11px] text-midnight-700/70">
               Quarantined due to 100% option &quot;a&quot; answer skew and missing provenance.
             </p>
@@ -1213,9 +1249,17 @@ export function ModelAuditView() {
 
           <div className="rounded-xl border border-midnight-900/10 bg-midnight-900/[0.02] p-4 text-xs">
             <p className="text-[11px] font-medium text-midnight-700/60">Answer Key Uniformity</p>
-            <p className="mt-1 font-display text-2xl font-semibold text-midnight-950">Chi² Uniform</p>
+            <p className="mt-1 font-display text-2xl font-semibold text-midnight-950">
+              {answerKey ? `χ² ${answerKey.chi_square_df3.toFixed(2)}` : "—"}
+            </p>
             <p className="mt-1 text-[11px] text-midnight-700/70">
-              Option keys evenly distributed (~23-27% each) across Physics, Chemistry, and Biology.
+              {answerKey
+                ? `${Object.entries(answerKey.percent)
+                    .map(([k, v]) => `${k.toUpperCase()} ${v.toFixed(1)}%`)
+                    .join(" · ")} (n=${answerKey.n}, df=3). ${
+                    answerKey.skewed_p_lt_0_001 ? "Skewed at p<0.001." : "No skew at the p<0.001 gate threshold."
+                  }`
+                : "Answer-key report not available."}
             </p>
           </div>
 
@@ -1232,17 +1276,19 @@ export function ModelAuditView() {
           <div className="rounded-xl border border-midnight-900/10 bg-midnight-900/[0.02] p-4 text-xs">
             <p className="text-[11px] font-medium text-midnight-700/60">Database Telemetry & Adapter</p>
             <p className="mt-1 font-display text-2xl font-semibold text-midnight-950">
-              {audit.database_telemetry?.dialect?.toUpperCase() ?? "SQLITE"}
+              {audit.database_telemetry?.dialect?.toUpperCase() ?? "UNKNOWN"}
             </p>
             <p className="mt-1 text-[11px] text-midnight-700/70">
-              Pool: {audit.database_telemetry?.pool_class ?? "NullPool"} · Latency: {audit.database_telemetry?.ping_latency_ms ?? 0}ms · Status: {audit.database_telemetry?.status ?? "HEALTHY"}
+              Pool: {audit.database_telemetry?.pool_class ?? "—"} · Latency:{" "}
+              {typeof audit.database_telemetry?.ping_latency_ms === "number" ? `${audit.database_telemetry.ping_latency_ms}ms` : "—"} · Status:{" "}
+              {audit.database_telemetry?.status ?? "UNKNOWN"}
             </p>
           </div>
 
           <div className="rounded-xl border border-midnight-900/10 bg-midnight-900/[0.02] p-4 text-xs">
             <p className="text-[11px] font-medium text-midnight-700/60">Quarantine Readiness Audit</p>
             <p className="mt-1 font-display text-2xl font-semibold text-midnight-950">
-              {audit.quarantine_audit?.ready_for_sme_review_count ?? 815} / {audit.quarantine_audit?.total_quarantined_items ?? 815}
+              {audit.quarantine_audit?.ready_for_sme_review_count ?? "—"} / {quarantinedTotal ?? "—"}
             </p>
             <p className="mt-1 text-[11px] text-midnight-700/70">
               Structurally sound SME review candidates · Safe to auto-merge: {String(audit.quarantine_audit?.safe_to_merge_unconditionally ?? false)}

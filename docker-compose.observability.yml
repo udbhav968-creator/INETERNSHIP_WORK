@@ -6,6 +6,8 @@ services:
     container_name: klassed-mlops-api
     ports:
       - "8000:8000"
+    environment:
+      - KLASSED_JWT_SECRET=${KLASSED_JWT_SECRET:-}
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=4)"]
       interval: 20s
@@ -36,7 +38,7 @@ services:
       - "3001:3000"
     environment:
       - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=klassed_mlops
+      - GF_SECURITY_ADMIN_PASSWORD=${GF_ADMIN_PASSWORD:?Set GF_ADMIN_PASSWORD before starting the monitoring stack}
       - GF_USERS_ALLOW_SIGN_UP=false
     depends_on:
       - prometheus

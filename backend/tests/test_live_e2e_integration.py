@@ -72,7 +72,7 @@ def run_live_e2e_tests():
         analytics = json.loads(res.read())
         assert analytics["total_attempts"] == 0
         assert analytics["accuracy"] == 0.0
-        print(f"[PASS] 3b. Initial Analytics: 0 attempts, 0% accuracy")
+        print("[PASS] 3b. Initial Analytics: 0 attempts, 0% accuracy")
     
     req_ins = urllib.request.Request(f"{BASE}/students/{sid}/v2_insights", headers=auth_headers)
     with urllib.request.urlopen(req_ins, timeout=15) as res:

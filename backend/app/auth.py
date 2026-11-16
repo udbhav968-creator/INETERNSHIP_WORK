@@ -3,7 +3,9 @@ import datetime
 import hashlib
 import hmac
 import json
+import logging
 import os
+import secrets
 import re
 import time
 from typing import Optional
@@ -15,8 +17,8 @@ from .db_models import Student
 
 MIN_PASSWORD_LENGTH = 8
 VALID_CLASS_LEVELS = ("11", "12", "dropper")
-DEFAULT_JWT_SECRET = "klassed-neet-v2-enterprise-hmac-secret-2026"
-_RAW_SECRET = os.environ.get("KLASSED_JWT_SECRET")
+MIN_JWT_SECRET_LENGTH = 32
+_RAW_SECRET = (os.environ.get("KLASSED_JWT_SECRET") or "").strip()
 _IS_PROD = (
     os.environ.get("ENVIRONMENT", "").lower() in ("production", "prod")
     or os.environ.get("KLASSED_ENV", "").lower() in ("production", "prod")
@@ -24,8 +26,30 @@ _IS_PROD = (
     or os.environ.get("NODE_ENV", "").lower() == "production"
     or bool(os.environ.get("RENDER"))
 )
+_LOGGER = logging.getLogger("klassed.auth")
 
-JWT_SECRET_KEY = _RAW_SECRET if _RAW_SECRET else DEFAULT_JWT_SECRET
+
+def _resolve_jwt_secret() -> tuple[str, str]:
+    if _RAW_SECRET:
+        if _IS_PROD and len(_RAW_SECRET) < MIN_JWT_SECRET_LENGTH:
+            raise RuntimeError(
+                f"KLASSED_JWT_SECRET is shorter than {MIN_JWT_SECRET_LENGTH} characters; "
+                "generate one with: python -c \"import secrets; print(secrets.token_urlsafe(48))\""
+            )
+        return _RAW_SECRET, "environment"
+    if _IS_PROD:
+        raise RuntimeError(
+            "KLASSED_JWT_SECRET is not set. Production refuses to start without it "
+            "(set it in the hosting provider's environment variables, never in a committed file)."
+        )
+    _LOGGER.warning(
+        "KLASSED_JWT_SECRET is not set; using a random per-process secret for local development. "
+        "Tokens will not survive a restart."
+    )
+    return secrets.token_urlsafe(48), "ephemeral_development"
+
+
+JWT_SECRET_KEY, JWT_SECRET_SOURCE = _resolve_jwt_secret()
 
 JWT_EXPIRY_SECONDS = 86400 * 7
 VAULT_EXPIRY_SECONDS = 86400 * 30

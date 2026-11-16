@@ -87,6 +87,10 @@ Promotion rule: a candidate is compared with the incumbent on the same held-out 
 | Integrity | `/mlops/audit_overview` and `/mlops/metrics` re-verify the core SHA-256 registry on each call |
 | New question (admin) | `predict_cold_start_difficulty_and_irt` returns the heuristic tier and, separately, the v2.1 tier trained on human labels |
 | Score prediction | 500-trial Monte Carlo over the 3PL model; interval is an empirical quantile, not conformal |
+| Train/serve parity | One source of truth: `.python-version` (3.13) and `model/ml-training-constraints.txt`. Both requirement files pin the same versions; Docker and CI install with `-c model/ml-training-constraints.txt`; `python -m model.serving_runtime_parity --strict` fails the Docker build and CI on any library or Python mismatch (without `--strict`, as on a developer laptop with a newer Python, only library mismatches fail); the running server reports the comparison in `/mlops/health_and_drift` → `serving_runtime_parity` |
+| Which RF answers | `/mlops/health_and_drift` → `rf_serving_backend`: `sklearn_joblib_pipeline`, or `compact_numpy_forest` with the load error. A fallback is logged, never silent |
+| Byte-stable artifacts | `.npz` files are written by `model/deterministic_artifacts.py` (fixed zip timestamps, sorted members, rewritten only when bytes change), so a retrain on the same data leaves registry hashes unchanged |
+| Secrets | `KLASSED_JWT_SECRET` comes only from the host's environment. Production refuses to start without one (≥ 32 characters); local development gets a random per-process secret |
 
 ## 6. Monitoring and retraining
 

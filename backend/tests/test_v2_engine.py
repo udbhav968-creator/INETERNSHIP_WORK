@@ -1,6 +1,5 @@
 import concurrent.futures
 import json
-import math
 import sys
 from pathlib import Path
 
@@ -31,12 +30,10 @@ from model.state_machine.bkt_model import (
     BKTParams,
     modulate_params_with_telemetry,
     compute_bkt_update,
-    resolve_level_with_hysteresis,
 )
 from model.irt_3pl_model import (
     CALIBRATED_ITEMS,
     IRTItemParams,
-    get_item_params,
     irt_3pl_probability,
     fisher_information,
     update_student_theta_map,
@@ -52,7 +49,6 @@ from model.knowledge_graph_dag import (
     diagnose_prerequisite_bottlenecks,
 )
 from model.linucb_bandit import (
-    LinUCBStudentState,
     build_context_vector,
     score_candidate_ucb,
     record_bandit_feedback,
@@ -364,6 +360,21 @@ def test_12_auth_bcrypt_and_jwt_security():
     token = create_access_token("S100", "s100@klassed.in")
     assert verify_access_token(token)["sub"] == "S100"
 
+    import os
+    import subprocess
+
+    probe = "import app.auth as a; print(a.JWT_SECRET_SOURCE)"
+    base_env = {k: v for k, v in os.environ.items() if k not in ("KLASSED_JWT_SECRET", "VERCEL_ENV", "ENVIRONMENT", "KLASSED_ENV", "NODE_ENV", "RENDER")}
+    backend_dir = str(Path(__file__).resolve().parents[1])
+    prod_missing = subprocess.run([sys.executable, "-c", probe], cwd=backend_dir, env={**base_env, "VERCEL_ENV": "production"}, capture_output=True, text=True)
+    assert prod_missing.returncode != 0 and "KLASSED_JWT_SECRET is not set" in prod_missing.stderr
+    prod_short = subprocess.run([sys.executable, "-c", probe], cwd=backend_dir, env={**base_env, "VERCEL_ENV": "production", "KLASSED_JWT_SECRET": "short"}, capture_output=True, text=True)
+    assert prod_short.returncode != 0
+    prod_ok = subprocess.run([sys.executable, "-c", probe], cwd=backend_dir, env={**base_env, "VERCEL_ENV": "production", "KLASSED_JWT_SECRET": "x" * 48}, capture_output=True, text=True)
+    assert prod_ok.returncode == 0 and prod_ok.stdout.strip() == "environment"
+    dev = subprocess.run([sys.executable, "-c", probe], cwd=backend_dir, env=base_env, capture_output=True, text=True)
+    assert dev.returncode == 0 and dev.stdout.strip() == "ephemeral_development"
+
     tampered = token[:-4] + "XXXX"
     assert verify_access_token(tampered) is None
     assert verify_access_token("not.a.jwt.token") is None
@@ -665,7 +676,7 @@ def test_15_v3_advanced_psychometric_and_nlp_upgrades():
 def test_16_deep_training_and_cross_validation_pipeline():
     from model.training_and_validation_pipeline import run_deep_training_and_validation
 
-    report = run_deep_training_and_validation(save_artifacts=True)
+    report = run_deep_training_and_validation(save_artifacts=False)
     assert report["pipeline_status"] == "PASSED"
     assert report["random_forest_holdout_evaluation"]["holdout_accuracy"] >= 0.75
     assert report["random_forest_holdout_evaluation"]["correct_predictions"] >= 360
@@ -678,7 +689,7 @@ def test_16_deep_training_and_cross_validation_pipeline():
 def test_17_harness_engineering_multi_persona_and_bandit_regret():
     from model.evaluation_harness import run_evaluation_harness
 
-    report = run_evaluation_harness(save_report=True)
+    report = run_evaluation_harness(save_report=False)
     assert report["harness_status"] == "PASSED"
     assert report["persona_simulations"]["strong_master"]["invariants_satisfied"] is True
     assert report["persona_simulations"]["foundational_struggler"]["invariants_satisfied"] is True
@@ -1046,6 +1057,15 @@ def test_24_serverless_vault_relogin_compact_rf_parity_and_full_audit():
     assert audit["validation_report"]["pipeline_status"] == "PASSED"
     assert audit["harness_benchmark"]["harness_status"] == "PASSED"
     assert set(audit["chapters_by_subject"].keys()) >= {"Physics", "Chemistry", "Biology"}
+    v21 = audit["difficulty_v21_candidate"]
+    assert v21["available"] is True and 0.5 < v21["accuracy"] < 1.0
+    assert v21["production_model_changed"] is False
+    assert v21["formula_labels_vs_human_kappa"] is not None and v21["formula_labels_vs_human_kappa"] < 0.2
+    assert "linucb_cold_start_stochastic_ablation" in audit["harness_benchmark"]
+    hd = audit["health_and_drift"]
+    assert hd["rf_serving_backend"]["backend"] in ("sklearn_joblib_pipeline", "compact_numpy_forest")
+    assert set(hd["serving_runtime_parity"]) >= {"python", "libraries", "all_match"}
+    assert all(isinstance(v, bool) for v in hd["advanced_ml_services"].values())
 
     r_cal = client.post(
         "/mlops/predict_cold_start_item",

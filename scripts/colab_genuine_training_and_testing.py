@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import os
 import sys
 import time
 from pathlib import Path
@@ -10,14 +9,10 @@ ROOT_DIR = Path(__file__).resolve().parents[1]
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
-import numpy as np
-import pandas as pd
-
 from model.data_integrity_gate import run_data_integrity_gate
 from model.irt_3pl_model import calibrate_question_bank
 from model.train_psychometric_and_rag_models import train_all_auxiliary_models
 from model.training_and_validation_pipeline import run_deep_training_and_validation
-from model.probability_calibrator import fit_and_save_rf_temperature_calibration
 from model.monte_carlo_conformal_neet import run_monte_carlo_conformal_neet_simulation
 from model.verify_artifact_integrity import verify_all_ml_artifacts
 from model.tests.test_ml_standalone_suite import (

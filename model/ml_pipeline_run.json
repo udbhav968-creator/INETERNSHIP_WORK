@@ -1,11 +1,11 @@
 {
   "status": "PASSED",
-  "total_seconds": 190.2,
+  "total_seconds": 186.02,
   "stages": [
     {
       "stage": "data_gates",
       "status": "PASSED",
-      "seconds": 0.08,
+      "seconds": 0.09,
       "output": {
         "status": "PASSED",
         "warnings": 5
@@ -14,7 +14,7 @@
     {
       "stage": "label_validity",
       "status": "PASSED",
-      "seconds": 2.46,
+      "seconds": 3.23,
       "output": {
         "heuristic_vs_human": {
           "available": true,
@@ -29,7 +29,7 @@
     {
       "stage": "production_training",
       "status": "PASSED",
-      "seconds": 62.77,
+      "seconds": 61.91,
       "output": {
         "holdout": {
           "holdout_accuracy": 0.7791666666666667,
@@ -41,7 +41,7 @@
     {
       "stage": "difficulty_v21",
       "status": "PASSED",
-      "seconds": 91.9,
+      "seconds": 88.91,
       "output": {
         "v21": {
           "accuracy": 0.8238,
@@ -56,7 +56,7 @@
     {
       "stage": "unified_side_by_side",
       "status": "PASSED",
-      "seconds": 22.4,
+      "seconds": 20.76,
       "output": {
         "rag": {
           "heldout_papers": 16,
@@ -81,7 +81,7 @@
     {
       "stage": "evaluation_harness",
       "status": "PASSED",
-      "seconds": 0.93,
+      "seconds": 1.02,
       "output": {
         "status": "PASSED"
       }
@@ -89,7 +89,7 @@
     {
       "stage": "student_pipeline_self_test",
       "status": "PASSED",
-      "seconds": 8.41,
+      "seconds": 8.57,
       "output": {
         "label": "SIMULATED data, used only to verify the estimation code; not a model result",
         "recovery": {
@@ -104,7 +104,7 @@
     {
       "stage": "student_response_models",
       "status": "PASSED",
-      "seconds": 0.18,
+      "seconds": 0.15,
       "output": {
         "status": "SKIPPED_INSUFFICIENT_DATA",
         "readiness": {
@@ -124,7 +124,7 @@
     {
       "stage": "artifact_registries",
       "status": "PASSED",
-      "seconds": 0.7,
+      "seconds": 0.94,
       "output": {
         "core": "VERIFIED",
         "extension": {
@@ -136,7 +136,7 @@
     {
       "stage": "model_cards_and_promotion_gates",
       "status": "PASSED",
-      "seconds": 0.35,
+      "seconds": 0.4,
       "output": {
         "models": 8,
         "promotion_decisions": {

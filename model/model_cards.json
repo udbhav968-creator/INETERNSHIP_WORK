@@ -1,7 +1,7 @@
 {
   "lineage": {
-    "generated_at_utc": "2026-11-16T12:30:14+00:00",
-    "git_commit": "b872e9199e52ef00731a1c8266f5857c60f5d77d",
+    "generated_at_utc": "2026-11-16T13:15:25+00:00",
+    "git_commit": "fc5dbb33b7c13a515705640eec5daefccf4730c3",
     "libraries": {
       "python": "3.13.18",
       "numpy": "2.5.3",
@@ -46,8 +46,8 @@
         },
         {
           "path": "model/rf_difficulty_forest.npz",
-          "sha256": "400973f901160c27183b4145de9e2f870c8bfd958835f3814a355e91e5879073",
-          "size_bytes": 1030702
+          "sha256": "cdfd08124ba13b1366034ed072dfb56b0f58e513f8b9c3432533106d9e08b5ae",
+          "size_bytes": 1030582
         }
       ],
       "training_data": "2,400 official PYQs, 11 non-leaking features",
@@ -128,8 +128,8 @@
       "artifacts": [
         {
           "path": "model/ncert_rag_svd_index.npz",
-          "sha256": "0d10f560a4bcfd978bc5c01c54233f50fc7489b3c12cb8a668b0f364e95ee9a9",
-          "size_bytes": 3089728
+          "sha256": "43bd1232ed96264fadaf75c5cb57464520e9049dba79d3d55798430c21a3d969",
+          "size_bytes": 3089648
         },
         {
           "path": "model/ncert_rag_svd_meta.json",
@@ -159,8 +159,8 @@
       "artifacts": [
         {
           "path": "model/ncert_rag_svd_index_unified.npz",
-          "sha256": "28701fa6c7e36a4161a5b8949ee8750514e47f7386c24eb1ee073ab3673329a1",
-          "size_bytes": 7781027
+          "sha256": "f355a356f5bda827ba3f3bbfabea96c7d6a1ec42abfed929d648d8714e249fb7",
+          "size_bytes": 7780947
         }
       ],
       "training_data": "every question from the held-out sample papers",
@@ -193,8 +193,8 @@
       "artifacts": [
         {
           "path": "model/irt_cold_start_ridge.npz",
-          "sha256": "48e28076ccb16772f4a412123f14fc69b4b2702345cc66d44a4cc4058be72c04",
-          "size_bytes": 1173
+          "sha256": "f8717be1f496213bf61aa36ed83d4f558bcb7ceee79f44bcd5d12c508611dc35",
+          "size_bytes": 1113
         }
       ],
       "training_data": "2,400 PYQs",

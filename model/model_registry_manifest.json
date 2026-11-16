@@ -10,8 +10,8 @@
     },
     "model/rf_difficulty_forest.npz": {
       "exists": true,
-      "size_bytes": 1030702,
-      "sha256": "400973f901160c27183b4145de9e2f870c8bfd958835f3814a355e91e5879073"
+      "size_bytes": 1030582,
+      "sha256": "cdfd08124ba13b1366034ed072dfb56b0f58e513f8b9c3432533106d9e08b5ae"
     },
     "model/rf_difficulty_meta.json": {
       "exists": true,
@@ -25,8 +25,8 @@
     },
     "model/irt_cold_start_ridge.npz": {
       "exists": true,
-      "size_bytes": 1173,
-      "sha256": "48e28076ccb16772f4a412123f14fc69b4b2702345cc66d44a4cc4058be72c04"
+      "size_bytes": 1113,
+      "sha256": "f8717be1f496213bf61aa36ed83d4f558bcb7ceee79f44bcd5d12c508611dc35"
     },
     "model/bkt_chapter_parameters.json": {
       "exists": true,
@@ -40,8 +40,8 @@
     },
     "model/ncert_rag_svd_index.npz": {
       "exists": true,
-      "size_bytes": 3089728,
-      "sha256": "0d10f560a4bcfd978bc5c01c54233f50fc7489b3c12cb8a668b0f364e95ee9a9"
+      "size_bytes": 3089648,
+      "sha256": "43bd1232ed96264fadaf75c5cb57464520e9049dba79d3d55798430c21a3d969"
     },
     "model/ncert_rag_svd_meta.json": {
       "exists": true,
@@ -66,7 +66,7 @@
     "model/rf_temperature_calibration.json": {
       "exists": true,
       "size_bytes": 1169,
-      "sha256": "431799ed90600e3d10c344c4727c12af2fd8b68f5b352be1ac9bf89fa91b49f1"
+      "sha256": "11c8c6071ab2ce4238cecda8361089fe3fce277ab829d13ae803a15e394ef4f0"
     },
     "model/tier_recalibration_proposal.json": {
       "exists": true,

@@ -314,7 +314,7 @@ def ml_suite_10_monte_carlo_conformal_180q_and_graph_laplacian_leverage():
 
 
 def ml_suite_11_corpus_65_topic_distribution_and_180q_readiness_audit():
-    rep = run_corpus_distribution_and_readiness_audit(save_report=True)
+    rep = run_corpus_distribution_and_readiness_audit(save_report=False)
     assert rep["audit_status"] in ("PASSED", "WARNING")
     assert rep["corpus_totals"]["total_verified_questions"] == 2400
     assert rep["corpus_totals"]["total_canonical_chapters"] == 65
@@ -405,7 +405,7 @@ def ml_suite_13_feature_store_latency_and_psi_ece_brier_drift_monitor():
 
 
 def ml_suite_14_multi_model_tournament_and_sha256_registry_integrity():
-    har = run_evaluation_harness(save_report=True)
+    har = run_evaluation_harness(save_report=False)
     assert har["harness_status"] == "PASSED"
     assert "compact_rf_300_tree_inference" in har["latency_sla_benchmarks"]
     assert "study_plan_coverage_prescription" in har["latency_sla_benchmarks"]
@@ -1133,6 +1133,71 @@ def ml_suite_37_student_response_training_pipeline():
     assert len(bkt_one_step_predictions(seqs[480:], fit)) == sum(len(s) for s in seqs[480:])
 
 
+def ml_suite_38_train_serve_parity_deterministic_artifacts_and_honest_ui_claims():
+    import re as _re
+    import tempfile
+
+    from model.deterministic_artifacts import npz_bytes, save_npz_deterministic
+    from model.irt_3pl_model import rf_serving_status
+    from model.knowledge_graph_dag import is_prerequisite_graph_acyclic
+    from model.serving_runtime_parity import check_runtime_parity, requirements_pins, training_library_pins
+
+    pins = training_library_pins()
+    assert set(pins) == {"scikit-learn", "numpy", "pandas", "scipy", "joblib"}
+    for req in ("backend/requirements.txt", "requirements.txt"):
+        assert requirements_pins(PROJECT_ROOT / req) == pins, req
+
+    py_version = (PROJECT_ROOT / ".python-version").read_text(encoding="utf-8").strip()
+    dockerfile = (PROJECT_ROOT / "Dockerfile").read_text(encoding="utf-8")
+    assert f"FROM python:{py_version}-slim" in dockerfile
+    assert "-c model/ml-training-constraints.txt" in dockerfile
+    assert "model.serving_runtime_parity" in dockerfile
+    for wf in (PROJECT_ROOT / ".github" / "workflows").glob("*.yml"):
+        text = wf.read_text(encoding="utf-8")
+        assert 'python-version: "3.11"' not in text, wf.name
+        if "setup-python" in text:
+            assert 'python-version-file: ".python-version"' in text, wf.name
+            assert "ml-training-constraints.txt" in text, wf.name
+
+    parity = check_runtime_parity(log_warning=False)
+    assert parity["libraries_match"] is True, parity["mismatched_libraries"]
+    if parity["python"]["match"] is not False:
+        assert parity["all_match"] is True
+    status = rf_serving_status()
+    assert status["backend"] == "sklearn_joblib_pipeline" and status["error"] is None
+
+    arrays = {"w": np.arange(12, dtype=np.float64).reshape(3, 4), "i": np.array([1, 2, 3], dtype=np.int16)}
+    assert npz_bytes(arrays) == npz_bytes(arrays)
+    with tempfile.TemporaryDirectory() as tmp:
+        target = Path(tmp) / "a.npz"
+        assert save_npz_deterministic(target, **arrays) is True
+        assert save_npz_deterministic(target, **arrays) is False
+        loaded = np.load(target)
+        assert all(np.array_equal(loaded[k], v) and loaded[k].dtype == v.dtype for k, v in arrays.items())
+    for name in ("irt_cold_start_ridge.npz", "rf_difficulty_forest.npz", "ncert_rag_svd_index.npz"):
+        data = np.load(MODEL_DIR / name)
+        assert npz_bytes({k: data[k] for k in data.files}) == (MODEL_DIR / name).read_bytes(), name
+
+    assert is_prerequisite_graph_acyclic() is True
+    assert is_prerequisite_graph_acyclic({"A": {"prerequisites": ["B"]}, "B": {"prerequisites": ["A"]}}) is False
+
+    vercel = json.loads((PROJECT_ROOT / "vercel.json").read_text(encoding="utf-8"))
+    assert "KLASSED_JWT_SECRET" not in json.dumps(vercel)
+    auth_src = (PROJECT_ROOT / "backend" / "app" / "auth.py").read_text(encoding="utf-8")
+    assert "DEFAULT_JWT_SECRET" not in auth_src and "enterprise-hmac-secret" not in auth_src
+    compose = (PROJECT_ROOT / "docker-compose.observability.yml").read_text(encoding="utf-8")
+    assert "klassed_mlops" not in compose
+
+    audit_view = (PROJECT_ROOT / "frontend" / "src" / "features" / "mlops" / "ModelAuditView.tsx").read_text(encoding="utf-8")
+    dashboard = (PROJECT_ROOT / "frontend" / "src" / "features" / "dashboard" / "Dashboard.tsx").read_text(encoding="utf-8")
+    assert "linucb_cold_start_stochastic_ablation" in audit_view
+    assert "difficulty_v21_candidate" in audit_view
+    assert not _re.search(r"\b815\b", audit_view)
+    assert "Chi² Uniform" not in audit_view and "Passed · 0 Blocking Failures" not in audit_view
+    assert "24-Lakh" not in dashboard and "Calibrated on official NTA" not in dashboard
+    assert "Split conformal" not in dashboard and "Conformal Score Interval" not in dashboard
+
+
 if __name__ == "__main__":
     suites = [
         ml_suite_01_question_bank_and_weightage_schema_validators,
@@ -1172,6 +1237,7 @@ if __name__ == "__main__":
         ml_suite_35_honest_simulation_no_invented_penalties_and_sourced_facts,
         ml_suite_36_honest_training_protocol_and_rag_vocabulary,
         ml_suite_37_student_response_training_pipeline,
+        ml_suite_38_train_serve_parity_deterministic_artifacts_and_honest_ui_claims,
     ]
     for fn in suites:
         fn()

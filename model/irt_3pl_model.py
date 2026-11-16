@@ -1,6 +1,7 @@
 import csv
 import json
 import math
+import logging
 import re
 from dataclasses import dataclass
 from pathlib import Path
@@ -334,19 +335,42 @@ def extract_cold_start_nlp_features(question_text: str, options: list[str] | Non
     }
 
 
+_LOGGER = logging.getLogger("klassed.ml.serving")
 _RF_PIPELINE = None
+_RF_LOAD_STATUS: dict = {"backend": "not_loaded", "error": None}
 
 
 def reload_sklearn_rf_pipeline() -> None:
-    global _RF_PIPELINE
+    global _RF_PIPELINE, _RF_LOAD_STATUS
+    rf_path = MODEL_DIR / "question_difficulty_model.joblib"
+    _RF_PIPELINE = None
+    if not rf_path.exists():
+        _RF_LOAD_STATUS = {"backend": "compact_numpy_forest" if COMPACT_RF_RUNTIME.loaded else "unavailable",
+                           "error": "question_difficulty_model.joblib not present"}
+        return
     try:
+        import warnings
+
         import joblib
 
-        rf_path = MODEL_DIR / "question_difficulty_model.joblib"
-        if rf_path.exists():
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always")
             _RF_PIPELINE = joblib.load(rf_path)
-    except Exception:
+        version_warnings = [str(w.message) for w in caught if "version" in str(w.message).lower()]
+        _RF_LOAD_STATUS = {"backend": "sklearn_joblib_pipeline", "error": None, "load_warnings": version_warnings[:3]}
+        if version_warnings:
+            _LOGGER.warning("RF pipeline loaded with a different library version than it was trained with: %s",
+                            version_warnings[0])
+    except Exception as exc:
         _RF_PIPELINE = None
+        _RF_LOAD_STATUS = {"backend": "compact_numpy_forest" if COMPACT_RF_RUNTIME.loaded else "unavailable",
+                           "error": f"{type(exc).__name__}: {exc}"[:300]}
+        _LOGGER.warning("Could not load question_difficulty_model.joblib (%s); serving falls back to %s",
+                        _RF_LOAD_STATUS["error"], _RF_LOAD_STATUS["backend"])
+
+
+def rf_serving_status() -> dict:
+    return dict(_RF_LOAD_STATUS)
 
 
 reload_sklearn_rf_pipeline()
@@ -426,7 +450,8 @@ def predict_cold_start_difficulty_and_irt(
             classes = list(_RF_PIPELINE.classes_)
             rf_probs = {str(c): round(float(p), 4) for c, p in zip(classes, probas)}
             rf_engine = "sklearn_300_tree_joblib"
-        except Exception:
+        except Exception as exc:
+            _LOGGER.warning("sklearn RF predict failed (%s: %s); using compact forest", type(exc).__name__, exc)
             rf_probs = None
 
     if rf_probs is None and COMPACT_RF_RUNTIME.loaded:

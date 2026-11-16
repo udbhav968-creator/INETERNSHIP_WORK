@@ -13,6 +13,7 @@ import pandas as pd
 from .dina_cognitive_diagnosis import COGNITIVE_SKILLS, SKILL_IDS, extract_item_q_vector
 from .irt_3pl_model import D_SCALING, IRTItemParams, calibrate_question_bank, irt_3pl_probability, fisher_information
 from .knowledge_graph_dag import DAG_NODES, get_all_ancestors
+from .deterministic_artifacts import save_npz_deterministic
 
 MODEL_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = MODEL_DIR.parent
@@ -123,7 +124,7 @@ def train_irt_cold_start_ridge_regressor(
     reg_full[0, 0] = 0.0
     W_full = np.linalg.solve(X_full.T @ X_full + reg_full, X_full.T @ Y)
 
-    np.savez_compressed(
+    save_npz_deterministic(
         IRT_RIDGE_NPZ,
         weights=W_full.astype(np.float64),
         feature_mean=mu_full.astype(np.float64),
@@ -437,7 +438,7 @@ def train_ncert_and_pyq_svd_rag_index(
         if r <= len(s_vals)
     }
 
-    np.savez_compressed(
+    save_npz_deterministic(
         RAG_SVD_NPZ,
         idf=idf,
         tfidf_matrix=tfidf_mat.astype(np.float16),

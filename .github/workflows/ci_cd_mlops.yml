@@ -9,17 +9,17 @@ on:
 
 jobs:
   standalone-mlops-governance-and-training:
-    name: Reproducible ML Pipeline, Grouped CV, Artifact Registries, Model Cards & 37-Suite ML Gate
+    name: Reproducible ML Pipeline, Grouped CV, Artifact Registries, Model Cards & 38-Suite ML Gate
     runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v7
 
-      - name: Set up Python 3.13
+      - name: Set up Python (version from .python-version, same as serving)
         uses: actions/setup-python@v7
         with:
-          python-version: "3.13"
+          python-version-file: ".python-version"
           cache: "pip"
           cache-dependency-path: |
             backend/requirements.txt
@@ -40,15 +40,16 @@ jobs:
         run: |
           python -m model.run_full_ml_pipeline --verify-reproducible
 
-      - name: Stage 3 — Cryptographic Artifact Checksum & Cold-Start Boot SLA Gate
+      - name: Stage 3 — Cryptographic Artifact Checksum, Train/Serve Parity & Cold-Start Boot SLA Gate
         run: |
           python -m model.verify_artifact_integrity
+          python -m model.serving_runtime_parity --strict
 
       - name: Stage 4 — Multi-Persona Psychometric, Bandit Regret & 8-Subsystem SLA Harness
         run: |
           python -m model.evaluation_harness
 
-      - name: Stage 5 — 37 Standalone Pure-ML & MLOps Verification Suites
+      - name: Stage 5 — 38 Standalone Pure-ML & MLOps Verification Suites
         run: |
           python -m model.tests.test_ml_standalone_suite
 
@@ -90,17 +91,20 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v7
 
-      - name: Set up Python 3.11
+      - name: Set up Python (version from .python-version, same as training)
         uses: actions/setup-python@v7
         with:
-          python-version: "3.11"
+          python-version-file: ".python-version"
           cache: "pip"
-          cache-dependency-path: "backend/requirements.txt"
+          cache-dependency-path: |
+            backend/requirements.txt
+            model/ml-training-constraints.txt
 
-      - name: Install Python Backend & ML Dependencies
+      - name: Install Python Backend & ML Dependencies (training pins)
         run: |
           python -m pip install --upgrade pip
-          pip install -r backend/requirements.txt
+          pip install -r backend/requirements.txt -c model/ml-training-constraints.txt
+          python -m model.serving_runtime_parity --strict
 
       - name: Run All 29 Deep Unit, Integration, Concurrency & Forensic Suites
         run: |
@@ -122,6 +126,10 @@ jobs:
           grep -q "HEALTHCHECK" Dockerfile
           grep -q "USER appuser" Dockerfile
           grep -q "model.verify_artifact_integrity" Dockerfile
+          grep -q "model.serving_runtime_parity" Dockerfile
+          grep -q "ml-training-constraints.txt" Dockerfile
+          grep -q "FROM python:$(cat .python-version)-slim" Dockerfile
+          if grep -q "KLASSED_JWT_SECRET" vercel.json; then echo "JWT secret must not be committed in vercel.json"; exit 1; fi
           test -f render.yaml
           test -f railway.json
           test -f vercel.json

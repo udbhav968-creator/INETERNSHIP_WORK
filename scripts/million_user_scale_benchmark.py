@@ -1,8 +1,6 @@
 from __future__ import annotations
 
 import concurrent.futures
-import math
-import os
 import sys
 import time
 from pathlib import Path
@@ -18,7 +16,6 @@ from model.linucb_bandit import (
     _BANDIT_LOCK,
     _STUDENT_BANDITS,
     _save_bandit_checkpoint,
-    get_student_bandit,
     record_bandit_feedback,
     get_bandit_cache_telemetry,
     MAX_STUDENT_CACHE,
@@ -52,7 +49,7 @@ def run_million_user_scale_benchmark(
         t0 = time.perf_counter_ns()
         record_bandit_feedback(
             student_id=sid,
-            question_id=f"NEET_PHY_001",
+            question_id="NEET_PHY_001",
             difficulty="medium",
             expected_time_seconds=90,
             student_theta=0.25,
@@ -93,7 +90,7 @@ def run_million_user_scale_benchmark(
     for i in range(15000):
         fs.put_student_features(f"USER_{i:06d}", {"irt_theta": 0.5, "level": "medium"})
     fs_p = fs.get_latency_percentiles()
-    print(f"  Insertions: 15,000 records")
+    print("  Insertions: 15,000 records")
     print(f"  Retained in Cache: {fs_p['cached_students']} (Hard-capped to 5,000 to prevent OOM)")
     print(f"  Feature Store p95 Latency: {fs_p['p95_ms']:.4f} ms")
 

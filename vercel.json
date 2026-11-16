@@ -1,7 +1,4 @@
 {
   "buildCommand": "cd frontend && npm install && npm run build",
-  "outputDirectory": "frontend/dist",
-  "env": {
-    "KLASSED_JWT_SECRET": "klassed-neet-v2-enterprise-hmac-secret-2026"
-  }
+  "outputDirectory": "frontend/dist"
 }

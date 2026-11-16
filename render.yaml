@@ -7,3 +7,5 @@ services:
     envVars:
       - key: PORT
         value: 8000
+      - key: KLASSED_JWT_SECRET
+        generateValue: true

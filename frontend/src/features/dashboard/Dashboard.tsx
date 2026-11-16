@@ -599,17 +599,17 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
         <div className="flex flex-col gap-4">
           <div>
             <h2 className="font-display text-lg font-semibold text-midnight-950">
-              Monte Carlo Conformal NEET Simulator & Negative-Marking Optimizer ({v2Insights.monte_carlo_conformal_simulator.n_trials} Trials)
+              Monte Carlo NEET Score Simulator & Negative-Marking Optimizer ({v2Insights.monte_carlo_conformal_simulator.n_trials} Trials)
             </h2>
             <p className="text-xs text-midnight-700/70">
-              Split conformal prediction bounds across 180 blueprint questions (+4 / −1 marking) with decision-theoretic skip optimization (E[V] = 5P − 1) & Graph Laplacian Heat-Kernel diffusion leverage.
+              Simulates 180 blueprint questions (+4 / −1 marking) from your current ability estimate, with skip optimization (E[V] = 5P − 1). Ranges are the spread of simulated scores, not calibrated prediction intervals.
             </p>
           </div>
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <Card className="flex flex-col gap-1 p-4">
               <p className="text-xs font-semibold uppercase tracking-wide text-midnight-700/60">
-                90% Conformal Score Interval
+                90% Simulated Score Range
               </p>
               <p className="font-display text-2xl font-semibold text-midnight-950">
                 {v2Insights.monte_carlo_conformal_simulator.conformal_90_interval[0]} –{" "}
@@ -655,10 +655,13 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
                 Cutoff Probabilities
               </p>
               <p className="font-display text-lg font-semibold text-midnight-950">
-                Qualifying (≥165): {v2Insights.monte_carlo_conformal_simulator.cutoff_probabilities.qualifying_cutoff_165_percent}%
+                {v2Insights.monte_carlo_conformal_simulator.cutoff_probabilities.sourced_qualifying_cutoff
+                  ? `Qualifying (≥${v2Insights.monte_carlo_conformal_simulator.cutoff_probabilities.sourced_qualifying_cutoff.score}, NEET ${v2Insights.monte_carlo_conformal_simulator.cutoff_probabilities.sourced_qualifying_cutoff.exam_year ?? ""}): ${v2Insights.monte_carlo_conformal_simulator.cutoff_probabilities.sourced_qualifying_cutoff.probability_percent}%`
+                  : `Score ≥165: ${v2Insights.monte_carlo_conformal_simulator.cutoff_probabilities.qualifying_cutoff_165_percent}%`}
               </p>
               <p className="text-xs text-midnight-700/70">
-                Govt MBBS (≥550): {v2Insights.monte_carlo_conformal_simulator.cutoff_probabilities.state_govt_mbbs_550_percent}% · AIIMS (≥650):{" "}
+                Reference scores (not official cut-offs): ≥550{" "}
+                {v2Insights.monte_carlo_conformal_simulator.cutoff_probabilities.state_govt_mbbs_550_percent}% · ≥650{" "}
                 {v2Insights.monte_carlo_conformal_simulator.cutoff_probabilities.top_aiims_650_percent}%
               </p>
             </Card>
@@ -669,15 +672,18 @@ export function Dashboard({ studentId, onStartPaper }: DashboardProps) {
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-midnight-100 pb-2.5">
                 <div>
                   <h3 className="font-display text-sm font-semibold text-midnight-950">
-                    24-Lakh All-India Rank (AIR) & Top Medical College Projections
+                    Approximate All-India Rank (AIR) among{" "}
+                    {v2Insights.monte_carlo_conformal_simulator.national_air_projection.total_national_candidates.toLocaleString("en-IN")}{" "}
+                    candidates & college indications
                   </h3>
                   <p className="text-xs text-midnight-700/70">
-                    Calibrated on official NTA score-percentile curves with 90% conformal uncertainty intervals.
+                    Uses NEET 2026 candidate numbers and an approximate score-to-percentile curve (NTA does not publish a full
+                    table). Treat ranks and college chances as rough indications.
                   </p>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="text-right">
-                    <p className="text-[11px] uppercase tracking-wide text-midnight-700/60 font-medium">90% Conformal AIR Range</p>
+                    <p className="text-[11px] uppercase tracking-wide text-midnight-700/60 font-medium">90% Simulated AIR Range</p>
                     <p className="font-display text-base font-semibold text-midnight-950">
                       AIR {v2Insights.monte_carlo_conformal_simulator.national_air_projection.conformal_air_interval[0].toLocaleString()} – {v2Insights.monte_carlo_conformal_simulator.national_air_projection.conformal_air_interval[1].toLocaleString()}
                     </p>

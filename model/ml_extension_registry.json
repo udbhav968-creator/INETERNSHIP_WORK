@@ -43,8 +43,8 @@
     },
     "model/ncert_rag_svd_index_unified.npz": {
       "exists": true,
-      "size_bytes": 7781027,
-      "sha256": "28701fa6c7e36a4161a5b8949ee8750514e47f7386c24eb1ee073ab3673329a1"
+      "size_bytes": 7780947,
+      "sha256": "f355a356f5bda827ba3f3bbfabea96c7d6a1ec42abfed929d648d8714e249fb7"
     },
     "model/ncert_rag_svd_meta_unified.json": {
       "exists": true,

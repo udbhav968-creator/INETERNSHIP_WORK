@@ -121,7 +121,7 @@ def migrate_sqlite_to_postgres(
 
         with pg_engine.begin() as p_conn:
             for tbl in TABLE_ORDER:
-                s_cur.execute(f"SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name=?", (tbl,))
+                s_cur.execute("SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name=?", (tbl,))
                 if s_cur.fetchone()[0] == 0:
                     continue
 
@@ -180,7 +180,7 @@ def generate_postgresql_partitioning_ddl(num_hash_partitions: int = 16) -> dict[
         "dwell_time_ms INTEGER NOT NULL DEFAULT 0, "
         "timestamp TIMESTAMPTZ DEFAULT NOW(), "
         "PRIMARY KEY (student_id, attempt_id)"
-        f") PARTITION BY HASH (student_id);"
+        ") PARTITION BY HASH (student_id);"
     )
     return {
         "strategy": "HASH",

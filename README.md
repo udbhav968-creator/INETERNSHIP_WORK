@@ -3,7 +3,7 @@
 **Author:** Udbhav Yadav (ML Engineer Intern) · **Institution:** Bennett University  
 **Repository:** `udbhav968-creator/INETERNSHIP_WORK` · **Upstream:** `parvwadhwa/Klassed-neet-adaptive-engine`  
 **Live app:** [klassed-neet-adaptive-engine.vercel.app](https://klassed-neet-adaptive-engine.vercel.app)  
-**Stack:** Python 3.11+, FastAPI, NumPy, SciPy, scikit-learn, SQLite (PostgreSQL adapter available), React 18, TypeScript, Vite, Tailwind CSS, Vercel serverless.
+**Stack:** Python 3.13 (pinned in `.python-version`; training, CI, Docker and Vercel all use it), FastAPI, NumPy, SciPy, scikit-learn, SQLite (PostgreSQL adapter available), React 18, TypeScript, Vite, Tailwind CSS, Vercel serverless.
 
 **Key documents**
 
@@ -146,7 +146,8 @@ Once real students take the initial assessment, `python -m model.run_full_ml_pip
 | Suite | Command | Result |
 |---|---|---|
 | Full ML pipeline + reproducibility | `python -m model.run_full_ml_pipeline --verify-reproducible` | 10 / 10 stages pass; 7 / 7 metrics within 0.005 |
-| Standalone ML suites | `python -m model.tests.test_ml_standalone_suite` | 37 / 37 pass |
+| Standalone ML suites | `python -m model.tests.test_ml_standalone_suite` | 38 / 38 pass |
+| Train/serve library parity | `python -m model.serving_runtime_parity` | serving versions = training pins |
 | Backend integration suites | `python backend/tests/test_v2_engine.py` | 29 / 29 pass |
 | Core SHA-256 registry | `python -m model.verify_artifact_integrity` | 21 / 21 verified |
 | ML extension registry | `python -m model.ml_extension_registry` | 14 / 14 |
@@ -165,7 +166,7 @@ Measured with `scripts/million_user_scale_benchmark.py`, 16 threads, 5,000 simul
 
 | Risk | Impact | Owner |
 |---|---|---|
-| `auth.py` falls back to a JWT secret that is committed in this public repo when `KLASSED_JWT_SECRET` is unset; `_IS_PROD` is computed but not enforced | Tokens could be forged and vault tokens decrypted | Backend: set the env var in Vercel and fail start-up without it |
+| The old JWT secret is in this public repo's git history (removed from code and `vercel.json` on 16 Nov 2026; production now refuses to start without `KLASSED_JWT_SECRET`) | Anyone with the old value can forge tokens for any deployment still using it | DevOps: set a **new** secret (≥ 32 characters) in Vercel/Render before the next deploy; never reuse the old value |
 | Vercel SQLite lives in `/tmp`; recovery relies on a browser journal capped at 75 attempts (server replays 80) | A 180-question paper loses most answers after a cold start; nothing persists across devices | Backend: PostgreSQL migration |
 | `extract_year()` defaults to 2024 when the source has no year | Sample papers display as "NEET 2024" | Backend loader |
 
@@ -177,7 +178,7 @@ Measured with `scripts/million_user_scale_benchmark.py`, 16 threads, 5,000 simul
 git clone https://github.com/udbhav968-creator/INETERNSHIP_WORK.git
 cd INETERNSHIP_WORK
 python -m venv venv && venv\Scripts\activate
-pip install -r backend/requirements.txt
+pip install -r backend/requirements.txt -c model/ml-training-constraints.txt
 
 python -m model.run_authentic_training
 python -m model.tests.test_ml_standalone_suite

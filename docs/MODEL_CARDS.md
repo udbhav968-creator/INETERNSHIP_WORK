@@ -1,6 +1,6 @@
 # Model Cards
 
-Generated 2026-11-16T12:30:14+00:00 from commit `b872e9199e52ef00731a1c8266f5857c60f5d77d` by `python -m model.mlops_registry_and_cards`.
+Generated 2026-11-16T13:15:25+00:00 from commit `fc5dbb33b7c13a515705640eec5daefccf4730c3` by `python -m model.mlops_registry_and_cards`.
 
 ## Summary
 
@@ -26,7 +26,7 @@ Generated 2026-11-16T12:30:14+00:00 from commit `b872e9199e52ef00731a1c8266f5857
 | evaluation | holdout: 20% grouped stratified split made before any tuning; near-duplicate questions share a group; cross_validation: StratifiedGroupKFold(5) on the training split only; used for hyperparameter selection; calibration: temperature fitted on training out-of-fold probabilities, ECE reported on the untouched holdout; split_seed: 42 |
 | metrics | holdout_accuracy: 0.7792; holdout_macro_f1: 0.7825; cv_accuracy_train_split: 0.7953; oof_brier: 0.3072; holdout_ece: 0.052; temperature_decision: rejected_on_holdout_identity_used |
 | limitations | agreement with the heuristic tier formula, not empirical difficulty; heuristic vs human-verified tiers: kappa 0.0693 |
-| artifacts | model/question_difficulty_model.joblib (a2f55761804f); model/rf_difficulty_forest.npz (400973f90116) |
+| artifacts | model/question_difficulty_model.joblib (a2f55761804f); model/rf_difficulty_forest.npz (cdfd08124ba1) |
 
 ## difficulty_v21_text
 
@@ -65,7 +65,7 @@ Generated 2026-11-16T12:30:14+00:00 from commit `b872e9199e52ef00731a1c8266f5857
 | evaluation | questions not in the index (no chapter hint) |
 | metrics | eval_questions: 9448; eval_set: questions not in the index (no chapter hint); top1_chapter_accuracy: 0.3496; top3_chapter_accuracy: 0.5341; random_baseline_top1: 0.0154 |
 | limitations | lexical retrieval; no dense embeddings; chapter retrieval is a proxy for answer usefulness |
-| artifacts | model/ncert_rag_svd_index.npz (0d10f560a4bc); model/ncert_rag_svd_meta.json (65fb624307f5) |
+| artifacts | model/ncert_rag_svd_index.npz (43bd1232ed96); model/ncert_rag_svd_meta.json (65fb624307f5) |
 
 ## ncert_rag_retriever_unified
 
@@ -78,7 +78,7 @@ Generated 2026-11-16T12:30:14+00:00 from commit `b872e9199e52ef00731a1c8266f5857
 | evaluation | held-out sample papers |
 | metrics | unified: eval_questions: 1747; eval_set: questions not in the index (no chapter hint); top1_chapter_accuracy: 0.3268; top3_chapter_accuracy: 0.5335; random_baseline_top1: 0.0154; production_on_same_set: eval_questions: 1747; eval_set: questions not in the index (no chapter hint); top1_chapter_accuracy: 0.3183; top3_chapter_accuracy: 0.5031; random_baseline_top1: 0.0154 |
 | limitations | small gain over production |
-| artifacts | model/ncert_rag_svd_index_unified.npz (28701fa6c7e3) |
+| artifacts | model/ncert_rag_svd_index_unified.npz (f355a356f5bd) |
 
 ## irt_cold_start_ridge
 
@@ -91,7 +91,7 @@ Generated 2026-11-16T12:30:14+00:00 from commit `b872e9199e52ef00731a1c8266f5857
 | evaluation | 5-fold CV |
 | metrics | a_5fold_r2: 0.948; b_5fold_r2: 0.9949; c_5fold_r2: 0.818 |
 | limitations | high R2 reflects that targets are a function of the inputs (tier, time) |
-| artifacts | model/irt_cold_start_ridge.npz (48e28076ccb1) |
+| artifacts | model/irt_cold_start_ridge.npz (f8717be1f496) |
 
 ## student_response_models
 
